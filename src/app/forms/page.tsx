@@ -1,6 +1,9 @@
-export default function Forms() {
+"use client";
+
+export default function Forms({params}) {
     
-    return (
-        <div></div>
-    );
+
+  return (
+   <div></div>
+  );
 };
