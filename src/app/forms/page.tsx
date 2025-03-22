@@ -4,6 +4,8 @@ export default function Forms({params}) {
     
 
   return (
-   <div></div>
+   <div>
+    Form
+   </div>
   );
 };
