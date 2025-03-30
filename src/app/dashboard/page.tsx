@@ -16,6 +16,7 @@ export default function Dashboard() {
 
     return (
         <div className="container mx-auto p-4">
+            <h1 className="text-4xl font-black mb-4 mt-8">Welcome back, <span className="font-extralight font-mono">Songkhla Hospital</span></h1>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <div className="bg-white p-4 shadow rounded h-24 flex items-center justify-between">
                     <div className="text-lg font-semibold text-gray-700">Offer</div>
@@ -51,7 +52,7 @@ export default function Dashboard() {
                 </div>
             </div>
             {selectedTab === 'borrow' ? <BorrowDashboard /> : <ReturnDashboard />}
-            <div>{medicines ? (
+            {/* <div>{medicines ? (
                 <div className="space-y-4">
                     {medicines.map((medicine) => (
                         <div key={medicine.ID} className="bg-white p-4 shadow rounded">
@@ -68,7 +69,7 @@ export default function Dashboard() {
                 </div>
             ) : (
                 <div>Loading...</div>
-            )}</div>
+            )}</div> */}
         </div>
     )
 };
