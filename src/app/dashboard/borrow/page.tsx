@@ -1,3 +1,6 @@
+import { Button } from "@/components/ui/button"
+import { MoveLeft, MoveRight, Plus } from 'lucide-react';
+
 const mockData = [
     {
         date: '2023-10-01',
@@ -73,9 +76,13 @@ export default function BorrowDashboard() {
                     </tbody>
                 </table>
                 <div className="flex justify-between items-center mt-4">
-                    <button className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Previous</button>
+                    <Button>
+                        <MoveLeft />Previous
+                    </Button>
                     <span className="text-gray-700">Page 1 of 10</span>
-                    <button className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Next</button>
+                    <Button>
+                        Next<MoveRight />
+                    </Button>
                 </div>
             </div>
     )
