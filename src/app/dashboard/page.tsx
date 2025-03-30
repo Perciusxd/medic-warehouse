@@ -1,57 +1,18 @@
 "use client";
-
 import BorrowDashboard from "./borrow/page";
 import ReturnDashboard from "./return/page";
-import { useState } from 'react';
-
-const mockData = [
-    {
-        date: '2023-10-01',
-        hospitalName: 'City Hospital',
-        medicineName: 'Aspirin',
-        medicineSize: '500mg',
-        medicineType: 'Tablet',
-        quantity: 100
-    },
-    {
-        date: '2023-10-02',
-        hospitalName: 'County Hospital',
-        medicineName: 'Ibuprofen',
-        medicineSize: '200mg',
-        medicineType: 'Capsule',
-        quantity: 200
-    },
-    {
-        date: '2023-10-03',
-        hospitalName: 'General Hospital',
-        medicineName: 'Paracetamol',
-        medicineSize: '650mg',
-        medicineType: 'Tablet',
-        quantity: 150
-    },
-    {
-        date: '2023-10-04',
-        hospitalName: 'Community Hospital',
-        medicineName: 'Amoxicillin',
-        medicineSize: '250mg',
-        medicineType: 'Capsule',
-        quantity: 300
-    },
-    {
-        date: '2023-10-05',
-        hospitalName: 'Regional Hospital',
-        medicineName: 'Ciprofloxacin',
-        medicineSize: '500mg',
-        medicineType: 'Tablet',
-        quantity: 120
-    }
-];
-
-
+import { useState, useEffect } from 'react';
 
 export default function Dashboard() {
-
+    const [medicines, setMedicines] = useState<Array<{ ID: string; Name: string; BatchNumber: string; CurrentLocation: string; ExpiryDate: string; Price: number; Temperature: string; Owner?: string; Manufacturer?: string; }>>([]);
     const [selectedTab, setSelectedTab] = useState('borrow');
+
+    useEffect(() => {
+        fetch("api/queryAll")
+            .then((response) => response.json())
+            .then((data) => {setMedicines(data)})
+            .catch((error) => console.error("Error fetching data:", error));
+    }, []);
 
     return (
         <div className="container mx-auto p-4">
@@ -90,6 +51,24 @@ export default function Dashboard() {
                 </div>
             </div>
             {selectedTab === 'borrow' ? <BorrowDashboard /> : <ReturnDashboard />}
+            <div>{medicines ? (
+                <div className="space-y-4">
+                    {medicines.map((medicine) => (
+                        <div key={medicine.ID} className="bg-white p-4 shadow rounded">
+                            <h2 className="text-lg font-semibold">{medicine.Name}</h2>
+                            <p className="text-sm text-gray-500">Batch: {medicine.BatchNumber}</p>
+                            <p className="text-sm text-gray-500">Location: {medicine.CurrentLocation}</p>
+                            <p className="text-sm text-gray-500">Expiry Date: {medicine.ExpiryDate}</p>
+                            <p className="text-sm text-gray-500">Price: ${medicine.Price}</p>
+                            <p className="text-sm text-gray-500">Temperature: {medicine.Temperature}</p>
+                            {medicine.Owner && <p className="text-sm text-gray-500">Owner: {medicine.Owner}</p>}
+                            {medicine.Manufacturer && <p className="text-sm text-gray-500">Manufacturer: {medicine.Manufacturer}</p>}
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div>Loading...</div>
+            )}</div>
         </div>
     )
 };

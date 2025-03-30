@@ -1,6 +1,6 @@
 "use client";
 
-export default function Forms({params}) {
+export default function Forms({}) {
     
 
   return (
