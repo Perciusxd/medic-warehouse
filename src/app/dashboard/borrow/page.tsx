@@ -1,3 +1,5 @@
+import * as React from "react"
+
 import { Button } from "@/components/ui/button"
 import {
     Popover,
@@ -7,6 +9,16 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MoveLeft, MoveRight, Plus, HandCoins, Ban, CalendarCheck2, X } from 'lucide-react';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Calendar } from "@/components/ui/calendar"
 
 const mockData = [
     {
@@ -50,6 +62,95 @@ const mockData = [
         quantity: 120
     }
 ];
+
+function CalendarPopover() {
+    return (
+        <PopoverContent>
+            <div className="grid gap-4">
+                <div className="space-y-2">
+                    <h4 className="font-medium leading-none">Calendar</h4>
+                    <p className="text-sm text-muted-foreground">
+                        Select a date
+                    </p>
+                </div>
+                <div className="grid gap-2">
+                    <Calendar mode="single" />
+                </div>
+            </div>
+        </PopoverContent>
+    );
+}
+
+function AddMedDialog() {
+    const [date, setDate] = React.useState<Date | undefined>(new Date())
+
+    return (
+        <DialogContent className="sm:max-w-[625px]">
+            <DialogHeader>
+                <DialogTitle>เพิ่มยาให้ยืม</DialogTitle>
+                <DialogDescription>
+                    กรอกข้อมูลยาและรายละเอียดการยืม
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">
+                        โรงพยาบาลที่แจ้ง
+                    </Label>
+                    <Input id="name" value="Songkla Hospital" className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="username" className="text-right">
+                        รายการ
+                    </Label>
+                    <Input id="username" value="Simethicone" className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="username" className="text-right">
+                        ขนาด
+                    </Label>
+                    <Input id="username" value="t 80 mg" className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="username" className="text-right">
+                        ชนิด
+                    </Label>
+                    <Input id="username" value="@peduarte" className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="username" className="text-right">
+                        วันหมดอายุ
+                    </Label>
+                    <div className="col-span-2" >
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline">
+                                    <CalendarCheck2 />
+                                </Button>
+                            </PopoverTrigger>
+                            <CalendarPopover />
+                        </Popover>
+                    </div>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="username" className="text-right">
+                        จำนวนที่ยืมได้
+                    </Label>
+                    <Input id="username" value="@peduarte" className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="username" className="text-right">
+                        รายละเอียดเพิ่มเติม
+                    </Label>
+                    <Input id="additionalFile" type="file" className="col-span-3" />
+                </div>
+            </div>
+            <DialogFooter>
+                <Button type="submit">Save changes</Button>
+            </DialogFooter>
+        </DialogContent>
+    );
+}
 
 function EditPopover() {
     return (
@@ -107,8 +208,8 @@ function EditPopover() {
                             />
                         </div>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Button className="bg-green-800"><CalendarCheck2 />ยืนยัน</Button>
+                    <div className="grid grid-cols-4 items-center gap-4 mt-8">
+                        <Button className="bg-green-800 col-start-2"><CalendarCheck2 />ยืนยัน</Button>
                         <Button variant={"destructive"}><X />ยกเลิก</Button>
                     </div>
                 </div>
@@ -120,7 +221,12 @@ function EditPopover() {
 export default function BorrowDashboard() {
     return (
         <div>
-            <Button className="mb-2 cursor-pointer" variant="default"><Plus />Add New</Button>
+            <Dialog>
+                <DialogTrigger asChild>
+                    <Button className="mb-2 cursor-pointer" variant="default"><Plus />Add New</Button>
+                </DialogTrigger>
+                <AddMedDialog />
+            </Dialog>
             <div className="bg-white p-4 shadow rounded">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -152,8 +258,8 @@ export default function BorrowDashboard() {
                                         </PopoverTrigger>
                                         <EditPopover />
                                     </Popover>
-                                    
-                                    <Button variant="destructive">
+
+                                    <Button variant="destructive" className="cursor-pointer">
                                         <Ban></Ban>
                                     </Button>
                                 </td>
