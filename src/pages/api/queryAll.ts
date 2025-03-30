@@ -13,6 +13,7 @@ export default async function handler(
     const resultBytes = await contract.evaluateTransaction("GetAllMedicines");
     const resultJson = utf8Decoder.decode(resultBytes);
     const result: any = JSON.parse(resultJson);
+    console.log("*** Query All Assets committed successfully");
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ error: "Failed to initialize Fabric" });
