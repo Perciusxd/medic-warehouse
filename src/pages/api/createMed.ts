@@ -16,29 +16,51 @@ export default async function handler(
   try {
     const assetId = `asset${String(Date.now())}`;
     // Get data from the request body
+
+    // New data
+    // const {
+      // postingDate,
+      // postingHospital,
+      // medicineName,
+      // quantity,
+      // unit,
+      // batchNumber,
+      // manufacturer,
+      // manufactureDate,
+      // expiryDate,
+      // currentLocation,
+      // status
+    // } = req.body;
+
     const {
-      name,
+      postingDate,
+      postingHospital,
+      medicineName,
+      quantity,
+      unit,
       batchNumber,
-      manufactureDate,
       manufacturer,
+      manufactureDate,
       expiryDate,
       currentLocation,
-      temperature,
-      price
+      status
     } = req.body;
     const contract = await initializeFabric();
     try {
         await contract.submitTransaction(
           "CreateMedicine",
           assetId,
-          name,
+          postingDate,
+          postingHospital,
+          medicineName,
+          quantity,
+          unit,
           batchNumber,
-          manufactureDate,
           manufacturer,
+          manufactureDate,
           expiryDate,
           currentLocation,
-          temperature,
-          price
+          status
         );
         console.log("*** Transaction committed successfully");
         res.status(200).json({
