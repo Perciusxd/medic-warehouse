@@ -1,16 +1,44 @@
 "use client";
 import BorrowDashboard from "./borrow/page";
 import ReturnDashboard from "./return/page";
+import StatusDashboard from "./status/page";
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from "../../components/ui/button";
 
 export default function Dashboard() {
-    const [medicines, setMedicines] = useState<Array<{ ID: string; Name: string; BatchNumber: string; CurrentLocation: string; ExpiryDate: string; Price: number; Temperature: string; Owner?: string; Manufacturer?: string; }>>([]);
+    const router = useRouter();
+    const [medicines, setMedicines] = useState<Array<{ ID: string; Name: string; MedicineName: string; PostingDate: string; PostingHospital: string; Quantity: string; ExpiryDate: string; Unit: string; Temperature?: string; Manufacturer?: string; }>>([]);
     const [selectedTab, setSelectedTab] = useState('borrow');
+    const [totalBorrow, setTotalBorrow] = useState(0);
+
+    const handleStatusPageClick = () => {
+        // Handle the click event for the "Status Page" button
+        router.push('/status');
+    }
 
     useEffect(() => {
         fetch("api/queryAll")
             .then((response) => response.json())
-            .then((data) => {setMedicines(data)})
+            .then((data) => {
+                // setMedicines only when data.PostingHospital is equal to Hospital A
+                const filteredMedicines = data.filter(medicine => medicine.PostingHospital != "Hospital A");
+                setMedicines(filteredMedicines);
+                // Calculate total borrows for Hospital A only
+                const borrowCount = data.reduce((total, medicine) => {
+                    console.log(total, medicine);
+                    if (!medicine.BorrowRecords) return total;
+
+                    // Count only records where BorrowingHospital is "Hospital A"
+                    const hospitalABorrows = medicine.BorrowRecords.filter(
+                        record => record.BorrowingHospital === "Hospital A"
+                    ).length;
+
+                    return total + hospitalABorrows;
+                }, 0);
+
+                setTotalBorrow(borrowCount);
+            })
             .catch((error) => console.error("Error fetching data:", error));
     }, []);
 
@@ -24,7 +52,7 @@ export default function Dashboard() {
                 </div>
                 <div className="bg-white p-4 shadow rounded h-24 flex items-center justify-between">
                     <div className="text-lg font-semibold text-gray-700">Borrow</div>
-                    <div className="text-2xl text-blue-500 font-bold">5</div>
+                    <div className="text-2xl text-blue-500 font-bold">{totalBorrow}</div>
                 </div>
                 <div className="bg-white p-4 shadow rounded h-24 flex items-center justify-between">
                     <div className="text-lg font-semibold text-gray-700">Sending</div>
@@ -37,21 +65,29 @@ export default function Dashboard() {
             </div>
             <div className="mb-4">
                 <div className="flex">
-                    <button 
+                    <button
                         className={`px-4 py-2 ${selectedTab === 'borrow' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-blue-500'} focus:outline-none`}
                         onClick={() => setSelectedTab('borrow')}
                     >
                         Borrow
                     </button>
-                    <button 
+                    <button
                         className={`px-4 py-2 ${selectedTab === 'return' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-blue-500'} focus:outline-none`}
                         onClick={() => setSelectedTab('return')}
                     >
                         Return
                     </button>
+                    <button
+                        className={`px-4 py-2 ${selectedTab === 'status' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-blue-500'} focus:outline-none`}
+                        onClick={() => setSelectedTab('status')}
+                    >
+                        Status
+                    </button>
                 </div>
             </div>
-            {selectedTab === 'borrow' ? <BorrowDashboard /> : <ReturnDashboard />}
+            {selectedTab === 'borrow' && <BorrowDashboard />}
+            {selectedTab === 'return' && <ReturnDashboard />}
+            {selectedTab === 'status' && <StatusDashboard />}
             {/* <div>{medicines ? (
                 <div className="space-y-4">
                     {medicines.map((medicine) => (

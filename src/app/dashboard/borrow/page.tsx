@@ -1,5 +1,6 @@
 "use client"
 import * as React from "react"
+import { useState, useEffect } from 'react';
 
 import { Button } from "@/components/ui/button"
 import {
@@ -10,69 +11,21 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MoveLeft, MoveRight, Plus, HandCoins, Ban, CalendarCheck2, X, Copy } from 'lucide-react';
-import { use, useEffect, useState } from "react";
 import { PopoverClose } from "@radix-ui/react-popover";
-import { Dialog } from "@radix-ui/react-dialog";
-import { DialogHeader, DialogFooter, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Form, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
-
-const mockData = [
-    {
-        date: '2023-10-01',
-        hospitalName: 'City Hospital',
-        medicineName: 'Aspirin',
-        medicineSize: '500mg',
-        medicineType: 'Tablet',
-        quantity: 100
-    },
-    {
-        date: '2023-10-02',
-        hospitalName: 'County Hospital',
-        medicineName: 'Ibuprofen',
-        medicineSize: '200mg',
-        medicineType: 'Capsule',
-        quantity: 200
-    },
-    {
-        date: '2023-10-03',
-        hospitalName: 'General Hospital',
-        medicineName: 'Paracetamol',
-        medicineSize: '650mg',
-        medicineType: 'Tablet',
-        quantity: 150
-    },
-    {
-        date: '2023-10-04',
-        hospitalName: 'Community Hospital',
-        medicineName: 'Amoxicillin',
-        medicineSize: '250mg',
-        medicineType: 'Capsule',
-        quantity: 300
-    },
-    {
-        date: '2023-10-05',
-        hospitalName: 'Regional Hospital',
-        medicineName: 'Ciprofloxacin',
-        medicineSize: '500mg',
-        medicineType: 'Tablet',
-        quantity: 120
-    }
-];
-
-    // postingDate: date,
-    // postingHospital: string,
-    // medicineName: string,
-    // quantity: number,
-    // unit: number,
-    // batchNumber: string,
-    // manufacturer: string,
-    // manufactureDate: date,
-    // expiryDate: date,
-    // currentLocation: string,
-    // status: string
+import { toast } from "sonner"
 
 const formSchema = z.object({
     postingDate: z.string(),
@@ -88,9 +41,28 @@ const formSchema = z.object({
     status: z.string().min(1, "Status is required")
 })
 
-function OpenModal({ onSuccess }: { onSuccess: () => void }) {
+function LoadingSpinner(props) {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={props.width || "24"}
+            height={props.height || "24"}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="animate-spin text-gray-500"
+        >
+            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+        </svg>
+    )
+}
+
+function OpenModal({ onSuccess }) {
     const [open, setOpen] = useState(false);
-    const form = useForm<z.infer<typeof formSchema>>({
+    const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
             postingDate: new Date().toISOString().split('T')[0],
@@ -106,13 +78,13 @@ function OpenModal({ onSuccess }: { onSuccess: () => void }) {
             status: "Pending"
         },
     })
-    
-    function onSubmit(values: z.infer<typeof formSchema>) {
+
+    function onSubmit(values) {
         const transformedValues = {
             ...values,
             quantity: values.quantity.toString()
         };
-        
+
         fetch("/api/createMed", {
             method: "POST",
             headers: {
@@ -120,20 +92,22 @@ function OpenModal({ onSuccess }: { onSuccess: () => void }) {
             },
             body: JSON.stringify(transformedValues)
         })
-        .then((response) => {
-            if (response.ok) {
-                setOpen(false);
-                form.reset();
-                onSuccess();
-            }
-            return response.json();
-        })
-        .then((data) => {
-            console.log(data)
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
+            .then((response) => {
+                if (response.ok) {
+                    setOpen(false);
+                    form.reset();
+                    onSuccess();
+                    toast("Medicine added successfully");
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log(data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                toast.error("Failed to add medicine");
+            });
     }
 
     return (
@@ -285,6 +259,11 @@ function OpenModal({ onSuccess }: { onSuccess: () => void }) {
                         )}
                     </div>
 
+                    <div className="space-y-2">
+                        <Label htmlFor="additionalFile">Additional Details</Label>
+                        <Input id="additionalFile" type="file" />
+                    </div>
+
                     <DialogFooter>
                         <Button type="submit">Save</Button>
                     </DialogFooter>
@@ -294,7 +273,50 @@ function OpenModal({ onSuccess }: { onSuccess: () => void }) {
     );
 }
 
-function EditPopover() {
+function EditPopover(props) {
+    const currentDate = new Date();
+    const [requestQty, setRequestQty] = useState(props.quantity);
+    const [loading, setLoading] = useState(false);
+
+    const handleQtyChange = (e) => {
+        const value = e.target.value;
+        setRequestQty(value);
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            const response = await fetch("/api/borrowMed", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    medicineID: props.medicineID,
+                    borrowHospital: props.hospitalName,
+                    borrowQty: requestQty,
+                }),
+            });
+
+            if (response.ok) {
+                toast("ยืนยันการขอยืมยาเรียบร้อยแล้ว");
+                if (props.onClose) {
+                    props.onClose(e);
+                }
+            } else {
+                console.log("Response not ok:", response);
+                toast.error("เกิดข้อผิดพลาดในการขอยืมยา");
+            }
+            props.fetchData();
+        } catch (error) {
+            console.error("Error:", error);
+            toast.error("เกิดข้อผิดพลาดในการขอยืมยา");
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return (
         <PopoverContent className="w-100">
             <div className="grid gap-4">
@@ -309,7 +331,7 @@ function EditPopover() {
                         <Label className="font-light">วันที่ยืม</Label>
                         <Input
                             id="width"
-                            defaultValue="2023-10-01"
+                            defaultValue={new Date(Number(currentDate)).toLocaleString()}
                             className="col-span-2 h-8"
                             disabled
                         />
@@ -318,8 +340,8 @@ function EditPopover() {
                         <Label className="font-light">โรงพยาบาลที่ขอยืม</Label>
                         <Input
                             id="maxWidth"
-                            defaultValue="Songkhla Hospital"
-                            className="c</div>ol-span-2 h-8"
+                            defaultValue={props.hospitalName}
+                            className="col-span-2 h-8"
                             disabled
                         />
                     </div>
@@ -336,7 +358,7 @@ function EditPopover() {
                             <Label className="font-light">จำนวนที่ยืมได้</Label>
                             <Input
                                 id="maxWidth"
-                                defaultValue="100"
+                                defaultValue={props.quantity}
                                 className="col-span-2 h-8"
                                 disabled
                             />
@@ -345,34 +367,36 @@ function EditPopover() {
                             <Label className="font-light">จำนวนที่ขอยืม</Label>
                             <Input
                                 id="maxWidth"
-                                defaultValue="80"
+                                defaultValue={props.quantity}
+                                value={requestQty}
+                                onChange={handleQtyChange}
                                 className="col-span-2 h-8"
                             />
                         </div>
                     </div>
-                    <PopoverClose>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                                <Button className="bg-green-800 cursor-pointer"><CalendarCheck2 />ยืนยัน</Button>
-                                <Button variant={"destructive"} className="cursor-pointer"><X />ยกเลิก</Button>
-                        </div>
-                    </PopoverClose>
-
+                    <div className="grid grid-cols-4 items-center gap-4 mt-4">
+                        {loading ? (
+                            <LoadingSpinner width="24" height="24" />
+                        ) : (
+                            <Button className="bg-green-800 col-start-2" onClick={handleSubmit}>
+                                <CalendarCheck2 />ยืนยัน
+                            </Button>
+                        )}
+                        <Button variant="destructive" onClick={props.onClose}>
+                            <X />ยกเลิก
+                        </Button>
+                    </div>
                 </div>
             </div>
         </PopoverContent>
     );
 }
 
-function DeleteConfirmationDialog({ 
-    medicineName, 
+function DeleteConfirmationDialog({
+    medicineName,
     medicineID,
-    onConfirm, 
-    onCancel 
-}: { 
-    medicineName: string; 
-    medicineID: string;
-    onConfirm: () => void; 
-    onCancel: () => void;
+    onConfirm,
+    onCancel
 }) {
     return (
         <DialogContent className="sm:max-w-[425px]">
@@ -391,60 +415,62 @@ function DeleteConfirmationDialog({
 }
 
 export default function BorrowDashboard() {
-    const [queryAll, setQueryAll] = useState<Array<{ BatchNumber: string;
-        CurrentLocation: string;
-        ExpiryDate: string;
-        ID: string;
-        ManufactureDate: string;
-        Manufacturer: string;
-        MedicineName: string;
-        Price: number;
-        Temperature: string;
-    }>>([]);
+    const [openPopoverIndex, setOpenPopoverIndex] = useState(null);
+    const [medicines, setMedicines] = useState([]);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [selectedMedicine, setSelectedMedicine] = useState<{ id: string; name: string } | null>(null);
+    const [selectedMedicine, setSelectedMedicine] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     const fetchData = () => {
+        setIsLoading(true);
         fetch("api/queryAll")
             .then((response) => response.json())
-            .then((data) => {setQueryAll(data)})
-            .catch((error) => console.error("Error fetching data:", error));
+            .then((data) => {
+                setMedicines(data);
+                setIsLoading(false);
+            })
+            .catch((error) => {
+                console.error("Error fetching data:", error);
+                setIsLoading(false);
+            });
     };
 
-    const handleDelete = (id: string, name: string) => {
+    const handleDelete = (id, name) => {
         setSelectedMedicine({ id, name });
         setDeleteDialogOpen(true);
     };
 
     const confirmDelete = () => {
         if (selectedMedicine) {
-            // Ensure ID is a string and properly formatted
             const formattedId = selectedMedicine.id.toString();
-            
+
             fetch(`/api/deleteMed`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     medicineID: formattedId,
-                    medicineName: selectedMedicine.name // Include medicine name for logging
+                    medicineName: selectedMedicine.name
                 })
             })
-            .then(response => {
-                if (response.ok) {
-                    fetchData();
-                } else {
-                    console.error('Failed to delete medicine');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            })
-            .finally(() => {
-                setDeleteDialogOpen(false);
-                setSelectedMedicine(null);
-            });
+                .then(response => {
+                    if (response.ok) {
+                        fetchData();
+                        toast("Medicine deleted successfully");
+                    } else {
+                        console.error('Failed to delete medicine');
+                        toast.error("Failed to delete medicine");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    toast.error("An error occurred while deleting medicine");
+                })
+                .finally(() => {
+                    setDeleteDialogOpen(false);
+                    setSelectedMedicine(null);
+                });
         }
     };
 
@@ -452,57 +478,117 @@ export default function BorrowDashboard() {
         fetchData();
     }, []);
 
+    const formatDate = (dateString) => {
+        if (!dateString) return "";
+
+        try {
+            // Try to handle various date formats
+            if (isNaN(Number(dateString))) {
+                return new Date(dateString).toLocaleDateString();
+            } else {
+                return new Date(Number(dateString)).toLocaleDateString();
+            }
+        } catch (e) {
+            console.error("Error formatting date:", e);
+            return dateString;
+        }
+    };
+
     return (
         <div>
             <OpenModal onSuccess={fetchData} />
-            <div className="bg-white p-4 shadow rounded">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">BatchNumber</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CurrentLocation</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ExpiryDate</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medicine Name</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ManufactureDate</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Manufacturer</th>
-                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {queryAll.map((data, index) => (
-                            <tr key={index}>
-                                <td className="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{new Date(Date.now()).toLocaleDateString()}</td>
-                                <td className="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis max-w-3">{data.BatchNumber}</td>
-                                <td className="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis max-w-3">{data.CurrentLocation}</td>
-                                <td className="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{data.ExpiryDate}</td>
-                                <td className="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis max-w-3">{data.MedicineName}</td>
-                                <td className="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis max-w-3">{data.ManufactureDate}</td>
-                                <td className="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis max-w-3">{data.Manufacturer}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-center">
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button variant="outline" className="mr-2 cursor-pointer">
-                                                <HandCoins></HandCoins>
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <EditPopover />
-                                    </Popover>
-                                    
-                                    <Button variant="destructive" onClick={() => handleDelete(data.ID, data.MedicineName)}>
-                                        <Ban></Ban>
-                                    </Button>
-                                </td>
+            <div className="bg-white shadow rounded">
+                {isLoading ? (
+                    <div className="p-8 flex flex-col items-center justify-center">
+                        <LoadingSpinner width="48" height="48" />
+                        <p className="mt-4 text-gray-500">Loading medicines...</p>
+                    </div>
+                ) : medicines.length > 0 ? (
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hospital</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medicine Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch Number</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiry Date</th>
+                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-                <div className="flex justify-between items-center mt-4">
-                    <Button variant={"outline"} className="cursor-pointer">
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {medicines
+                                .filter(data => data.Quantity && Number(data.Quantity) > 0)
+                                .map((data, index) => (
+                                    <tr key={index}>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {formatDate(data.PostingDate || data.ExpiryDate)}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis max-w-3">
+                                            {data.PostingHospital || data.CurrentLocation}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis max-w-3">
+                                            {data.MedicineName}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis max-w-3">
+                                            {data.BatchNumber}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {data.Quantity} {data.Unit}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {formatDate(data.ExpiryDate)}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                                            <Popover
+                                                open={openPopoverIndex === index}
+                                                onOpenChange={(open) => setOpenPopoverIndex(open ? index : null)}
+                                            >
+                                                <PopoverTrigger asChild>
+                                                    <Button variant="outline" className="mr-2 cursor-pointer">
+                                                        <HandCoins />ขอยืม
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <EditPopover
+                                                    hospitalName={data.PostingHospital || data.CurrentLocation}
+                                                    quantity={data.Quantity}
+                                                    medicineID={data.ID}
+                                                    fetchData={fetchData}
+                                                    toast={toast}
+                                                    onClose={() => setOpenPopoverIndex(null)}
+                                                />
+                                            </Popover>
+
+                                            <Button
+                                                variant="destructive"
+                                                onClick={() => handleDelete(data.ID, data.MedicineName)}
+                                                className="cursor-pointer"
+                                            >
+                                                <Ban />ลบ
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                ))}
+                        </tbody>
+                    </table>
+                ) : (
+                    <div className="p-8 text-center">
+                        <p className="text-gray-500">No medicines found</p>
+                        <Button
+                            className="mt-4"
+                            onClick={fetchData}
+                        >
+                            Refresh
+                        </Button>
+                    </div>
+                )}
+
+                <div className="flex justify-between items-center p-4">
+                    <Button variant="outline" className="cursor-pointer">
                         <MoveLeft />Previous
                     </Button>
                     <span className="text-gray-700">Page 1 of 10</span>
-                    <Button variant={"outline"} className="cursor-pointer">
+                    <Button variant="outline" className="cursor-pointer">
                         Next<MoveRight />
                     </Button>
                 </div>
@@ -520,5 +606,5 @@ export default function BorrowDashboard() {
                 />
             </Dialog>
         </div>
-    )
+    );
 }
