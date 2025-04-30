@@ -19,17 +19,17 @@ export default async function handler(
 
     // New data
     // const {
-      // postingDate,
-      // postingHospital,
-      // medicineName,
-      // quantity,
-      // unit,
-      // batchNumber,
-      // manufacturer,
-      // manufactureDate,
-      // expiryDate,
-      // currentLocation,
-      // status
+    // postingDate,
+    // postingHospital,
+    // medicineName,
+    // quantity,
+    // unit,
+    // batchNumber,
+    // manufacturer,
+    // manufactureDate,
+    // expiryDate,
+    // currentLocation,
+    // status
     // } = req.body;
 
     const {
@@ -43,30 +43,30 @@ export default async function handler(
       manufactureDate,
       expiryDate,
       currentLocation,
-      status
+      status,
     } = req.body;
     const contract = await initializeFabric();
     try {
-        await contract.submitTransaction(
-          "CreateMedicine",
-          assetId,
-          postingDate,
-          postingHospital,
-          medicineName,
-          quantity,
-          unit,
-          batchNumber,
-          manufacturer,
-          manufactureDate,
-          expiryDate,
-          currentLocation,
-          status
-        );
-        console.log("*** Transaction committed successfully");
-        res.status(200).json({
-          message: "Transaction committed successfully",
-          assetId: assetId,
-        });
+      await contract.submitTransaction(
+        "CreateMedicine",
+        assetId,
+        postingDate,
+        postingHospital,
+        medicineName,
+        quantity,
+        unit,
+        batchNumber,
+        manufacturer,
+        manufactureDate,
+        expiryDate,
+        currentLocation,
+        status
+      );
+      console.log("*** Transaction committed successfully");
+      res.status(200).json({
+        message: "Transaction committed successfully",
+        assetId: assetId,
+      });
     } catch (error) {
       console.error("Error in transaction:", error);
       res.status(500).json({ error: error });
