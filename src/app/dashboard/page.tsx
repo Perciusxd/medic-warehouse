@@ -11,6 +11,7 @@ export default function Dashboard() {
     const [medicines, setMedicines] = useState<Array<{ ID: string; Name: string; MedicineName: string; PostingDate: string; PostingHospital: string; Quantity: string; ExpiryDate: string; Unit: string; Temperature?: string; Manufacturer?: string; }>>([]);
     const [selectedTab, setSelectedTab] = useState('borrow');
     const [totalBorrow, setTotalBorrow] = useState(0);
+    const [loggedInHospital, setLoggedInHospital] = useState('Na Mom Hospital');
 
     const handleStatusPageClick = () => {
         // Handle the click event for the "Status Page" button
@@ -26,7 +27,7 @@ export default function Dashboard() {
                 setMedicines(filteredMedicines);
                 // Calculate total borrows for Hospital A only
                 const borrowCount = data.reduce((total, medicine) => {
-                    console.log(total, medicine);
+                    // console.log(total, medicine);
                     if (!medicine.BorrowRecords) return total;
 
                     // Count only records where BorrowingHospital is "Hospital A"
@@ -44,7 +45,7 @@ export default function Dashboard() {
 
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-4xl font-black mb-4 mt-8">Welcome back, <span className="font-extralight font-mono">Songkhla Hospital</span></h1>
+            <h1 className="text-4xl font-black mb-4 mt-8">Welcome back, <span className="font-extralight font-mono">{loggedInHospital}</span></h1>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <div className="bg-white p-4 shadow rounded h-24 flex items-center justify-between">
                     <div className="text-lg font-semibold text-gray-700">Offer</div>
@@ -69,13 +70,13 @@ export default function Dashboard() {
                         className={`px-4 py-2 ${selectedTab === 'borrow' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-blue-500'} focus:outline-none`}
                         onClick={() => setSelectedTab('borrow')}
                     >
-                        Borrow
+                        เวชภัณฑ์ยาที่ขาดแคลน | Borrow
                     </button>
                     <button
                         className={`px-4 py-2 ${selectedTab === 'return' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-blue-500'} focus:outline-none`}
                         onClick={() => setSelectedTab('return')}
                     >
-                        Return
+                        เวชภัณฑ์ยาที่ต้องการแบ่งปัน | Share
                     </button>
                     <button
                         className={`px-4 py-2 ${selectedTab === 'status' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-blue-500'} focus:outline-none`}
@@ -85,7 +86,7 @@ export default function Dashboard() {
                     </button>
                 </div>
             </div>
-            {selectedTab === 'borrow' && <BorrowDashboard />}
+            {selectedTab === 'borrow' && <BorrowDashboard loggedInHospital={loggedInHospital} />}
             {selectedTab === 'return' && <ReturnDashboard />}
             {selectedTab === 'status' && <StatusDashboard />}
             {/* <div>{medicines ? (
