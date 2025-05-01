@@ -14,12 +14,22 @@ export const fetchAllMedicineRequests = async (loggedInHospital: string) => {
         // Filter only the requests that are pending and belong to the logged-in hospital
         const data = await response.json();
         const requestIdToLoggedInHospital = data
-            .filter((item: any) => item.respondingHospitalNameEN === loggedInHospital)
-            .map((item: any) => item.requestId);
-
-        return data.filter((item: any) =>
-            requestIdToLoggedInHospital.includes(item.id)
-        );
+            .filter((item: any) => item.respondingHospitalNameEN === loggedInHospital && item.status === "pending")
+            .map((item: any) => ({
+                responseId: item.id,
+                requestId: item.requestId,
+            }));
+        const requestIdSet = new Set(requestIdToLoggedInHospital.map((item: any) => item.requestId));
+        const requestIdToResponseIdMap = new Map(
+            requestIdToLoggedInHospital.map((item: any) => [item.requestId, item.responseId])
+        )
+        const filteredRequest = data
+            .filter((item: any) => requestIdSet.has(item.id))
+            .map((item: any) => ({
+                ...item,
+                requestId: requestIdToResponseIdMap.get(item.id)
+            }))
+        return filteredRequest;
     } catch (error) {
         console.error("Error fetching medicine requests:", error);
         throw error;
@@ -108,26 +118,5 @@ export const deleteMedicine = async (medicineID: string, medicineName: string) =
     } catch (error) {
         console.error('Error deleting medicine:', error);
         throw error;
-    }
-};
-
-/**
- * Helper function to format dates consistently
- * @param {string|number} dateString - The date to format
- * @returns {string} - Formatted date string
- */
-export const formatDate = (dateString: string) => {
-    if (!dateString) return "";
-
-    try {
-        // Try to handle various date formats
-        if (isNaN(Number(dateString))) {
-            return new Date(dateString).toLocaleDateString();
-        } else {
-            return new Date(Number(dateString)).toLocaleDateString();
-        }
-    } catch (e) {
-        console.error("Error formatting date:", e);
-        return dateString;
     }
 };

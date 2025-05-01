@@ -1,37 +1,49 @@
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { z } from "zod"
-import { format } from "date-fns"
+import { format, sub } from "date-fns"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect, useRef, useState } from "react"
+
+import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
-import { Calendar1Icon } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
+
+import { Calendar1Icon, ShieldAlert } from "lucide-react"
+
+import RequestDetails from "./request-details"
 
 const ResponseSchema = z.object({
-    status: z.string(),
-    updatedAt: z.string(),
     offerMedicine: z.object({
         name: z.string(),
-        trademark: z.string(),
         quantity: z.number(),
-        pricePerUnit: z.number(),
+        trademark: z.string(),
+        pricePerUnit: z.string(),
         unit: z.string(),
         batchNumber: z.string(),
         manufacturer: z.string(),
-        manufactureDate: z.string(),
-        expiryDate: z.date(),
-        imageRef: z.string(),
-        returnTerm: z.enum(["exactType", "subType"])
+        // manufactureDate: z.string(),
+        // expiryDate: z.date(),
+        // imageRef: z.string(),
+        returnTerm: z.enum(["exactType", "subType"]),
+        // returnConditions: z.object({
+        //     exactType: z.boolean(),
+        //     subType: z.boolean(),
+        //     otherType: z.boolean(),
+        //     supportType: z.boolean(),
+        // })
     })
 })
 
 export default function CreateResponseDialog({ requestData, openDialog, onOpenChange }) {
     const [open, setOpen] = useState(false)
+    const [loading, setLoading] = useState(false)
     const {
         register,
         watch,
@@ -39,12 +51,11 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
         setValue,
         getValues,
         resetField,
+        control,
         formState: { errors },
     } = useForm<z.infer<typeof ResponseSchema>>({
         resolver: zodResolver(ResponseSchema),
         defaultValues: {
-            status: "", // Added missing default value for status field
-            updatedAt: Date.now().toString(),
             offerMedicine: {
                 name: requestData.requestMedicine.name,
                 quantity: requestData.requestMedicine.quantity,
@@ -53,50 +64,89 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
                 unit: requestData.requestMedicine.unit,
                 batchNumber: requestData.requestMedicine.batchNumber,
                 manufacturer: requestData.requestMedicine.manufacturer,
-                manufactureDate: requestData.requestMedicine.manufactureDate,
-                expiryDate: requestData.requestMedicine.expiryDate,
-                imageRef: requestData.requestMedicine.imageRef,
-                returnTerm: "exactType"
+                // manufactureDate: requestData.requestMedicine.manufactureDate,
+                // expiryDate: requestData.requestMedicine.expiryDate,
+                // imageRef: requestData.requestMedicine.imageRef,
+                returnTerm: "exactType",
+                // returnConditions: {
+                //     exactType: false,
+                //     subType: false,
+                //     otherType: false,
+                //     supportType: false,
+                // }
             }
         }
     })
     const returnTerm = watch("offerMedicine.returnTerm")
     const offerMedicineRef = useRef(requestData.requestMedicine.name);
     const [subTypeName, setSubTypeName] = useState(requestData.requestMedicine.name);
-
-    // useEffect(() => {
-    //     if (returnTerm === "exactType") {
-    //         setValue("offerMedicine.name", offerMedicineRef.current);
-    //     } else if (returnTerm === "subType") {
-    //         if (getValues("offerMedicine.name") === offerMedicineRef.current) {
-    //             resetField("offerMedicine.name");
-    //         }
-    //     }
-    // }, [returnTerm, setValue, getValues, resetField]);
+    const subTypeFields = useRef({
+        name: requestData.requestMedicine.name,
+        trademark: requestData.requestMedicine.trademark,
+        quantity: requestData.requestMedicine.quantity,
+        pricePerUnit: requestData.requestMedicine.pricePerUnit,
+        unit: requestData.requestMedicine.unit,
+        batchNumber: requestData.requestMedicine.batchNumber,
+        manufacturer: requestData.requestMedicine.manufacturer,
+        // manufactureDate: requestData.requestMedicine.manufactureDate,
+        // expiryDate: requestData.requestMedicine.expiryDate,
+    })
 
     useEffect(() => {
-        const currentName = getValues("offerMedicine.name");
+        const currentValues = getValues("offerMedicine");
         if (returnTerm === "exactType") {
-            if (currentName !== offerMedicineRef.current) {
-                setSubTypeName(currentName);
+            // save the current values to ref
+            subTypeFields.current = {
+                name: currentValues.name,
+                trademark: currentValues.trademark,
+                quantity: currentValues.quantity,
+                pricePerUnit: currentValues.pricePerUnit,
+                unit: currentValues.unit,
+                batchNumber: currentValues.batchNumber,
+                manufacturer: currentValues.manufacturer,
+                // manufactureDate: currentValues.manufactureDate,
+                // expiryDate: currentValues.expiryDate,
             }
-            setValue("offerMedicine.name", offerMedicineRef.current);
+            // set the values to the default values
+            const r = requestData.requestMedicine;
+            setValue("offerMedicine.name", r.name);
+            setValue("offerMedicine.trademark", r.trademark);
+            setValue("offerMedicine.quantity", r.quantity);
+            setValue("offerMedicine.pricePerUnit", r.pricePerUnit);
+            setValue("offerMedicine.unit", r.unit);
+            setValue("offerMedicine.batchNumber", r.batchNumber);
+            setValue("offerMedicine.manufacturer", r.manufacturer);
+            // setValue("offerMedicine.manufactureDate", r.manufactureDate);
+            // setValue("offerMedicine.expiryDate", r.expiryDate);
         } else if (returnTerm === "subType") {
-            if (currentName === offerMedicineRef.current) {
-                setValue("offerMedicine.name", subTypeName);
-            }
+            const r = subTypeFields.current;
+            setValue("offerMedicine.name", r.name);
+            setValue("offerMedicine.trademark", r.trademark);
+            setValue("offerMedicine.quantity", r.quantity);
+            // setValue("offerMedicine.pricePerUnit", r.pricePerUnit);
+            setValue("offerMedicine.unit", r.unit);
+            setValue("offerMedicine.batchNumber", r.batchNumber);
+            setValue("offerMedicine.manufacturer", r.manufacturer);
+            // setValue("offerMedicine.manufactureDate", r.manufactureDate);
+            // setValue("offerMedicine.expiryDate", r.expiryDate);
         }
-    }, [returnTerm, setValue, getValues, subTypeName]);
+    }, [returnTerm, setValue, getValues, requestData]);
 
     const onSubmit = async (data: z.infer<typeof ResponseSchema>) => {
         console.log("datasdf", data);
+        const responseBody = {
+            ...data,
+            responseId: requestData.requestId, // ! need to change to responseId
+        }
+        console.log("responseBody", responseBody);
+        setLoading(true)
         try {
-            const response = await fetch("/api/submit", {
+            const response = await fetch("/api/updateRequest", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(data),
+                body: JSON.stringify(responseBody),
             })
 
             if (!response.ok) {
@@ -105,69 +155,220 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
 
             const result = await response.json()
             console.log("Success:", result)
-            alert("Form submitted successfully!")
+            setLoading(false)
+            onOpenChange(false)
         } catch (error) {
             console.error("Error submitting form:", error)
-            alert("Submission failed.")
+            setLoading(false)
         }
     }
 
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
-            <DialogContent>
+            <DialogContent className="max-w-[1200px]">
+                <DialogTitle>เวชภัณฑ์ยาที่ขาดแคลน</DialogTitle>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    <div className="flex items-center space-x-5">
-                        <Label>
-                            <input type="radio" value="exactType" {...register("offerMedicine.returnTerm")} />
-                            Exact Type
-                        </Label>
-                        <Label>
-                            <input type="radio" value="subType" {...register("offerMedicine.returnTerm")} />
-                            Subsidiary Type
-                        </Label>
+                    <div className="grid grid-cols-2 gap-4">
+                        <RequestDetails requestData={requestData} />
+                        <div className="ml-15">
+                            <Badge
+                                variant={"outline"}
+                                className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3 mb-4">
+                                {requestData.urgent ?
+                                    <ShieldAlert className="text-red-700" /> :
+                                    "Normal"
+                                }
+                                <div className="text-sm">
+                                    {requestData.urgent ? "Urgent" : "Normal"}
+                                </div>
+                            </Badge>
+                            <div className="flex items-center space-x-4">
+                                <Label>
+                                    <input type="radio" value="exactType" {...register("offerMedicine.returnTerm")} />
+                                    ให้ยืมรายการที่ต้องการ
+                                </Label>
+                                <Label>
+                                    <input type="radio" value="subType" {...register("offerMedicine.returnTerm")} />
+                                    ให้ยืมรายการทดแทน
+                                </Label>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 mt-6">
+                                <Label className="flex flex-col items-start">
+                                    Name
+                                    <Input
+                                        type="text"
+                                        {...register("offerMedicine.name")}
+                                        disabled={returnTerm === "exactType"}
+                                        className="border p-1"
+                                    />
+                                </Label>
+                                {/* <Label className="flex flex-col items-start">
+                                    Date of expiry
+                                    <Popover open={open} onOpenChange={setOpen}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant={"outline"}
+                                                className="w-full justify-start text-left font-normal"
+                                                disabled={returnTerm === "exactType"}>
+                                                {getValues("offerMedicine.expiryDate") ? format(new Date(getValues("offerMedicine.expiryDate")), "PPP") : (<span>Pick a date</span>)}
+                                                <Calendar1Icon className="ml-auto h-4 w-4 opacity-50"></Calendar1Icon>
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0">
+                                            <Calendar
+                                                mode="single"
+                                                selected={getValues("offerMedicine.expiryDate") ? new Date(getValues("offerMedicine.expiryDate")) : undefined}
+                                                onSelect={(date) => {
+                                                    console.log(date);
+                                                    if (date) {
+                                                        setValue("offerMedicine.expiryDate", date.toString());
+                                                        setOpen(false);
+                                                    }
+                                                }}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </Label> */}
+                                <Label className="flex flex-col items-start font-bold">
+                                    Quantity
+                                    <Input
+                                        type="number"
+                                        {...register("offerMedicine.quantity")}
+                                        disabled={returnTerm === "exactType"}
+                                        className="border p-1 font-light"
+                                    />
+                                </Label>
+                                <Label className="flex flex-col items-start">
+                                    Trademark
+                                    <Input
+                                        type="text"
+                                        {...register("offerMedicine.trademark")}
+                                        disabled={returnTerm === "exactType"}
+                                        className="border p-1"
+                                    />
+                                </Label>
+                                <Label className="flex flex-col items-start">
+                                    Price per unit
+                                    <Input
+                                        type="text"
+                                        {...register("offerMedicine.pricePerUnit")}
+                                        disabled={returnTerm === "exactType"}
+                                        className="border p-1"
+                                    />
+                                </Label>
+                                <Label className="flex flex-col items-start">
+                                    Unit
+                                    <Input
+                                        type="text"
+                                        {...register("offerMedicine.unit")}
+                                        disabled={returnTerm === "exactType"}
+                                        className="border p-1"
+                                    />
+                                </Label>
+                                <Label className="flex flex-col items-start">
+                                    Batch number
+                                    <Input
+                                        type="text"
+                                        {...register("offerMedicine.batchNumber")}
+                                        disabled={returnTerm === "exactType"}
+                                        className="border p-1"
+                                    />
+                                </Label>
+                                <Label className="flex flex-col items-start">
+                                    Manufacturer
+                                    <Input
+                                        type="text"
+                                        {...register("offerMedicine.manufacturer")}
+                                        disabled={returnTerm === "exactType"}
+                                        className="border p-1"
+                                    />
+                                </Label>
+
+                                {/* <div className="flex flex-col items-start gap-4">
+                                    <Label>
+                                        เงื่อนไขการคืนที่ยอมรับ
+                                    </Label>
+                                    <div className="items-top flex space-x-2">
+                                        <Controller name="offerMedicine.returnConditions.exactType" control={control} render={({ field }) => (
+
+                                            <Checkbox checked={field.value} onCheckedChange={field.onChange}></Checkbox>
+                                        )}/>
+                                        <div className="grid gap-1.5 leading-none">
+                                            <label
+                                                htmlFor="terms1"
+                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                            >
+                                                รับคืนเฉพาะรายการนี้
+                                            </label>
+                                            <p className="text-sm text-muted-foreground">
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="items-top flex space-x-2">
+                                        <Controller name="offerMedicine.returnConditions.otherType" control={control} render={({ field }) => (
+
+                                            <Checkbox checked={field.value} onCheckedChange={field.onChange}></Checkbox>
+                                        )} />
+                                        <div className="grid gap-1.5 leading-none">
+                                            <label
+                                                htmlFor="terms1"
+                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                            >
+                                                รับคืนเฉพาะรายการนี้
+                                            </label>
+                                            <p className="text-sm text-muted-foreground">
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="items-top flex space-x-2">
+                                        <Controller name="offerMedicine.returnConditions.subType" control={control} render={({ field }) => (
+
+                                            <Checkbox checked={field.value} onCheckedChange={field.onChange}></Checkbox>
+                                        )} />
+                                        <div className="grid gap-1.5 leading-none">
+                                            <label
+                                                htmlFor="terms1"
+                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                            >
+                                                รับคืนเฉพาะรายการนี้
+                                            </label>
+                                            <p className="text-sm text-muted-foreground">
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="items-top flex space-x-2">
+                                        <Controller name="offerMedicine.returnConditions.supportType" control={control} render={({ field }) => (
+
+                                            <Checkbox checked={field.value} onCheckedChange={field.onChange}></Checkbox>
+                                        )} />
+                                        <div className="grid gap-1.5 leading-none">
+                                            <label
+                                                htmlFor="terms1"
+                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                            >
+                                                รับคืนเฉพาะรายการนี้
+                                            </label>
+                                            <p className="text-sm text-muted-foreground">
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div> */}
+                            </div>
+                        </div>
                     </div>
 
-                    <div>
-                        <Label>
-                            Name:
-                            <Input
-                                type="text"
-                                {...register("offerMedicine.name")}
-                                disabled={returnTerm === "exactType"}
-                                className="ml-2 border p-1"
-                            />
-                        </Label>
-                        <Label>
-                            Date of expiry
-                            <Popover open={open} onOpenChange={setOpen}>
-                                <PopoverTrigger asChild>
-                                    <Button variant={"outline"} className="w-[180px] justify-start text-left font-normal">
-                                        {getValues("offerMedicine.expiryDate") ? format(new Date(getValues("offerMedicine.expiryDate")), "PPP") : (<span>Pick a date</span>)}
-                                        <Calendar1Icon className="ml-auto h-4 w-4 opacity-50"></Calendar1Icon>
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0">
-                                    <Calendar
-                                        mode="single"
-                                        selected={getValues("offerMedicine.expiryDate") ? new Date(getValues("offerMedicine.expiryDate")) : undefined}
-                                        onSelect={(date) => {
-                                            console.log(date);
-                                            if (date) {
-                                                setValue("offerMedicine.expiryDate", date.toString());
-                                                setOpen(false);
-                                            }
-                                        }}
-                                        initialFocus
-                                    />
-                                </PopoverContent>
-                            </Popover>
-                        </Label>
-                    </div>
 
                     <DialogFooter>
-                        <Button type="submit">
-                            Submit
+                        <Button type="submit" className="w-[20%]">
+                            {loading ? <LoadingSpinner /> : "Submit"}
                         </Button>
+                        <DialogClose className="w-[20%]">
+                            <Button variant={"destructive"} type="submit" >
+                                Cancel
+                            </Button>
+                        </DialogClose>
 
                     </DialogFooter>
                 </form>

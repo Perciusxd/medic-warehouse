@@ -20,7 +20,6 @@ export function useMedicineRequests(loggedInHospital: string) {
 
         try {
             const data = await fetchAllMedicineRequests(loggedInHospital);
-            console.log("hook fetch data", data);
             setMedicineRequests(data);
             return data;
         } catch (error) {
@@ -33,8 +32,6 @@ export function useMedicineRequests(loggedInHospital: string) {
     useEffect(() => {
         fetchMedicineRequests();
     }, [fetchMedicineRequests]);
-
-    console.log('medicineRequests', medicineRequests);
 
     return {
         medicineRequests,

@@ -5,7 +5,7 @@ export type ResponseAsset = {
   respondingHospitalNameEN: string;
   respondingHospitalNameTH: string;
   respondingHospitalAddress: string;
-  status: string;
+  status: "accepted" | "rejected" | "pending";
   createdAt: string;
   updatedAt: string;
   offeredMedicine: {
