@@ -1,10 +1,14 @@
 "use client"
+import * as React from "react"
 import { Button } from "@/components/ui/button"
 import {
     ColumnDef,
     flexRender,
+    SortingState,
     getCoreRowModel,
     getPaginationRowModel,
+    getSortedRowModel,
+    getFilteredRowModel,
     useReactTable,
 } from "@tanstack/react-table"
 
@@ -19,19 +23,45 @@ import {
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
-    data: TData[]
+    data: TData[],
+    globalFilter?: string
+    setGlobalFilter?: (filter: string) => void
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
+    globalFilter,
+    setGlobalFilter
 }: DataTableProps<TData, TValue>) {
+    const [sorting, setSorting] = React.useState<SortingState>([])
+
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
+        initialState: {
+            pagination: {
+                pageSize: 5,
+            }
+        },
+        getSortedRowModel: getSortedRowModel(),
+        onSortingChange: setSorting,
+        state: {
+            sorting,
+            globalFilter
+        },
+        getFilteredRowModel: getFilteredRowModel(),
     })
+
+    const pageIndex = table.getState().pagination.pageIndex
+    const pageSize = table.getState().pagination.pageSize
+    const totalRows = table.getFilteredRowModel().rows.length
+
+    const startRow = pageIndex * pageSize + 1
+    const endRow = Math.min(startRow + pageSize - 1, totalRows)
+
 
     return (
         <div>
@@ -79,23 +109,29 @@ export function DataTable<TData, TValue>({
                     </TableBody>
                 </Table>
             </div>
-            <div className="flex items-center justify-end space-x-2 py-4">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
-                >
-                    Previous
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
-                >
-                    Next
-                </Button>
+
+            <div className="flex items-center justify-between space-x-2 py-4">
+                <div className="text-sm text-muted-foreground px-2">
+                    Showing {startRow}–{endRow} of {totalRows} row(s)
+                </div>
+                <div className="flex items-center space-x-2 mr-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => table.previousPage()}
+                        disabled={!table.getCanPreviousPage()}
+                    >
+                        Previous
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => table.nextPage()}
+                        disabled={!table.getCanNextPage()}
+                    >
+                        Next
+                    </Button>
+                </div>
             </div>
         </div>
     )

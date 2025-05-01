@@ -272,6 +272,11 @@ export default function CreateRequestDialog({ requestData, openDialog, onOpenCha
             console.log("Success:", result)
             setLoading(false)
             onOpenChange(false)
+            // resetForm()
+            resetField("requestMedicine")
+            resetField("requestTerm")
+            setValue("urgent", false)
+            setValue("selectedHospitals", [])
         } catch (error) {
             console.error("Error submitting form:", error)
             setLoading(false)

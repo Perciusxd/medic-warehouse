@@ -24,13 +24,10 @@ import { columns } from "./columns";
 
 export default function BorrowDashboard(loggedInHospital: string) {
     const { medicineRequests, loading, error, fetchMedicineRequests } = useMedicineRequests(loggedInHospital.loggedInHospital);
-    const [openPopoverIndex, setOpenPopoverIndex] = useState(null);
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [selectedMedicine, setSelectedMedicine] = useState(null);
-    // const [isLoading, setIsLoading] = useState(true);
     const [selectedMed, setSelectedMed] = useState(null);
     const [createRespDialogOpen, setCreateRespDialogOpen] = useState(false);
     const [createRequestDialogOpen, setCreateRequestDialogOpen] = useState(false);
+    const [globalFilter, setGlobalFilter] = useState("");
 
     const handleApproveClick = (med: ResponseAsset) => {
         setSelectedMed(med);
@@ -40,8 +37,8 @@ export default function BorrowDashboard(loggedInHospital: string) {
     return (
         <div>
             <div className="flex items-center justify-between mb-4">
-                <Input value={"test"}/>
-                <Button onClick={() => (setCreateRequestDialogOpen(true))}>Create new request</Button>
+                <Input value={globalFilter} placeholder="Search..."  className="w-[300px]" onChange={(e) => setGlobalFilter(e.target.value)}/>
+                <Button onClick={() => (setCreateRequestDialogOpen(true))}>Create</Button>
                 <CreateRequestDialog 
                     requestData={selectedMed} 
                     openDialog={createRequestDialogOpen} 
@@ -61,7 +58,7 @@ export default function BorrowDashboard(loggedInHospital: string) {
                     </div>
                 ) :
                     <div>
-                        <DataTable columns={columns(handleApproveClick)} data={medicineRequests}/>
+                        <DataTable columns={columns(handleApproveClick)} data={medicineRequests} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
                         {selectedMed && (
                             <CreateResponseDialog 
                                 requestData={selectedMed} 
@@ -71,7 +68,8 @@ export default function BorrowDashboard(loggedInHospital: string) {
                                     if (!open) {
                                         fetchMedicineRequests();
                                     }
-                                }}/>
+                                }}
+                                />
                         )}
                     </div>
                 }

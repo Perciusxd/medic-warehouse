@@ -5,7 +5,6 @@ import { ColumnDef } from "@tanstack/react-table"
 import { formatDate } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
-import { Pen, Pencil, MoreHorizontal, Check, Trash2, Copy } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -14,33 +13,53 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { CreateResponse } from "@/components/dialogs/create-response-dialog"
+import CreateResponse from "@/components/dialogs/create-response-dialog"
+
+import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy } from "lucide-react"
 
 export const columns = (handleApproveClick: (med: ResponseAsset) => void): ColumnDef<ResponseAsset>[] => [
     {
         accessorKey: "id",
-        header: () => <div className="font-black">ID</div>
-    },
-    {
-        accessorKey: "updatedAt",
-        header: "Updated At",
-        cell: ({ row }) => { return <div>{formatDate(row.getValue("updatedAt"))}</div> },
-    },
-    {
-        accessorKey: "status",
-        header: "Status",
-    },
-    {
-        accessorKey: "postingHospitalNameEN",
-        header: "From Hospital",
+        size: 200,
+        header: () => <div className="font-black text-muted-foreground">ID</div>,
+        enableGlobalFilter: false
     },
     {
         accessorKey: "requestMedicine.name",
-        header: "Name",
+        header: ({column}) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Name
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+            )
+        },
+        enableGlobalFilter: true
     },
     {
+        accessorKey: "updatedAt",
+        header: () => <div className="font-black text-muted-foreground">Updated At</div>,
+        cell: ({ row }) => { return <div>{formatDate(row.getValue("updatedAt"))}</div> },
+        enableGlobalFilter: false
+    },
+    {
+        accessorKey: "status",
+        header: () => <div className="font-black text-muted-foreground">Status</div>,
+        enableGlobalFilter: false
+    },
+    {
+        accessorKey: "postingHospitalNameEN",
+        header: () => <div className="font-black text-muted-foreground">From Hospital</div>,
+        enableGlobalFilter: true
+    },
+    
+    {
         accessorKey: "requestMedicine.quantity",
-        header: "Quantity",
+        header: () => <div className="font-black text-muted-foreground">Quantity</div>,
+        size: 100,
         cell: ({ row }) => {
             const med = row.original
             return (
@@ -56,12 +75,14 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
     },
     {
         id: "actions",
+        size: 48,
+        header: () => <div className="font-black text-muted-foreground">Actions</div>,
         cell: ({ row }) => {
             const med = row.original
             return (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
+                        <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer hover:border-2">
                             <span className="sr-only">Open menu</span>
                             <MoreHorizontal className="h-4 w-4" />
                         </Button>
@@ -71,8 +92,8 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
                             onClick={() => handleApproveClick(med)}
                             className="cursor-pointer"
                         ><Check></Check>Approve</DropdownMenuItem>
-                        <DropdownMenuItem><Pencil></Pencil>Edit</DropdownMenuItem>
-                        <DropdownMenuItem><Trash2></Trash2>Delete</DropdownMenuItem>
+                        <DropdownMenuItem><Pencil />Edit</DropdownMenuItem>
+                        <DropdownMenuItem><Trash2 />Delete</DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             onClick={() => navigator.clipboard.writeText(med.id)}
@@ -83,6 +104,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
                     </DropdownMenuContent>
                 </DropdownMenu>
             )
-        }
+        },
+        enableGlobalFilter: false
     }
 ]

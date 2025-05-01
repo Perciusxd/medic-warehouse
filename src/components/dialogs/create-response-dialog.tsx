@@ -363,10 +363,10 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
 
 
                     <DialogFooter>
-                        <Button type="submit" className="w-[20%]">
+                        <Button type="submit">
                             {loading ? <LoadingSpinner /> : "Submit"}
                         </Button>
-                        <DialogClose className="w-[20%]">
+                        <DialogClose>
                             <Button variant={"destructive"} type="submit" >
                                 Cancel
                             </Button>
