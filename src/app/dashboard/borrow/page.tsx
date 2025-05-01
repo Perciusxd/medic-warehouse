@@ -1,18 +1,26 @@
 "use client"
 import * as React from "react"
 import { useState } from 'react';
+import { z } from "zod";
 
+import { useMedicineRequests } from "@/hooks/useMedicineAPI";
+
+// Components
 import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import CreateRequestDialog from "@/components/dialogs/create-request-dialog";
+import CreateResponseDialog from "@/components/dialogs/create-response-dialog";
+import { Input } from "@/components/ui/input"
+
+// Icons
 import { MoveLeft, MoveRight, Ban } from 'lucide-react';
-import { z } from "zod";
-import { useMedicineRequests } from "@/hooks/useMedicineAPI";
-import { RequestAsset } from "@/types/requestMed";
+
+// Types
 import { ResponseAsset } from "@/types/responseMed";
+import { RequestAsset } from "@/types/requestMed";
+
 import { DataTable } from "./data-table";
 import { columns } from "./columns";
-import CreateResponseDialog from "@/components/dialogs/create-response-dialog";
-import DynamicForm from "@/components/dialogs/create-request-dialog";
 
 export default function BorrowDashboard(loggedInHospital: string) {
     const { medicineRequests, loading, error, fetchMedicineRequests } = useMedicineRequests(loggedInHospital.loggedInHospital);
@@ -22,6 +30,7 @@ export default function BorrowDashboard(loggedInHospital: string) {
     // const [isLoading, setIsLoading] = useState(true);
     const [selectedMed, setSelectedMed] = useState(null);
     const [createRespDialogOpen, setCreateRespDialogOpen] = useState(false);
+    const [createRequestDialogOpen, setCreateRequestDialogOpen] = useState(false);
 
     const handleApproveClick = (med: ResponseAsset) => {
         setSelectedMed(med);
@@ -30,7 +39,20 @@ export default function BorrowDashboard(loggedInHospital: string) {
 
     return (
         <div>
-            {/* <OpenModal onSuccess={fetchData} /> */}
+            <div className="flex items-center justify-between mb-4">
+                <Input value={"test"}/>
+                <Button onClick={() => (setCreateRequestDialogOpen(true))}>Create new request</Button>
+                <CreateRequestDialog 
+                    requestData={selectedMed} 
+                    openDialog={createRequestDialogOpen} 
+                    onOpenChange={(open) => {
+                        setCreateRequestDialogOpen(open);
+                        if (!open) {
+                            fetchMedicineRequests();
+                        }
+                    }}/>
+
+            </div>
             <div className="bg-white shadow rounded">
                 {loading ? (
                     <div className="p-8 flex flex-col items-center justify-center">

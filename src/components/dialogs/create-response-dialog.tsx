@@ -20,9 +20,9 @@ import { Calendar1Icon, ShieldAlert } from "lucide-react"
 import RequestDetails from "./request-details"
 
 const ResponseSchema = z.object({
-    offerMedicine: z.object({
+    offeredMedicine: z.object({
         name: z.string(),
-        quantity: z.number(),
+        quantity: z.string(),
         trademark: z.string(),
         pricePerUnit: z.string(),
         unit: z.string(),
@@ -56,7 +56,7 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
     } = useForm<z.infer<typeof ResponseSchema>>({
         resolver: zodResolver(ResponseSchema),
         defaultValues: {
-            offerMedicine: {
+            offeredMedicine: {
                 name: requestData.requestMedicine.name,
                 quantity: requestData.requestMedicine.quantity,
                 trademark: requestData.requestMedicine.trademark,
@@ -77,8 +77,8 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
             }
         }
     })
-    const returnTerm = watch("offerMedicine.returnTerm")
-    const offerMedicineRef = useRef(requestData.requestMedicine.name);
+    const returnTerm = watch("offeredMedicine.returnTerm")
+    const offeredMedicineRef = useRef(requestData.requestMedicine.name);
     const [subTypeName, setSubTypeName] = useState(requestData.requestMedicine.name);
     const subTypeFields = useRef({
         name: requestData.requestMedicine.name,
@@ -93,7 +93,7 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
     })
 
     useEffect(() => {
-        const currentValues = getValues("offerMedicine");
+        const currentValues = getValues("offeredMedicine");
         if (returnTerm === "exactType") {
             // save the current values to ref
             subTypeFields.current = {
@@ -109,26 +109,26 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
             }
             // set the values to the default values
             const r = requestData.requestMedicine;
-            setValue("offerMedicine.name", r.name);
-            setValue("offerMedicine.trademark", r.trademark);
-            setValue("offerMedicine.quantity", r.quantity);
-            setValue("offerMedicine.pricePerUnit", r.pricePerUnit);
-            setValue("offerMedicine.unit", r.unit);
-            setValue("offerMedicine.batchNumber", r.batchNumber);
-            setValue("offerMedicine.manufacturer", r.manufacturer);
-            // setValue("offerMedicine.manufactureDate", r.manufactureDate);
-            // setValue("offerMedicine.expiryDate", r.expiryDate);
+            setValue("offeredMedicine.name", r.name);
+            setValue("offeredMedicine.trademark", r.trademark);
+            setValue("offeredMedicine.quantity", r.quantity);
+            setValue("offeredMedicine.pricePerUnit", r.pricePerUnit);
+            setValue("offeredMedicine.unit", r.unit);
+            setValue("offeredMedicine.batchNumber", r.batchNumber);
+            setValue("offeredMedicine.manufacturer", r.manufacturer);
+            // setValue("offeredMedicine.manufactureDate", r.manufactureDate);
+            // setValue("offeredMedicine.expiryDate", r.expiryDate);
         } else if (returnTerm === "subType") {
             const r = subTypeFields.current;
-            setValue("offerMedicine.name", r.name);
-            setValue("offerMedicine.trademark", r.trademark);
-            setValue("offerMedicine.quantity", r.quantity);
-            // setValue("offerMedicine.pricePerUnit", r.pricePerUnit);
-            setValue("offerMedicine.unit", r.unit);
-            setValue("offerMedicine.batchNumber", r.batchNumber);
-            setValue("offerMedicine.manufacturer", r.manufacturer);
-            // setValue("offerMedicine.manufactureDate", r.manufactureDate);
-            // setValue("offerMedicine.expiryDate", r.expiryDate);
+            setValue("offeredMedicine.name", r.name);
+            setValue("offeredMedicine.trademark", r.trademark);
+            setValue("offeredMedicine.quantity", r.quantity);
+            // setValue("offeredMedicine.pricePerUnit", r.pricePerUnit);
+            setValue("offeredMedicine.unit", r.unit);
+            setValue("offeredMedicine.batchNumber", r.batchNumber);
+            setValue("offeredMedicine.manufacturer", r.manufacturer);
+            // setValue("offeredMedicine.manufactureDate", r.manufactureDate);
+            // setValue("offeredMedicine.expiryDate", r.expiryDate);
         }
     }, [returnTerm, setValue, getValues, requestData]);
 
@@ -167,9 +167,11 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[1200px]">
                 <DialogTitle>เวชภัณฑ์ยาที่ขาดแคลน</DialogTitle>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit, (invalidError) => {
+                    console.error(invalidError)
+                })} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                        <RequestDetails requestData={requestData} />
+                        <RequestDetails requestData={requestData} responseForm={true} />
                         <div className="ml-15">
                             <Badge
                                 variant={"outline"}
@@ -184,11 +186,11 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
                             </Badge>
                             <div className="flex items-center space-x-4">
                                 <Label>
-                                    <input type="radio" value="exactType" {...register("offerMedicine.returnTerm")} />
+                                    <input type="radio" value="exactType" {...register("offeredMedicine.returnTerm")} />
                                     ให้ยืมรายการที่ต้องการ
                                 </Label>
                                 <Label>
-                                    <input type="radio" value="subType" {...register("offerMedicine.returnTerm")} />
+                                    <input type="radio" value="subType" {...register("offeredMedicine.returnTerm")} />
                                     ให้ยืมรายการทดแทน
                                 </Label>
                             </div>
@@ -198,7 +200,7 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
                                     Name
                                     <Input
                                         type="text"
-                                        {...register("offerMedicine.name")}
+                                        {...register("offeredMedicine.name")}
                                         disabled={returnTerm === "exactType"}
                                         className="border p-1"
                                     />
@@ -211,18 +213,18 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
                                                 variant={"outline"}
                                                 className="w-full justify-start text-left font-normal"
                                                 disabled={returnTerm === "exactType"}>
-                                                {getValues("offerMedicine.expiryDate") ? format(new Date(getValues("offerMedicine.expiryDate")), "PPP") : (<span>Pick a date</span>)}
+                                                {getValues("offeredMedicine.expiryDate") ? format(new Date(getValues("offeredMedicine.expiryDate")), "PPP") : (<span>Pick a date</span>)}
                                                 <Calendar1Icon className="ml-auto h-4 w-4 opacity-50"></Calendar1Icon>
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0">
                                             <Calendar
                                                 mode="single"
-                                                selected={getValues("offerMedicine.expiryDate") ? new Date(getValues("offerMedicine.expiryDate")) : undefined}
+                                                selected={getValues("offeredMedicine.expiryDate") ? new Date(getValues("offeredMedicine.expiryDate")) : undefined}
                                                 onSelect={(date) => {
                                                     console.log(date);
                                                     if (date) {
-                                                        setValue("offerMedicine.expiryDate", date.toString());
+                                                        setValue("offeredMedicine.expiryDate", date.toString());
                                                         setOpen(false);
                                                     }
                                                 }}
@@ -235,7 +237,7 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
                                     Quantity
                                     <Input
                                         type="number"
-                                        {...register("offerMedicine.quantity")}
+                                        {...register("offeredMedicine.quantity")}
                                         disabled={returnTerm === "exactType"}
                                         className="border p-1 font-light"
                                     />
@@ -244,7 +246,7 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
                                     Trademark
                                     <Input
                                         type="text"
-                                        {...register("offerMedicine.trademark")}
+                                        {...register("offeredMedicine.trademark")}
                                         disabled={returnTerm === "exactType"}
                                         className="border p-1"
                                     />
@@ -253,7 +255,7 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
                                     Price per unit
                                     <Input
                                         type="text"
-                                        {...register("offerMedicine.pricePerUnit")}
+                                        {...register("offeredMedicine.pricePerUnit")}
                                         disabled={returnTerm === "exactType"}
                                         className="border p-1"
                                     />
@@ -262,7 +264,7 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
                                     Unit
                                     <Input
                                         type="text"
-                                        {...register("offerMedicine.unit")}
+                                        {...register("offeredMedicine.unit")}
                                         disabled={returnTerm === "exactType"}
                                         className="border p-1"
                                     />
@@ -271,7 +273,7 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
                                     Batch number
                                     <Input
                                         type="text"
-                                        {...register("offerMedicine.batchNumber")}
+                                        {...register("offeredMedicine.batchNumber")}
                                         disabled={returnTerm === "exactType"}
                                         className="border p-1"
                                     />
@@ -280,7 +282,7 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
                                     Manufacturer
                                     <Input
                                         type="text"
-                                        {...register("offerMedicine.manufacturer")}
+                                        {...register("offeredMedicine.manufacturer")}
                                         disabled={returnTerm === "exactType"}
                                         className="border p-1"
                                     />
@@ -291,7 +293,7 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
                                         เงื่อนไขการคืนที่ยอมรับ
                                     </Label>
                                     <div className="items-top flex space-x-2">
-                                        <Controller name="offerMedicine.returnConditions.exactType" control={control} render={({ field }) => (
+                                        <Controller name="offeredMedicine.returnConditions.exactType" control={control} render={({ field }) => (
 
                                             <Checkbox checked={field.value} onCheckedChange={field.onChange}></Checkbox>
                                         )}/>
@@ -307,7 +309,7 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
                                         </div>
                                     </div>
                                     <div className="items-top flex space-x-2">
-                                        <Controller name="offerMedicine.returnConditions.otherType" control={control} render={({ field }) => (
+                                        <Controller name="offeredMedicine.returnConditions.otherType" control={control} render={({ field }) => (
 
                                             <Checkbox checked={field.value} onCheckedChange={field.onChange}></Checkbox>
                                         )} />
@@ -323,7 +325,7 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
                                         </div>
                                     </div>
                                     <div className="items-top flex space-x-2">
-                                        <Controller name="offerMedicine.returnConditions.subType" control={control} render={({ field }) => (
+                                        <Controller name="offeredMedicine.returnConditions.subType" control={control} render={({ field }) => (
 
                                             <Checkbox checked={field.value} onCheckedChange={field.onChange}></Checkbox>
                                         )} />
@@ -339,7 +341,7 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
                                         </div>
                                     </div>
                                     <div className="items-top flex space-x-2">
-                                        <Controller name="offerMedicine.returnConditions.supportType" control={control} render={({ field }) => (
+                                        <Controller name="offeredMedicine.returnConditions.supportType" control={control} render={({ field }) => (
 
                                             <Checkbox checked={field.value} onCheckedChange={field.onChange}></Checkbox>
                                         )} />

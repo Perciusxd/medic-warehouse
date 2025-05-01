@@ -5,8 +5,8 @@ import { useState } from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 
-export default function RequestDetails({ requestData }) {
-    const requestDetails = {
+export default function RequestDetails({ requestData, responseForm }) {
+    const requestDetails = requestData ? {
         id: requestData.id,
         postingHospitalId: requestData.postingHospitalId,
         postingHospitalNameEN: requestData.postingHospitalNameEN,
@@ -36,7 +36,38 @@ export default function RequestDetails({ requestData }) {
                 notes: requestData.requestTerm.receiveConditions.notes
             }
         }
-    }
+    } : {
+        id: "",
+        postingHospitalId: "",
+        postingHospitalNameEN: "",
+        postingHospitalNameTH: "",
+        postingHospitalAddress: "",
+        status: "",
+        createdAt: "",
+        updatedAt: "",
+        urgent: false,
+        requestMedicine: {
+            name: "",
+            trademark: "",
+            quantity: "",
+            pricePerUnit: "",
+            unit: "",
+            batchNumber: "",
+            manufacturer: "",
+            manufactureDate: "",
+            imageRef: ""
+        },
+        requestTerm: {
+            expectedReturnDate: "",
+            receiveConditions: {
+                exactType: false,
+                subsidiary: false,
+                other: false,
+                notes: ""
+            }
+        }
+    };
+
 
     const [details, setDetails] = useState([
         { label: "Request ID", value: requestDetails.id },
@@ -65,7 +96,7 @@ export default function RequestDetails({ requestData }) {
                 {Object.entries(requestDetails.requestMedicine).map(([key, value], index) => (
                     <div key={index} className="flex flex-col gap-2">
                         <Label className="font-bold">{key.replace(/([A-Z])/g, ' $1')}: </Label>
-                        <Input type="text" value={value} disabled />
+                        <Input type="text" value={value} disabled={responseForm} />
                         {/* <strong>{key.replace(/([A-Z])/g, ' $1')}: </strong>{value} */}
                     </div>
                 ))}

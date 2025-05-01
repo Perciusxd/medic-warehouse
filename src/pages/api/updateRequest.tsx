@@ -18,13 +18,13 @@ export default async function handler(
         const updatedAt = new Date().toString();
         const {
             responseId,
-            offerMedicine
+            offeredMedicine
         } = req.body;
         const responseAsset = {
             responseId: responseId,
             updatedAt: updatedAt,
             status: status,
-            offerMedicine: offerMedicine
+            offeredMedicine: offeredMedicine
         }
         const contract = await initializeFabric();
         try {
