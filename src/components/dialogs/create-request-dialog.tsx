@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import { Separator } from "@/components/ui/separator"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 import RequestDetails from "./request-details"
 
@@ -353,40 +355,47 @@ export default function CreateRequestDialog({ requestData, openDialog, onOpenCha
                         </div>
                         <div className="">
                             <div className="flex items-center justify-between">
-                                <h1>Hospital Lists</h1>
+                                <h1>โรงพยาบาลที่ต้องการขอยืม</h1>
                             </div>
                             <span className="text-sm text-gray-500 mb-2">
                                 Select the hospitals you want to send the request to.
                             </span>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 my-4">
                                 <Checkbox
                                     id="select-all"
+                                    className="cursor-pointer"
                                     checked={allSelected}
                                     onCheckedChange={toggleAllHospitals} />
                                 <Label htmlFor="select-all">Select All</Label>
                             </div>
-                            <div className="grid grid-cols-4">
-                                {hospitalList.map(hospital => {
-                                    const isChecked = selectedHospitals.includes(hospital.id)
-                                    return (
-                                        <div className="flex items-center gap-2" key={hospital.id}>
-                                            <Checkbox
-                                                id={`hospital-${hospital.id}`}
-                                                checked={isChecked}
-                                                onCheckedChange={() => toggleHospitalSelection(hospital.id)}
-                                            />
-                                            <Label htmlFor={`hospital-${hospital.id}`}>{hospital.nameTH}</Label>
-                                        </div>
-                                    )
-                                })}
-                            </div>
+                            <ScrollArea className="h-45 w-full rounded-md border">
+                                <div className="p-4">
+                                    {hospitalList.map(hospital => {
+                                        const isChecked = selectedHospitals.includes(hospital.id)
+                                        return (
+                                            <div className="" key={hospital.id}>
+                                                <div className="flex items-center gap-2" key={hospital.id}>
+                                                    <Checkbox
+                                                        id={`hospital-${hospital.id}`}
+                                                        className="cursor-pointer"
+                                                        checked={isChecked}
+                                                        onCheckedChange={() => toggleHospitalSelection(hospital.id)}
+                                                    />
+                                                    <Label htmlFor={`hospital-${hospital.id}`} className="font-normal">{hospital.nameTH}</Label>
+                                                </div>
+                                                <Separator className="my-2" />
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </ScrollArea>
                         </div>
                     </div>
 
                     <DialogFooter>
                         <Button type="submit" className="">
-                            {loading 
-                                ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500">Create</span></div> 
+                            {loading
+                                ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500">Create</span></div>
                                 : "Create"}
                         </Button>
                     </DialogFooter>

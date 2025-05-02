@@ -14,21 +14,23 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import CreateResponse from "@/components/dialogs/create-response-dialog"
+import { Badge } from "@/components/ui/badge"
 
-import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy } from "lucide-react"
+import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2Icon, LoaderIcon, ShieldAlertIcon } from "lucide-react"
 
 export const columns = (handleApproveClick: (med: ResponseAsset) => void): ColumnDef<ResponseAsset>[] => [
-    {
-        accessorKey: "id",
-        size: 200,
-        header: () => <div className="font-black text-muted-foreground">ID</div>,
-        enableGlobalFilter: false
-    },
+    // {
+    //     accessorKey: "id",
+    //     size: 200,
+    //     header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ID</div>,
+    //     enableGlobalFilter: false
+    // },
     {
         accessorKey: "requestMedicine.name",
         header: ({column}) => {
             return (
                 <Button
+                    className="font-medium text-muted-foreground text-left cursor-pointer"
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
@@ -41,24 +43,24 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
     },
     {
         accessorKey: "updatedAt",
-        header: () => <div className="font-black text-muted-foreground">Updated At</div>,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Updated At</div>,
         cell: ({ row }) => { return <div>{formatDate(row.getValue("updatedAt"))}</div> },
         enableGlobalFilter: false
     },
     {
         accessorKey: "status",
-        header: () => <div className="font-black text-muted-foreground">Status</div>,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Status</div>,
         enableGlobalFilter: false
     },
     {
         accessorKey: "postingHospitalNameEN",
-        header: () => <div className="font-black text-muted-foreground">From Hospital</div>,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">From Hospital</div>,
         enableGlobalFilter: true
     },
     
     {
         accessorKey: "requestMedicine.quantity",
-        header: () => <div className="font-black text-muted-foreground">Quantity</div>,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Quantity</div>,
         size: 100,
         cell: ({ row }) => {
             const med = row.original
@@ -74,9 +76,30 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
         enableSorting: true,
     },
     {
+        accessorKey: "requestMedicine.urgent",
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Urgent</div>,
+        cell: ({ row }) => {
+            const med = row.original
+            console.log(med);
+            return (
+                <Badge
+                    variant="outline"
+                    className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3 cursor-default"
+                >
+                    {med.urgent ? (
+                        <ShieldAlertIcon className="text-red-500 dark:text-red-400" />
+                    ) : (
+                        <LoaderIcon />
+                    )}
+                    {med.urgent ? "Urgent" : "Normal"}
+                </Badge>
+            )
+        }
+    },
+    {
         id: "actions",
         size: 48,
-        header: () => <div className="font-black text-muted-foreground">Actions</div>,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Actions</div>,
         cell: ({ row }) => {
             const med = row.original
             return (
