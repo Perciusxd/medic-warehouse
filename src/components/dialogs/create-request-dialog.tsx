@@ -170,7 +170,7 @@ const RequestSchema = z.object({
     selectedHospitals: z.array(z.number().min(1, "At least one hospital must be selected")),
 })
 
-const postingHospital = {
+const defaultHospital = {
     id: "hospital-123",
     nameEN: "General Hospital",
     nameTH: "โรงพยาบาลทั่วไป",
@@ -179,7 +179,10 @@ const postingHospital = {
 
 }
 
-export default function CreateRequestDialog({ requestData, openDialog, onOpenChange }) {
+export default function CreateRequestDialog({ requestData, loggedInHospital, openDialog, onOpenChange }) {
+    console.log("loggedInHospital", loggedInHospital);
+    const postingHospital = hospitalList.find((hospital) => hospital.nameEN === loggedInHospital);
+    console.log("postingHospital", postingHospital);
     const [loading, setLoading] = useState(false)
     const {
         register,

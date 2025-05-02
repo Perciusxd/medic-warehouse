@@ -94,7 +94,9 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
                     {med.urgent ? "Urgent" : "Normal"}
                 </Badge>
             )
-        }
+        },
+        enableSorting: true,
+        enableResizing: true,
     },
     {
         id: "actions",

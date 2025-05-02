@@ -21,6 +21,8 @@ import {
     TableRow,
 } from "@/components/ui/table"
 
+import { ChevronRightIcon, ChevronLeftIcon } from "lucide-react"
+
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[],
@@ -65,7 +67,7 @@ export function DataTable<TData, TValue>({
 
     return (
         <div>
-            <div className="rounded-md border">
+            <div className="rounded-t-md border">
                 <Table>
                     <TableHeader className="bg-muted">
                         {table.getHeaderGroups().map((headerGroup) => (
@@ -110,7 +112,7 @@ export function DataTable<TData, TValue>({
                 </Table>
             </div>
 
-            <div className="flex items-center justify-between space-x-2 py-4">
+            <div className="flex items-center justify-between space-x-2 py-2">
                 <div className="text-sm text-muted-foreground px-2">
                     Showing {startRow}–{endRow} of {totalRows} row(s)
                 </div>
@@ -121,7 +123,7 @@ export function DataTable<TData, TValue>({
                         onClick={() => table.previousPage()}
                         disabled={!table.getCanPreviousPage()}
                     >
-                        Previous
+                        <ChevronLeftIcon />ก่อนหน้า
                     </Button>
                     <Button
                         variant="outline"
@@ -129,7 +131,7 @@ export function DataTable<TData, TValue>({
                         onClick={() => table.nextPage()}
                         disabled={!table.getCanNextPage()}
                     >
-                        Next
+                        ต่อไป<ChevronRightIcon />
                     </Button>
                 </div>
             </div>

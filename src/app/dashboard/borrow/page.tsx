@@ -1,7 +1,8 @@
 "use client"
 import * as React from "react"
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { z } from "zod";
+import { formatDistanceToNow } from 'date-fns';
 
 import { useMedicineRequests } from "@/hooks/useMedicineAPI";
 
@@ -13,7 +14,7 @@ import CreateResponseDialog from "@/components/dialogs/create-response-dialog";
 import { Input } from "@/components/ui/input"
 
 // Icons
-import { MoveLeft, MoveRight, Ban } from 'lucide-react';
+import { MoveLeft, MoveRight, Ban, RefreshCcwIcon } from 'lucide-react';
 
 // Types
 import { ResponseAsset } from "@/types/responseMed";
@@ -24,6 +25,8 @@ import { columns } from "./columns";
 
 export default function BorrowDashboard(loggedInHospital: string) {
     const { medicineRequests, loading, error, fetchMedicineRequests } = useMedicineRequests(loggedInHospital.loggedInHospital);
+    const [updatedLast, setUpdatedLast] = useState<Date | null>(null);
+    const [tick, setTick] = useState(0);
     const [selectedMed, setSelectedMed] = useState(null);
     const [createRespDialogOpen, setCreateRespDialogOpen] = useState(false);
     const [createRequestDialogOpen, setCreateRequestDialogOpen] = useState(false);
@@ -34,20 +37,39 @@ export default function BorrowDashboard(loggedInHospital: string) {
         setCreateRespDialogOpen(true);
     }
 
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTick((prev) => prev + 1);
+        }, 30000); // every 30 seconds
+        return () => clearInterval(interval);
+    }, []);
+
     return (
         <div>
             <div className="flex items-center justify-between mb-4">
-                <Input value={globalFilter} placeholder="Search..."  className="w-[300px]" onChange={(e) => setGlobalFilter(e.target.value)}/>
-                <Button onClick={() => (setCreateRequestDialogOpen(true))}>Create</Button>
-                <CreateRequestDialog 
-                    requestData={selectedMed} 
-                    openDialog={createRequestDialogOpen} 
+                <Input value={globalFilter} placeholder="Search..." className="w-[300px]" onChange={(e) => setGlobalFilter(e.target.value)} />
+                <div className="flex items-center space-x-2">
+                    <Button variant={"outline"} onClick={() => {
+                        fetchMedicineRequests();
+                        setUpdatedLast(new Date());
+                    }}>
+                        <RefreshCcwIcon />
+                        {updatedLast ? `Updated ${formatDistanceToNow(updatedLast, { addSuffix: true })}` : ""}
+                    </Button>
+
+                    <Button onClick={() => (setCreateRequestDialogOpen(true))}>ขอยืมยา</Button>
+                </div>
+                <CreateRequestDialog
+                    requestData={selectedMed}
+                    loggedInHospital={loggedInHospital.loggedInHospital}
+                    openDialog={createRequestDialogOpen}
                     onOpenChange={(open) => {
                         setCreateRequestDialogOpen(open);
                         if (!open) {
                             fetchMedicineRequests();
+                            setUpdatedLast(new Date());
                         }
-                    }}/>
+                    }} />
 
             </div>
             <div className="bg-white shadow rounded">
@@ -60,16 +82,17 @@ export default function BorrowDashboard(loggedInHospital: string) {
                     <div>
                         <DataTable columns={columns(handleApproveClick)} data={medicineRequests} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
                         {selectedMed && (
-                            <CreateResponseDialog 
-                                requestData={selectedMed} 
-                                openDialog={createRespDialogOpen} 
+                            <CreateResponseDialog
+                                requestData={selectedMed}
+                                openDialog={createRespDialogOpen}
                                 onOpenChange={(open) => {
                                     setCreateRespDialogOpen(open);
                                     if (!open) {
                                         fetchMedicineRequests();
+                                        setUpdatedLast(new Date());
                                     }
                                 }}
-                                />
+                            />
                         )}
                     </div>
                 }
