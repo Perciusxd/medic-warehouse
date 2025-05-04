@@ -55,6 +55,11 @@ export function DataTable<TData, TValue>({
             globalFilter
         },
         getFilteredRowModel: getFilteredRowModel(),
+        defaultColumn: {
+            size: 200,
+            minSize: 20,
+            maxSize: 400,
+        }
     })
 
     const pageIndex = table.getState().pagination.pageIndex
@@ -95,7 +100,7 @@ export function DataTable<TData, TValue>({
                                     data-state={row.getIsSelected() && "selected"}
                                 >
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
+                                        <TableCell key={cell.id} style={{ minWidth: cell.column.columnDef.size, maxWidth: cell.column.columnDef.size }}>
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                         </TableCell>
                                     ))}

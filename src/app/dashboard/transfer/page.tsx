@@ -35,8 +35,6 @@ export default function TransferDashboard(loggedInHospital) {
         fetchMedicineResponses();
     }, [fetchMedicineResponses]);
 
-    console.log('fetchMedicineResponses', medicineResponses);
-
     return (
         <div>
             <DataTable columns={columns(handleApproveClick)} data={medicineResponses} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />

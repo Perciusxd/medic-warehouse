@@ -37,6 +37,29 @@ export const fetchAllMedicineRequests = async (loggedInHospital: string) => {
 };
 
 /**
+ * Fetches all medicine responses in transfer
+ * @param {string} loggedInHospital - The hospital name to filter by
+ * @returns {Promise<Array>} - Filtered medicine responses
+ */
+export const fetchAllMedicineRequestsInProgress = async (loggedInHospital: string) => {
+    try {
+        const response = await fetch("api/queryAll");
+        if (!response.ok) {
+            throw new Error("Failed to fetch medicine requests");
+        }
+        // Fetch all medicine requests
+        // Filter only the requests that are pending and belong to the logged-in hospital
+        const data = await response.json();
+        const filterData = data.filter((item: any) => item.postingHospitalNameEN === loggedInHospital && item.status === "pending");
+        console.log('filterData in fetchAllMedicineRequestsInProgress', filterData);
+        return filterData;
+    } catch (error) {
+        console.error("Error fetching medicine requests:", error);
+        throw error;
+    }
+}
+
+/**
  * Fetches a specific asset by ID
  * @param {string} assetId - The ID of the asset to fetch
  * @returns {Promise<Object>} - The asset data

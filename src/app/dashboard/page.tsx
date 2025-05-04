@@ -104,7 +104,7 @@ export default function Dashboard() {
                     className={`px-4 py-2 ${selectedTab === 'status' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-blue-500'} focus:outline-none`}
                     onClick={() => setSelectedTab('status')}
                 >
-                    Status
+                    รายการยาที่ขอยืม
                 </button>
                 <button
                     className={`px-4 py-2 ${selectedTab === 'transfer' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-blue-500'} focus:outline-none`}
@@ -117,7 +117,7 @@ export default function Dashboard() {
             {/* Conditional rendering */}
             {selectedTab === 'borrow' && <BorrowDashboard loggedInHospital={loggedInHospital} />}
             {selectedTab === 'return' && <ReturnDashboard />}
-            {selectedTab === 'status' && <StatusDashboard />}
+            {selectedTab === 'status' && <StatusDashboard loggedInHospital={loggedInHospital} />}
             {selectedTab === 'transfer' && <TransferDashboard loggedInHospital={loggedInHospital} />}
         </div>
     )

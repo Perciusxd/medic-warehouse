@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { fetchAllMedicineRequests } from "@/pages/api/requestService";
+import { fetchAllMedicineRequests, fetchAssetById, fetchAllMedicineRequestsInProgress } from "@/pages/api/requestService";
 import { fetchAllMedicineReponsesInTransfer } from "@/pages/api/transferService";
 
 /**
@@ -79,5 +79,59 @@ export function useMedicineResponsesInTransfer(loggedInHospital: string) {
         loading,
         error,
         fetchMedicineResponses,
+    };
+}
+
+export function useMedicineRequestsStatus(loggedInHospital: string) {
+    const [medicineRequests, setMedicineRequests] = useState([]);
+    const [loading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Fetch all medicine requests
+    const fetchMedicineRequests = useCallback(async () => {
+        if (!loggedInHospital) return;
+
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const data = await fetchAllMedicineRequestsInProgress(loggedInHospital);
+            const requestsWithReponses = await Promise.all(
+                data.map(async (item) => {
+                    console.log('object in useMedicineRequestsStatus', item);
+                    const responseIds = item.responseIds;
+                    const responseDetails = await Promise.all(
+                        responseIds.map(async (responseId) => {
+                            const asset = await fetchAssetById(responseId);
+                            return {
+                                ...asset,
+                                responseId,
+                            };
+                        })
+                    )
+                    return {
+                        ...item,
+                        responseDetails,
+                    };
+                })
+            )
+            setMedicineRequests(requestsWithReponses)
+            return requestsWithReponses;
+        } catch (error) {
+            setError(error.message || "Failed to fetch medicine requests");
+        } finally {
+            setIsLoading(false);
+        }
+    }, [loggedInHospital]);
+
+    useEffect(() => {
+        fetchMedicineRequests();
+    }, [fetchMedicineRequests]);
+
+    return {
+        medicineRequests,
+        loading,
+        error,
+        fetchMedicineRequests,
     };
 }
