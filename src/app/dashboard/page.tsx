@@ -110,7 +110,7 @@ export default function Dashboard() {
                     className={`px-4 py-2 ${selectedTab === 'transfer' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-blue-500'} focus:outline-none`}
                     onClick={() => setSelectedTab('transfer')}
                 >
-                    Transfer
+                    รายการยาที่ให้ยืม
                 </button>
             </div>
 
