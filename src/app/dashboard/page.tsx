@@ -13,6 +13,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import TransferDashboard from "./transfer/page";
 
 export default function Dashboard() {
     const router = useRouter();
@@ -105,12 +106,19 @@ export default function Dashboard() {
                 >
                     Status
                 </button>
+                <button
+                    className={`px-4 py-2 ${selectedTab === 'transfer' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-blue-500'} focus:outline-none`}
+                    onClick={() => setSelectedTab('transfer')}
+                >
+                    Transfer
+                </button>
             </div>
 
             {/* Conditional rendering */}
             {selectedTab === 'borrow' && <BorrowDashboard loggedInHospital={loggedInHospital} />}
             {selectedTab === 'return' && <ReturnDashboard />}
             {selectedTab === 'status' && <StatusDashboard />}
+            {selectedTab === 'transfer' && <TransferDashboard loggedInHospital={loggedInHospital} />}
         </div>
     )
 }

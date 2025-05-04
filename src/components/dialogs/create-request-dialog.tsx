@@ -14,7 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 
 import RequestDetails from "./request-details"
 
-export const hospitalList = [
+export const allHospitalList = [
     {
         id: 1,
         nameTH: 'โรงพยาบาลนาหม่อม',
@@ -51,96 +51,6 @@ export const hospitalList = [
         specialties: ["Psychiatry", "Endocrinology"],
         rating: 4.7,
     },
-    {
-        id: 6,
-        nameEN: "Hospital F",
-        nameTH: "โรงพยาบาลดี",
-        address: "987 Cedar St, Citytown",
-        phone: "555-2345",
-        specialties: ["Urology", "Nephrology"],
-        rating: 4.3,
-    },
-    {
-        id: 7,
-        nameEN: "Hospital G",
-        nameTH: "โรงพยาบาลดี",
-        address: "159 Birch St, Townyville",
-        phone: "555-6789",
-        specialties: ["Ophthalmology", "ENT"],
-        rating: 4.6,
-    },
-    {
-        id: 8,
-        nameEN: "Hospital H",
-        nameTH: "โรงพยาบาลดี",
-        address: "753 Spruce St, Villagetown",
-        phone: "555-0123",
-        specialties: ["Anesthesiology", "Pathology"],
-        rating: 4.1,
-    },
-    {
-        id: 9,
-        nameEN: "Hospital I",
-        nameTH: "โรงพยาบาลดี",
-        address: "852 Fir St, Hamletburg",
-        phone: "555-4567",
-        specialties: ["Emergency Medicine", "Family Medicine"],
-        rating: 4.4,
-    },
-    {
-        id: 10,
-        nameEN: "Hospital J",
-        nameTH: "โรงพยาบาลดี",
-        address: "951 Willow St, Cityville",
-        phone: "555-8901",
-        specialties: ["Internal Medicine", "Surgery"],
-        rating: 4.9,
-    },
-    {
-        id: 11,
-        nameEN: "Hospital K",
-        nameTH: "โรงพยาบาลดี",
-        address: "159 Oak St, Townsville",
-        phone: "555-2345",
-        specialties: ["Pediatrics", "Orthopedics"],
-        rating: 4.0,
-    },
-    {
-        id: 12,
-        nameEN: "Hospital L",
-        nameTH: "โรงพยาบาลดี",
-        address: "753 Maple St, Villageburg",
-        phone: "555-6789",
-        specialties: ["Oncology", "Dermatology"],
-        rating: 4.8,
-    },
-    {
-        id: 13,
-        nameEN: "Hospital M",
-        nameTH: "โรงพยาบาลดี",
-        address: "951 Pine St, Hamletville",
-        phone: "555-0123",
-        specialties: ["Radiology", "Gastroenterology"],
-        rating: 4.2,
-    },
-    {
-        id: 14,
-        nameEN: "Hospital N",
-        nameTH: "โรงพยาบาลดี",
-        address: "159 Cedar St, Boroughtown",
-        phone: "555-4567",
-        specialties: ["Psychiatry", "Endocrinology"],
-        rating: 4.7,
-    },
-    {
-        id: 15,
-        nameEN: "Hospital O",
-        nameTH: "โรงพยาบาลดี",
-        address: "753 Birch St, Citytown",
-        phone: "555-8901",
-        specialties: ["Urology", "Nephrology"],
-        rating: 4.3,
-    }
 ];
 
 const FormSchema = z.object({
@@ -181,7 +91,8 @@ const defaultHospital = {
 
 export default function CreateRequestDialog({ requestData, loggedInHospital, openDialog, onOpenChange }) {
     console.log("loggedInHospital", loggedInHospital);
-    const postingHospital = hospitalList.find((hospital) => hospital.nameEN === loggedInHospital);
+    const postingHospital = allHospitalList.find((hospital) => hospital.nameEN === loggedInHospital);
+    const hospitalList = allHospitalList.filter(hospital => hospital.nameEN !== loggedInHospital)
     console.log("postingHospital", postingHospital);
     const [loading, setLoading] = useState(false)
     const {
