@@ -47,7 +47,7 @@ export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[
         enableGlobalFilter: false
     },
     {
-        accessorKey: "requestMedicine.quantity",
+        accessorKey: "requestMedicine.requestAmount",
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่ขอยืม</div>,
         enableGlobalFilter: false
     },
