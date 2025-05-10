@@ -298,13 +298,13 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
 
                     <DialogFooter>
                         <Button type="submit">
-                            {loading ? <LoadingSpinner /> : "Submit"}
+                            {loading ? <div className="flex flex-row items-center gap-2 text-muted-foreground"><LoadingSpinner /> ยืมยันการให้ยืม</div>  : "ยืมยันการให้ยืม"}
                         </Button>
-                        <DialogClose>
+                        {/* <DialogClose>
                             <Button variant={"destructive"} type="submit" >
                                 Cancel
                             </Button>
-                        </DialogClose>
+                        </DialogClose> */}
 
                     </DialogFooter>
                 </form>

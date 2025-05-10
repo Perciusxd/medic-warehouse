@@ -27,7 +27,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
     // },
     {
         accessorKey: "requestMedicine.name",
-        header: ({column}) => {
+        header: ({ column }) => {
             return (
                 <Button
                     className="font-medium text-muted-foreground text-left cursor-pointer"
@@ -57,7 +57,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">From Hospital</div>,
         enableGlobalFilter: true
     },
-    
+
     {
         accessorKey: "requestMedicine.quantity",
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Quantity</div>,
@@ -116,11 +116,12 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
                         <DropdownMenuItem
                             onClick={() => handleApproveClick(med)}
                             className="cursor-pointer"
-                        ><Check></Check>Approve</DropdownMenuItem>
-                        <DropdownMenuItem><Pencil />Edit</DropdownMenuItem>
-                        <DropdownMenuItem><Trash2 />Delete</DropdownMenuItem>
+                        ><Check className="text-green-700" />ยืนยัน</DropdownMenuItem>
+                        {/* <DropdownMenuItem><Pencil />Edit</DropdownMenuItem> */}
+                        <DropdownMenuItem className="cursor-pointer"><Trash2 className="text-red-600" />ปฎิเสธ</DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
+                            className="cursor-pointer"
                             onClick={() => navigator.clipboard.writeText(med.id)}
                         >
                             <Copy></Copy>
