@@ -75,7 +75,7 @@ const RequestSchema = z.object({
         quantity: z.string().min(1, "Quantity is required"),
         pricePerUnit: z.number().min(1, "Price per unit must be greater than 0").max(100000, "Price per unit must be less than 100000"),
         unit: z.string().min(1, "Unit is required"),
-        manfacturer: z.string().min(1, "Manufacturer is required"),
+        manufacturer: z.string().min(1, "Manufacturer is required"),
     }),
     requestTerm: z.object({
         expectedReturnDate: z.coerce.date({ invalid_type_error: "Expected return date must be a valid date" }),
@@ -121,7 +121,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                 requestAmount: 0,
                 pricePerUnit: 0,
                 unit: "",
-                manfacturer: "",
+                manufacturer: "",
             },
             requestTerm: {
                 expectedReturnDate: undefined,
@@ -248,9 +248,9 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                             </div>
                             <div className="col-span-2 flex flex-col gap-2">
                                 <Label className="font-bold">ผู้ผลิต</Label>
-                                <Input type="text" {...register("requestMedicine.manfacturer")} placeholder="ที.แมน. ฟาร์มาซูติคอล" />
-                                {errors.requestMedicine?.manfacturer && (
-                                    <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.manfacturer.message}</span>
+                                <Input type="text" {...register("requestMedicine.manufacturer")} placeholder="ที.แมน. ฟาร์มาซูติคอล" />
+                                {errors.requestMedicine?.manufacturer && (
+                                    <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.manufacturer.message}</span>
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
@@ -322,7 +322,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                             </div>
 
                         </div>
-                        <div className="">
+                        <div className="ml-10">
                             <div className="mb-4">
                                 <Label className="font-bold mb-2">สถานะ</Label>
                                 <div className="flex flex-row gap-2 ">

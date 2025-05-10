@@ -19,29 +19,27 @@ import { Calendar1Icon, ShieldAlert } from "lucide-react"
 
 import RequestDetails from "./request-details"
 
-const ResponseSchema = z.object({
-    offeredMedicine: z.object({
-        name: z.string(),
-        quantity: z.string(),
-        trademark: z.string(),
-        pricePerUnit: z.string(),
-        unit: z.string(),
-        batchNumber: z.string(),
-        manufacturer: z.string(),
-        // manufactureDate: z.string(),
-        // expiryDate: z.date(),
-        // imageRef: z.string(),
-        returnTerm: z.enum(["exactType", "subType"]),
-        // returnConditions: z.object({
-        //     exactType: z.boolean(),
-        //     subType: z.boolean(),
-        //     otherType: z.boolean(),
-        //     supportType: z.boolean(),
-        // })
-    })
-})
-
 export default function CreateResponseDialog({ requestData, openDialog, onOpenChange }) {
+    console.log('requestData', requestData);
+    const ResponseSchema = z.object({
+        offeredMedicine: z.object({
+            offerAmount: z.number().min(1, "กรุณากรอกมากว่า 0").max(requestData.requestMedicine.requestAmount, `กรุณากรอกน้อยกว่า ${requestData.requestMedicine.requestAmount}`),
+            trademark: z.string(),
+            pricePerUnit: z.number().min(1, "Price per unit must be greater than 0").max(100000, "Price per unit must be less than 100000"),
+            manufacturer: z.string(),
+            // manufactureDate: z.string(),
+            // expiryDate: z.date(),
+            // imageRef: z.string(),
+            returnTerm: z.enum(["exactType", "subType"]),
+            returnConditions: z.object({
+                exactType: z.boolean(),
+                subType: z.boolean(),
+                otherType: z.boolean(),
+                supportType: z.boolean(),
+            })
+        })
+    })
+    
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const {
@@ -57,36 +55,33 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
         resolver: zodResolver(ResponseSchema),
         defaultValues: {
             offeredMedicine: {
-                name: requestData.requestMedicine.name,
-                quantity: requestData.requestMedicine.quantity,
+                offerAmount: requestData.requestMedicine.requestAmount,
                 trademark: requestData.requestMedicine.trademark,
                 pricePerUnit: requestData.requestMedicine.pricePerUnit,
-                unit: requestData.requestMedicine.unit,
-                batchNumber: requestData.requestMedicine.batchNumber,
                 manufacturer: requestData.requestMedicine.manufacturer,
                 // manufactureDate: requestData.requestMedicine.manufactureDate,
                 // expiryDate: requestData.requestMedicine.expiryDate,
                 // imageRef: requestData.requestMedicine.imageRef,
                 returnTerm: "exactType",
-                // returnConditions: {
-                //     exactType: false,
-                //     subType: false,
-                //     otherType: false,
-                //     supportType: false,
-                // }
+                returnConditions: {
+                    exactType: true,
+                    subType: false,
+                    otherType: false,
+                    supportType: false,
+                }
             }
         }
     })
     const returnTerm = watch("offeredMedicine.returnTerm")
+    const offeredAmount = watch("offeredMedicine.offerAmount")
+    const offeredPrice = watch("offeredMedicine.pricePerUnit")
+    const returnConditions = watch("offeredMedicine.returnConditions")
     const offeredMedicineRef = useRef(requestData.requestMedicine.name);
     const [subTypeName, setSubTypeName] = useState(requestData.requestMedicine.name);
     const subTypeFields = useRef({
-        name: requestData.requestMedicine.name,
         trademark: requestData.requestMedicine.trademark,
-        quantity: requestData.requestMedicine.quantity,
+        offerAmount: requestData.requestMedicine.offerAmount,
         pricePerUnit: requestData.requestMedicine.pricePerUnit,
-        unit: requestData.requestMedicine.unit,
-        batchNumber: requestData.requestMedicine.batchNumber,
         manufacturer: requestData.requestMedicine.manufacturer,
         // manufactureDate: requestData.requestMedicine.manufactureDate,
         // expiryDate: requestData.requestMedicine.expiryDate,
@@ -97,35 +92,26 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
         if (returnTerm === "exactType") {
             // save the current values to ref
             subTypeFields.current = {
-                name: currentValues.name,
                 trademark: currentValues.trademark,
-                quantity: currentValues.quantity,
+                offerAmount: currentValues.offerAmount,
                 pricePerUnit: currentValues.pricePerUnit,
-                unit: currentValues.unit,
-                batchNumber: currentValues.batchNumber,
                 manufacturer: currentValues.manufacturer,
                 // manufactureDate: currentValues.manufactureDate,
                 // expiryDate: currentValues.expiryDate,
             }
             // set the values to the default values
             const r = requestData.requestMedicine;
-            setValue("offeredMedicine.name", r.name);
             setValue("offeredMedicine.trademark", r.trademark);
-            setValue("offeredMedicine.quantity", r.quantity);
+            setValue("offeredMedicine.offerAmount", r.requestAmount);
             setValue("offeredMedicine.pricePerUnit", r.pricePerUnit);
-            setValue("offeredMedicine.unit", r.unit);
-            setValue("offeredMedicine.batchNumber", r.batchNumber);
             setValue("offeredMedicine.manufacturer", r.manufacturer);
             // setValue("offeredMedicine.manufactureDate", r.manufactureDate);
             // setValue("offeredMedicine.expiryDate", r.expiryDate);
         } else if (returnTerm === "subType") {
             const r = subTypeFields.current;
-            setValue("offeredMedicine.name", r.name);
             setValue("offeredMedicine.trademark", r.trademark);
-            setValue("offeredMedicine.quantity", r.quantity);
-            // setValue("offeredMedicine.pricePerUnit", r.pricePerUnit);
-            setValue("offeredMedicine.unit", r.unit);
-            setValue("offeredMedicine.batchNumber", r.batchNumber);
+            setValue("offeredMedicine.offerAmount", r.offerAmount);
+            setValue("offeredMedicine.pricePerUnit", r.pricePerUnit);
             setValue("offeredMedicine.manufacturer", r.manufacturer);
             // setValue("offeredMedicine.manufactureDate", r.manufactureDate);
             // setValue("offeredMedicine.expiryDate", r.expiryDate);
@@ -136,6 +122,10 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
         console.log("datasdf", data);
         const responseBody = {
             ...data,
+            offeredMedicine: {
+                ...data.offeredMedicine,
+                name: requestData.requestMedicine.name,
+            },
             responseId: requestData.requestId, // ! need to change to responseId
         }
         console.log("responseBody", responseBody);
@@ -210,15 +200,6 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mt-6">
-                                <Label className="flex flex-col items-start">
-                                    Name
-                                    <Input
-                                        type="text"
-                                        {...register("offeredMedicine.name")}
-                                        disabled={returnTerm === "exactType"}
-                                        className="border p-1"
-                                    />
-                                </Label>
                                 {/* <Label className="flex flex-col items-start">
                                     Date of expiry
                                     <Popover open={open} onOpenChange={setOpen}>
@@ -247,17 +228,8 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
                                         </PopoverContent>
                                     </Popover>
                                 </Label> */}
-                                <Label className="flex flex-col items-start font-bold">
-                                    Quantity
-                                    <Input
-                                        type="number"
-                                        {...register("offeredMedicine.quantity")}
-                                        disabled={returnTerm === "exactType"}
-                                        className="border p-1 font-light"
-                                    />
-                                </Label>
                                 <Label className="flex flex-col items-start">
-                                    Trademark
+                                    ชื่อการค้า
                                     <Input
                                         type="text"
                                         {...register("offeredMedicine.trademark")}
@@ -266,34 +238,7 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
                                     />
                                 </Label>
                                 <Label className="flex flex-col items-start">
-                                    Price per unit
-                                    <Input
-                                        type="text"
-                                        {...register("offeredMedicine.pricePerUnit")}
-                                        disabled={returnTerm === "exactType"}
-                                        className="border p-1"
-                                    />
-                                </Label>
-                                <Label className="flex flex-col items-start">
-                                    Unit
-                                    <Input
-                                        type="text"
-                                        {...register("offeredMedicine.unit")}
-                                        disabled={returnTerm === "exactType"}
-                                        className="border p-1"
-                                    />
-                                </Label>
-                                <Label className="flex flex-col items-start">
-                                    Batch number
-                                    <Input
-                                        type="text"
-                                        {...register("offeredMedicine.batchNumber")}
-                                        disabled={returnTerm === "exactType"}
-                                        className="border p-1"
-                                    />
-                                </Label>
-                                <Label className="flex flex-col items-start">
-                                    Manufacturer
+                                    ผู้ผลิต
                                     <Input
                                         type="text"
                                         {...register("offeredMedicine.manufacturer")}
@@ -301,77 +246,52 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
                                         className="border p-1"
                                     />
                                 </Label>
+                                <Label className="flex flex-col items-start font-bold">
+                                    จำนวนที่ให้ยืม
+                                    <Input
+                                        type="number"
+                                        {...register("offeredMedicine.offerAmount", { valueAsNumber: true })}
+                                        disabled={returnTerm === "exactType"}
+                                        className="border p-1 font-light"
+                                    />
+                                    {errors.offeredMedicine?.offerAmount && (
+                                        <span className="text-red-500 text-xs -mt-1">{errors.offeredMedicine.offerAmount.message}</span>
+                                    )}
+                                </Label>
+                                <Label className="flex flex-col items-start">
+                                    ราคาต่อหน่วย
+                                    <Input
+                                        type="number"
+                                        {...register("offeredMedicine.pricePerUnit", { valueAsNumber: true })}
+                                        disabled={returnTerm === "exactType"}
+                                        className="border p-1"
+                                    />
+                                </Label>
 
-                                {/* <div className="flex flex-col items-start gap-4">
-                                    <Label>
-                                        เงื่อนไขการคืนที่ยอมรับ
-                                    </Label>
-                                    <div className="items-top flex space-x-2">
-                                        <Controller name="offeredMedicine.returnConditions.exactType" control={control} render={({ field }) => (
-
-                                            <Checkbox checked={field.value} onCheckedChange={field.onChange}></Checkbox>
-                                        )}/>
-                                        <div className="grid gap-1.5 leading-none">
-                                            <label
-                                                htmlFor="terms1"
-                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                            >
-                                                รับคืนเฉพาะรายการนี้
-                                            </label>
-                                            <p className="text-sm text-muted-foreground">
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="items-top flex space-x-2">
-                                        <Controller name="offeredMedicine.returnConditions.otherType" control={control} render={({ field }) => (
-
-                                            <Checkbox checked={field.value} onCheckedChange={field.onChange}></Checkbox>
-                                        )} />
-                                        <div className="grid gap-1.5 leading-none">
-                                            <label
-                                                htmlFor="terms1"
-                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                            >
-                                                รับคืนเฉพาะรายการนี้
-                                            </label>
-                                            <p className="text-sm text-muted-foreground">
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="items-top flex space-x-2">
-                                        <Controller name="offeredMedicine.returnConditions.subType" control={control} render={({ field }) => (
-
-                                            <Checkbox checked={field.value} onCheckedChange={field.onChange}></Checkbox>
-                                        )} />
-                                        <div className="grid gap-1.5 leading-none">
-                                            <label
-                                                htmlFor="terms1"
-                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                            >
-                                                รับคืนเฉพาะรายการนี้
-                                            </label>
-                                            <p className="text-sm text-muted-foreground">
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="items-top flex space-x-2">
-                                        <Controller name="offeredMedicine.returnConditions.supportType" control={control} render={({ field }) => (
-
-                                            <Checkbox checked={field.value} onCheckedChange={field.onChange}></Checkbox>
-                                        )} />
-                                        <div className="grid gap-1.5 leading-none">
-                                            <label
-                                                htmlFor="terms1"
-                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                            >
-                                                รับคืนเฉพาะรายการนี้
-                                            </label>
-                                            <p className="text-sm text-muted-foreground">
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div> */}
+                                <div>
+                                    รวม <span className="font-bold text-gray-950"> {(Number(offeredAmount) || 0) * (Number(offeredPrice) || 0)} </span> บาท
+                                </div>
+                                
                             </div>
+                                <Label className="mt-4 mb-2">เงื่อนไขการคืนที่ยอมรับ</Label>
+                                <div className="grid grid-cols-2 items-start space-x-4 gap-2">
+                                    <Label className="font-normal">
+                                        <Checkbox {...register("offeredMedicine.returnConditions.exactType")} />
+                                        รับคืนเฉพาะรายการนี้
+                                    </Label>
+                                    <Label className="font-normal">
+                                        <Checkbox {...register("offeredMedicine.returnConditions.subType")} />
+                                        รับคืนยาทดแทนได้
+                                    </Label>
+                                    <Label className="font-normal">
+                                        <Checkbox {...register("offeredMedicine.returnConditions.otherType")} />
+                                        รับคืนยารายการอื่นได้
+                                    </Label>
+                                    <Label className="font-normal">
+                                        <Checkbox {...register("offeredMedicine.returnConditions.supportType")} />
+                                        สามารถสนับสนุนได้
+                                    </Label>
+                                </div>
                         </div>
                     </div>
 

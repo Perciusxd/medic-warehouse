@@ -22,7 +22,7 @@ export default function RequestDetails({ requestData, responseForm }) {
             quantity: requestData.requestMedicine.quantity,
             pricePerUnit: requestData.requestMedicine.pricePerUnit,
             unit: requestData.requestMedicine.unit,
-            batchNumber: requestData.requestMedicine.batchNumber,
+            requestAmount: requestData.requestMedicine.requestAmount,
             manufacturer: requestData.requestMedicine.manufacturer,
             manufactureDate: requestData.requestMedicine.manufactureDate,
             imageRef: requestData.requestMedicine.imageRef
@@ -78,12 +78,13 @@ export default function RequestDetails({ requestData, responseForm }) {
         // { label: "Status", value: requestDetails.status },
         // { label: "Updated At", value: formatDate(requestDetails.updatedAt) },
         { label: "โรงพยาบาลที่ขอยืม", value: requestDetails.postingHospitalNameTH },
-        { label: "ชื่อยา", value: requestDetails.requestMedicine.name },
+        { label: "รายการยา", value: requestDetails.requestMedicine.name },
         { label: "รูปแบบ/หน่วย", value: requestDetails.requestMedicine.unit },
         { label: "ขนาด", value: requestDetails.requestMedicine.quantity },
         { label: "ชื่อการค้า", value: requestDetails.requestMedicine.trademark },
-        { label: "ผู้ผลิต", value: requestDetails.requestMedicine.name },
-        { label: "วันที่คาดว่าจะคืน", value: formatDate(requestDetails.requestTerm.expectedReturnDate) },
+        // { label: "ผู้ผลิต", value: requestDetails.requestMedicine.manufacturer },
+        // { label: "จำนวนที่ขอยืม", value: requestDetails.requestMedicine.requestAmount },
+        // { label: "วันที่คาดว่าจะคืน", value: formatDate(requestDetails.requestTerm.expectedReturnDate) },
     ])
 
     return (
@@ -95,6 +96,27 @@ export default function RequestDetails({ requestData, responseForm }) {
                         <Input type="text" value={detail.value} disabled />
                     </div>
                 ))}
+                <div>
+                    <Label className="font-bold">ผู้ผลิต</Label>
+                    <Input type="text" value={requestDetails.requestMedicine.manufacturer} disabled />
+                </div>
+                <div>
+                    <Label className="font-bold">ราคาต่อหน่วย</Label>
+                    <div className="flex flex-row gap-2 items-center">
+                    <Input type="text" className="w-14" value={requestDetails.requestMedicine.pricePerUnit} disabled />
+                        <div className="font-extralight">
+                            รวม <span className="font-bold text-gray-950"> {(Number(requestDetails.requestMedicine.pricePerUnit) || 0) * (Number(requestDetails.requestMedicine.requestAmount) || 0)} </span> บาท
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <Label className="font-bold">จำนวนที่ขอยืม</Label>
+                    <Input type="text" value={requestDetails.requestMedicine.requestAmount} disabled />
+                </div>
+                <div>
+                    <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
+                    <Input type="text" value={formatDate(requestDetails.requestTerm.expectedReturnDate)} disabled />
+                </div>
             </div>
         </div>
 
