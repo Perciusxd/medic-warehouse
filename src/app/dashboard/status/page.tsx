@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { DataTable } from "../borrow/data-table";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 import { useMedicineRequestsStatus } from "@/hooks/useMedicineAPI";
 
@@ -22,11 +23,17 @@ export default function StatusDashboard(loggedInHospital) {
     console.log(medicineRequests);
     return (
         <>
-            <DataTable 
-                columns={columns(handleApproveClick)} 
-                data={medicineRequests} 
-                globalFilter={globalFilter} 
-                setGlobalFilter={setGlobalFilter} />
+            {
+                loadingRequest ? (
+                    <LoadingSpinner />
+                ) : (
+                    <DataTable 
+                        columns={columns(handleApproveClick)} 
+                        data={medicineRequests} 
+                        globalFilter={globalFilter} 
+                        setGlobalFilter={setGlobalFilter} />
+                )
+            }
         </>
     )
 }
