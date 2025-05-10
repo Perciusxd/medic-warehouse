@@ -11,8 +11,15 @@ import { Label } from "@/components/ui/label"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
 
 import RequestDetails from "./request-details"
+import { Calendar1 } from "lucide-react"
 
 export const allHospitalList = [
     {
@@ -59,20 +66,19 @@ const FormSchema = z.object({
 })
 
 const RequestSchema = z.object({
-    urgent: z.boolean(),
+    urgent: z.enum(["urgent", "soon", "normal"]),
     requestMedicine: z.object({
         name: z.string().min(1, "Name is required"),
         trademark: z.string().min(1, "Trademark is required"),
-        description: z.string().min(1, "Description is required"),
+        description: z.string().optional(),
+        requestAmount: z.number().min(1, "Request amount must be greater than 0").max(1000, "Request amount must be less than 1000"),
         quantity: z.string().min(1, "Quantity is required"),
-        pricePerUnit: z.string().min(1, "Price per unit is required"),
+        pricePerUnit: z.number().min(1, "Price per unit must be greater than 0").max(100000, "Price per unit must be less than 100000"),
         unit: z.string().min(1, "Unit is required"),
-        batchNumber: z.string().min(1, "Batch number is required"),
         manfacturer: z.string().min(1, "Manufacturer is required"),
-        manfactureDate: z.string().min(1, "Manufacture date is required"),
     }),
     requestTerm: z.object({
-        expectedReturnDate: z.string().min(1, "Expected return date is required"),
+        expectedReturnDate: z.coerce.date({ invalid_type_error: "Expected return date must be a valid date" }),
         receiveConditions: z.object({
             condition: z.enum(["exactType", "subType", "other"]),
         })
@@ -106,20 +112,19 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
     } = useForm<z.infer<typeof RequestSchema>>({
         resolver: zodResolver(RequestSchema),
         defaultValues: {
-            urgent: false,
+            urgent: "soon",
             requestMedicine: {
                 name: "",
                 trademark: "",
                 description: "",
                 quantity: "",
-                pricePerUnit: "",
+                requestAmount: 0,
+                pricePerUnit: 0,
                 unit: "",
-                batchNumber: "",
                 manfacturer: "",
-                manfactureDate: "",
             },
             requestTerm: {
-                expectedReturnDate: "",
+                expectedReturnDate: undefined,
                 receiveConditions: {
                     condition: "exactType",
                 },
@@ -130,6 +135,12 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
 
     const selectedHospitals = watch("selectedHospitals")
     const urgent = watch("urgent")
+    const expectedReturnDate = watch("requestTerm.expectedReturnDate");
+    const quantity = watch("requestMedicine.requestAmount");
+    const pricePerUnit = watch("requestMedicine.pricePerUnit");
+
+    const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+    const [dateError, setDateError] = useState(""); // for error message
     const allHospitals = hospitalList.map(hospital => hospital.id)
     const allSelected = selectedHospitals.length === allHospitals.length
 
@@ -166,6 +177,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
             requestMedicine: data.requestMedicine,
             requestTerm: data.requestTerm
         }
+        console.log('requestData', requestData);
         const requestBody = {
             requestData: requestData,
             selectedHospitals: filterHospital
@@ -203,76 +215,136 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[1200px]">
                 <DialogTitle>Create request</DialogTitle>
-                <form onSubmit={handleSubmit(onSubmit, (invalidError) => {
-                    console.error(invalidError)
-                })} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="flex flex-col gap-2">
-                                <Label className="font-bold">Name</Label>
-                                <Input type="text" {...register("requestMedicine.name")} />
+                            <div className="col-span-2 flex flex-col gap-2">
+                                <Label className="font-bold">รายการยา</Label>
+                                <Input type="text" {...register("requestMedicine.name")} placeholder="Chlorpheniramine (CPM)" />
+                                {errors.requestMedicine?.name && (
+                                    <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.name.message}</span>
+                                )}
                             </div>
                             <div className="flex flex-col gap-2">
-                                <Label className="font-bold">Urgent</Label>
-                                <Checkbox checked={urgent} onCheckedChange={(checked) => setValue("urgent", checked === true)} />
+                                <Label className="font-bold">ขนาด</Label>
+                                <Input type="text" {...register("requestMedicine.quantity")} placeholder="10 mg/ 1 ml" />
+                                {errors.requestMedicine?.quantity && (
+                                    <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.quantity.message}</span>
+                                )}
                             </div>
                             <div className="flex flex-col gap-2">
-                                <Label className="font-bold">Trademark</Label>
-                                <Input type="text" {...register("requestMedicine.trademark")} />
+                                <Label className="font-bold">รูปแบบ/หน่วย</Label>
+                                <Input type="text" {...register("requestMedicine.unit")} placeholder="AMP" />
+                                {errors.requestMedicine?.unit && (
+                                    <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.unit.message}</span>
+                                )}
+                            </div>
+                            <div className="col-span-2 flex flex-col gap-2">
+                                <Label className="font-bold">ชื่อการค้า</Label>
+                                <Input type="text" {...register("requestMedicine.trademark")} placeholder="Chlorpheno" />
+                                {errors.requestMedicine?.trademark && (
+                                    <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.trademark.message}</span>
+                                )}
+                            </div>
+                            <div className="col-span-2 flex flex-col gap-2">
+                                <Label className="font-bold">ผู้ผลิต</Label>
+                                <Input type="text" {...register("requestMedicine.manfacturer")} placeholder="ที.แมน. ฟาร์มาซูติคอล" />
+                                {errors.requestMedicine?.manfacturer && (
+                                    <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.manfacturer.message}</span>
+                                )}
                             </div>
                             <div className="flex flex-col gap-2">
-                                <Label className="font-bold">Description</Label>
-                                <Input type="text" {...register("requestMedicine.description")} />
+                                <Label className="font-bold">จำนวน</Label>
+                                <Input type="number" placeholder="10" {...register("requestMedicine.requestAmount", { valueAsNumber: true })} className={errors.requestMedicine?.requestAmount ? "border-red-500" : ""} />
+                                {errors.requestMedicine?.requestAmount && (
+                                    <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.requestAmount.message}</span>
+                                )}
+                            </div><div className="flex flex-col gap-2">
+                                <Label className="font-bold">ภาพประกอบ</Label>
+                                <Input type="file" placeholder="Image" />
+                            </div>
+                            <div className="col-span-2 flex flex-col gap-2">
+                                <Label className="font-bold">เหตุผลการยืม</Label>
+                                <Input type="text" {...register("requestMedicine.description")} placeholder="รอการส่งมอบจากตัวแทนจำหน่าย" />
                             </div>
                             <div className="flex flex-col gap-2">
-                                <Label className="font-bold">Quantity</Label>
-                                <Input type="text" {...register("requestMedicine.quantity")} />
+                                <Label className="font-bold">ราคาต่อหน่วย</Label>
+                                <Input type="number" {...register("requestMedicine.pricePerUnit", { valueAsNumber: true })} />
+                                {errors.requestMedicine?.pricePerUnit && (
+                                    <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.pricePerUnit.message}</span>
+                                )}
                             </div>
+                            <div className="items-end flex flex-row">
+                                <div className="font-extralight">
+                                    รวม <span className="font-bold text-gray-950"> {(Number(quantity) || 0) * (Number(pricePerUnit) || 0)} </span> บาท
+                                </div>
+                            </div>
+
+
                             <div className="flex flex-col gap-2">
-                                <Label className="font-bold">Price per unit</Label>
-                                <Input type="text" {...register("requestMedicine.pricePerUnit")} />
+                                <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
+                                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button variant="outline" className="justify-start text-left font-normal">
+                                            {expectedReturnDate
+                                                ? expectedReturnDate.toLocaleDateString()
+                                                : "เลือกวันที่"}
+                                            <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                        <Calendar
+                                            mode="single"
+                                            selected={expectedReturnDate}
+                                            onSelect={(date) => {
+                                                if (date instanceof Date && !isNaN(date.getTime())) {
+                                                    const today = new Date();
+                                                    today.setHours(0, 0, 0, 0); // normalize time
+
+                                                    if (date > today) {
+                                                        setValue("requestTerm.expectedReturnDate", date, { shouldValidate: true });
+                                                        setDateError(""); // clear error
+                                                        setIsCalendarOpen(false); // close popover
+                                                    } else {
+                                                        setDateError("กรุณาเลือกวันที่ในอนาคต");
+                                                    }
+                                                } else {
+                                                    setDateError("Invalid date selected.");
+                                                }
+                                            }}
+                                            initialFocus
+                                        />
+                                        {dateError && (
+                                            <div className="text-red-500 text-sm px-4 py-2">{dateError}</div>
+                                        )}
+                                    </PopoverContent>
+                                </Popover>
                             </div>
-                            <div className="flex flex-col gap-2">
-                                <Label className="font-bold">Unit</Label>
-                                <Input type="text" {...register("requestMedicine.unit")} />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <Label className="font-bold">Batch number</Label>
-                                <Input type="text" {...register("requestMedicine.batchNumber")} />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <Label className="font-bold">Manufacturer</Label>
-                                <Input type="text" {...register("requestMedicine.manfacturer")} />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <Label className="font-bold">Manufacturer Date</Label>
-                                <Input type="text" {...register("requestMedicine.manfactureDate")} />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <Label className="font-bold">Expected Return Date</Label>
-                                <Input type="text" {...register("requestTerm.expectedReturnDate")} />
-                            </div>
-                            <div className="flex items-center space-x-4">
-                                <Label>
-                                    <input type="radio" value="exactType" {...register("requestTerm.receiveConditions.condition")} />
-                                    ยืมรายการที่ต้องการ
-                                </Label>
-                                <Label>
-                                    <input type="radio" value="subType" {...register("requestTerm.receiveConditions.condition")} />
-                                    ยืมรายการทดแทน
-                                </Label>
-                                <Label>
-                                    <input type="radio" value="other" {...register("requestTerm.receiveConditions.condition")} />
-                                    อื่นๆ
-                                </Label>
-                            </div>
+
                         </div>
                         <div className="">
+                            <div className="mb-4">
+                                <Label className="font-bold mb-2">สถานะ</Label>
+                                <div className="flex flex-row gap-2 ">
+                                    <div className="flex items-center gap-2">
+                                        <input type="radio" value="urgent" {...register("urgent")} />
+                                        <Label className="font-normal">ด่วนที่สุด</Label>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <input type="radio" value="soon" {...register("urgent")} />
+                                        <Label className="font-normal">ด่วน</Label>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <input type="radio" value="normal" {...register("urgent")} />
+                                        <Label className="font-normal">ปกติ</Label>
+                                    </div>
+                                </div>
+                            </div>
                             <div className="flex items-center justify-between">
-                                <h1>โรงพยาบาลที่ต้องการขอยืม</h1>
+                                <Label>โรงพยาบาลที่ต้องการขอยืม</Label>
                             </div>
                             <span className="text-sm text-gray-500 mb-2">
-                                Select the hospitals you want to send the request to.
+                                กรุณาเลือกโรงพยาบาลที่ต้องการขอยืม โดยสามารถเลือกได้มากกว่า 1 โรงพยาบาล
                             </span>
                             <div className="flex items-center gap-2 my-4">
                                 <Checkbox
@@ -280,9 +352,9 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                     className="cursor-pointer"
                                     checked={allSelected}
                                     onCheckedChange={toggleAllHospitals} />
-                                <Label htmlFor="select-all">Select All</Label>
+                                <Label htmlFor="select-all">เลือกทั้งหมด</Label>
                             </div>
-                            <ScrollArea className="h-45 w-full rounded-md border">
+                            <ScrollArea className="h-85 w-full rounded-md border">
                                 <div className="p-4">
                                     {hospitalList.map(hospital => {
                                         const isChecked = selectedHospitals.includes(hospital.id)
@@ -303,14 +375,30 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                     })}
                                 </div>
                             </ScrollArea>
+
+                            <Label className="mb-2 mt-4">เงื่อนไขการรับยา</Label>
+                            <div className="flex flex-col items-start space-y-2">
+                                <Label className="font-normal">
+                                    <input type="radio" value="exactType" {...register("requestTerm.receiveConditions.condition")} />
+                                    ยืมรายการที่ต้องการ
+                                </Label>
+                                <Label className="font-normal">
+                                    <input type="radio" value="subType" {...register("requestTerm.receiveConditions.condition")} />
+                                    ยืมรายการทดแทน
+                                </Label>
+                                <Label className="font-normal">
+                                    <input type="radio" value="other" {...register("requestTerm.receiveConditions.condition")} />
+                                    อื่นๆ
+                                </Label>
+                            </div>
                         </div>
                     </div>
 
                     <DialogFooter>
                         <Button type="submit" className="">
                             {loading
-                                ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500">Create</span></div>
-                                : "Create"}
+                                ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500">สร้าง</span></div>
+                                : "สร้าง"}
                         </Button>
                     </DialogFooter>
                 </form>

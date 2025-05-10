@@ -166,24 +166,38 @@ export default function CreateResponseDialog({ requestData, openDialog, onOpenCh
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[1200px]">
-                <DialogTitle>เวชภัณฑ์ยาที่ขาดแคลน</DialogTitle>
+                <DialogTitle>ยืนยันการให้ยืมเวชภัณฑ์ยาที่ขาดแคลน</DialogTitle>
                 <form onSubmit={handleSubmit(onSubmit, (invalidError) => {
                     console.error(invalidError)
                 })} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <RequestDetails requestData={requestData} responseForm={true} />
                         <div className="ml-15">
-                            <Badge
-                                variant={"outline"}
-                                className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3 mb-4">
-                                {requestData.urgent ?
-                                    <ShieldAlert className="text-red-700" /> :
-                                    "Normal"
-                                }
-                                <div className="text-sm">
-                                    {requestData.urgent ? "Urgent" : "Normal"}
-                                </div>
-                            </Badge>
+                            <div className="flex items-center space-x-2 mb-2">
+                                <Badge
+                                    variant={"destructive"}
+                                    className="flex gap-1 px-1.5 [&_svg]:size-3 mb-4">
+                                    {requestData.urgent ?
+                                        <ShieldAlert /> :
+                                        "Normal"
+                                    }
+                                    <div className="text-sm">
+                                        {requestData.urgent ? "ด่วนที่สุด" : "Normal"}
+                                    </div>
+                                </Badge>
+                                <Badge
+                                    variant={"outline"}
+                                    className="flex gap-1 px-1.5 [&_svg]:size-3 mb-4">
+                                    {/* {requestData.urgent ?
+                                        <ShieldAlert className="text-red-700" /> :
+                                        "Normal"
+                                    } */}
+                                    <div className="text-sm text-gray-600">
+                                        {requestData.requestTerm.receiveConditions.condition === "exactType" ? "ยืมรายการที่ต้องการ" : "ยืมรายการทดแทนได้"}
+                                    </div>
+                                </Badge>
+                            </div>
+                            
                             <div className="flex items-center space-x-4">
                                 <Label>
                                     <input type="radio" value="exactType" {...register("offeredMedicine.returnTerm")} />
