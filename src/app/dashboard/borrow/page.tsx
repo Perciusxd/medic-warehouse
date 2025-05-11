@@ -84,6 +84,8 @@ export default function BorrowDashboard(loggedInHospital: string) {
                         {selectedMed && (
                             <CreateResponseDialog
                                 requestData={selectedMed}
+                                status="offered"
+                                dialogTitle={"เวชภัณฑ์ยาที่ขาดแคลน"}
                                 openDialog={createRespDialogOpen}
                                 onOpenChange={(open) => {
                                     setCreateRespDialogOpen(open);

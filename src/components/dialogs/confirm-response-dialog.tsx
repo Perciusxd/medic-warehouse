@@ -19,114 +19,64 @@ import { Calendar1Icon, ShieldAlert } from "lucide-react"
 
 import RequestDetails from "./request-details"
 
-export default function CreateResponseDialog({ requestData, dialogTitle, status, openDialog, onOpenChange }) {
-    console.log(`${dialogTitle} requestData`, requestData);
-    const ResponseSchema = z.object({
+function getConfirmationSchema(requestData) {
+    return z.object({
+        responseId: z.string(),
         offeredMedicine: z.object({
-            offerAmount: z.number().min(1, "กรุณากรอกมากว่า 0").max(requestData.requestMedicine.requestAmount, `กรุณากรอกน้อยกว่า ${requestData.requestMedicine.requestAmount}`),
+            offerAmount: z.number()
+                .min(1, "กรุณากรอกมากว่า 0")
+                .max(requestData.requestMedicine.requestAmount, `กรุณากรอกน้อยกว่า ${requestData.requestMedicine.requestAmount}`),
             trademark: z.string(),
-            pricePerUnit: z.number().min(1, "Price per unit must be greater than 0").max(100000, "Price per unit must be less than 100000"),
+            pricePerUnit: z.number()
+                .min(1, "Price per unit must be greater than 0")
+                .max(100000, "Price per unit must be less than 100000"),
             manufacturer: z.string(),
-            // manufactureDate: z.string(),
-            // expiryDate: z.date(),
-            // imageRef: z.string(),
             returnTerm: z.enum(["exactType", "subType"]),
             returnConditions: z.object({
                 exactType: z.boolean(),
                 subType: z.boolean(),
                 otherType: z.boolean(),
                 supportType: z.boolean(),
-            })
-        })
-    })
-    
-    const [open, setOpen] = useState(false)
+            }),
+        }),
+    });
+}
+
+export default function ConfirmResponseDialog({ data, dialogTitle, status, openDialog, onOpenChange }) {
+    console.log('data', data);
     const [loading, setLoading] = useState(false)
+    const requestData = data.requestDetails
+    const ConfirmSchema = getConfirmationSchema(requestData)
+    console.log(ConfirmSchema);
     const {
         register,
-        watch,
-        handleSubmit,
-        setValue,
         getValues,
-        resetField,
-        control,
-        formState: { errors },
-    } = useForm<z.infer<typeof ResponseSchema>>({
-        resolver: zodResolver(ResponseSchema),
+        watch,
+        handleSubmit
+    } = useForm<z.infer<typeof ConfirmSchema>>({
+        resolver: zodResolver(ConfirmSchema),
         defaultValues: {
+            responseId: data.responseId,
             offeredMedicine: {
-                offerAmount: requestData.requestMedicine.requestAmount,
-                trademark: requestData.requestMedicine.trademark,
-                pricePerUnit: requestData.requestMedicine.pricePerUnit,
-                manufacturer: requestData.requestMedicine.manufacturer,
-                // manufactureDate: requestData.requestMedicine.manufactureDate,
-                // expiryDate: requestData.requestMedicine.expiryDate,
-                // imageRef: requestData.requestMedicine.imageRef,
-                returnTerm: "exactType",
+                offerAmount: data.offeredMedicine.offerAmount,
+                trademark: data.offeredMedicine.trademark,
+                pricePerUnit: data.offeredMedicine.pricePerUnit,
+                manufacturer: data.offeredMedicine.manufacturer,
+                returnTerm: data.offeredMedicine.returnTerm,
                 returnConditions: {
-                    exactType: true,
-                    subType: false,
-                    otherType: false,
-                    supportType: false,
-                }
-            }
+                    exactType: data.offeredMedicine.returnConditions.exactType,
+                    subType: data.offeredMedicine.returnConditions.subType,
+                    otherType: data.offeredMedicine.returnConditions.otherType,
+                    supportType: data.offeredMedicine.returnConditions.supportType,
+                },
+            },
         }
     })
-    const returnTerm = watch("offeredMedicine.returnTerm")
-    const offeredAmount = watch("offeredMedicine.offerAmount")
-    const offeredPrice = watch("offeredMedicine.pricePerUnit")
-    const returnConditions = watch("offeredMedicine.returnConditions")
-    const offeredMedicineRef = useRef(requestData.requestMedicine.name);
-    const [subTypeName, setSubTypeName] = useState(requestData.requestMedicine.name);
-    const subTypeFields = useRef({
-        trademark: requestData.requestMedicine.trademark,
-        offerAmount: requestData.requestMedicine.offerAmount,
-        pricePerUnit: requestData.requestMedicine.pricePerUnit,
-        manufacturer: requestData.requestMedicine.manufacturer,
-        // manufactureDate: requestData.requestMedicine.manufactureDate,
-        // expiryDate: requestData.requestMedicine.expiryDate,
-    })
 
-    useEffect(() => {
-        const currentValues = getValues("offeredMedicine");
-        if (returnTerm === "exactType") {
-            // save the current values to ref
-            subTypeFields.current = {
-                trademark: currentValues.trademark,
-                offerAmount: currentValues.offerAmount,
-                pricePerUnit: currentValues.pricePerUnit,
-                manufacturer: currentValues.manufacturer,
-                // manufactureDate: currentValues.manufactureDate,
-                // expiryDate: currentValues.expiryDate,
-            }
-            // set the values to the default values
-            const r = requestData.requestMedicine;
-            setValue("offeredMedicine.trademark", r.trademark);
-            setValue("offeredMedicine.offerAmount", r.requestAmount);
-            setValue("offeredMedicine.pricePerUnit", r.pricePerUnit);
-            setValue("offeredMedicine.manufacturer", r.manufacturer);
-            // setValue("offeredMedicine.manufactureDate", r.manufactureDate);
-            // setValue("offeredMedicine.expiryDate", r.expiryDate);
-        } else if (returnTerm === "subType") {
-            const r = subTypeFields.current;
-            setValue("offeredMedicine.trademark", r.trademark);
-            setValue("offeredMedicine.offerAmount", r.offerAmount);
-            setValue("offeredMedicine.pricePerUnit", r.pricePerUnit);
-            setValue("offeredMedicine.manufacturer", r.manufacturer);
-            // setValue("offeredMedicine.manufactureDate", r.manufactureDate);
-            // setValue("offeredMedicine.expiryDate", r.expiryDate);
-        }
-    }, [returnTerm, setValue, getValues, requestData]);
-
-    const onSubmit = async (data: z.infer<typeof ResponseSchema>) => {
+    const onSubmit = async (data) => {
         const responseBody = {
             ...data,
-            offeredMedicine: {
-                ...data.offeredMedicine,
-                name: requestData.requestMedicine.name,
-            },
-            responseId: requestData.requestId, // ! need to change to responseId
-            status: status
+            status: status,
         }
         console.log("Response Body:", responseBody)
         setLoading(true)
@@ -157,14 +107,12 @@ export default function CreateResponseDialog({ requestData, dialogTitle, status,
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[1200px]">
                 <DialogTitle>{dialogTitle}</DialogTitle>
-                <form onSubmit={handleSubmit(onSubmit, (invalidError) => {
-                    console.error(invalidError)
-                })} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                        <RequestDetails requestData={requestData} responseForm={true} />
+                        <RequestDetails requestData={data.requestDetails} responseForm={true} />
                         <div className="ml-15">
                             <div className="flex items-center space-x-2 mb-2">
-                                <Badge
+                                {/* <Badge
                                     variant={"destructive"}
                                     className="flex gap-1 px-1.5 [&_svg]:size-3 mb-4">
                                     {requestData.urgent ?
@@ -174,7 +122,7 @@ export default function CreateResponseDialog({ requestData, dialogTitle, status,
                                     <div className="text-sm">
                                         {requestData.urgent ? "ด่วนที่สุด" : "Normal"}
                                     </div>
-                                </Badge>
+                                </Badge> */}
                                 <Badge
                                     variant={"outline"}
                                     className="flex gap-1 px-1.5 [&_svg]:size-3 mb-4">
@@ -183,18 +131,18 @@ export default function CreateResponseDialog({ requestData, dialogTitle, status,
                                         "Normal"
                                     } */}
                                     <div className="text-sm text-gray-600">
-                                        {requestData.requestTerm.receiveConditions.condition === "exactType" ? "ยืมรายการที่ต้องการ" : "ยืมรายการทดแทนได้"}
+                                        {data.offeredMedicine.returnTerm === "exactType" ? "ยืมรายการที่ต้องการ" : "ยืมรายการทดแทนได้"}
                                     </div>
                                 </Badge>
                             </div>
-                            
+
                             <div className="flex items-center space-x-4">
                                 <Label>
-                                    <input type="radio" value="exactType" {...register("offeredMedicine.returnTerm")} disabled={true ? status !== "offered" : false} />
+                                    <input type="radio" checked={data.offeredMedicine.returnTerm === "exactType" ? true : false} disabled={true ? status !== "offered" : false} />
                                     ให้ยืมรายการที่ต้องการ
                                 </Label>
                                 <Label>
-                                    <input type="radio" value="subType" {...register("offeredMedicine.returnTerm")} disabled={true ? status !== "offered" : false} />
+                                    <input type="radio" checked={data.offeredMedicine.returnTerm === "exactType" ? false : true} disabled={true ? status !== "offered" : false} />
                                     ให้ยืมรายการทดแทน
                                 </Label>
                             </div>
@@ -233,7 +181,7 @@ export default function CreateResponseDialog({ requestData, dialogTitle, status,
                                     <Input
                                         type="text"
                                         {...register("offeredMedicine.trademark")}
-                                        disabled={returnTerm === "exactType"}
+                                        disabled={true ? status !== "offered" : false}
                                         className="border p-1"
                                     />
                                 </Label>
@@ -242,7 +190,7 @@ export default function CreateResponseDialog({ requestData, dialogTitle, status,
                                     <Input
                                         type="text"
                                         {...register("offeredMedicine.manufacturer")}
-                                        disabled={returnTerm === "exactType"}
+                                        disabled={true ? status !== "offered" : false}
                                         className="border p-1"
                                     />
                                 </Label>
@@ -250,55 +198,56 @@ export default function CreateResponseDialog({ requestData, dialogTitle, status,
                                     จำนวนที่ให้ยืม
                                     <Input
                                         type="number"
-                                        {...register("offeredMedicine.offerAmount", { valueAsNumber: true })}
-                                        disabled={returnTerm === "exactType"}
+                                        {...register("offeredMedicine.offerAmount", {
+                                            valueAsNumber: true,
+                                        })}
+                                        disabled={true ? status !== "offered" : false}
                                         className="border p-1 font-light"
                                     />
-                                    {errors.offeredMedicine?.offerAmount && (
-                                        <span className="text-red-500 text-xs -mt-1">{errors.offeredMedicine.offerAmount.message}</span>
-                                    )}
                                 </Label>
                                 <Label className="flex flex-col items-start">
                                     ราคาต่อหน่วย
                                     <Input
                                         type="number"
-                                        {...register("offeredMedicine.pricePerUnit", { valueAsNumber: true })}
-                                        disabled={returnTerm === "exactType"}
+                                        {...register("offeredMedicine.pricePerUnit", {
+                                            valueAsNumber: true,
+                                        })}
+                                        disabled={true ? status !== "offered" : false}
                                         className="border p-1"
                                     />
                                 </Label>
 
                                 <div>
-                                    รวม <span className="font-bold text-gray-950"> {(Number(offeredAmount) || 0) * (Number(offeredPrice) || 0)} </span> บาท
+                                    รวม <span className="font-bold text-gray-950"> {(Number(data.offeredMedicine.offerAmount) || 0) * (Number(data.offeredMedicine.pricePerUnit) || 0)} </span> บาท
                                 </div>
-                                
+
                             </div>
-                                <Label className="mt-4 mb-2">เงื่อนไขการคืนที่ยอมรับ</Label>
-                                <div className="grid grid-cols-2 items-start space-x-4 gap-2">
-                                    <Label className="font-normal">
-                                        <Checkbox {...register("offeredMedicine.returnConditions.exactType")} />
-                                        รับคืนเฉพาะรายการนี้
-                                    </Label>
-                                    <Label className="font-normal">
-                                        <Checkbox {...register("offeredMedicine.returnConditions.subType")} />
-                                        รับคืนยาทดแทนได้
-                                    </Label>
-                                    <Label className="font-normal">
-                                        <Checkbox {...register("offeredMedicine.returnConditions.otherType")} />
-                                        รับคืนยารายการอื่นได้
-                                    </Label>
-                                    <Label className="font-normal">
-                                        <Checkbox {...register("offeredMedicine.returnConditions.supportType")} />
-                                        สามารถสนับสนุนได้
-                                    </Label>
-                                </div>
+                            <Label className="mt-4 mb-2">เงื่อนไขการคืนที่ยอมรับ</Label>
+                            <div className="grid grid-cols-2 items-start space-x-4 gap-2">
+                                <Label className="font-normal">
+                                    <Checkbox checked={getValues("offeredMedicine.returnConditions.exactType")} disabled={true ? status !== "offered" : false} />
+                                    รับคืนเฉพาะรายการนี้
+                                </Label>
+                                <Label className="font-normal">
+                                    <Checkbox checked={getValues("offeredMedicine.returnConditions.subType")} disabled={true ? status !== "offered" : false} />
+                                    รับคืนยาทดแทนได้
+                                </Label>
+                                <Label className="font-normal">
+                                    <Checkbox checked={getValues("offeredMedicine.returnConditions.otherType")} disabled={true ? status !== "offered" : false} />
+                                    รับคืนยารายการอื่นได้
+                                </Label>
+                                <Label className="font-normal">
+                                    <Checkbox checked={getValues("offeredMedicine.returnConditions.supportType")} disabled={true ? status !== "offered" : false} />
+                                    สามารถสนับสนุนได้
+                                </Label>
+                            </div>
                         </div>
                     </div>
 
 
                     <DialogFooter>
                         <Button type="submit">
-                            {loading ? <div className="flex flex-row items-center gap-2 text-muted-foreground"><LoadingSpinner /> ยืมยันการให้ยืม</div>  : "ยืมยันการให้ยืม"}
+                            {loading ? <div className="flex flex-row items-center gap-2 text-muted-foreground"><LoadingSpinner /> ยืมยันการให้ยืม</div> : "ยืมยันการให้ยืม"}
                         </Button>
                         {/* <DialogClose>
                             <Button variant={"destructive"} type="submit" >

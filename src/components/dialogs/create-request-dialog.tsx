@@ -66,7 +66,7 @@ const FormSchema = z.object({
 })
 
 const RequestSchema = z.object({
-    urgent: z.enum(["urgent", "soon", "normal"]),
+    urgent: z.enum(["urgent", "immediate", "normal"]),
     requestMedicine: z.object({
         name: z.string().min(1, "Name is required"),
         trademark: z.string().min(1, "Trademark is required"),
@@ -112,7 +112,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
     } = useForm<z.infer<typeof RequestSchema>>({
         resolver: zodResolver(RequestSchema),
         defaultValues: {
-            urgent: "soon",
+            urgent: "immediate",
             requestMedicine: {
                 name: "",
                 trademark: "",
@@ -331,7 +331,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                         <Label className="font-normal">ด่วนที่สุด</Label>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <input type="radio" value="soon" {...register("urgent")} />
+                                        <input type="radio" value="immediate" {...register("urgent")} />
                                         <Label className="font-normal">ด่วน</Label>
                                     </div>
                                     <div className="flex items-center gap-2">

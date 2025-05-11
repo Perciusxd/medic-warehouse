@@ -14,11 +14,11 @@ export default async function handler(
         return;
     }
     try {
-        const status = 'in-transfer';
         const updatedAt = new Date().toString();
         const {
             responseId,
-            offeredMedicine
+            offeredMedicine,
+            status
         } = req.body;
         const responseAsset = {
             responseId: responseId,

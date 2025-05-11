@@ -15,8 +15,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import CreateResponse from "@/components/dialogs/create-response-dialog"
 import { Badge } from "@/components/ui/badge"
+import ConfirmResponseDialog from "@/components/dialogs/confirm-response-dialog"
 
-import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2Icon, LoaderIcon, ShieldAlertIcon, Truck, Clock } from "lucide-react"
+import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2Icon, LoaderIcon, ShieldAlertIcon, Truck, Clock, TicketCheck } from "lucide-react"
+import CreateResponseDialog from "@/components/dialogs/create-response-dialog"
 
 export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[] => [
     {
@@ -38,7 +40,7 @@ export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[
     {
         accessorKey: "updatedAt",
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Updated At</div>,
-        cell: ({ row }) => { return <div>{formatDate(row.getValue("updatedAt"))}</div> },
+        cell: ({ row }) => { return <div className="">{formatDate(row.getValue("updatedAt"))}</div> },
         enableGlobalFilter: false
     },
     {
@@ -64,12 +66,37 @@ export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[
             const details = med.responseDetails.slice(0, maxDisplay);
             const hasMore = med.responseDetails.length > maxDisplay;
 
+            const [dialogOpen, setDialogOpen] = useState(false);
+            const handleConfirm = () => {
+                console.log('Confirmed response');
+                setDialogOpen(false);
+            }
+
             return (
                 <div className="flex flex-col gap-y-1">
                     {med.responseDetails.map((detail, index) => (
-                        <div key={index} className="flex items-center gap-x-2">
+                        <div key={index} className="flex items-center gap-x-2 h-8">
                             <span>{detail.respondingHospitalNameEN}:</span>
-                            {detail.status === 'in-transfer' ? <span className="flex gap-x-2">จัดส่ง<Truck className="w-5 h-5" /></span> : <span className="flex gap-x-2">รอการตอบกลับ<Clock className="w-5 h-5" /></span>}
+                            {detail.status === 'offered' ? (
+                                <>
+                                    <Button 
+                                        variant={"link"} 
+                                        className="flex gap-x-2" 
+                                        onClick={() => handleApproveClick(detail)}>
+                                        ได้รับการยืนยัน<TicketCheck className="w-5 h-5" />
+                                    </Button>
+                                </>
+                            )
+                                : detail.status === 'pending'
+                                    ? (<span className="flex gap-x-2">รอการตอบกลับ<Clock className="w-5 h-5" /></span>)
+                                    : detail.status === 'to-transfer'
+                                        ? (<span className="flex gap-x-2">จัดส่ง<Truck className="w-5 h-5" /></span>)
+                                        : detail.status === 'completed'
+                                            ? (<span className="flex gap-x-2">เสร็จสิ้น<CheckCircle2Icon className="w-5 h-5" /></span>)
+                                            : detail.status === 'cancelled'
+                                                ? (<span className="flex gap-x-2">ยกเลิก<Trash2 className="w-5 h-5" /></span>)
+                                                : null
+                            }
                         </div>
                     ))}
                     {hasMore && <span className="text-muted-foreground">...</span>}

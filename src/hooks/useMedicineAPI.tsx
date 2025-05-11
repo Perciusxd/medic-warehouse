@@ -106,6 +106,7 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
                             return {
                                 ...asset,
                                 responseId,
+                                requestDetails: item,
                             };
                         })
                     )

@@ -20,7 +20,7 @@ import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2I
 
 export const columns = (handleApproveClick: (med: ResponseAsset) => void): ColumnDef<ResponseAsset>[] => [
     {
-        accessorKey: "requestMedicine.name",
+        accessorKey: "offeredMedicine.name",
         header: ({ column }) => {
             return (
                 <Button
