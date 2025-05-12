@@ -16,7 +16,6 @@ export default function StatusDashboard(loggedInHospital) {
     const [globalFilter, setGlobalFilter] = useState("");
 
     const handleApproveClick = (med) => {
-        console.log('selectedmed', med);
         setSelectedMed(med);
         setConfirmDialogOpen(true);
     }
@@ -44,7 +43,13 @@ export default function StatusDashboard(loggedInHospital) {
                                 dialogTitle={"ยืนยันการตอบรับคำขอ"}
                                 status={"to-transfer"}
                                 openDialog={confirmDialogOpen}
-                                onOpenChange={setConfirmDialogOpen}
+                                onOpenChange={(open) => {
+                                    setConfirmDialogOpen(open);
+                                    if (!open) {
+                                        fetchMedicineRequests();
+                                        setSelectedMed(null);
+                                    }
+                                }}
                             />
                         )}
                     </>

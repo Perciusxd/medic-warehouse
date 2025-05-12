@@ -68,7 +68,6 @@ export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[
 
             const [dialogOpen, setDialogOpen] = useState(false);
             const handleConfirm = () => {
-                console.log('Confirmed response');
                 setDialogOpen(false);
             }
 
@@ -90,7 +89,7 @@ export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[
                                 : detail.status === 'pending'
                                     ? (<span className="flex gap-x-2">รอการตอบกลับ<Clock className="w-5 h-5" /></span>)
                                     : detail.status === 'to-transfer'
-                                        ? (<span className="flex gap-x-2">จัดส่ง<Truck className="w-5 h-5" /></span>)
+                                        ? (<span className="flex gap-x-2">รอการจัดส่ง<Truck className="w-5 h-5" /></span>)
                                         : detail.status === 'completed'
                                             ? (<span className="flex gap-x-2">เสร็จสิ้น<CheckCircle2Icon className="w-5 h-5" /></span>)
                                             : detail.status === 'cancelled'

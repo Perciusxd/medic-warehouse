@@ -15,7 +15,7 @@ export const fetchAllMedicineReponsesInTransfer = async (loggedInHospital: strin
         const data = await response.json();
         console.log('transfer data', data);
         const filteredResponseInTransfer = data
-            .filter((item: any) => item.respondingHospitalNameEN === loggedInHospital && item.status === "in-transfer")
+            .filter((item: any) => item.respondingHospitalNameEN === loggedInHospital && item.status === "to-transfer")
         console.log('filterResp', filteredResponseInTransfer);
         return filteredResponseInTransfer
     } catch (error) {
