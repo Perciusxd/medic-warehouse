@@ -1,8 +1,29 @@
-import type { NextConfig } from "next";
+import { experimental } from "@grpc/grpc-js";
 
-const nextConfig: NextConfig = {
-  /* config options here */
-  pageExtensions: ["tsx", "ts"],
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // experimental: {
+  //   turbo: {
+  //     resolveAlias: {
+  //       canvas: './empty-module.js',
+  //     }
+  //   }
+  // },
+  webpack: (config, { isServer }) => {
+    // config.resolve.alias.canvas = false;
+    // Needed for PDF rendering libraries
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        os: false,
+        path: false,
+        stream: false,
+        canvas: false,
+      };
+    }
+    return config;
+  },
 };
 
-export default nextConfig;
+module.exports = nextConfig;

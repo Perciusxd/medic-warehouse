@@ -1,6 +1,7 @@
 import { useForm, Controller } from "react-hook-form"
 import { z } from "zod"
-import { format, sub } from "date-fns"
+import { formatDate } from "@/lib/utils"
+// import { format, formatDate, sub } from "date-fns"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect, useRef, useState } from "react"
 
@@ -14,10 +15,48 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar"
 import { Badge } from "@/components/ui/badge"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import PdfPreview from "@/components/ui/preview_pdf"
+import { Separator } from "@/components/ui/separator"
 
 import { Calendar1Icon, ShieldAlert } from "lucide-react"
 
 import RequestDetails from "./request-details"
+
+function RequestDetailPanel({ requestData }) {
+    return (
+        <div className="flex flex-col gap-2">
+            <h2 className="text-lg font-semibold">รายละเอียดการขอยืม</h2>
+            <div className="grid grid-rows-2 gap-1 font-light">
+                <div>วันที่ {formatDate(requestData.updatedAt)}</div>
+                <div>{requestData.postingHospitalNameTH}</div>
+                <div>ขอยืมยา {requestData.requestMedicine.name}</div>
+                <div>จำนวน {requestData.requestMedicine.requestAmount} {requestData.requestMedicine.quantity} เป็นเงิน {requestData.requestMedicine.pricePerUnit * requestData.requestMedicine.requestAmount} บาท</div>
+                <div>คาดว่าจะส่งคืนวันที่ {formatDate(requestData.requestTerm.expectedReturnDate)}</div>
+            </div>
+        </div>
+    )
+}
+
+function ResponseDetailPanel({ responseData }) {
+    const offeredMedicine = responseData.offeredMedicine
+    const totalPrice = offeredMedicine.pricePerUnit * offeredMedicine.offerAmount
+    return (
+        <div className="flex flex-col gap-2">
+            <h2 className="text-lg font-semibold">รายละเอียดการตอบรับ</h2>
+            <div className="grid grid-rows-2 gap-1 font-light">
+                <div>วันที่ {formatDate(responseData.updatedAt)}</div>
+                <div>{responseData.respondingHospitalNameTH}</div>
+                <div>ให้ยืมยา {offeredMedicine.name}({offeredMedicine.manufacturer}) เป็นจำนวน {offeredMedicine.offerAmount}/{offeredMedicine.unit} เป็นเงิน {totalPrice}</div>
+                <div>โดยเงื่อนไขการส่งคืน</div>
+                {offeredMedicine.returnTerm === "exactType" ? (
+                    <div>ส่งคืนตามประเภท</div>
+                ) : (
+                    <div>ส่งคืนตามประเภทย่อย</div>
+                )}
+            </div>
+        </div>
+    )
+}
 
 function getConfirmationSchema(requestData) {
     return z.object({
@@ -44,10 +83,10 @@ function getConfirmationSchema(requestData) {
 
 export default function ConfirmResponseDialog({ data, dialogTitle, status, openDialog, onOpenChange }) {
     console.log('data', data);
+    const pdfRef = useRef(null)
     const [loading, setLoading] = useState(false)
     const requestData = data.requestDetails
     const ConfirmSchema = getConfirmationSchema(requestData)
-    console.log(ConfirmSchema);
     const {
         register,
         getValues,
@@ -73,12 +112,17 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
         }
     })
 
+    const handleSaveRef = () => {
+        if (pdfRef.current?.savePdf) {
+            pdfRef.current.savePdf()
+        }
+    }
+
     const onSubmit = async (data) => {
         const responseBody = {
             ...data,
             status: status,
         }
-        console.log("Response Body:", responseBody)
         setLoading(true)
         try {
             const response = await fetch("/api/updateRequest", {
@@ -94,7 +138,6 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
             }
 
             const result = await response.json()
-            console.log("Success:", result)
             setLoading(false)
             onOpenChange(false)
         } catch (error) {
@@ -105,150 +148,30 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
 
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[1200px]">
+            <DialogContent className="max-w-[80vw]">
                 <DialogTitle>{dialogTitle}</DialogTitle>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <RequestDetails requestData={data.requestDetails} responseForm={true} />
-                        <div className="ml-15">
-                            <div className="flex items-center space-x-2 mb-2">
-                                {/* <Badge
-                                    variant={"destructive"}
-                                    className="flex gap-1 px-1.5 [&_svg]:size-3 mb-4">
-                                    {requestData.urgent ?
-                                        <ShieldAlert /> :
-                                        "Normal"
-                                    }
-                                    <div className="text-sm">
-                                        {requestData.urgent ? "ด่วนที่สุด" : "Normal"}
-                                    </div>
-                                </Badge> */}
-                                <Badge
-                                    variant={"outline"}
-                                    className="flex gap-1 px-1.5 [&_svg]:size-3 mb-4">
-                                    {/* {requestData.urgent ?
-                                        <ShieldAlert className="text-red-700" /> :
-                                        "Normal"
-                                    } */}
-                                    <div className="text-sm text-gray-600">
-                                        {data.offeredMedicine.returnTerm === "exactType" ? "ยืมรายการที่ต้องการ" : "ยืมรายการทดแทนได้"}
-                                    </div>
-                                </Badge>
-                            </div>
+                    <div className="flex flex-row gap-4">
+                        <div className="basis-[60%]">
+                            {/* <RequestDetails requestData={requestData} /> */}
+                            <RequestDetailPanel requestData={requestData} />
+                            <Separator className="my-4" />
+                            <ResponseDetailPanel responseData={data} />
+                        </div>
+                        <div className="basis-[40%] overflow-auto border rounded-md shadow-sm">
+                            <PdfPreview data={data} ref={pdfRef} />
 
-                            <div className="flex items-center space-x-4">
-                                <Label>
-                                    <input type="radio" checked={data.offeredMedicine.returnTerm === "exactType" ? true : false} disabled={true ? status !== "offered" : false} />
-                                    ให้ยืมรายการที่ต้องการ
-                                </Label>
-                                <Label>
-                                    <input type="radio" checked={data.offeredMedicine.returnTerm === "exactType" ? false : true} disabled={true ? status !== "offered" : false} />
-                                    ให้ยืมรายการทดแทน
-                                </Label>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4 mt-6">
-                                {/* <Label className="flex flex-col items-start">
-                                    Date of expiry
-                                    <Popover open={open} onOpenChange={setOpen}>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant={"outline"}
-                                                className="w-full justify-start text-left font-normal"
-                                                disabled={returnTerm === "exactType"}>
-                                                {getValues("offeredMedicine.expiryDate") ? format(new Date(getValues("offeredMedicine.expiryDate")), "PPP") : (<span>Pick a date</span>)}
-                                                <Calendar1Icon className="ml-auto h-4 w-4 opacity-50"></Calendar1Icon>
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0">
-                                            <Calendar
-                                                mode="single"
-                                                selected={getValues("offeredMedicine.expiryDate") ? new Date(getValues("offeredMedicine.expiryDate")) : undefined}
-                                                onSelect={(date) => {
-                                                    console.log(date);
-                                                    if (date) {
-                                                        setValue("offeredMedicine.expiryDate", date.toString());
-                                                        setOpen(false);
-                                                    }
-                                                }}
-                                                initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                </Label> */}
-                                <Label className="flex flex-col items-start">
-                                    ชื่อการค้า
-                                    <Input
-                                        type="text"
-                                        {...register("offeredMedicine.trademark")}
-                                        disabled={true ? status !== "offered" : false}
-                                        className="border p-1"
-                                    />
-                                </Label>
-                                <Label className="flex flex-col items-start">
-                                    ผู้ผลิต
-                                    <Input
-                                        type="text"
-                                        {...register("offeredMedicine.manufacturer")}
-                                        disabled={true ? status !== "offered" : false}
-                                        className="border p-1"
-                                    />
-                                </Label>
-                                <Label className="flex flex-col items-start font-bold">
-                                    จำนวนที่ให้ยืม
-                                    <Input
-                                        type="number"
-                                        {...register("offeredMedicine.offerAmount", {
-                                            valueAsNumber: true,
-                                        })}
-                                        disabled={true ? status !== "offered" : false}
-                                        className="border p-1 font-light"
-                                    />
-                                </Label>
-                                <Label className="flex flex-col items-start">
-                                    ราคาต่อหน่วย
-                                    <Input
-                                        type="number"
-                                        {...register("offeredMedicine.pricePerUnit", {
-                                            valueAsNumber: true,
-                                        })}
-                                        disabled={true ? status !== "offered" : false}
-                                        className="border p-1"
-                                    />
-                                </Label>
-
-                                <div>
-                                    รวม <span className="font-bold text-gray-950"> {(Number(data.offeredMedicine.offerAmount) || 0) * (Number(data.offeredMedicine.pricePerUnit) || 0)} </span> บาท
-                                </div>
-
-                            </div>
-                            <Label className="mt-4 mb-2">เงื่อนไขการคืนที่ยอมรับ</Label>
-                            <div className="grid grid-cols-2 items-start space-x-4 gap-2">
-                                <Label className="font-normal">
-                                    <Checkbox checked={getValues("offeredMedicine.returnConditions.exactType")} disabled={true ? status !== "offered" : false} />
-                                    รับคืนเฉพาะรายการนี้
-                                </Label>
-                                <Label className="font-normal">
-                                    <Checkbox checked={getValues("offeredMedicine.returnConditions.subType")} disabled={true ? status !== "offered" : false} />
-                                    รับคืนยาทดแทนได้
-                                </Label>
-                                <Label className="font-normal">
-                                    <Checkbox checked={getValues("offeredMedicine.returnConditions.otherType")} disabled={true ? status !== "offered" : false} />
-                                    รับคืนยารายการอื่นได้
-                                </Label>
-                                <Label className="font-normal">
-                                    <Checkbox checked={getValues("offeredMedicine.returnConditions.supportType")} disabled={true ? status !== "offered" : false} />
-                                    สามารถสนับสนุนได้
-                                </Label>
-                            </div>
                         </div>
                     </div>
+
 
 
                     <DialogFooter>
                         <Button type="submit">
                             {loading ? <div className="flex flex-row items-center gap-2 text-muted-foreground"><LoadingSpinner /> ยืมยันการให้ยืม</div> : "ยืมยันการให้ยืม"}
                         </Button>
+                        <Button variant={"outline"} onClick={handleSaveRef}>Save PDF</Button>
+
                         {/* <DialogClose>
                             <Button variant={"destructive"} type="submit" >
                                 Cancel
