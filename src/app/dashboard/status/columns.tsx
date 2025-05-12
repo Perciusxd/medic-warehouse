@@ -2,7 +2,8 @@
 import { useState } from "react"
 import { ResponseAsset } from "@/types/responseMed"
 import { ColumnDef } from "@tanstack/react-table"
-import { formatDate } from "@/lib/utils"
+// import { formatDate } from "@/lib/utils"
+import { format } from "date-fns"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -22,6 +23,33 @@ import CreateResponseDialog from "@/components/dialogs/create-response-dialog"
 
 export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[] => [
     {
+        accessorKey: "updatedAt",
+        header: ({column}) => {
+            return (
+                <Button
+                    className="font-medium text-muted-foreground text-left cursor-pointer"
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Updated At
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+            )
+        },
+        cell: ({ row }) => {
+            const raw = row.getValue("updatedAt");
+            const date = new Date(Number(raw)); // convert string to number, then to Date
+            const formattedDate = format(date, 'dd/MM/yyyy'); // format to date only
+            const timeOnly = format(date, 'HH:mm:ss'); // format to time only
+
+            return (<div>
+                <div className="text-sm font-bold">{formattedDate}</div>
+                <div className="text-xs text-muted-foreground">{timeOnly}</div>
+            </div>);
+        },
+        enableGlobalFilter: true
+    },
+    {
         accessorKey: "requestMedicine.name",
         header: ({ column }) => {
             return (
@@ -35,18 +63,27 @@ export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[
                 </Button>
             )
         },
+        cell: ({ row }) => {
+            const medName = row.original.requestMedicine.name
+            const medTrademark = row.original.requestMedicine.trademark
+
+            return (
+                <div className="flex flex-col">
+                    <div className="text-sm font-bold">{medName}</div>
+                    <div className="text-xs text-muted-foreground">{medTrademark}</div>
+                </div>
+            )
+        },
         enableGlobalFilter: true
     },
     {
-        accessorKey: "updatedAt",
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Updated At</div>,
-        cell: ({ row }) => { return <div className="">{formatDate(row.getValue("updatedAt"))}</div> },
-        enableGlobalFilter: false
+        accessorKey: "requestMedicine.quantity",
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ขนาด</div>,
+        enableGlobalFilter: true
     },
     {
-        accessorKey: "status",
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Status</div>,
-        enableGlobalFilter: false
+        accessorKey: "requestMedicine.unit",
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">หน่วย</div>,
     },
     {
         accessorKey: "requestMedicine.requestAmount",
@@ -74,7 +111,7 @@ export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[
             return (
                 <div className="flex flex-col gap-y-1">
                     {med.responseDetails.map((detail, index) => (
-                        <div key={index} className="flex items-center gap-x-2 h-8">
+                        <div key={index} className="flex items-center gap-x-2 h-4">
                             <span>{detail.respondingHospitalNameEN}:</span>
                             {detail.status === 'offered' ? (
                                 <>
