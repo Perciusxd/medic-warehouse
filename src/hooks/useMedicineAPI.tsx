@@ -98,7 +98,6 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
             const data = await fetchAllMedicineRequestsInProgress(loggedInHospital);
             const requestsWithReponses = await Promise.all(
                 data.map(async (item) => {
-                    console.log('object in useMedicineRequestsStatus', item);
                     const responseIds = item.responseIds;
                     const responseDetails = await Promise.all(
                         responseIds.map(async (responseId) => {
@@ -116,6 +115,12 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
                     };
                 })
             )
+            // sort by updatedAt
+            requestsWithReponses.sort((a, b) => {
+                const dateA = a.updatedAt;
+                const dateB = b.updatedAt;
+                return dateB - dateA;
+            });
             setMedicineRequests(requestsWithReponses)
             return requestsWithReponses;
         } catch (error) {

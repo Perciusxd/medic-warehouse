@@ -96,10 +96,8 @@ const defaultHospital = {
 }
 
 export default function CreateRequestDialog({ requestData, loggedInHospital, openDialog, onOpenChange }) {
-    console.log("loggedInHospital", loggedInHospital);
     const postingHospital = allHospitalList.find((hospital) => hospital.nameEN === loggedInHospital);
     const hospitalList = allHospitalList.filter(hospital => hospital.nameEN !== loggedInHospital)
-    console.log("postingHospital", postingHospital);
     const [loading, setLoading] = useState(false)
     const {
         register,
@@ -159,7 +157,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
             ? current.filter((id) => id !== hospitalId)
             : [...current, hospitalId]
         setValue("selectedHospitals", updated)
-        console.log(updated);
+
     }
 
     const onSubmit = async (data: z.infer<typeof RequestSchema>) => {
@@ -177,7 +175,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
             requestMedicine: data.requestMedicine,
             requestTerm: data.requestTerm
         }
-        console.log('requestData', requestData);
+
         const requestBody = {
             requestData: requestData,
             selectedHospitals: filterHospital
@@ -197,7 +195,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
             }
 
             const result = await response.json()
-            console.log("Success:", result)
+    
             setLoading(false)
             onOpenChange(false)
             // resetForm()

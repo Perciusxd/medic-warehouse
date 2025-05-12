@@ -51,7 +51,6 @@ export const fetchAllMedicineRequestsInProgress = async (loggedInHospital: strin
         // Filter only the requests that are pending and belong to the logged-in hospital
         const data = await response.json();
         const filterData = data.filter((item: any) => item.postingHospitalNameEN === loggedInHospital && item.status === "pending");
-        console.log('filterData in fetchAllMedicineRequestsInProgress', filterData);
         return filterData;
     } catch (error) {
         console.error("Error fetching medicine requests:", error);
