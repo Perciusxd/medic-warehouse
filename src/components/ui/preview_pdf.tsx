@@ -22,6 +22,32 @@ const styles = StyleSheet.create({
     body: { fontFamily: 'THSarabunNew', fontSize: 10, padding: 28 },
     image: { width: 80, height: 80, marginHorizontal: 240, marginVertical: 20 },
     text: { marginBottom: 8 },
+    table: {
+        display: 'table',
+        width: 'auto',
+        // borderStyle: 'solid',
+        // borderWidth: 1,
+        // borderRightWidth: 0,
+        // borderBottomWidth: 0,
+    },
+    tableRow: {
+        flexDirection: 'row',
+    },
+    tableHeader: {
+        width: '25%',
+        // borderStyle: 'solid',
+        // borderBottomWidth: 1,
+        // borderRightWidth: 1,
+        padding: 4,
+        fontWeight: 'bold',
+    },
+    tableCell: {
+        width: '25%',
+        // borderStyle: 'solid',
+        // borderBottomWidth: 1,
+        // borderRightWidth: 1,
+        padding: 4,
+    },
     // section: { marginBottom: 10 }
 });
 
@@ -43,8 +69,21 @@ function MyDocument({ data }) {
                 <Text style={styles.text}>เรื่อง    ขอยืมเวชภัณฑ์ยา</Text>
                 <Text style={styles.text}>เรียน    ผู้อำนวยการ {respondingHospitalNameTH}</Text>
                 <Text style={{ marginTop: 6, textIndent: 80 }}>ตามที่โรงพยาบาล {respondingHospitalNameTH} มีความประสงค์ที่จะขอยืมยา ดังรายการต่อไปนี้</Text>
-                <Text style={{ marginTop: 14 }}>รายการ                               จำนวน                             วันกำหนดคืน                     หมายเหตุ</Text>
-                <Text style={{ marginTop: 14, textDecorationStyle: "bold" }}>{requestMedName}                                    {requestAmount}                                  {expectedReturnDate}                           ...</Text>
+                <View style={[styles.table, { marginTop: 14 }]}>
+                    <View style={styles.tableRow}>
+                        <Text style={styles.tableHeader}>รายการ</Text>
+                        <Text style={styles.tableHeader}>จำนวน</Text>
+                        <Text style={styles.tableHeader}>วันกำหนดคืน</Text>
+                        <Text style={styles.tableHeader}>หมายเหตุ</Text>
+                    </View>
+                    <View style={styles.tableRow}>
+                        <Text style={styles.tableCell}>{requestMedName}</Text>
+                        <Text style={styles.tableCell}>{requestAmount}</Text>
+                        <Text style={styles.tableCell}>{expectedReturnDate}</Text>
+                        <Text style={styles.tableCell}>-</Text>
+                    </View>
+                </View>
+
                 <Text style={{ marginTop: 30, textIndent: 80 }}>ทั้งนี้ {respondingHospitalNameTH} จะส่งคืนยาให้แก่โรงพยาบาล {postingHospitalNameTH} ภายในวันที่ {expectedReturnDate} และหากมีการเปลี่ยนแปลงจะต้องแจ้งให้ทราบล่วงหน้า</Text>
                 <Text style={{ marginTop: 30, textIndent: 80 }}>จึงเรียนมาเพื่อโปรดพิจารณาและ {respondingHospitalNameTH} ขอขอบคุณ {postingHospitalNameTH} ณ โอกาสนี้</Text>
                 <Text style={{ marginTop: 30, textIndent: 280 }}>ขอแสดงความนับถือ</Text>
