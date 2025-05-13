@@ -93,6 +93,7 @@ export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[
     },
     {
         accessorKey: "responseDetails",
+        size: 400,
         header: () => (
             <div className="font-medium text-muted-foreground text-left cursor-default">
                 สถานะการตอบกลับ (จำนวนที่ให้ยืม)
@@ -100,7 +101,6 @@ export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[
         ),
         cell: ({ row }) => {
             const med = row.original;
-            console.log(med);
             const maxDisplay = 3;
             const details = med.responseDetails.slice(0, maxDisplay);
             const hasMore = med.responseDetails.length > maxDisplay;
@@ -126,11 +126,15 @@ export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[
                                     ? (<Button variant={'link'} disabled className="flex gap-x-2">รอการตอบกลับ (-)<StatusIndicator status={detail.status} /></Button>)
                                     : detail.status === 'to-transfer'
                                         ? (<Button variant={'link'} className="flex gap-x-2">รอการจัดส่ง<StatusIndicator status={detail.status} /></Button>)
-                                        : detail.status === 'completed'
-                                            ? (<span className="flex gap-x-2">เสร็จสิ้น<StatusIndicator status={detail.status} /></span>)
-                                            : detail.status === 'cancelled'
-                                                ? (<span className="flex gap-x-2">ยกเลิก<StatusIndicator status={detail.status} /></span>)
-                                                : null
+                                        : detail.status === 'to-return'
+                                            ? (<Button variant={'link'} className="flex gap-x-2">อยู่ระหว่างการจัดส่ง (เช็คสถานะ)<StatusIndicator status={detail.status} /></Button>)
+                                            : detail.status === 'returned'
+                                                ? (<Button variant={'link'} className="flex gap-x-2">ส่งคืนแล้ว<StatusIndicator status={detail.status} /></Button>)
+                                                : detail.status === 'completed'
+                                                        ? (<span className="flex gap-x-2">เสร็จสิ้น<StatusIndicator status={detail.status} /></span>)
+                                                        : detail.status === 'cancelled'
+                                                            ? (<span className="flex gap-x-2">ยกเลิก<StatusIndicator status={detail.status} /></span>)
+                                                            : null
                             }
                         </div>
                     ))}
@@ -138,7 +142,6 @@ export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[
                 </div>
             );
         },
-        size: 300
     },
     // {
     //     id: "actions",

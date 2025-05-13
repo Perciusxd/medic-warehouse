@@ -1,19 +1,20 @@
 "use client";
+import {
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+} from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import NotificationNumber from "@/components/ui/notification-number";
 import BorrowDashboard from "./borrow/page";
 import ReturnDashboard from "./return/page";
 import StatusDashboard from "./status/page";
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from "../../components/ui/button";
-
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import TransferDashboard from "./transfer/page";
+
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Dashboard() {
     const router = useRouter();
@@ -31,18 +32,16 @@ export default function Dashboard() {
 
                 const borrowCount = data.reduce((total, medicine) => {
                     if (!medicine.BorrowRecords) return total;
-
                     const hospitalBorrows = medicine.BorrowRecords.filter(
                         record => record.BorrowingHospital === loggedInHospital
                     ).length;
-
                     return total + hospitalBorrows;
                 }, 0);
 
                 setTotalBorrow(borrowCount);
             })
             .catch((error) => console.error("Error fetching data:", error));
-    }, [loggedInHospital]); // refetch when hospital changes
+    }, [loggedInHospital]);
 
     return (
         <div className="container mx-auto p-4">
@@ -61,13 +60,11 @@ export default function Dashboard() {
                         <SelectItem value="Hat Yai Hospital">Hat Yai Hospital</SelectItem>
                         <SelectItem value="Songkhla Hospital">Songkhla Hospital</SelectItem>
                         <SelectItem value="Hospital A">Hospital A</SelectItem>
-                        {/* Add more hospitals as needed */}
                     </SelectContent>
                 </Select>
             </div>
 
-            {/* Dashboard cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <div className="bg-white p-4 shadow rounded h-24 flex items-center justify-between">
                     <div className="text-lg font-semibold text-gray-700">Offer</div>
                     <div className="text-2xl text-blue-500 font-bold">10</div>
@@ -84,41 +81,29 @@ export default function Dashboard() {
                     <div className="text-lg font-semibold text-gray-700">Return</div>
                     <div className="text-2xl text-blue-500 font-bold">7</div>
                 </div>
-            </div>
+            </div> */}
 
-            {/* Tab buttons */}
-            <div className="mb-4 flex">
-                <button
-                    className={`px-4 py-2 ${selectedTab === 'borrow' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-blue-500'} focus:outline-none`}
-                    onClick={() => setSelectedTab('borrow')}
-                >
-                    เวชภัณฑ์ยาที่ขาดแคลน | Borrow
-                </button>
-                <button
-                    className={`px-4 py-2 ${selectedTab === 'return' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-blue-500'} focus:outline-none`}
-                    onClick={() => setSelectedTab('return')}
-                >
-                    เวชภัณฑ์ยาที่ต้องการแบ่งปัน | Share
-                </button>
-                <button
-                    className={`px-4 py-2 ${selectedTab === 'status' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-blue-500'} focus:outline-none`}
-                    onClick={() => setSelectedTab('status')}
-                >
-                    รายการยาที่ขอยืม
-                </button>
-                <button
-                    className={`px-4 py-2 ${selectedTab === 'transfer' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500 hover:text-blue-500'} focus:outline-none`}
-                    onClick={() => setSelectedTab('transfer')}
-                >
-                    รายการยาที่ให้ยืม
-                </button>
-            </div>
+            <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+                <TabsList className="mb-4 flex flex-wrap gap-2">
+                    <TabsTrigger value="borrow">เวชภัณฑ์ยาที่ขาดแคลน <NotificationNumber number={4} /></TabsTrigger>
+                    <TabsTrigger value="return">เวชภัณฑ์ยาที่ต้องการแบ่งปัน</TabsTrigger>
+                    <TabsTrigger value="status">รายการยาที่ขอยืม <NotificationNumber number={2} /></TabsTrigger>
+                    <TabsTrigger value="transfer">รายการยาที่ให้ยืม</TabsTrigger>
+                </TabsList>
 
-            {/* Conditional rendering */}
-            {selectedTab === 'borrow' && <BorrowDashboard loggedInHospital={loggedInHospital} />}
-            {selectedTab === 'return' && <ReturnDashboard />}
-            {selectedTab === 'status' && <StatusDashboard loggedInHospital={loggedInHospital} />}
-            {selectedTab === 'transfer' && <TransferDashboard loggedInHospital={loggedInHospital} />}
+                <TabsContent value="borrow">
+                    <BorrowDashboard loggedInHospital={loggedInHospital} />
+                </TabsContent>
+                <TabsContent value="return">
+                    <ReturnDashboard />
+                </TabsContent>
+                <TabsContent value="status">
+                    <StatusDashboard loggedInHospital={loggedInHospital} />
+                </TabsContent>
+                <TabsContent value="transfer">
+                    <TransferDashboard loggedInHospital={loggedInHospital} />
+                </TabsContent>
+            </Tabs>
         </div>
-    )
+    );
 }
