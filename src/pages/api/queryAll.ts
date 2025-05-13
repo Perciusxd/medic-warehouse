@@ -9,11 +9,12 @@ export default async function handler(
   res: NextApiResponse<any>
 ) {
   try {
+    const now = new Date();
     const contract = await initializeFabric();
     const resultBytes = await contract.evaluateTransaction("GetAllMedicines");
     const resultJson = utf8Decoder.decode(resultBytes);
     const result: any = JSON.parse(resultJson);
-    console.log("*** Query All Assets committed successfully");
+    console.log(`*** Query All Assets committed successfully at ${now.toLocaleString()}`);
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ error: "Failed to initialize Fabric" });

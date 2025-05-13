@@ -62,6 +62,9 @@ function getConfirmationSchema(requestData) {
     return z.object({
         responseId: z.string(),
         offeredMedicine: z.object({
+            name: z.string(),
+            unit: z.string(),
+            // quantity: z.string(),
             offerAmount: z.number()
                 .min(1, "กรุณากรอกมากว่า 0")
                 .max(requestData.requestMedicine.requestAmount, `กรุณากรอกน้อยกว่า ${requestData.requestMedicine.requestAmount}`),
@@ -97,6 +100,9 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
         defaultValues: {
             responseId: data.responseId,
             offeredMedicine: {
+                name: data.offeredMedicine.name,
+                unit: data.offeredMedicine.unit,
+                // quantity: data.offeredMedicine.quantity,
                 offerAmount: data.offeredMedicine.offerAmount,
                 trademark: data.offeredMedicine.trademark,
                 pricePerUnit: data.offeredMedicine.pricePerUnit,

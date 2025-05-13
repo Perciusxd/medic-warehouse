@@ -96,6 +96,7 @@ export const columns = (
         accessorKey: "status",
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">รายละเอียดยา</div>,
         cell: ({ row }) => {
+            console.log(row.original);
             const status = row.getValue("status")
             const offeredMedicineName = row.original.offeredMedicine?.name
             const offeredMedicineTrademark = row.original.offeredMedicine?.trademark
@@ -105,11 +106,11 @@ export const columns = (
             const price = offeredPricePerUnit * offeredAmount
 
             return (
-                <div className="flex flex-col text-gray-600">
+                <div className="flex flex-col">
                     <div className="text-md font-medium">ยา {offeredMedicineName}</div>
-                    <div className="text-xs">โดย {offeredMedicineTrademark}</div>
-                    <div className="text-md mt-2">เป็นจำนวน {offeredAmount} {offeredUnit}</div>
-                    <div className="text-xs">คิดเป็นมูลค่า {price} บาท</div>
+                    <div className="text-xs text-gray-600">โดย {offeredMedicineTrademark}</div>
+                    <div className="text-md font-medium mt-2">เป็นจำนวน {offeredAmount} {offeredUnit}</div>
+                    <div className="text-xs text-gray-600">คิดเป็นมูลค่า {price} บาท</div>
                 </div>
             )
         },
@@ -129,7 +130,7 @@ export const columns = (
             console.log('row.original', row.original);
             return (
                 <div className="flex flex-col">
-                    <div className="text-sm font-medium text-gray-600">คาดว่าจะได้รับคืนในอีก {daysUntilReturn} วัน</div>
+                    <div className="text-sm font-medium">คาดว่าจะได้รับคืนในอีก {daysUntilReturn} วัน</div>
                     <div className="text-xs font-medium text-gray-600">{formattedDate}</div>
                     {/* <div className="text-xs text-muted-foreground">จัดส่งโดย {respondingHospitalNameTH}</div> */}
                 </div>

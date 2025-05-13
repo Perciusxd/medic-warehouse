@@ -124,6 +124,8 @@ export default function CreateResponseDialog({ requestData, dialogTitle, status,
             offeredMedicine: {
                 ...data.offeredMedicine,
                 name: requestData.requestMedicine.name,
+                quantity: requestData.requestMedicine.quantity,
+                unit: requestData.requestMedicine.unit,
             },
             responseId: requestData.requestId, // ! need to change to responseId
             status: status

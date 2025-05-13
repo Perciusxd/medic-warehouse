@@ -2,7 +2,8 @@
 import { useState } from "react"
 import { ResponseAsset } from "@/types/responseMed"
 import { ColumnDef } from "@tanstack/react-table"
-import { formatDate } from "@/lib/utils"
+// import { formatDate } from "@/lib/utils"
+import { format } from "date-fns"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -15,6 +16,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import CreateResponse from "@/components/dialogs/create-response-dialog"
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import StatusIndicator from "@/components/ui/status-indicator"
 
 import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2Icon, LoaderIcon, ShieldAlertIcon } from "lucide-react"
 
@@ -39,37 +42,80 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
                 </Button>
             )
         },
+        cell: ({ row }) => {
+            const med = row.original
+            const requestMedicine = med.requestMedicine
+            const name = requestMedicine.name
+            const trademark = requestMedicine.trademark
+            return (
+                <div className="flex flex-col">
+                    <div className="text-md">{name}</div>
+                    <div className="text-xs text-gray-600">{trademark}</div>
+                </div>
+            )
+        },
         enableGlobalFilter: true
     },
     {
         accessorKey: "updatedAt",
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Updated At</div>,
-        cell: ({ row }) => { return <div>{formatDate(row.getValue("updatedAt"))}</div> },
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ประกาศเมื่อ</div>,
+        cell: ({ row }) => {
+            const createdAt = row.getValue("updatedAt")
+            const date = Number(createdAt); // convert string to number, then to Date
+            const formattedDate = format(date, 'dd/MM/yyyy'); // format to date only
+            const timeOnly = format(date, 'HH:mm:ss'); // format to time only
+            return <div>
+                <div className="text-sm font-medium text-gray-600">{formattedDate}</div>
+                <div className="text-xs text-muted-foreground">{timeOnly}</div>
+            </div>
+        },
         enableGlobalFilter: false
     },
-    {
-        accessorKey: "status",
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Status</div>,
-        enableGlobalFilter: false
-    },
+    // {
+    //     accessorKey: "status",
+    //     header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Status</div>,
+    //     enableGlobalFilter: false
+    // },
     {
         accessorKey: "postingHospitalNameEN",
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">From Hospital</div>,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จากโรงพยาบาล</div>,
+        cell: ({ row }) => {
+            const postingHospitalNameTH: string = row.original.postingHospitalNameTH
+            const med = row.original
+            return (
+                <div className="flex flex-row">
+                    <Avatar>
+                        <AvatarImage src="https://github.com/shadcn.png" />
+                        <AvatarFallback>CN</AvatarFallback>
+                    </Avatar>
+
+                    <div className="flex flex-col ml-2">
+                        <div className="text-md">{postingHospitalNameTH}</div>
+                        <div className="text-xs text-gray-600">คุณ xxx xxx</div>
+                        <div className="text-xs text-gray-600">ติดต่อ 080xxxxx</div>
+                    </div>
+
+                </div>
+            )
+        },
         enableGlobalFilter: true
     },
 
     {
         accessorKey: "requestMedicine.quantity",
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Quantity</div>,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ปริมาณ</div>,
         size: 100,
         cell: ({ row }) => {
             const med = row.original
+            const requestMedicine = med.requestMedicine
             return (
-                <div className="flex items-center space-x-2">
-                    <span>{med.requestMedicine.requestAmount}</span>
-                    <Button className="cursor-default" variant="link" onClick={() => alert("Edit quantity")}>
+                <div className="flex flex-col space-x-2">
+                    <span>{requestMedicine.requestAmount} {requestMedicine.unit}</span>
+                    <span className="text-xs text-gray-600">{requestMedicine.quantity}</span>
+
+                    {/* <Button className="cursor-default" variant="link" onClick={() => alert("Edit quantity")}>
                         <Pencil className="h-4 w-4" />
-                    </Button>
+                    </Button> */}
                 </div>
             )
         },
@@ -77,22 +123,31 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
     },
     {
         accessorKey: "requestMedicine.urgent",
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Urgent</div>,
+        size: 100,
+        header: ({ column }) => {
+            return (
+                <Button
+                    className="font-medium text-muted-foreground text-left cursor-pointer"
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    ความเร่งด่วน
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+            )
+        },
         cell: ({ row }) => {
             const med = row.original
-            console.log(med);
             return (
-                <Badge
-                    variant="outline"
-                    className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3 cursor-default"
-                >
-                    {med.urgent ? (
-                        <ShieldAlertIcon className="text-red-500 dark:text-red-400" />
-                    ) : (
-                        <LoaderIcon />
-                    )}
-                    {med.urgent ? "Urgent" : "Normal"}
-                </Badge>
+                <div className="flex items-center space-x-2">
+                    <div>
+                        <StatusIndicator status={med.urgent} />
+                    </div>
+
+                    <div>
+                        {med.urgent === "urgent" ? "ด่วนที่สุด" : med.urgent === "immediate" ? "ด่วน" : "ปกติ"}
+                    </div>
+                </div>
             )
         },
         enableSorting: true,
@@ -101,7 +156,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
     {
         id: "actions",
         size: 48,
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Actions</div>,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default"></div>,
         cell: ({ row }) => {
             const med = row.original
             return (
