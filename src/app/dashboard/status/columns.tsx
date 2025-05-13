@@ -22,7 +22,10 @@ import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2I
 import CreateResponseDialog from "@/components/dialogs/create-response-dialog"
 import StatusIndicator from "@/components/ui/status-indicator"
 
-export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[] => [
+export const columns = (
+    handleApproveClick: (med: any) => void,
+    handleDeliveryClick: (med: any) => void
+): ColumnDef<any>[] => [
     {
         accessorKey: "updatedAt",
         header: ({column}) => {
@@ -127,9 +130,9 @@ export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[
                                     : detail.status === 'to-transfer'
                                         ? (<Button variant={'link'} className="flex gap-x-2">รอการจัดส่ง<StatusIndicator status={detail.status} /></Button>)
                                         : detail.status === 'to-return'
-                                            ? (<Button variant={'link'} className="flex gap-x-2">อยู่ระหว่างการจัดส่ง (เช็คสถานะ)<StatusIndicator status={detail.status} /></Button>)
-                                            : detail.status === 'returned'
-                                                ? (<Button variant={'link'} className="flex gap-x-2">ส่งคืนแล้ว<StatusIndicator status={detail.status} /></Button>)
+                                            ? (<Button variant={'link'} className="flex gap-x-2" onClick={() => handleDeliveryClick(detail)}>อยู่ระหว่างการจัดส่ง (เช็คสถานะ)<StatusIndicator status={detail.status} /></Button>)
+                                            : detail.status === 'in-return'
+                                                ? (<Button variant={'link'} className="flex gap-x-2">ต้องส่งคืน<StatusIndicator status={detail.status} /></Button>)
                                                 : detail.status === 'completed'
                                                         ? (<span className="flex gap-x-2">เสร็จสิ้น<StatusIndicator status={detail.status} /></span>)
                                                         : detail.status === 'cancelled'
