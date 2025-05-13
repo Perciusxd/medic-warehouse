@@ -20,6 +20,7 @@ import ConfirmResponseDialog from "@/components/dialogs/confirm-response-dialog"
 
 import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2Icon, LoaderIcon, ShieldAlertIcon, Truck, Clock, TicketCheck } from "lucide-react"
 import CreateResponseDialog from "@/components/dialogs/create-response-dialog"
+import StatusIndicator from "@/components/ui/status-indicator"
 
 export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[] => [
     {
@@ -31,7 +32,7 @@ export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Updated At
+                    วันที่ขอยืม
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
@@ -43,7 +44,7 @@ export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[
             const timeOnly = format(date, 'HH:mm:ss'); // format to time only
 
             return (<div>
-                <div className="text-sm font-bold">{formattedDate}</div>
+                <div className="text-sm font-medium text-gray-600">{formattedDate}</div>
                 <div className="text-xs text-muted-foreground">{timeOnly}</div>
             </div>);
         },
@@ -69,7 +70,7 @@ export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[
 
             return (
                 <div className="flex flex-col">
-                    <div className="text-sm font-bold">{medName}</div>
+                    <div className="text-sm font-medium text-gray-600">{medName}</div>
                     <div className="text-xs text-muted-foreground">{medTrademark}</div>
                 </div>
             )
@@ -94,11 +95,12 @@ export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[
         accessorKey: "responseDetails",
         header: () => (
             <div className="font-medium text-muted-foreground text-left cursor-default">
-                สถานะการตอบกลับ
+                สถานะการตอบกลับ (จำนวนที่ให้ยืม)
             </div>
         ),
         cell: ({ row }) => {
             const med = row.original;
+            console.log(med);
             const maxDisplay = 3;
             const details = med.responseDetails.slice(0, maxDisplay);
             const hasMore = med.responseDetails.length > maxDisplay;
@@ -109,33 +111,30 @@ export const columns = (handleApproveClick: (med: any) => void): ColumnDef<any>[
             }
 
             return (
-                <div className="flex flex-col gap-y-1">
+                <div className="flex flex-col gap-y-1 text-gray-600">
                     {med.responseDetails.map((detail, index) => (
                         <div key={index} className="flex items-center gap-x-2 h-4">
-                            <span>{detail.respondingHospitalNameEN}:</span>
+                            <span>{detail.respondingHospitalNameTH}:</span>
                             {detail.status === 'offered' ? (
-                                <>
                                     <Button 
                                         variant={"link"} 
                                         className="flex gap-x-2" 
-                                        onClick={() => handleApproveClick(detail)}>
-                                        ได้รับการยืนยัน<TicketCheck className="w-5 h-5" />
+                                    onClick={() => handleApproveClick(detail)}>ได้รับการยืนยัน ({detail.offeredMedicine.offerAmount})<StatusIndicator status={detail.status} />
                                     </Button>
-                                </>
                             )
                                 : detail.status === 'pending'
-                                    ? (<span className="flex gap-x-2">รอการตอบกลับ<Clock className="w-5 h-5" /></span>)
+                                    ? (<Button variant={'link'} disabled className="flex gap-x-2">รอการตอบกลับ (-)<StatusIndicator status={detail.status} /></Button>)
                                     : detail.status === 'to-transfer'
-                                        ? (<span className="flex gap-x-2">รอการจัดส่ง<Truck className="w-5 h-5" /></span>)
+                                        ? (<Button variant={'link'} className="flex gap-x-2">รอการจัดส่ง<StatusIndicator status={detail.status} /></Button>)
                                         : detail.status === 'completed'
-                                            ? (<span className="flex gap-x-2">เสร็จสิ้น<CheckCircle2Icon className="w-5 h-5" /></span>)
+                                            ? (<span className="flex gap-x-2">เสร็จสิ้น<StatusIndicator status={detail.status} /></span>)
                                             : detail.status === 'cancelled'
-                                                ? (<span className="flex gap-x-2">ยกเลิก<Trash2 className="w-5 h-5" /></span>)
+                                                ? (<span className="flex gap-x-2">ยกเลิก<StatusIndicator status={detail.status} /></span>)
                                                 : null
                             }
                         </div>
                     ))}
-                    {hasMore && <span className="text-muted-foreground">...</span>}
+                    {hasMore && <Button variant={'link'} className="">เพิ่มเติม...</Button>}
                 </div>
             );
         },
