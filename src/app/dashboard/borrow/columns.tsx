@@ -139,14 +139,15 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
         },
         cell: ({ row }) => {
             const med = row.original
+            const status = med.requestDetails.urgent
             return (
                 <div className="flex items-center space-x-2">
                     <div>
-                        <StatusIndicator status={med.urgent} />
+                        <StatusIndicator status={status} />
                     </div>
 
                     <div>
-                        {med.urgent === "urgent" ? "ด่วนที่สุด" : med.urgent === "immediate" ? "ด่วน" : "ปกติ"}
+                        {status === "urgent" ? "ด่วนที่สุด" : status === "immediate" ? "ด่วน" : "ปกติ"}
                     </div>
                 </div>
             )

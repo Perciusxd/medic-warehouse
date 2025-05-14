@@ -72,8 +72,7 @@ export default function StatusDashboard(loggedInHospital) {
     useEffect(() => {
         fetchMedicineRequests();
     }, [fetchMedicineRequests]);
-
-    console.log('status medicineRequests', medicineRequests);
+    
     return (
         <>
             {
