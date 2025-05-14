@@ -2,6 +2,9 @@ import React from 'react';
 import clsx from 'clsx';
 
 const STATUS_COLORS = {
+    'urgent': 'bg-red-600',
+    'immediate': 'bg-orange-500',
+    'normal': 'bg-green-500',
     'pending': 'bg-yellow-400',
     'offered': 'bg-blue-400',
     'to-transfer': 'bg-indigo-500',

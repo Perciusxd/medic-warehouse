@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetchAllMedicineRequests, fetchAssetById, fetchAllMedicineRequestsInProgress } from "@/pages/api/requestService";
 import { fetchAllMedicineReponsesInTransfer } from "@/pages/api/transferService";
-
+import { fetchAllRequestsByStatus } from "@/pages/api/statusService";
 /**
  * Custom hook for managing medicine requests
  * @param {string} loggedInHospital - The currently logged in hospital
@@ -93,43 +93,18 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
 
         setIsLoading(true);
         setError(null);
-
+        
         try {
-            const data = await fetchAllMedicineRequestsInProgress(loggedInHospital);
-            const requestsWithReponses = await Promise.all(
-                data.map(async (item) => {
-                    const responseIds = item.responseIds;
-                    const responseDetails = await Promise.all(
-                        responseIds.map(async (responseId) => {
-                            const asset = await fetchAssetById(responseId);
-                            return {
-                                ...asset,
-                                responseId,
-                                requestDetails: item,
-                            };
-                        })
-                    )
-                    return {
-                        ...item,
-                        responseDetails,
-                    };
-                })
-            )
-            // sort by updatedAt
-            requestsWithReponses.sort((a, b) => {
-                const dateA = a.updatedAt;
-                const dateB = b.updatedAt;
-                return dateB - dateA;
-            });
-            setMedicineRequests(requestsWithReponses)
-            return requestsWithReponses;
+            const response = await fetchAllRequestsByStatus(loggedInHospital, "pending");
+            setMedicineRequests(response)
+            return response;
         } catch (error) {
             setError(error.message || "Failed to fetch medicine requests");
         } finally {
             setIsLoading(false);
         }
     }, [loggedInHospital]);
-
+    
     useEffect(() => {
         fetchMedicineRequests();
     }, [fetchMedicineRequests]);

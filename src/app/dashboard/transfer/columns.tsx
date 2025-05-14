@@ -24,7 +24,8 @@ import StatusIndicator from "@/components/ui/status-indicator"
 
 export const columns = (
     handleApproveClick: (med: ResponseAsset) => void,
-    loading: boolean = false
+    loading: boolean = false,
+    loadingRowId: string | null = null
 ): ColumnDef<ResponseAsset>[] => [
     {
         accessorKey: "updatedAt",
@@ -105,11 +106,11 @@ export const columns = (
             const price = offeredPricePerUnit * offeredAmount
 
             return (
-                <div className="flex flex-col text-gray-600">
+                <div className="flex flex-col">
                     <div className="text-md font-medium">ยา {offeredMedicineName}</div>
-                    <div className="text-xs">โดย {offeredMedicineTrademark}</div>
-                    <div className="text-md mt-2">เป็นจำนวน {offeredAmount} {offeredUnit}</div>
-                    <div className="text-xs">คิดเป็นมูลค่า {price} บาท</div>
+                    <div className="text-xs text-gray-600">โดย {offeredMedicineTrademark}</div>
+                    <div className="text-md font-medium mt-2">เป็นจำนวน {offeredAmount} {offeredUnit}</div>
+                    <div className="text-xs text-gray-600">คิดเป็นมูลค่า {price} บาท</div>
                 </div>
             )
         },
@@ -126,10 +127,9 @@ export const columns = (
             const daysUntilReturn = differenceInCalendarDays(date, new Date())
             const formattedDate = format(date, 'dd/MM/yyyy');
             const timeOnly = format(date, 'HH:mm:ss');
-            console.log('row.original', row.original);
             return (
                 <div className="flex flex-col">
-                    <div className="text-sm font-medium text-gray-600">คาดว่าจะได้รับคืนในอีก {daysUntilReturn} วัน</div>
+                    <div className="text-sm font-medium">คาดว่าจะได้รับคืนในอีก {daysUntilReturn} วัน</div>
                     <div className="text-xs font-medium text-gray-600">{formattedDate}</div>
                     {/* <div className="text-xs text-muted-foreground">จัดส่งโดย {respondingHospitalNameTH}</div> */}
                 </div>
@@ -143,13 +143,14 @@ export const columns = (
         // header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Actions</div>,
         cell: ({ row }) => {
             const med = row.original
+            const isLoading = loadingRowId === med.id
             return (
                 <div className="space-x-2">
                 <Button
                     variant={'outline'}
                     onClick={() => handleApproveClick(med)}
                 >
-                    { loading
+                        { isLoading
                         ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500">ส่งแล้ว</span></div>
                         : <div className="flex flex-row items-center gap-2"><Check />ส่งแล้ว</div>
                     }

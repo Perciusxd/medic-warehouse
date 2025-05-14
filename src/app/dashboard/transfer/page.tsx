@@ -22,11 +22,12 @@ import { ResponseAsset } from "@/types/responseMed";
 export default function TransferDashboard(loggedInHospital) {
     const { medicineResponses, loading: loadingResponse, error: errorResponse, fetchMedicineResponses } = useMedicineResponsesInTransfer(loggedInHospital.loggedInHospital);
     const [selectedMed, setSelectedMed] = useState(null);
+    const [loadingRowId, setLoadingRowId] = useState(null);
     const [globalFilter, setGlobalFilter] = useState("");
     const [loading, setLoading] = useState(false);
 
     const handleApproveClick = async (med: ResponseAsset) => {
-        console.log('med in handleApproveClick', med);
+        setLoadingRowId(med.id);
         setSelectedMed(med);
         const responseBody = {
             responseId: med.id,
@@ -48,7 +49,6 @@ export default function TransferDashboard(loggedInHospital) {
             }
 
             const result = await response.json()
-            console.log(result);
             fetchMedicineResponses();
             setLoading(false)
         } catch (error) {
@@ -61,11 +61,9 @@ export default function TransferDashboard(loggedInHospital) {
         fetchMedicineResponses();
     }, [fetchMedicineResponses]);
 
-    console.log(medicineResponses);
-
     return (
         <div>
-            <DataTable columns={columns(handleApproveClick, loading)} data={medicineResponses} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+            <DataTable columns={columns(handleApproveClick, loading, loadingRowId)} data={medicineResponses} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
         </div>
     )
 }

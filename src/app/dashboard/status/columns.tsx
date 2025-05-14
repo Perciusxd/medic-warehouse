@@ -117,12 +117,17 @@ export const columns = (
                 <div className="flex flex-col gap-y-1 text-gray-600">
                     {med.responseDetails.map((detail, index) => (
                         <div key={index} className="flex items-center gap-x-2 h-4">
-                            <span>{detail.respondingHospitalNameTH}:</span>
+                            <span>{detail.respondingHospitalNameTH}{index}:</span>
                             {detail.status === 'offered' ? (
                                     <Button 
                                         variant={"link"} 
                                         className="flex gap-x-2" 
-                                    onClick={() => handleApproveClick(detail)}>ได้รับการยืนยัน ({detail.offeredMedicine.offerAmount})<StatusIndicator status={detail.status} />
+                                    onClick={() => handleApproveClick({
+                                        ...med,
+                                        responseId: detail.id,
+                                        offeredMedicine: detail.offeredMedicine,
+                                        requestDetails: med.requestMedicine,
+                                    })}>ได้รับการยืนยัน ({detail.offeredMedicine.offerAmount})<StatusIndicator status={detail.status} />
                                     </Button>
                             )
                                 : detail.status === 'pending'
@@ -130,7 +135,12 @@ export const columns = (
                                     : detail.status === 'to-transfer'
                                         ? (<Button variant={'link'} className="flex gap-x-2">รอการจัดส่ง<StatusIndicator status={detail.status} /></Button>)
                                         : detail.status === 'to-return'
-                                            ? (<Button variant={'link'} className="flex gap-x-2" onClick={() => handleDeliveryClick(detail)}>อยู่ระหว่างการจัดส่ง (เช็คสถานะ)<StatusIndicator status={detail.status} /></Button>)
+                                            ? (<Button variant={'link'} className="flex gap-x-2" onClick={() => handleDeliveryClick({
+                                                ...med,
+                                                responseId: detail.id,
+                                                offeredMedicine: detail.offeredMedicine,
+                                                requestDetails: med.requestMedicine,
+                                            })}>อยู่ระหว่างการจัดส่ง (เช็คสถานะ)<StatusIndicator status={detail.status} /></Button>)
                                             : detail.status === 'in-return'
                                                 ? (<Button variant={'link'} className="flex gap-x-2">ต้องส่งคืน<StatusIndicator status={detail.status} /></Button>)
                                                 : detail.status === 'completed'
