@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetchAllMedicineRequests, fetchAssetById, fetchAllMedicineRequestsInProgress } from "@/pages/api/requestService";
 import { fetchAllMedicineReponsesInTransfer } from "@/pages/api/transferService";
-
+import { fetchAllRequestsByStatus } from "@/pages/api/statusService";
 /**
  * Custom hook for managing medicine requests
  * @param {string} loggedInHospital - The currently logged in hospital
@@ -93,56 +93,47 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
 
         setIsLoading(true);
         setError(null);
-
-        const body = {
-            loggedInHospital: loggedInHospital,
-            status: "pending",
-        }
-        const startFetch = performance.now();
-        const response = await fetch("api/queryRequests", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
-        })
-        const result = await response.json();
-        console.log("richQuery", result);
-        const endFetch = performance.now();
-        console.log("RQ request took", endFetch - startFetch, "ms");
         
         try {
-            const startFetch = performance.now();
-            const data = await fetchAllMedicineRequestsInProgress(loggedInHospital);
-            const requestsWithReponses = await Promise.all(
-                data.map(async (item) => {
-                    const responseIds = item.responseIds;
-                    const responseDetails = await Promise.all(
-                        responseIds.map(async (responseId) => {
-                            const asset = await fetchAssetById(responseId);
-                            return {
-                                ...asset,
-                                responseId,
-                                requestDetails: item,
-                            };
-                        })
-                    )
-                    return {
-                        ...item,
-                        responseDetails,
-                    };
-                })
-            )
-            // sort by updatedAt
-            requestsWithReponses.sort((a, b) => {
-                const dateA = a.updatedAt;
-                const dateB = b.updatedAt;
-                return dateB - dateA;
-            });
-            const endFetch = performance.now();
-            console.log("Query request took", endFetch - startFetch, "ms");
-            setMedicineRequests(requestsWithReponses)
-            return requestsWithReponses;
+            const _startFetch = performance.now();
+            const _data = await fetchAllRequestsByStatus(loggedInHospital, "pending");
+            console.log('_data', _data);
+            const _endFetch = performance.now();
+            console.log("RQuery request took", _endFetch - _startFetch, "ms");
+
+            // const startFetch = performance.now();
+            // const data = await fetchAllMedicineRequestsInProgress(loggedInHospital);
+            // console.log('data', data);
+            // const requestsWithReponses = await Promise.all(
+            //     data.map(async (item) => {
+            //         const responseIds = item.responseIds;
+            //         const responseDetails = await Promise.all(
+            //             responseIds.map(async (responseId) => {
+            //                 const asset = await fetchAssetById(responseId);
+            //                 return {
+            //                     ...asset,
+            //                     responseId,
+            //                     requestDetails: item,
+            //                 };
+            //             })
+            //         )
+            //         return {
+            //             ...item,
+            //             responseDetails,
+            //         };
+            //     })
+            // )
+            // // sort by updatedAt
+            // requestsWithReponses.sort((a, b) => {
+            //     const dateA = a.updatedAt;
+            //     const dateB = b.updatedAt;
+            //     return dateB - dateA;
+            // });
+            // const endFetch = performance.now();
+            // console.log("Query request took", endFetch - startFetch, "ms");
+            // console.log('requestsWithReponses', requestsWithReponses);
+            setMedicineRequests(_data)
+            return _data;
         } catch (error) {
             setError(error.message || "Failed to fetch medicine requests");
         } finally {

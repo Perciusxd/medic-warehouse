@@ -22,16 +22,17 @@ import { Calendar1Icon, ShieldAlert } from "lucide-react"
 
 import RequestDetails from "./request-details"
 
-function RequestDetailPanel({ requestData }) {
+function RequestDetailPanel({ data }) {
+    console.log('reqestdetailpanel', data);
     return (
         <div className="flex flex-col gap-2">
             <h2 className="text-lg font-semibold">รายละเอียดการขอยืม</h2>
             <div className="grid grid-rows-2 gap-1 font-light">
-                <div>วันที่ {formatDate(requestData.updatedAt)}</div>
-                <div>{requestData.postingHospitalNameTH}</div>
-                <div>ขอยืมยา {requestData.requestMedicine.name}</div>
-                <div>จำนวน {requestData.requestMedicine.requestAmount} {requestData.requestMedicine.quantity} เป็นเงิน {requestData.requestMedicine.pricePerUnit * requestData.requestMedicine.requestAmount} บาท</div>
-                <div>คาดว่าจะส่งคืนวันที่ {formatDate(requestData.requestTerm.expectedReturnDate)}</div>
+                <div>วันที่ {formatDate(data.updatedAt)}</div>
+                <div>{data.postingHospitalNameTH}</div>
+                <div>ขอยืมยา {data.name}</div>
+                <div>จำนวน {data.requestDetails.requestAmount} {data.requestDetails.quantity} เป็นเงิน {data.requestDetails.pricePerUnit * data.requestDetails.requestAmount} บาท</div>
+                <div>คาดว่าจะส่งคืนวันที่ {formatDate(data.requestTerm.expectedReturnDate)}</div>
             </div>
         </div>
     )
@@ -67,7 +68,7 @@ function getConfirmationSchema(requestData) {
             // quantity: z.string(),
             offerAmount: z.number()
                 .min(1, "กรุณากรอกมากว่า 0")
-                .max(requestData.requestMedicine.requestAmount, `กรุณากรอกน้อยกว่า ${requestData.requestMedicine.requestAmount}`),
+                .max(requestData.requestAmount, `กรุณากรอกน้อยกว่า ${requestData.requestAmount}`),
             trademark: z.string(),
             pricePerUnit: z.number()
                 .min(1, "Price per unit must be greater than 0")
@@ -85,10 +86,11 @@ function getConfirmationSchema(requestData) {
 }
 
 export default function ConfirmResponseDialog({ data, dialogTitle, status, openDialog, onOpenChange }) {
-    console.log('data', data);
+    console.log('ConfirmResponseDialog data', data);
     const pdfRef = useRef(null)
     const [loading, setLoading] = useState(false)
     const requestData = data.requestDetails
+    console.log('requestData', requestData);
     const ConfirmSchema = getConfirmationSchema(requestData)
     const {
         register,
@@ -160,7 +162,7 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
                     <div className="flex flex-row gap-4">
                         <div className="basis-[60%]">
                             {/* <RequestDetails requestData={requestData} /> */}
-                            <RequestDetailPanel requestData={requestData} />
+                            <RequestDetailPanel data={data} />
                             <Separator className="my-4" />
                             <ResponseDetailPanel responseData={data} />
                         </div>

@@ -29,6 +29,7 @@ export default function StatusDashboard(loggedInHospital) {
     const [globalFilter, setGlobalFilter] = useState("");
 
     const handleApproveClick = (med) => {
+        console.log('handleApproveClick', med);
         setSelectedMed(med);
         setConfirmDialogOpen(true);
     }
@@ -71,6 +72,8 @@ export default function StatusDashboard(loggedInHospital) {
     useEffect(() => {
         fetchMedicineRequests();
     }, [fetchMedicineRequests]);
+
+    console.log('status medicineRequests', medicineRequests);
     return (
         <>
             {
