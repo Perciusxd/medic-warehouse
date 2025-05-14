@@ -83,7 +83,6 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จากโรงพยาบาล</div>,
         cell: ({ row }) => {
             const postingHospitalNameTH: string = row.original.postingHospitalNameTH
-            const med = row.original
             return (
                 <div className="flex flex-row">
                     <Avatar>
@@ -109,11 +108,11 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
         size: 100,
         cell: ({ row }) => {
             const med = row.original
-            const requestDetails = med.requestDetails.requestMedicine
+            const requestDetails = med.requestDetails
             return (
                 <div className="flex flex-col space-x-2">
-                    <span>{requestDetails.requestAmount} {requestDetails.unit}</span>
-                    <span className="text-xs text-gray-600">{requestDetails.quantity}</span>
+                    <span>{requestDetails.requestAmount} {requestDetails.requestMedicine.unit}</span>
+                    <span className="text-xs text-gray-600">{requestDetails.requestMedicine.quantity}</span>
 
                     {/* <Button className="cursor-default" variant="link" onClick={() => alert("Edit quantity")}>
                         <Pencil className="h-4 w-4" />

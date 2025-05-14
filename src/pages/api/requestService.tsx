@@ -10,7 +10,7 @@ export const fetchAllMedicineRequests = async (loggedInHospital: string) => {
             loggedInHospital: loggedInHospital,
             status: "pending"
         }
-        const response = await fetch("/api/queryRequests", {
+        const response = await fetch("/api/queryRequestByStatus", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
