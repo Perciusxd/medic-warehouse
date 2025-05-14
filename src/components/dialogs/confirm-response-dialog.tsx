@@ -23,41 +23,65 @@ import { Calendar1Icon, ShieldAlert } from "lucide-react"
 import RequestDetails from "./request-details"
 
 function RequestDetailPanel({ data }) {
-    console.log('reqestdetailpanel', data);
+    const { updatedAt, postingHospitalNameTH, name, requestDetails, requestTerm } = data;
+    const { requestAmount, quantity, pricePerUnit } = requestDetails || {};
+    const totalPrice = requestAmount * pricePerUnit;
+
     return (
         <div className="flex flex-col gap-2">
             <h2 className="text-lg font-semibold">รายละเอียดการขอยืม</h2>
             <div className="grid grid-rows-2 gap-1 font-light">
-                <div>วันที่ {formatDate(data.updatedAt)}</div>
-                <div>{data.postingHospitalNameTH}</div>
-                <div>ขอยืมยา {data.name}</div>
-                <div>จำนวน {data.requestDetails.requestAmount} {data.requestDetails.quantity} เป็นเงิน {data.requestDetails.pricePerUnit * data.requestDetails.requestAmount} บาท</div>
-                <div>คาดว่าจะส่งคืนวันที่ {formatDate(data.requestTerm.expectedReturnDate)}</div>
+                <div>วันที่ {formatDate(updatedAt)}</div>
+                <div>{postingHospitalNameTH}</div>
+                <div>ขอยืมยา {name}</div>
+                <div>จำนวน {requestAmount} {quantity} เป็นเงิน {totalPrice} บาท</div>
+                <div>คาดว่าจะส่งคืนวันที่ {formatDate(requestTerm?.expectedReturnDate)}</div>
             </div>
         </div>
-    )
+    );
 }
 
+
 function ResponseDetailPanel({ responseData }) {
-    const offeredMedicine = responseData.offeredMedicine
-    const totalPrice = offeredMedicine.pricePerUnit * offeredMedicine.offerAmount
+    const {
+        offeredMedicine,
+        responseDetails,
+        responseId,
+        updatedAt
+    } = responseData;
+
+    const totalPrice = offeredMedicine.pricePerUnit * offeredMedicine.offerAmount;
+
+    const responseDetail = responseDetails.find(item => item.id === responseId);
+    const respondingHospitalNameTH = responseDetail?.respondingHospitalNameTH || "-";
+
+    const returnTermLabels = {
+        exactType: "ส่งคืนตามประเภท",
+        otherType: "คืนรายการอื่น",
+        supportType: "แบบสนับสนุน",
+        subType: "คืนรายการทดแทน"
+    };
+
     return (
         <div className="flex flex-col gap-2">
             <h2 className="text-lg font-semibold">รายละเอียดการตอบรับ</h2>
             <div className="grid grid-rows-2 gap-1 font-light">
-                <div>วันที่ {formatDate(responseData.updatedAt)}</div>
-                <div>{responseData.respondingHospitalNameTH}</div>
-                <div>ให้ยืมยา {offeredMedicine.name}({offeredMedicine.manufacturer}) เป็นจำนวน {offeredMedicine.offerAmount}/{offeredMedicine.unit} เป็นเงิน {totalPrice}</div>
-                <div>โดยเงื่อนไขการส่งคืน</div>
-                {offeredMedicine.returnTerm === "exactType" ? (
-                    <div>ส่งคืนตามประเภท</div>
-                ) : (
-                    <div>ส่งคืนตามประเภทย่อย</div>
-                )}
+                <div>วันที่ {formatDate(updatedAt)}</div>
+                <div>{respondingHospitalNameTH}</div>
+                <div>
+                    ให้ยืมยา {offeredMedicine.name} ({offeredMedicine.manufacturer})
+                    จำนวน {offeredMedicine.offerAmount}/{offeredMedicine.unit}
+                    เป็นเงิน {totalPrice}
+                </div>
+                <div className="flex flex-row gap-2">
+                    <div>โดยเงื่อนไขการส่งคืน:</div>
+                    <div>{returnTermLabels[offeredMedicine.returnTerm] || "ไม่ระบุ"}</div>
+                </div>
             </div>
         </div>
-    )
+    );
 }
+
 
 function getConfirmationSchema(requestData) {
     return z.object({
@@ -86,17 +110,17 @@ function getConfirmationSchema(requestData) {
 }
 
 export default function ConfirmResponseDialog({ data, dialogTitle, status, openDialog, onOpenChange }) {
-    console.log('ConfirmResponseDialog data', data);
-    const pdfRef = useRef(null)
-    const [loading, setLoading] = useState(false)
-    const requestData = data.requestDetails
-    console.log('requestData', requestData);
-    const ConfirmSchema = getConfirmationSchema(requestData)
+    const pdfRef = useRef(null);
+    const [loading, setLoading] = useState(false);
+
+    const requestData = data.requestDetails;
+    const ConfirmSchema = getConfirmationSchema(requestData);
+
     const {
         register,
         getValues,
         watch,
-        handleSubmit
+        handleSubmit,
     } = useForm<z.infer<typeof ConfirmSchema>>({
         resolver: zodResolver(ConfirmSchema),
         defaultValues: {
@@ -104,91 +128,72 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
             offeredMedicine: {
                 name: data.offeredMedicine.name,
                 unit: data.offeredMedicine.unit,
-                // quantity: data.offeredMedicine.quantity,
                 offerAmount: data.offeredMedicine.offerAmount,
                 trademark: data.offeredMedicine.trademark,
                 pricePerUnit: data.offeredMedicine.pricePerUnit,
                 manufacturer: data.offeredMedicine.manufacturer,
                 returnTerm: data.offeredMedicine.returnTerm,
-                returnConditions: {
-                    exactType: data.offeredMedicine.returnConditions.exactType,
-                    subType: data.offeredMedicine.returnConditions.subType,
-                    otherType: data.offeredMedicine.returnConditions.otherType,
-                    supportType: data.offeredMedicine.returnConditions.supportType,
-                },
+                returnConditions: { ...data.offeredMedicine.returnConditions },
             },
         }
-    })
+    });
 
-    const handleSaveRef = () => {
-        if (pdfRef.current?.savePdf) {
-            pdfRef.current.savePdf()
-        }
-    }
+    const handleSavePdf = () => {
+        pdfRef.current?.savePdf?.();
+    };
 
-    const onSubmit = async (data) => {
-        const responseBody = {
-            ...data,
-            status: status,
-        }
-        setLoading(true)
+    const onSubmit = async (formData) => {
+        setLoading(true);
+
         try {
             const response = await fetch("/api/updateRequest", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(responseBody),
-            })
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...formData, status }),
+            });
 
-            if (!response.ok) {
-                throw new Error("Failed to submit")
-            }
+            if (!response.ok) throw new Error("Failed to submit");
 
-            const result = await response.json()
-            setLoading(false)
-            onOpenChange(false)
+            await response.json();
+            onOpenChange(false);
         } catch (error) {
-            console.error("Error submitting form:", error)
-            setLoading(false)
+            console.error("Error submitting form:", error);
+        } finally {
+            setLoading(false);
         }
-    }
+    };
 
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[80vw]">
                 <DialogTitle>{dialogTitle}</DialogTitle>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    <div className="flex flex-row gap-4">
+                    <div className="flex gap-4">
                         <div className="basis-[60%]">
-                            {/* <RequestDetails requestData={requestData} /> */}
                             <RequestDetailPanel data={data} />
                             <Separator className="my-4" />
                             <ResponseDetailPanel responseData={data} />
                         </div>
+
                         <div className="basis-[40%] overflow-auto border rounded-md shadow-sm">
                             <PdfPreview data={data} ref={pdfRef} />
-
                         </div>
                     </div>
 
-
-
                     <DialogFooter>
                         <Button type="submit">
-                            {loading ? <div className="flex flex-row items-center gap-2 text-muted-foreground"><LoadingSpinner /> ยืมยันการให้ยืม</div> : "ยืมยันการให้ยืม"}
+                            {loading ? (
+                                <span className="flex items-center gap-2 text-muted-foreground">
+                                    <LoadingSpinner /> ยืนยันการให้ยืม
+                                </span>
+                            ) : (
+                                "ยืนยันการให้ยืม"
+                            )}
                         </Button>
-                        <Button variant={"outline"} onClick={handleSaveRef}>Save PDF</Button>
-
-                        {/* <DialogClose>
-                            <Button variant={"destructive"} type="submit" >
-                                Cancel
-                            </Button>
-                        </DialogClose> */}
-
+                        <Button variant="outline" onClick={handleSavePdf}>Save PDF</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
         </Dialog>
-    )
+    );
 }

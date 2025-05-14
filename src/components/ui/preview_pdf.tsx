@@ -51,60 +51,77 @@ const styles = StyleSheet.create({
     // section: { marginBottom: 10 }
 });
 
-function MyDocument({ data }) {
-    console.log('MyDocument data', data);
-    const requestMedName = data.requestDetails.requestMedicine.name;
-    const requestAmount = data.requestDetails.requestMedicine.requestAmount;
-    const postingHospitalNameTH = data.requestDetails.postingHospitalNameTH;
-    const respondingHospitalNameTH = data.respondingHospitalNameTH;
-    const expectedReturnDate = formatDate(data.requestDetails.requestTerm.expectedReturnDate);
+function MyDocument({ pdfData }) {
+    console.log('MyDocument data', pdfData);
+    const selectedResponseId = pdfData.responseId;
+
+    const selectedResponseDetail = pdfData.responseDetails.find(
+        (item) => item.id === selectedResponseId
+    );
+
+    if (!selectedResponseDetail) return null;
+
+    const requestedMedicineName = pdfData.requestDetails.name;
+    const requestedQuantity = pdfData.requestDetails.requestAmount;
+    const lendingHospitalNameTH = pdfData.postingHospitalNameTH;
+    const borrowingHospitalNameTH = selectedResponseDetail.respondingHospitalNameTH;
+    const expectedReturnDate = formatDate(pdfData.requestTerm.expectedReturnDate);
+
     return (
         <PDFDocGen>
             <Page size="A4" style={styles.body}>
                 <Image style={styles.image} src="/krut_mark.jpg" />
                 <Text style={styles.text}>ที่ สข. 80231</Text>
-                <Text style={styles.text}>{postingHospitalNameTH}</Text>
+                <Text style={styles.text}>{lendingHospitalNameTH}</Text>
                 <Text style={styles.text}>ที่อยู่</Text>
                 <Text style={styles.text}>วัน เดือน ปี</Text>
                 <Text style={styles.text}>เรื่อง    ขอยืมเวชภัณฑ์ยา</Text>
-                <Text style={styles.text}>เรียน    ผู้อำนวยการ {respondingHospitalNameTH}</Text>
-                <Text style={{ marginTop: 6, textIndent: 80 }}>ตามที่โรงพยาบาล {respondingHospitalNameTH} มีความประสงค์ที่จะขอยืมยา ดังรายการต่อไปนี้</Text>
+                <Text style={styles.text}>เรียน    ผู้อำนวยการ {borrowingHospitalNameTH}</Text>
+                <Text style={{ marginTop: 6, textIndent: 80 }}>
+                    ตามที่โรงพยาบาล {borrowingHospitalNameTH} มีความประสงค์ที่จะขอยืมยา ดังรายการต่อไปนี้
+                </Text>
+
                 <View style={[styles.table, { marginTop: 14 }]}>
                     <View style={styles.tableRow}>
                         <Text style={styles.tableHeader}>รายการ</Text>
-                        <Text style={styles.tableHeader}>จำนวน</Text>
-                        <Text style={styles.tableHeader}>วันกำหนดคืน</Text>
+                        <Text style={styles.tableHeader}>จำนวน </Text>
+                        <Text style={styles.tableHeader}>วันกำหนดคืน </Text>
                         <Text style={styles.tableHeader}>หมายเหตุ</Text>
                     </View>
                     <View style={styles.tableRow}>
-                        <Text style={styles.tableCell}>{requestMedName}</Text>
-                        <Text style={styles.tableCell}>{requestAmount}</Text>
+                        <Text style={styles.tableCell}>{requestedMedicineName}</Text>
+                        <Text style={styles.tableCell}>{requestedQuantity}</Text>
                         <Text style={styles.tableCell}>{expectedReturnDate}</Text>
                         <Text style={styles.tableCell}>-</Text>
                     </View>
                 </View>
 
-                <Text style={{ marginTop: 30, textIndent: 80 }}>ทั้งนี้ {respondingHospitalNameTH} จะส่งคืนยาให้แก่โรงพยาบาล {postingHospitalNameTH} ภายในวันที่ {expectedReturnDate} และหากมีการเปลี่ยนแปลงจะต้องแจ้งให้ทราบล่วงหน้า</Text>
-                <Text style={{ marginTop: 30, textIndent: 80 }}>จึงเรียนมาเพื่อโปรดพิจารณาและ {respondingHospitalNameTH} ขอขอบคุณ {postingHospitalNameTH} ณ โอกาสนี้</Text>
+                <Text style={{ marginTop: 30, textIndent: 80 }}>
+                    ทั้งนี้ {borrowingHospitalNameTH} จะส่งคืนยาให้แก่โรงพยาบาล {lendingHospitalNameTH} ภายในวันที่ {expectedReturnDate} และหากมีการเปลี่ยนแปลงจะต้องแจ้งให้ทราบล่วงหน้า
+                </Text>
+                <Text style={{ marginTop: 30, textIndent: 80 }}>
+                    จึงเรียนมาเพื่อโปรดพิจารณาและ {borrowingHospitalNameTH} ขอขอบคุณ {lendingHospitalNameTH} ณ โอกาสนี้
+                </Text>
+
                 <Text style={{ marginTop: 30, textIndent: 280 }}>ขอแสดงความนับถือ</Text>
-                <Text style={{ marginTop: 100, textIndent: 280 }}>ชื่อผู้อำนวยการ </Text>
-                <Text style={{ textIndent: 280 }}>ผู้อำนวยการ{respondingHospitalNameTH}</Text>
+                <Text style={{ marginTop: 100, textIndent: 280 }}>ชื่อผู้อำนวยการ</Text>
+                <Text style={{ textIndent: 280 }}>ผู้อำนวยการ {borrowingHospitalNameTH}</Text>
                 <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
-                <Text style={{}}>ติดต่อ</Text>
+                <Text>ติดต่อ</Text>
             </Page>
         </PDFDocGen>
-    )
-
+    );
 }
 
-const PdfPreview = forwardRef(({ data }, ref) => {
+
+const PdfPreview = forwardRef(({ data: pdfData }, ref) => {
     const [blob, setBlob] = useState<Blob | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
     useEffect(() => {
         let cancelled = false;
         const generatePdf = async () => {
-            const generatedBlob = await pdf(<MyDocument data={data} />).toBlob();
+            const generatedBlob = await pdf(<MyDocument pdfData={pdfData} />).toBlob();
             if (!cancelled) {
                 setBlob(generatedBlob);
                 setPdfUrl(URL.createObjectURL(generatedBlob));

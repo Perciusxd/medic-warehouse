@@ -135,7 +135,12 @@ export const columns = (
                                     : detail.status === 'to-transfer'
                                         ? (<Button variant={'link'} className="flex gap-x-2">รอการจัดส่ง<StatusIndicator status={detail.status} /></Button>)
                                         : detail.status === 'to-return'
-                                            ? (<Button variant={'link'} className="flex gap-x-2" onClick={() => handleDeliveryClick(detail)}>อยู่ระหว่างการจัดส่ง (เช็คสถานะ)<StatusIndicator status={detail.status} /></Button>)
+                                            ? (<Button variant={'link'} className="flex gap-x-2" onClick={() => handleDeliveryClick({
+                                                ...med,
+                                                responseId: detail.id,
+                                                offeredMedicine: detail.offeredMedicine,
+                                                requestDetails: med.requestMedicine,
+                                            })}>อยู่ระหว่างการจัดส่ง (เช็คสถานะ)<StatusIndicator status={detail.status} /></Button>)
                                             : detail.status === 'in-return'
                                                 ? (<Button variant={'link'} className="flex gap-x-2">ต้องส่งคืน<StatusIndicator status={detail.status} /></Button>)
                                                 : detail.status === 'completed'
