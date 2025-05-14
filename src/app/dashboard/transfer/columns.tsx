@@ -24,7 +24,8 @@ import StatusIndicator from "@/components/ui/status-indicator"
 
 export const columns = (
     handleApproveClick: (med: ResponseAsset) => void,
-    loading: boolean = false
+    loading: boolean = false,
+    loadingRowId: string | null = null
 ): ColumnDef<ResponseAsset>[] => [
     {
         accessorKey: "updatedAt",
@@ -96,7 +97,6 @@ export const columns = (
         accessorKey: "status",
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">รายละเอียดยา</div>,
         cell: ({ row }) => {
-            console.log(row.original);
             const status = row.getValue("status")
             const offeredMedicineName = row.original.offeredMedicine?.name
             const offeredMedicineTrademark = row.original.offeredMedicine?.trademark
@@ -127,7 +127,6 @@ export const columns = (
             const daysUntilReturn = differenceInCalendarDays(date, new Date())
             const formattedDate = format(date, 'dd/MM/yyyy');
             const timeOnly = format(date, 'HH:mm:ss');
-            console.log('row.original', row.original);
             return (
                 <div className="flex flex-col">
                     <div className="text-sm font-medium">คาดว่าจะได้รับคืนในอีก {daysUntilReturn} วัน</div>
@@ -144,13 +143,14 @@ export const columns = (
         // header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Actions</div>,
         cell: ({ row }) => {
             const med = row.original
+            const isLoading = loadingRowId === med.id
             return (
                 <div className="space-x-2">
                 <Button
                     variant={'outline'}
                     onClick={() => handleApproveClick(med)}
                 >
-                    { loading
+                        { isLoading
                         ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500">ส่งแล้ว</span></div>
                         : <div className="flex flex-row items-center gap-2"><Check />ส่งแล้ว</div>
                     }

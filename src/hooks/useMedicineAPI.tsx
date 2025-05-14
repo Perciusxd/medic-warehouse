@@ -95,45 +95,9 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
         setError(null);
         
         try {
-            const _startFetch = performance.now();
-            const _data = await fetchAllRequestsByStatus(loggedInHospital, "pending");
-            console.log('_data', _data);
-            const _endFetch = performance.now();
-            console.log("RQuery request took", _endFetch - _startFetch, "ms");
-
-            // const startFetch = performance.now();
-            // const data = await fetchAllMedicineRequestsInProgress(loggedInHospital);
-            // console.log('data', data);
-            // const requestsWithReponses = await Promise.all(
-            //     data.map(async (item) => {
-            //         const responseIds = item.responseIds;
-            //         const responseDetails = await Promise.all(
-            //             responseIds.map(async (responseId) => {
-            //                 const asset = await fetchAssetById(responseId);
-            //                 return {
-            //                     ...asset,
-            //                     responseId,
-            //                     requestDetails: item,
-            //                 };
-            //             })
-            //         )
-            //         return {
-            //             ...item,
-            //             responseDetails,
-            //         };
-            //     })
-            // )
-            // // sort by updatedAt
-            // requestsWithReponses.sort((a, b) => {
-            //     const dateA = a.updatedAt;
-            //     const dateB = b.updatedAt;
-            //     return dateB - dateA;
-            // });
-            // const endFetch = performance.now();
-            // console.log("Query request took", endFetch - startFetch, "ms");
-            // console.log('requestsWithReponses', requestsWithReponses);
-            setMedicineRequests(_data)
-            return _data;
+            const response = await fetchAllRequestsByStatus(loggedInHospital, "pending");
+            setMedicineRequests(response)
+            return response;
         } catch (error) {
             setError(error.message || "Failed to fetch medicine requests");
         } finally {
