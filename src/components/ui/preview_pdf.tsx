@@ -7,6 +7,7 @@ import Sarabun from '/fonts/Sarabun-Light.ttf'
 
 import { pdfjs } from 'react-pdf';
 import { formatDate } from '@/lib/utils';
+import { format } from 'date-fns';
 
 Font.register({
     family: 'THSarabunNew',
@@ -64,17 +65,37 @@ function MyDocument({ pdfData }) {
     const requestedMedicineName = pdfData.requestDetails.name;
     const requestedQuantity = pdfData.requestDetails.requestAmount;
     const lendingHospitalNameTH = pdfData.postingHospitalNameTH;
+    const lendingHospitalAddress = "15 ถนนกาญจนวณิชย์ ตำบลหาดใหญ่ อำเภอหาดใหญ่ จังหวัดสงขลา 90110  "
     const borrowingHospitalNameTH = selectedResponseDetail.respondingHospitalNameTH;
     const expectedReturnDate = formatDate(pdfData.requestTerm.expectedReturnDate);
+    const mockNote = "รอการส่งมอบจากตัวแทนจำหน่าย  "
+
+    const todayFormat = new Date();
+    const today = format(todayFormat, 'dd/MM/yyyy');
 
     return (
         <PDFDocGen>
             <Page size="A4" style={styles.body}>
                 <Image style={styles.image} src="/krut_mark.jpg" />
-                <Text style={styles.text}>ที่ สข. 80231</Text>
-                <Text style={styles.text}>{lendingHospitalNameTH}</Text>
-                <Text style={styles.text}>ที่อยู่</Text>
-                <Text style={styles.text}>วัน เดือน ปี</Text>
+                <View style={[styles.table, { marginBottom: 10 }]}>
+                    {/* Row 1 */}
+                    <View style={styles.tableRow}>
+                        <Text style={[styles.tableCell, { flex: 1 }]}>ที่ สข. 80231</Text>
+                        <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+                        {/* <Text style={[styles.tableCell, { flex: 1 }]}></Text> */}
+                        <Text style={[styles.tableCell, { flex: 1 }]}>{lendingHospitalNameTH} </Text>
+                    </View>
+
+                    {/* Row 2 */}
+                    <View style={styles.tableRow}>
+                        <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+                        <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+                        {/* <Text style={[styles.tableCell, { flex: 1 }]}></Text> */}
+                        <Text style={[styles.tableCell, { flex: 1 }]}>ที่อยู่ {lendingHospitalAddress}</Text>
+                    </View>
+                </View>
+
+                <Text style={{ textAlign: 'center' }} >{today}</Text>
                 <Text style={styles.text}>เรื่อง    ขอยืมเวชภัณฑ์ยา</Text>
                 <Text style={styles.text}>เรียน    ผู้อำนวยการ {borrowingHospitalNameTH}</Text>
                 <Text style={{ marginTop: 6, textIndent: 80 }}>
@@ -92,7 +113,7 @@ function MyDocument({ pdfData }) {
                         <Text style={styles.tableCell}>{requestedMedicineName}</Text>
                         <Text style={styles.tableCell}>{requestedQuantity}</Text>
                         <Text style={styles.tableCell}>{expectedReturnDate}</Text>
-                        <Text style={styles.tableCell}>-</Text>
+                        <Text style={styles.tableCell}>{mockNote}</Text>
                     </View>
                 </View>
 
