@@ -6,30 +6,22 @@ import { ResponseAsset } from "@/types/responseMed";
  */
 export const fetchAllMedicineRequests = async (loggedInHospital: string) => {
     try {
-        const response = await fetch("api/queryAll");
+        const body = {
+            loggedInHospital: loggedInHospital,
+            status: "pending"
+        }
+        const response = await fetch("/api/queryRequests", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+        })
+        const result = await response.json();
         if (!response.ok) {
             throw new Error("Failed to fetch medicine requests");
         }
-        // Fetch all medicine requests
-        // Filter only the requests that are pending and belong to the logged-in hospital
-        const data = await response.json();
-        const requestIdToLoggedInHospital = data
-            .filter((item: any) => item.respondingHospitalNameEN === loggedInHospital && item.status === "pending")
-            .map((item: any) => ({
-                responseId: item.id,
-                requestId: item.requestId,
-            }));
-        const requestIdSet = new Set(requestIdToLoggedInHospital.map((item: any) => item.requestId));
-        const requestIdToResponseIdMap = new Map(
-            requestIdToLoggedInHospital.map((item: any) => [item.requestId, item.responseId])
-        )
-        const filteredRequest = data
-            .filter((item: any) => requestIdSet.has(item.id))
-            .map((item: any) => ({
-                ...item,
-                requestId: requestIdToResponseIdMap.get(item.id)
-            }))
-        return filteredRequest;
+        return result;
     } catch (error) {
         console.error("Error fetching medicine requests:", error);
         throw error;

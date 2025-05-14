@@ -94,7 +94,25 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
         setIsLoading(true);
         setError(null);
 
+        const body = {
+            loggedInHospital: loggedInHospital,
+            status: "pending",
+        }
+        const startFetch = performance.now();
+        const response = await fetch("api/queryRequests", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+        })
+        const result = await response.json();
+        console.log("richQuery", result);
+        const endFetch = performance.now();
+        console.log("RQ request took", endFetch - startFetch, "ms");
+        
         try {
+            const startFetch = performance.now();
             const data = await fetchAllMedicineRequestsInProgress(loggedInHospital);
             const requestsWithReponses = await Promise.all(
                 data.map(async (item) => {
@@ -121,6 +139,8 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
                 const dateB = b.updatedAt;
                 return dateB - dateA;
             });
+            const endFetch = performance.now();
+            console.log("Query request took", endFetch - startFetch, "ms");
             setMedicineRequests(requestsWithReponses)
             return requestsWithReponses;
         } catch (error) {
@@ -129,7 +149,7 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
             setIsLoading(false);
         }
     }, [loggedInHospital]);
-
+    
     useEffect(() => {
         fetchMedicineRequests();
     }, [fetchMedicineRequests]);

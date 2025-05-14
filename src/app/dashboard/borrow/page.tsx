@@ -44,6 +44,8 @@ export default function BorrowDashboard(loggedInHospital: string) {
         return () => clearInterval(interval);
     }, []);
 
+    console.log('medicineRequests', medicineRequests);
+
     return (
         <div>
             <div className="flex items-center justify-between mb-4">
@@ -83,7 +85,8 @@ export default function BorrowDashboard(loggedInHospital: string) {
                         <DataTable columns={columns(handleApproveClick)} data={medicineRequests} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
                         {selectedMed && (
                             <CreateResponseDialog
-                                requestData={selectedMed}
+                                requestData={selectedMed.requestDetails}
+                                responseId={selectedMed.id}
                                 status="offered"
                                 dialogTitle={"เวชภัณฑ์ยาที่ขาดแคลน"}
                                 openDialog={createRespDialogOpen}

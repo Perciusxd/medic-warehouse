@@ -29,7 +29,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
     //     enableGlobalFilter: false
     // },
     {
-        accessorKey: "requestMedicine.name",
+        accessorKey: "requestDetails.name",
         header: ({ column }) => {
             return (
                 <Button
@@ -44,9 +44,9 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
         },
         cell: ({ row }) => {
             const med = row.original
-            const requestMedicine = med.requestMedicine
-            const name = requestMedicine.name
-            const trademark = requestMedicine.trademark
+            const requestDetails = med.requestDetails
+            const name = requestDetails.requestMedicine.name
+            const trademark = requestDetails.requestMedicine.trademark
             return (
                 <div className="flex flex-col">
                     <div className="text-md">{name}</div>
@@ -60,7 +60,9 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
         accessorKey: "updatedAt",
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ประกาศเมื่อ</div>,
         cell: ({ row }) => {
-            const createdAt = row.getValue("updatedAt")
+            const med = row.original
+            const requestDetails = med.requestDetails
+            const createdAt = requestDetails.updatedAt
             const date = Number(createdAt); // convert string to number, then to Date
             const formattedDate = format(date, 'dd/MM/yyyy'); // format to date only
             const timeOnly = format(date, 'HH:mm:ss'); // format to time only
@@ -102,16 +104,16 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
     },
 
     {
-        accessorKey: "requestMedicine.quantity",
+        accessorKey: "requestDetails.quantity",
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ปริมาณ</div>,
         size: 100,
         cell: ({ row }) => {
             const med = row.original
-            const requestMedicine = med.requestMedicine
+            const requestDetails = med.requestDetails.requestMedicine
             return (
                 <div className="flex flex-col space-x-2">
-                    <span>{requestMedicine.requestAmount} {requestMedicine.unit}</span>
-                    <span className="text-xs text-gray-600">{requestMedicine.quantity}</span>
+                    <span>{requestDetails.requestAmount} {requestDetails.unit}</span>
+                    <span className="text-xs text-gray-600">{requestDetails.quantity}</span>
 
                     {/* <Button className="cursor-default" variant="link" onClick={() => alert("Edit quantity")}>
                         <Pencil className="h-4 w-4" />
@@ -122,7 +124,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
         enableSorting: true,
     },
     {
-        accessorKey: "requestMedicine.urgent",
+        accessorKey: "requestDetails.urgent",
         size: 100,
         header: ({ column }) => {
             return (

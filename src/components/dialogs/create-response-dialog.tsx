@@ -19,8 +19,7 @@ import { Calendar1Icon, ShieldAlert } from "lucide-react"
 
 import RequestDetails from "./request-details"
 
-export default function CreateResponseDialog({ requestData, dialogTitle, status, openDialog, onOpenChange }) {
-    console.log(`${dialogTitle} requestData`, requestData);
+export default function CreateResponseDialog({ requestData, responseId, dialogTitle, status, openDialog, onOpenChange }) {
     const ResponseSchema = z.object({
         offeredMedicine: z.object({
             offerAmount: z.number().min(1, "กรุณากรอกมากว่า 0").max(requestData.requestMedicine.requestAmount, `กรุณากรอกน้อยกว่า ${requestData.requestMedicine.requestAmount}`),
@@ -127,10 +126,9 @@ export default function CreateResponseDialog({ requestData, dialogTitle, status,
                 quantity: requestData.requestMedicine.quantity,
                 unit: requestData.requestMedicine.unit,
             },
-            responseId: requestData.requestId, // ! need to change to responseId
+            responseId: responseId,
             status: status
         }
-        console.log("Response Body:", responseBody)
         setLoading(true)
         try {
             const response = await fetch("/api/updateRequest", {
