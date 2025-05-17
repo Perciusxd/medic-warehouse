@@ -23,8 +23,16 @@ import { RequestAsset } from "@/types/requestMed";
 import { DataTable } from "./data-table";
 import { columns } from "./columns";
 
-export default function BorrowDashboard(loggedInHospital: string) {
-    const { medicineRequests, loading, error, fetchMedicineRequests } = useMedicineRequests(loggedInHospital.loggedInHospital);
+type BorrowDashboardProps = {
+    loggedInHospital: string;
+    setBorrowNumber: (number: number) => void;
+};
+
+export default function BorrowDashboard({
+    loggedInHospital,
+    setBorrowNumber,
+}: BorrowDashboardProps) {
+    const { medicineRequests, loading, error, fetchMedicineRequests } = useMedicineRequests(loggedInHospital);
     const [updatedLast, setUpdatedLast] = useState<Date | null>(null);
     const [tick, setTick] = useState(0);
     const [selectedMed, setSelectedMed] = useState(null);
@@ -43,6 +51,12 @@ export default function BorrowDashboard(loggedInHospital: string) {
         }, 30000); // every 30 seconds
         return () => clearInterval(interval);
     }, []);
+
+    useEffect(() => {
+        const borrowNumbers = medicineRequests.length;
+        console.log('borrrowNumbers', borrowNumbers);
+        setBorrowNumber(borrowNumbers);
+    }, [medicineRequests, setBorrowNumber]);
 
     console.log('medicineRequests', medicineRequests);
 
@@ -63,7 +77,7 @@ export default function BorrowDashboard(loggedInHospital: string) {
                 </div>
                 <CreateRequestDialog
                     requestData={selectedMed}
-                    loggedInHospital={loggedInHospital.loggedInHospital}
+                    loggedInHospital={loggedInHospital}
                     openDialog={createRequestDialogOpen}
                     onOpenChange={(open) => {
                         setCreateRequestDialogOpen(open);
