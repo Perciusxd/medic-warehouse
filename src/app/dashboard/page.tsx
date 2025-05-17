@@ -7,14 +7,24 @@ import {
 } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import NotificationNumber from "@/components/ui/notification-number";
+import { useRouter } from "next/navigation";
 import BorrowDashboard from "./borrow/page";
 import ReturnDashboard from "./return/page";
 import StatusDashboard from "./status/page";
 import TransferDashboard from "./transfer/page";
-
-
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+
+interface Medicine {
+    ID: string;
+    Name: string;
+    BatchNumber: string;
+    CurrentLocation: string;
+    ExpiryDate: string;
+    Price: number;
+    Temperature: string;
+    Owner?: string;
+    Manufacturer?: string;
+}
 
 export default function Dashboard() {
     const router = useRouter();
@@ -22,6 +32,63 @@ export default function Dashboard() {
     const [selectedTab, setSelectedTab] = useState('borrow');
     const [totalBorrow, setTotalBorrow] = useState(0);
     const [loggedInHospital, setLoggedInHospital] = useState('Na Mom Hospital');
+
+    // const [medicines, setMedicines] = useState<Medicine[]>([]);
+    const [user, setUser] = useState<{ email: string } | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    
+    useEffect(() => {
+        // Fetch user data
+        const fetchUser = async () => {
+            try {
+                const res = await fetch('/api/auth/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    setUser(data);
+                } else {
+                    router.push('/');
+                }
+            } catch (error) {
+                console.error('Error fetching user:', error);
+                router.push('/');
+            }
+        };
+
+        // Fetch medicines data
+        const fetchMedicines = async () => {
+            try {
+                setIsLoading(true);
+                setError(null);
+                const response = await fetch('/api/queryAll');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch medicines');
+                }
+                const data = await response.json();
+                
+                // Ensure data is an array
+                if (Array.isArray(data)) {
+                    setMedicines(data);
+                } else if (data && typeof data === 'object') {
+                    // If data is an object, try to convert it to an array
+                    const medicinesArray = Object.values(data);
+                    setMedicines(medicinesArray);
+                } else {
+                    setMedicines([]);
+                    setError('Invalid data format received');
+                }
+            } catch (error) {
+                console.error('Error fetching medicines:', error);
+                setError('Failed to load medicines');
+                setMedicines([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchUser();
+        fetchMedicines();
+    }, [router]);
 
     useEffect(() => {
         fetch("api/queryAll")

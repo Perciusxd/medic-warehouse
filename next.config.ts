@@ -1,4 +1,5 @@
 import { experimental } from "@grpc/grpc-js";
+import { NextConfig } from 'next'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -24,6 +25,16 @@ const nextConfig = {
     }
     return config;
   },
+  reactStrictMode: true,
+      swcMinify: true,
+      experimental: {
+  }
 };
 
+
+
+
+
+// export default config
 module.exports = nextConfig;
+
