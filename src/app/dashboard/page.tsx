@@ -22,6 +22,7 @@ export default function Dashboard() {
     const [selectedTab, setSelectedTab] = useState('borrow');
     const [totalBorrow, setTotalBorrow] = useState(0);
     const [loggedInHospital, setLoggedInHospital] = useState('Na Mom Hospital');
+    const [borrowNumber, setBorrowNumber] = useState(0);
 
     useEffect(() => {
         fetch("api/queryAll")
@@ -85,14 +86,16 @@ export default function Dashboard() {
 
             <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
                 <TabsList className="mb-4 flex flex-wrap gap-2">
-                    <TabsTrigger value="borrow">เวชภัณฑ์ยาที่ขาดแคลน <NotificationNumber number={4} /></TabsTrigger>
+                    <TabsTrigger value="borrow">เวชภัณฑ์ยาที่ขาดแคลน {
+                        borrowNumber > 0 ? <NotificationNumber number={borrowNumber} /> : null
+                        }</TabsTrigger>
                     <TabsTrigger value="return">เวชภัณฑ์ยาที่ต้องการแบ่งปัน</TabsTrigger>
                     <TabsTrigger value="status">รายการยาที่ขอยืม <NotificationNumber number={2} /></TabsTrigger>
                     <TabsTrigger value="transfer">รายการยาที่ให้ยืม</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="borrow">
-                    <BorrowDashboard loggedInHospital={loggedInHospital} />
+                    <BorrowDashboard loggedInHospital={loggedInHospital} setBorrowNumber={setBorrowNumber} />
                 </TabsContent>
                 <TabsContent value="return">
                     <ReturnDashboard />

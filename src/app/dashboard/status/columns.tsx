@@ -117,7 +117,7 @@ export const columns = (
                 <div className="flex flex-col gap-y-1 text-gray-600">
                     {med.responseDetails.map((detail, index) => (
                         <div key={index} className="flex items-center gap-x-2 h-4">
-                            <span>{detail.respondingHospitalNameTH}{index}:</span>
+                            <span>{detail.respondingHospitalNameTH}:</span>
                             {detail.status === 'offered' ? (
                                     <Button 
                                         variant={"link"} 

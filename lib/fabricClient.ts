@@ -90,7 +90,7 @@ async function initializeFabric(): Promise<any> {
 //     return contractInstance; // Reuse existing contract instance
 //   }
 
-  displayInputParameters();
+  // displayInputParameters();
 
   // Set up gRPC client
   const client = await newGrpcConnection();
