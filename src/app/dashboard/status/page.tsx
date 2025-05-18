@@ -16,12 +16,14 @@ import {
 } from "@/components/ui/alert-dialog"
 
 import { useMedicineRequestsStatus } from "@/hooks/useMedicineAPI";
+import { useHospital } from "@/context/HospitalContext";
 
 import { columns } from "./columns";
 import ConfirmResponseDialog from "@/components/dialogs/confirm-response-dialog";
 
-export default function StatusDashboard(loggedInHospital) {
-    const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequestsStatus(loggedInHospital.loggedInHospital);
+export default function StatusDashboard() {
+    const { loggedInHospital } = useHospital();
+    const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequestsStatus(loggedInHospital);
     const [loading, setLoading] = useState(false);
     const [selectedMed, setSelectedMed] = useState(null);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);

@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import NotificationNumber from "@/components/ui/notification-number";
+import { useHospital } from "@/context/HospitalContext";
 import BorrowDashboard from "./borrow/page";
 import ReturnDashboard from "./return/page";
 import StatusDashboard from "./status/page";
@@ -21,7 +22,7 @@ export default function Dashboard() {
     const [medicines, setMedicines] = useState([]);
     const [selectedTab, setSelectedTab] = useState('borrow');
     const [totalBorrow, setTotalBorrow] = useState(0);
-    const [loggedInHospital, setLoggedInHospital] = useState('Na Mom Hospital');
+    const { loggedInHospital, setLoggedInHospital } = useHospital();
     const [borrowNumber, setBorrowNumber] = useState(0);
 
     useEffect(() => {
@@ -65,25 +66,6 @@ export default function Dashboard() {
                 </Select>
             </div>
 
-            {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                <div className="bg-white p-4 shadow rounded h-24 flex items-center justify-between">
-                    <div className="text-lg font-semibold text-gray-700">Offer</div>
-                    <div className="text-2xl text-blue-500 font-bold">10</div>
-                </div>
-                <div className="bg-white p-4 shadow rounded h-24 flex items-center justify-between">
-                    <div className="text-lg font-semibold text-gray-700">Borrow</div>
-                    <div className="text-2xl text-blue-500 font-bold">{totalBorrow}</div>
-                </div>
-                <div className="bg-white p-4 shadow rounded h-24 flex items-center justify-between">
-                    <div className="text-lg font-semibold text-gray-700">Sending</div>
-                    <div className="text-2xl text-blue-500 font-bold">3</div>
-                </div>
-                <div className="bg-white p-4 shadow rounded h-24 flex items-center justify-between">
-                    <div className="text-lg font-semibold text-gray-700">Return</div>
-                    <div className="text-2xl text-blue-500 font-bold">7</div>
-                </div>
-            </div> */}
-
             <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
                 <TabsList className="mb-4 flex flex-wrap gap-2">
                     <TabsTrigger value="borrow">เวชภัณฑ์ยาที่ขาดแคลน {
@@ -95,7 +77,7 @@ export default function Dashboard() {
                 </TabsList>
 
                 <TabsContent value="borrow">
-                    <BorrowDashboard loggedInHospital={loggedInHospital} setBorrowNumber={setBorrowNumber} />
+                    <BorrowDashboard/>
                 </TabsContent>
                 <TabsContent value="return">
                     <ReturnDashboard />
