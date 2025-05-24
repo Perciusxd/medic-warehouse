@@ -20,6 +20,7 @@ import { useHospital } from "@/context/HospitalContext";
 
 import { columns } from "./columns";
 import ConfirmResponseDialog from "@/components/dialogs/confirm-response-dialog";
+import ReturnDialog from "@/components/dialogs/return-dialog";
 
 export default function StatusDashboard() {
     const { loggedInHospital } = useHospital();
@@ -28,6 +29,7 @@ export default function StatusDashboard() {
     const [selectedMed, setSelectedMed] = useState(null);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [deliveryDialogOpen, setDeliveryDialogOpen] = useState(false);
+    const [returnDialogOpen, setReturnDialogOpen] = useState(false);
     const [globalFilter, setGlobalFilter] = useState("");
 
     const handleApproveClick = (med) => {
@@ -38,6 +40,12 @@ export default function StatusDashboard() {
     const handleDeliveryClick = async (med) => {
         setSelectedMed(med);
         setDeliveryDialogOpen(true);
+    }
+
+    const handleReturnClick = async (med) => {
+        console.log('handleReturnClick', med);
+        setSelectedMed(med);
+        setReturnDialogOpen(true);
     }
 
     const confirmDelivery = async (med) => {
@@ -83,7 +91,7 @@ export default function StatusDashboard() {
                 ) : (
                     <>
                         <DataTable
-                            columns={columns(handleApproveClick, handleDeliveryClick)}
+                            columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick)}
                             data={medicineRequests}
                             globalFilter={globalFilter}
                             setGlobalFilter={setGlobalFilter} />
@@ -93,7 +101,7 @@ export default function StatusDashboard() {
                                 dialogTitle={"ยืนยันการตอบรับคำขอ"}
                                 status={"to-transfer"}
                                 openDialog={confirmDialogOpen}
-                                onOpenChange={(open) => {
+                                onOpenChange={(open: boolean) => {
                                     setConfirmDialogOpen(open);
                                     if (!open) {
                                         fetchMedicineRequests();
@@ -102,6 +110,17 @@ export default function StatusDashboard() {
                                 }}
                             />
                         )}
+
+                        <ReturnDialog 
+                            selectedMed={selectedMed}
+                            open={returnDialogOpen} 
+                            onOpenChange={(open: boolean) => {
+                                setReturnDialogOpen(open);
+                                if (!open) {
+                                    fetchMedicineRequests();
+                                    setSelectedMed(null);
+                                }
+                            }}  />
 
                         {/* AlertDialog for delivery */}
                         <AlertDialog open={deliveryDialogOpen} onOpenChange={setDeliveryDialogOpen}>

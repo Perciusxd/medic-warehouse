@@ -83,10 +83,10 @@ export default function Dashboard() {
                     <ReturnDashboard />
                 </TabsContent>
                 <TabsContent value="status">
-                    <StatusDashboard loggedInHospital={loggedInHospital} />
+                    <StatusDashboard />
                 </TabsContent>
                 <TabsContent value="transfer">
-                    <TransferDashboard loggedInHospital={loggedInHospital} />
+                    <TransferDashboard />
                 </TabsContent>
             </Tabs>
         </div>

@@ -24,7 +24,8 @@ import StatusIndicator from "@/components/ui/status-indicator"
 
 export const columns = (
     handleApproveClick: (med: any) => void,
-    handleDeliveryClick: (med: any) => void
+    handleDeliveryClick: (med: any) => void,
+    handleReturnClick: (med: any) => void,
 ): ColumnDef<any>[] => [
     {
         accessorKey: "updatedAt",
@@ -142,7 +143,12 @@ export const columns = (
                                                 requestDetails: med.requestMedicine,
                                             })}>อยู่ระหว่างการจัดส่ง (เช็คสถานะ)<StatusIndicator status={detail.status} /></Button>)
                                             : detail.status === 'in-return'
-                                                ? (<Button variant={'link'} className="flex gap-x-2">ต้องส่งคืน<StatusIndicator status={detail.status} /></Button>)
+                                                ? (<Button variant={'link'} className="flex gap-x-2" onClick={() => handleReturnClick({
+                                                    ...med,
+                                                    responseId: detail.id,
+                                                    offeredMedicine: detail.offeredMedicine,
+                                                    requestDetails: med.requestMedicine,
+                                                })}>ต้องส่งคืน<StatusIndicator status={detail.status} /></Button>)
                                                 : detail.status === 'completed'
                                                         ? (<span className="flex gap-x-2">เสร็จสิ้น<StatusIndicator status={detail.status} /></span>)
                                                         : detail.status === 'cancelled'
