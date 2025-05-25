@@ -78,7 +78,7 @@ export default function BorrowDashboard() {
                     requestData={selectedMed}
                     loggedInHospital={loggedInHospital}
                     openDialog={createRequestDialogOpen}
-                    onOpenChange={(open) => {
+                    onOpenChange={(open: boolean) => {
                         setCreateRequestDialogOpen(open);
                         if (!open) {
                             fetchMedicineRequests();

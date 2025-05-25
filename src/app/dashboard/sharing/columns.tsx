@@ -23,7 +23,7 @@ export const columns = (
                 const formattedDate = format(date, 'dd/MM/yyyy'); // format to date only
                 const timeOnly = format(date, 'HH:mm:ss'); // format to time only
                 return <div>
-                    <div className="text-sm font-medium text-gray-600">{formattedDate}</div>
+                    <div className="text-sm font-medium text-gray-600">{createdAt}</div>
                     <div className="text-xs text-muted-foreground">{timeOnly}</div>
                 </div>
             },
