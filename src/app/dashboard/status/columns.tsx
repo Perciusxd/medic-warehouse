@@ -149,7 +149,9 @@ export const columns = (
                                                     offeredMedicine: detail.offeredMedicine,
                                                     requestDetails: med.requestMedicine,
                                                 })}>ต้องส่งคืน<StatusIndicator status={detail.status} /></Button>)
-                                                : detail.status === 'completed'
+                                                : detail.status === "confirm-return"
+                                                    ? (<span className = "flex gap-x-2">รอยืนยันการคืน< StatusIndicator status={detail.status} /></span>)
+                                                    : detail.status === 'completed'
                                                         ? (<span className="flex gap-x-2">เสร็จสิ้น<StatusIndicator status={detail.status} /></span>)
                                                         : detail.status === 'cancelled'
                                                             ? (<span className="flex gap-x-2">ยกเลิก<StatusIndicator status={detail.status} /></span>)
