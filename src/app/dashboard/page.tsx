@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import NotificationNumber from "@/components/ui/notification-number";
 import { useHospital } from "@/context/HospitalContext";
 import BorrowDashboard from "./borrow/page";
-import ReturnDashboard from "./return/page";
+import SharingDashboard from "./sharing/page";
 import StatusDashboard from "./status/page";
 import TransferDashboard from "./transfer/page";
 
@@ -80,7 +80,7 @@ export default function Dashboard() {
                     <BorrowDashboard/>
                 </TabsContent>
                 <TabsContent value="return">
-                    <ReturnDashboard />
+                    <SharingDashboard />
                 </TabsContent>
                 <TabsContent value="status">
                     <StatusDashboard />

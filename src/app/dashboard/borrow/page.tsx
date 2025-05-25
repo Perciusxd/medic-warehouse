@@ -103,7 +103,7 @@ export default function BorrowDashboard() {
                                 status="offered"
                                 dialogTitle={"เวชภัณฑ์ยาที่ขาดแคลน"}
                                 openDialog={createRespDialogOpen}
-                                onOpenChange={(open) => {
+                                onOpenChange={(open: boolean) => {
                                     setCreateRespDialogOpen(open);
                                     if (!open) {
                                         fetchMedicineRequests();
