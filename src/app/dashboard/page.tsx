@@ -47,10 +47,10 @@ export default function Dashboard() {
 
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-4xl font-black mb-4 mt-8">
+            {/* <h1 className="text-4xl font-black mb-4 mt-8">
                 Welcome back,&nbsp;
                 <span className="font-extralight font-mono">{loggedInHospital}</span>
-            </h1>
+            </h1> */}
 
             <div className="mb-6 w-full md:w-1/3">
                 <Select value={loggedInHospital} onValueChange={(value) => setLoggedInHospital(value)}>
