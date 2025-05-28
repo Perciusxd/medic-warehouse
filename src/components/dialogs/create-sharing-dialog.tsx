@@ -1,7 +1,8 @@
-import { useForm } from "react-hook-form"
+import { useForm, FieldErrors } from "react-hook-form"
 import { z } from "zod"
 import { useEffect, useRef, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useHospital } from "@/context/HospitalContext"
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -60,82 +61,46 @@ export const allHospitalList = [
     },
 ];
 
-const FormSchema = z.object({
-    mode: z.enum(["auto", "manual", "advanced"]),
-    customInput: z.string().optional(),
-})
-
-const RequestSchema = z.object({
-    urgent: z.enum(["urgent", "immediate", "normal"]),
-    requestMedicine: z.object({
-        name: z.string().min(1, "Name is required"),
-        trademark: z.string().min(1, "Trademark is required"),
-        description: z.string().optional(),
-        requestAmount: z.number().min(1, "Request amount must be greater than 0").max(1000, "Request amount must be less than 1000"),
-        quantity: z.string().min(1, "Quantity is required"),
-        pricePerUnit: z.number().min(1, "Price per unit must be greater than 0").max(100000, "Price per unit must be less than 100000"),
-        unit: z.string().min(1, "Unit is required"),
-        manufacturer: z.string().min(1, "Manufacturer is required"),
+const SharingFormSchema = z.object({
+    sharingMedicine: z.object({
+        name: z.string().min(1, "กรุณาระบุชื่อยา"),
+        trademark: z.string().min(1, "กรุณาระบุยี่ห้อยา"),
+        quantity: z.string().min(1, "กรุณาระบุจำนวนยา"),
+        sharingAmount: z.number().min(1, "กรุณาระบุจำนวนยา"),
+        pricePerUnit: z.number().min(1, "กรุณาระบุราคาต่อหน่วย"),
+        unit: z.string().min(1, "กรุณาระบุหน่วยยา"),
+        batchNumber: z.string().min(1, "กรุณาระบุหมายเลขกลุ่มยา"),
+        manufacturer: z.string().min(1, "กรุณาระบุผู้ผลิต"),
+        expiryDate: z.coerce.date({ invalid_type_error: "กรุณาระบุวันที่หมดอายุ" }),
     }),
-    requestTerm: z.object({
-        expectedReturnDate: z.coerce.date({ invalid_type_error: "Expected return date must be a valid date" }),
+    sharingReturnTerm: z.object({
         receiveConditions: z.object({
-            condition: z.enum(["exactType", "subType", "other"]),
+            exactType: z.boolean(),
+            subType: z.boolean(),
+            otherType: z.boolean(),
+            supportType: z.boolean(),
+            noReturn: z.boolean(),
         })
     }),
-    selectedHospitals: z.array(z.number().min(1, "At least one hospital must be selected")),
-})
+    selectedHospitals: z.array(z.number()),
+});
 
-const defaultHospital = {
-    id: "hospital-123",
-    nameEN: "General Hospital",
-    nameTH: "โรงพยาบาลทั่วไป",
-    address: "123 Main St, Cityville",
-    phone: "555-1234",
-
-}
-
-export default function CreateRequestDialog({ requestData, loggedInHospital, openDialog, onOpenChange }: any) {
+export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
+    const { loggedInHospital } = useHospital();
     const postingHospital = allHospitalList.find((hospital) => hospital.nameEN === loggedInHospital);
     const hospitalList = allHospitalList.filter(hospital => hospital.nameEN !== loggedInHospital)
-    const [loading, setLoading] = useState(false)
-    const {
-        register,
-        watch,
-        handleSubmit,
-        setValue,
-        getValues,
-        resetField,
-        formState: { errors },
-    } = useForm<z.infer<typeof RequestSchema>>({
-        resolver: zodResolver(RequestSchema),
+    const [loading, setLoading] = useState(false);
+    const { register, handleSubmit, watch, setValue, getValues, resetField, formState: { errors } } = useForm<z.infer<typeof SharingFormSchema>>({
+        resolver: zodResolver(SharingFormSchema),
         defaultValues: {
-            urgent: "immediate",
-            requestMedicine: {
-                name: "",
-                trademark: "",
-                description: "",
-                quantity: "",
-                requestAmount: 0,
-                pricePerUnit: 0,
-                unit: "",
-                manufacturer: "",
-            },
-            requestTerm: {
-                expectedReturnDate: undefined,
-                receiveConditions: {
-                    condition: "exactType",
-                },
-            },
             selectedHospitals: [],
-        },
-    })
+        }
+    });
 
     const selectedHospitals = watch("selectedHospitals")
-    const urgent = watch("urgent")
-    const expectedReturnDate = watch("requestTerm.expectedReturnDate");
-    const quantity = watch("requestMedicine.requestAmount");
-    const pricePerUnit = watch("requestMedicine.pricePerUnit");
+    const quantity = watch("sharingMedicine.sharingAmount")
+    const pricePerUnit = watch("sharingMedicine.pricePerUnit")
+    const expiryDate = watch("sharingMedicine.expiryDate")
 
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [dateError, setDateError] = useState(""); // for error message
@@ -157,36 +122,35 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
             ? current.filter((id) => id !== hospitalId)
             : [...current, hospitalId]
         setValue("selectedHospitals", updated)
+
     }
 
-    const onSubmit = async (data: z.infer<typeof RequestSchema>) => {
+    const onSubmit = async (data: z.infer<typeof SharingFormSchema>) => {
         const filterHospital = hospitalList.filter(hospital => data.selectedHospitals.includes(hospital.id))
-        const requestData = {
-            id: `REQ-${Date.now()}`,
+        const sharingMedicine = {
+            id: `SHARE-${Date.now()}`,
             postingHospitalId: postingHospital?.id,
             postingHospitalNameEN: postingHospital?.nameEN,
             postingHospitalNameTH: postingHospital?.nameTH,
             postingHospitalAddress: postingHospital?.address,
-            status: "pending",
-            urgent: data.urgent,
-            createAt: Date.now().toString(),
+            status: 'pending',
+            createdAt: Date.now().toString(),
             updatedAt: Date.now().toString(),
-            requestMedicine: data.requestMedicine,
-            requestTerm: data.requestTerm
+            sharingMedicine: data.sharingMedicine,
+            sharingReturnTerm: data.sharingReturnTerm,
         }
-
-        const requestBody = {
-            requestData: requestData,
+        const sharingBody = {
+            sharingMedicine: sharingMedicine,
             selectedHospitals: filterHospital
         }
         try {
             setLoading(true)
-            const response = await fetch("/api/createRequest", {
+            const response = await fetch("/api/createSharing", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(requestBody),
+                body: JSON.stringify(sharingBody),
             })
 
             if (!response.ok) {
@@ -194,13 +158,10 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
             }
 
             const result = await response.json()
-    
             setLoading(false)
             onOpenChange(false)
-            // resetForm()
-            resetField("requestMedicine")
-            resetField("requestTerm")
-            setValue("urgent", false)
+            resetField("sharingMedicine")
+            resetField("sharingReturnTerm")
             setValue("selectedHospitals", [])
         } catch (error) {
             console.error("Error submitting form:", error)
@@ -208,67 +169,73 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
         }
     }
 
+    const onError = (errors: FieldErrors<z.infer<typeof SharingFormSchema>>) => {
+        console.error("❌ Form validation errors:", errors);
+    }
+
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[1200px]">
-                <DialogTitle>Create request</DialogTitle>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <DialogHeader>
+                    <DialogTitle>สร้างการแชร์ยา</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="col-span-2 flex flex-col gap-2">
                                 <Label className="font-bold">รายการยา</Label>
-                                <Input type="text" {...register("requestMedicine.name")} placeholder="Chlorpheniramine (CPM)" />
-                                {errors.requestMedicine?.name && (
-                                    <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.name.message}</span>
+                                <Input type="text" {...register("sharingMedicine.name")} placeholder="Chlorpheniramine (CPM)" />
+                                {errors.sharingMedicine?.name && (
+                                    <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.name.message}</span>
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">ขนาด</Label>
-                                <Input type="text" {...register("requestMedicine.quantity")} placeholder="10 mg/ 1 ml" />
-                                {errors.requestMedicine?.quantity && (
-                                    <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.quantity.message}</span>
+                                <Input type="text" {...register("sharingMedicine.quantity")} placeholder="10 mg/ 1 ml" />
+                                {errors.sharingMedicine?.quantity && (
+                                    <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.quantity.message}</span>
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">รูปแบบ/หน่วย</Label>
-                                <Input type="text" {...register("requestMedicine.unit")} placeholder="AMP" />
-                                {errors.requestMedicine?.unit && (
-                                    <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.unit.message}</span>
+                                <Input type="text" {...register("sharingMedicine.unit")} placeholder="AMP" />
+                                {errors.sharingMedicine?.unit && (
+                                    <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.unit.message}</span>
                                 )}
                             </div>
                             <div className="col-span-2 flex flex-col gap-2">
                                 <Label className="font-bold">ชื่อการค้า</Label>
-                                <Input type="text" {...register("requestMedicine.trademark")} placeholder="Chlorpheno" />
-                                {errors.requestMedicine?.trademark && (
-                                    <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.trademark.message}</span>
+                                <Input type="text" {...register("sharingMedicine.trademark")} placeholder="Chlorpheno" />
+                                {errors.sharingMedicine?.trademark && (
+                                    <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.trademark.message}</span>
                                 )}
                             </div>
                             <div className="col-span-2 flex flex-col gap-2">
                                 <Label className="font-bold">ผู้ผลิต</Label>
-                                <Input type="text" {...register("requestMedicine.manufacturer")} placeholder="ที.แมน. ฟาร์มาซูติคอล" />
-                                {errors.requestMedicine?.manufacturer && (
-                                    <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.manufacturer.message}</span>
+                                <Input type="text" {...register("sharingMedicine.manufacturer")} placeholder="ที.แมน. ฟาร์มาซูติคอล" />
+                                {errors.sharingMedicine?.manufacturer && (
+                                    <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.manufacturer.message}</span>
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">จำนวน</Label>
-                                <Input type="number" placeholder="10" {...register("requestMedicine.requestAmount", { valueAsNumber: true })} className={errors.requestMedicine?.requestAmount ? "border-red-500" : ""} />
-                                {errors.requestMedicine?.requestAmount && (
-                                    <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.requestAmount.message}</span>
+                                <Input type="number" placeholder="10" {...register("sharingMedicine.sharingAmount", { valueAsNumber: true })} className={errors.sharingMedicine?.sharingAmount ? "border-red-500" : ""} />
+                                {errors.sharingMedicine?.sharingAmount && (
+                                    <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.sharingAmount.message}</span>
                                 )}
                             </div><div className="flex flex-col gap-2">
                                 <Label className="font-bold">ภาพประกอบ</Label>
                                 <Input type="file" placeholder="Image" />
                             </div>
                             <div className="col-span-2 flex flex-col gap-2">
-                                <Label className="font-bold">เหตุผลการยืม</Label>
-                                <Input type="text" {...register("requestMedicine.description")} placeholder="รอการส่งมอบจากตัวแทนจำหน่าย" />
+                                <Label className="font-bold">หมายเลขล็อต</Label>
+                                <Input type="text" {...register("sharingMedicine.batchNumber")} placeholder="รอการส่งมอบจากตัวแทนจำหน่าย" />
                             </div>
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">ราคาต่อหน่วย</Label>
-                                <Input type="number" {...register("requestMedicine.pricePerUnit", { valueAsNumber: true })} />
-                                {errors.requestMedicine?.pricePerUnit && (
-                                    <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.pricePerUnit.message}</span>
+                                <Input type="number" {...register("sharingMedicine.pricePerUnit", { valueAsNumber: true })} />
+                                {errors.sharingMedicine?.pricePerUnit && (
+                                    <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.pricePerUnit.message}</span>
                                 )}
                             </div>
                             <div className="items-end flex flex-row">
@@ -283,8 +250,8 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                 <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" className="justify-start text-left font-normal">
-                                            {expectedReturnDate
-                                                ? expectedReturnDate.toLocaleDateString()
+                                            {expiryDate
+                                                ? expiryDate.toLocaleDateString()
                                                 : "เลือกวันที่"}
                                             <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                         </Button>
@@ -292,14 +259,14 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                     <PopoverContent className="w-auto p-0">
                                         <Calendar
                                             mode="single"
-                                            selected={expectedReturnDate}
+                                            selected={expiryDate ? new Date(expiryDate) : undefined}
                                             onSelect={(date) => {
                                                 if (date instanceof Date && !isNaN(date.getTime())) {
                                                     const today = new Date();
                                                     today.setHours(0, 0, 0, 0); // normalize time
 
                                                     if (date > today) {
-                                                        setValue("requestTerm.expectedReturnDate", date, { shouldValidate: true });
+                                                        setValue("sharingMedicine.expiryDate", date, { shouldValidate: true });
                                                         setDateError(""); // clear error
                                                         setIsCalendarOpen(false); // close popover
                                                     } else {
@@ -320,23 +287,6 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
 
                         </div>
                         <div className="ml-10">
-                            <div className="mb-4">
-                                <Label className="font-bold mb-2">สถานะ</Label>
-                                <div className="flex flex-row gap-2 ">
-                                    <div className="flex items-center gap-2">
-                                        <input type="radio" value="urgent" {...register("urgent")} />
-                                        <Label className="font-normal">ด่วนที่สุด</Label>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <input type="radio" value="immediate" {...register("urgent")} />
-                                        <Label className="font-normal">ด่วน</Label>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <input type="radio" value="normal" {...register("urgent")} />
-                                        <Label className="font-normal">ปกติ</Label>
-                                    </div>
-                                </div>
-                            </div>
                             <div className="flex items-center justify-between">
                                 <Label>โรงพยาบาลที่ต้องการขอยืม</Label>
                             </div>
@@ -376,16 +326,24 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                             <Label className="mb-2 mt-4">เงื่อนไขการรับยา</Label>
                             <div className="flex flex-col items-start space-y-2">
                                 <Label className="font-normal">
-                                    <input type="radio" value="exactType" {...register("requestTerm.receiveConditions.condition")} />
-                                    ยืมรายการที่ต้องการ
+                                    <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.exactType")} />
+                                    รับคืนเฉพาะรายการนี้
                                 </Label>
                                 <Label className="font-normal">
-                                    <input type="radio" value="subType" {...register("requestTerm.receiveConditions.condition")} />
-                                    ยืมรายการทดแทน
+                                    <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.subType")} />
+                                    รับคืนรายการทดแทน
                                 </Label>
                                 <Label className="font-normal">
-                                    <input type="radio" value="other" {...register("requestTerm.receiveConditions.condition")} />
+                                    <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.supportType")} />
+                                    รับคืนรายการที่รับมอบจากตัวแทนจำหน่าย
+                                </Label>
+                                <Label className="font-normal">
+                                    <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.otherType")} />
                                     อื่นๆ
+                                </Label>
+                                <Label className="font-normal">
+                                    <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.noReturn")} />
+                                    ไม่รับคืน
                                 </Label>
                             </div>
                         </div>
@@ -401,5 +359,5 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                 </form>
             </DialogContent>
         </Dialog>
-    )
+    );
 }

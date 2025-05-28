@@ -14,24 +14,26 @@ export default async function handler(
         return;
     }
     try {
+        const updatedAt = new Date().toString();
         const {
-            loggedInHospital,
-            status,
+            responseId,
+            acceptOffer,
         } = req.body;
         const contract = await initializeFabric();
-        console.log('loggedInHospital', loggedInHospital)
         try {
-            const resultBytes = await contract.evaluateTransaction(
-                "QueryRequestToHospital",
-                loggedInHospital,
-                status
+            await contract.submitTransaction(
+                "AcceptSharing",
+                responseId,
+                JSON.stringify(acceptOffer),
+                updatedAt
             );
-            const resultJson = utf8Decoder.decode(resultBytes);
-            const result = JSON.parse(resultJson);
-            console.log("*** QueryRequestToHospital Transaction committed successfully");
-            res.status(200).json(result);
+            console.log("*** Transaction committed successfully");
+            res.status(200).json({
+                message: "Transaction committed successfully",
+                assetId: responseId,
+            });
         } catch (error) {
-            console.log("error", error);
+            console.error("Error in transaction:", error);
             res.status(500).json({ error: error });
         }
     } catch (error) {

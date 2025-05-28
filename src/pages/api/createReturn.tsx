@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { initializeFabric } from "../../../lib/fabricClient";
 import { TextDecoder } from "util";
-
 const utf8Decoder = new TextDecoder();
 
 export default async function handler(
@@ -15,23 +14,24 @@ export default async function handler(
     }
     try {
         const {
-            loggedInHospital,
-            status,
+            responseId,
+            returnData,
+            selectedHospital
         } = req.body;
         const contract = await initializeFabric();
-        console.log('loggedInHospital', loggedInHospital)
         try {
-            const resultBytes = await contract.evaluateTransaction(
-                "QueryRequestToHospital",
-                loggedInHospital,
-                status
+            await contract.submitTransaction(
+                "CreateMedicineReturn",
+                responseId,
+                JSON.stringify(returnData),
             );
-            const resultJson = utf8Decoder.decode(resultBytes);
-            const result = JSON.parse(resultJson);
-            console.log("*** QueryRequestToHospital Transaction committed successfully");
-            res.status(200).json(result);
+            console.log("*** Transaction committed successfully");
+            res.status(200).json({
+                message: "Transaction committed successfully",
+                returnId: returnData.id,
+            });
         } catch (error) {
-            console.log("error", error);
+            console.error("Error in transaction:", error);
             res.status(500).json({ error: error });
         }
     } catch (error) {

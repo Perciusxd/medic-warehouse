@@ -9,6 +9,7 @@ import { DataTable } from "../borrow/data-table";
 import { columns } from "./columns";
 
 import { useMedicineRequests, useMedicineResponsesInTransfer } from "@/hooks/useMedicineAPI";
+import { useHospital } from "@/context/HospitalContext";
 
 import {
     Select,
@@ -19,8 +20,9 @@ import {
 } from "@/components/ui/select";
 import { ResponseAsset } from "@/types/responseMed";
 
-export default function TransferDashboard(loggedInHospital) {
-    const { medicineResponses, loading: loadingResponse, error: errorResponse, fetchMedicineResponses } = useMedicineResponsesInTransfer(loggedInHospital.loggedInHospital);
+export default function TransferDashboard() {
+    const { loggedInHospital } = useHospital();
+    const { medicineResponses, loading: loadingResponse, error: errorResponse, fetchMedicineResponses } = useMedicineResponsesInTransfer(loggedInHospital);
     const [selectedMed, setSelectedMed] = useState(null);
     const [loadingRowId, setLoadingRowId] = useState(null);
     const [globalFilter, setGlobalFilter] = useState("");
