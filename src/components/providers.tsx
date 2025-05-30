@@ -33,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Define checkAuth outside useEffect so it can be passed to context
   const checkAuth = async () => {
     try {
       setError(null);
@@ -47,7 +48,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch (error) {
-      console.error('Auth check error:', error);
       setUser(null);
       setError('Failed to check authentication status');
     } finally {
@@ -55,20 +55,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  useEffect(() => {
+    // เรียก /api/auth/me แค่ครั้งเดียวตอน mount
+    checkAuth();
+  }, []);
+
   const logout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
       setUser(null);
     } catch (error) {
-      console.error('Logout error:', error);
       setError('Failed to logout');
+    } finally {
+      setLoading(false);
     }
   };
-
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
   return (
     <AuthContext.Provider value={{ user, loading, error, checkAuth, logout }}>
       {children}

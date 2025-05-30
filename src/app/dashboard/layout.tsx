@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ReactNode } from "react";
+import { useAuth } from "@/components/providers";
 
 interface User {
   id: {
@@ -23,36 +24,12 @@ export default function NavDashboard({
   children
 }: NavDashboardProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const {  user, logout } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch('/api/auth/me');
-        if (res.ok) {
-          const data = await res.json();
-          console.log(data);
-          setUser(data);
-        } else {
-          router.push('/');
-        }
-      } catch (error) {
-        console.error('Error fetching user:', error);
-        router.push('/');
-      }
-    };
-
-    fetchUser();
-  }, [router]);
-
   const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      router.push('/');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
+    await logout();
+    router.push("/");
   };
 
   return (

@@ -5,7 +5,7 @@ import { serialize } from 'cookie';
 import dbConnect from '@/lib/mongodb';
 import { UserModel } from '@/models/user';
 
-const JWT_SECRET = process.env.NEXT_PUBLIC_JWT_SECRET || 'your-super-secret-key-change-this-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key-change-this-in-production';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'POST') {

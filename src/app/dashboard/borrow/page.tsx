@@ -44,7 +44,7 @@ export default function BorrowDashboard(loggedInHospital: string) {
         return () => clearInterval(interval);
     }, []);
 
-    console.log('medicineRequests', medicineRequests);
+    // console.log('medicineRequests', medicineRequests);
 
     return (
         <div>
