@@ -20,6 +20,7 @@ import { Calendar1Icon, ShieldAlert } from "lucide-react"
 import RequestDetails from "./request-details"
 
 export default function CreateResponseDialog({ requestData, responseId, dialogTitle, status, openDialog, onOpenChange }) {
+    const { requestTerm } = requestData;
     const ResponseSchema = z.object({
         offeredMedicine: z.object({
             offerAmount: z.number().min(1, "กรุณากรอกมากว่า 0").max(requestData.requestMedicine.requestAmount, `กรุณากรอกน้อยกว่า ${requestData.requestMedicine.requestAmount}`),
@@ -129,8 +130,9 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
             responseId: responseId,
             status: status
         }
-        setLoading(true)
+
         try {
+            setLoading(true)
             const response = await fetch("/api/updateRequest", {
                 method: "POST",
                 headers: {
@@ -178,10 +180,6 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                 <Badge
                                     variant={"outline"}
                                     className="flex gap-1 px-1.5 [&_svg]:size-3 mb-4">
-                                    {/* {requestData.urgent ?
-                                        <ShieldAlert className="text-red-700" /> :
-                                        "Normal"
-                                    } */}
                                     <div className="text-sm text-gray-600">
                                         {requestData.requestTerm.receiveConditions.condition === "exactType" ? "ยืมรายการที่ต้องการ" : "ยืมรายการทดแทนได้"}
                                     </div>
@@ -190,44 +188,16 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                             
                             <div className="flex items-center space-x-4">
                                 <Label>
-                                    <input type="radio" value="exactType" {...register("offeredMedicine.returnTerm")} disabled={true ? status !== "offered" : false} />
+                                    <input type="radio" value="exactType" {...register("offeredMedicine.returnTerm")} disabled={requestTerm.receiveConditions.condition === "exactType"} />
                                     ให้ยืมรายการที่ต้องการ
                                 </Label>
                                 <Label>
-                                    <input type="radio" value="subType" {...register("offeredMedicine.returnTerm")} disabled={true ? status !== "offered" : false} />
+                                    <input type="radio" value="subType" {...register("offeredMedicine.returnTerm")} disabled={requestTerm.receiveConditions.condition === "exactType"} />
                                     ให้ยืมรายการทดแทน
                                 </Label>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mt-6">
-                                {/* <Label className="flex flex-col items-start">
-                                    Date of expiry
-                                    <Popover open={open} onOpenChange={setOpen}>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant={"outline"}
-                                                className="w-full justify-start text-left font-normal"
-                                                disabled={returnTerm === "exactType"}>
-                                                {getValues("offeredMedicine.expiryDate") ? format(new Date(getValues("offeredMedicine.expiryDate")), "PPP") : (<span>Pick a date</span>)}
-                                                <Calendar1Icon className="ml-auto h-4 w-4 opacity-50"></Calendar1Icon>
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0">
-                                            <Calendar
-                                                mode="single"
-                                                selected={getValues("offeredMedicine.expiryDate") ? new Date(getValues("offeredMedicine.expiryDate")) : undefined}
-                                                onSelect={(date) => {
-                                                    console.log(date);
-                                                    if (date) {
-                                                        setValue("offeredMedicine.expiryDate", date.toString());
-                                                        setOpen(false);
-                                                    }
-                                                }}
-                                                initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                </Label> */}
                                 <Label className="flex flex-col items-start">
                                     ชื่อการค้า
                                     <Input
@@ -276,19 +246,19 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                 <Label className="mt-4 mb-2">เงื่อนไขการคืนที่ยอมรับ</Label>
                                 <div className="grid grid-cols-2 items-start space-x-4 gap-2">
                                     <Label className="font-normal">
-                                        <Checkbox {...register("offeredMedicine.returnConditions.exactType")} />
+                                        <input type="checkbox" {...register("offeredMedicine.returnConditions.exactType")} />
                                         รับคืนเฉพาะรายการนี้
                                     </Label>
                                     <Label className="font-normal">
-                                        <Checkbox {...register("offeredMedicine.returnConditions.subType")} />
+                                    <input type="checkbox" {...register("offeredMedicine.returnConditions.subType")} />
                                         รับคืนยาทดแทนได้
                                     </Label>
                                     <Label className="font-normal">
-                                        <Checkbox {...register("offeredMedicine.returnConditions.otherType")} />
+                                    <input type="checkbox" {...register("offeredMedicine.returnConditions.otherType")} />
                                         รับคืนยารายการอื่นได้
                                     </Label>
                                     <Label className="font-normal">
-                                        <Checkbox {...register("offeredMedicine.returnConditions.supportType")} />
+                                    <input type="checkbox" {...register("offeredMedicine.returnConditions.supportType")} />
                                         สามารถสนับสนุนได้
                                     </Label>
                                 </div>
@@ -300,11 +270,6 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                         <Button type="submit">
                             {loading ? <div className="flex flex-row items-center gap-2 text-muted-foreground"><LoadingSpinner /> ยืมยันการให้ยืม</div>  : "ยืมยันการให้ยืม"}
                         </Button>
-                        {/* <DialogClose>
-                            <Button variant={"destructive"} type="submit" >
-                                Cancel
-                            </Button>
-                        </DialogClose> */}
 
                     </DialogFooter>
                 </form>

@@ -16,20 +16,23 @@ import {
 } from "@/components/ui/alert-dialog"
 
 import { useMedicineRequestsStatus } from "@/hooks/useMedicineAPI";
+import { useHospital } from "@/context/HospitalContext";
 
 import { columns } from "./columns";
 import ConfirmResponseDialog from "@/components/dialogs/confirm-response-dialog";
+import ReturnDialog from "@/components/dialogs/return-dialog";
 
-export default function StatusDashboard(loggedInHospital) {
-    const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequestsStatus(loggedInHospital.loggedInHospital);
+export default function StatusDashboard() {
+    const { loggedInHospital } = useHospital();
+    const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequestsStatus(loggedInHospital);
     const [loading, setLoading] = useState(false);
     const [selectedMed, setSelectedMed] = useState(null);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [deliveryDialogOpen, setDeliveryDialogOpen] = useState(false);
+    const [returnDialogOpen, setReturnDialogOpen] = useState(false);
     const [globalFilter, setGlobalFilter] = useState("");
 
     const handleApproveClick = (med) => {
-        console.log('handleApproveClick', med);
         setSelectedMed(med);
         setConfirmDialogOpen(true);
     }
@@ -39,9 +42,15 @@ export default function StatusDashboard(loggedInHospital) {
         setDeliveryDialogOpen(true);
     }
 
+    const handleReturnClick = async (med) => {
+        console.log('handleReturnClick', med);
+        setSelectedMed(med);
+        setReturnDialogOpen(true);
+    }
+
     const confirmDelivery = async (med) => {
         const responseBody = {
-            responseId: med.id,
+            responseId: med.responseId,
             offeredMedicine: med.offeredMedicine,
             status: "in-return"
         }
@@ -60,12 +69,13 @@ export default function StatusDashboard(loggedInHospital) {
             }
 
             const result = await response.json()
-            console.log(result);
             fetchMedicineRequests();
             setLoading(false)
+            return true;
         } catch (error) {
             console.error("Error submitting form:", error)
             setLoading(false)
+            return false;
         }
     }
 
@@ -81,7 +91,7 @@ export default function StatusDashboard(loggedInHospital) {
                 ) : (
                     <>
                         <DataTable
-                            columns={columns(handleApproveClick, handleDeliveryClick)}
+                            columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick)}
                             data={medicineRequests}
                             globalFilter={globalFilter}
                             setGlobalFilter={setGlobalFilter} />
@@ -91,7 +101,7 @@ export default function StatusDashboard(loggedInHospital) {
                                 dialogTitle={"ยืนยันการตอบรับคำขอ"}
                                 status={"to-transfer"}
                                 openDialog={confirmDialogOpen}
-                                onOpenChange={(open) => {
+                                onOpenChange={(open: boolean) => {
                                     setConfirmDialogOpen(open);
                                     if (!open) {
                                         fetchMedicineRequests();
@@ -101,28 +111,60 @@ export default function StatusDashboard(loggedInHospital) {
                             />
                         )}
 
+                        <ReturnDialog 
+                            selectedMed={selectedMed}
+                            open={returnDialogOpen} 
+                            onOpenChange={(open: boolean) => {
+                                setReturnDialogOpen(open);
+                                if (!open) {
+                                    fetchMedicineRequests();
+                                    setSelectedMed(null);
+                                }
+                            }}  />
+
                         {/* AlertDialog for delivery */}
                         <AlertDialog open={deliveryDialogOpen} onOpenChange={setDeliveryDialogOpen}>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogTitle>ยืนยันการรับของ</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        Are you sure you want to deliver this medicine? This action cannot be undone.
+                                        คุณต้องการยืนยันการจัดส่งของจาก {selectedMed?.responseDetails[0].respondingHospitalNameTH} หรือไม่?
+                                        <div className="flex flex-col gap-2 mt-4">
+                                            <div className="flex flex-row items-center gap-2">
+                                                <span>ชื่อยา:</span>
+                                                <span>{selectedMed?.offeredMedicine.name}</span>
+                                            </div>
+                                            <div className="flex flex-row items-center gap-2">
+                                                <span>จำนวน:</span>
+                                                <span>{selectedMed?.offeredMedicine.offerAmount}</span>
+                                            </div>
+                                        </div>
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction
-                                        
-                                    >
-                                        {
-                                            loading 
-                                            ? <Button className="flex flex-row items-center gap-2 text-muted-foreground"><LoadingSpinner /> ยืนยันการจัดส่ง</Button> 
-                                            : <Button onClick={() => {
-                                                        confirmDelivery(selectedMed);
-                                            }} variant="default">ยืนยันการจัดส่ง</Button>
-                                        }
-                                    </AlertDialogAction>
+                                        <AlertDialogAction asChild>
+                                            {
+                                                loading ? (
+                                                    <Button className="flex flex-row items-center gap-2 text-muted-foreground" disabled>
+                                                        <LoadingSpinner /> ยืนยันการจัดส่ง
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        onClick={async () => {
+                                                            const success = await confirmDelivery(selectedMed);
+                                                            if (success) {
+                                                                setDeliveryDialogOpen(false);
+                                                                setSelectedMed(null);
+                                                            }
+                                                        }}
+                                                    >
+                                                        ยืนยันการจัดส่ง
+                                                    </Button>
+                                                )
+                                            }
+                                        </AlertDialogAction>
+
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>

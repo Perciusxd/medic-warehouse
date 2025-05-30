@@ -5,6 +5,7 @@ import { z } from "zod";
 import { formatDistanceToNow } from 'date-fns';
 
 import { useMedicineRequests } from "@/hooks/useMedicineAPI";
+import { useHospital } from "@/context/HospitalContext";
 
 // Components
 import { Button } from "@/components/ui/button"
@@ -23,8 +24,14 @@ import { RequestAsset } from "@/types/requestMed";
 import { DataTable } from "./data-table";
 import { columns } from "./columns";
 
-export default function BorrowDashboard(loggedInHospital: string) {
-    const { medicineRequests, loading, error, fetchMedicineRequests } = useMedicineRequests(loggedInHospital.loggedInHospital);
+type BorrowDashboardProps = {
+    loggedInHospital: string;
+    setBorrowNumber: (number: number) => void;
+};
+
+export default function BorrowDashboard() {
+    const { loggedInHospital } = useHospital();
+    const { medicineRequests, loading, error, fetchMedicineRequests } = useMedicineRequests(loggedInHospital);
     const [updatedLast, setUpdatedLast] = useState<Date | null>(null);
     const [tick, setTick] = useState(0);
     const [selectedMed, setSelectedMed] = useState(null);
@@ -45,6 +52,13 @@ export default function BorrowDashboard(loggedInHospital: string) {
     }, []);
 
     // console.log('medicineRequests', medicineRequests);
+    // useEffect(() => {
+    //     const borrowNumbers = medicineRequests.length;
+    //     console.log('borrrowNumbers', borrowNumbers);
+    //     setBorrowNumber(borrowNumbers);
+    // }, [medicineRequests, setBorrowNumber]);
+
+    console.log('medicineRequests', medicineRequests);
 
     return (
         <div>
@@ -63,9 +77,9 @@ export default function BorrowDashboard(loggedInHospital: string) {
                 </div>
                 <CreateRequestDialog
                     requestData={selectedMed}
-                    loggedInHospital={loggedInHospital.loggedInHospital}
+                    loggedInHospital={loggedInHospital}
                     openDialog={createRequestDialogOpen}
-                    onOpenChange={(open) => {
+                    onOpenChange={(open: boolean) => {
                         setCreateRequestDialogOpen(open);
                         if (!open) {
                             fetchMedicineRequests();
@@ -90,7 +104,7 @@ export default function BorrowDashboard(loggedInHospital: string) {
                                 status="offered"
                                 dialogTitle={"เวชภัณฑ์ยาที่ขาดแคลน"}
                                 openDialog={createRespDialogOpen}
-                                onOpenChange={(open) => {
+                                onOpenChange={(open: boolean) => {
                                     setCreateRespDialogOpen(open);
                                     if (!open) {
                                         fetchMedicineRequests();

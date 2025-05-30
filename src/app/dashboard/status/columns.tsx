@@ -24,7 +24,8 @@ import StatusIndicator from "@/components/ui/status-indicator"
 
 export const columns = (
     handleApproveClick: (med: any) => void,
-    handleDeliveryClick: (med: any) => void
+    handleDeliveryClick: (med: any) => void,
+    handleReturnClick: (med: any) => void,
 ): ColumnDef<any>[] => [
     {
         accessorKey: "updatedAt",
@@ -117,7 +118,7 @@ export const columns = (
                 <div className="flex flex-col gap-y-1 text-gray-600">
                     {med.responseDetails.map((detail, index) => (
                         <div key={index} className="flex items-center gap-x-2 h-4">
-                            <span>{detail.respondingHospitalNameTH}{index}:</span>
+                            <span>{detail.respondingHospitalNameTH}:</span>
                             {detail.status === 'offered' ? (
                                     <Button 
                                         variant={"link"} 
@@ -142,8 +143,15 @@ export const columns = (
                                                 requestDetails: med.requestMedicine,
                                             })}>อยู่ระหว่างการจัดส่ง (เช็คสถานะ)<StatusIndicator status={detail.status} /></Button>)
                                             : detail.status === 'in-return'
-                                                ? (<Button variant={'link'} className="flex gap-x-2">ต้องส่งคืน<StatusIndicator status={detail.status} /></Button>)
-                                                : detail.status === 'completed'
+                                                ? (<Button variant={'link'} className="flex gap-x-2" onClick={() => handleReturnClick({
+                                                    ...med,
+                                                    responseId: detail.id,
+                                                    offeredMedicine: detail.offeredMedicine,
+                                                    requestDetails: med.requestMedicine,
+                                                })}>ต้องส่งคืน<StatusIndicator status={detail.status} /></Button>)
+                                                : detail.status === "confirm-return"
+                                                    ? (<span className = "flex gap-x-2">รอยืนยันการคืน< StatusIndicator status={detail.status} /></span>)
+                                                    : detail.status === 'completed'
                                                         ? (<span className="flex gap-x-2">เสร็จสิ้น<StatusIndicator status={detail.status} /></span>)
                                                         : detail.status === 'cancelled'
                                                             ? (<span className="flex gap-x-2">ยกเลิก<StatusIndicator status={detail.status} /></span>)

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { fetchAllMedicineRequests, fetchAssetById, fetchAllMedicineRequestsInProgress } from "@/pages/api/requestService";
 import { fetchAllMedicineReponsesInTransfer } from "@/pages/api/transferService";
 import { fetchAllRequestsByStatus } from "@/pages/api/statusService";
+import { fetchAllMedicineSharing } from "@/pages/api/sharingService";
 /**
  * Custom hook for managing medicine requests
  * @param {string} loggedInHospital - The currently logged in hospital
@@ -39,6 +40,38 @@ export function useMedicineRequests(loggedInHospital: string) {
         loading,
         error,
         fetchMedicineRequests,
+    };
+}
+
+export function useMedicineSharing(loggedInHospital: string) {
+    const [medicineSharing, setMedicineSharing] = useState([]);
+    const [loading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const fetchMedicineSharing = useCallback(async () => {
+        if (!loggedInHospital) return;
+        setIsLoading(true);
+        setError(null);
+        try {
+            const data = await fetchAllMedicineSharing(loggedInHospital);
+            setMedicineSharing(data);
+            return data;
+        } catch (error) {
+            setError(error.message || "Failed to fetch medicine sharing");
+        } finally {
+            setIsLoading(false);
+        }
+    }, [loggedInHospital]);
+
+    useEffect(() => {
+        fetchMedicineSharing();
+    }, [fetchMedicineSharing]);
+
+    return {
+        medicineSharing,
+        loading,
+        error,
+        fetchMedicineSharing,
     };
 }
 
