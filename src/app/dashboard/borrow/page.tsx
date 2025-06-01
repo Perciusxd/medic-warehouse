@@ -51,6 +51,7 @@ export default function BorrowDashboard() {
         return () => clearInterval(interval);
     }, []);
 
+    // console.log('medicineRequests', medicineRequests);
     // useEffect(() => {
     //     const borrowNumbers = medicineRequests.length;
     //     console.log('borrrowNumbers', borrowNumbers);

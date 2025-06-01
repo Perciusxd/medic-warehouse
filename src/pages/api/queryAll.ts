@@ -1,22 +1,41 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { initializeFabric } from "../../../lib/fabricClient";
 import { TextDecoder } from "util";
+import { verifyAuth } from '../../lib/auth';
 
 const utf8Decoder = new TextDecoder();
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<any>
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+
   try {
+    const user = await verifyAuth(req, res);
+    if (!user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
     const now = new Date();
     const contract = await initializeFabric();
     const resultBytes = await contract.evaluateTransaction("GetAllMedicines");
     const resultJson = utf8Decoder.decode(resultBytes);
-    const result: any = JSON.parse(resultJson);
+    const result = JSON.parse(resultJson);
     console.log(`*** Query All Assets committed successfully at ${now.toLocaleString()}`);
-    res.status(200).json(result);
+    return res.status(200).json({
+      message: 'Query successful',
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name
+      },
+      result
+    });
   } catch (error) {
-    res.status(500).json({ error: "Failed to initialize Fabric" });
+    console.error('Query error:', error);
+    return res.status(500).json({ 
+      message: 'Internal server error',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 }

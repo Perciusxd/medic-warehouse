@@ -7,35 +7,86 @@ import {
 } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import NotificationNumber from "@/components/ui/notification-number";
+import { useRouter } from "next/navigation";
 import { useHospital } from "@/context/HospitalContext";
 import BorrowDashboard from "./borrow/page";
 import SharingDashboard from "./sharing/page";
 import StatusDashboard from "./status/page";
 import TransferDashboard from "./transfer/page";
-
-
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/providers";
+
+interface Medicine {
+    ID: string;
+    Name: string;
+    BatchNumber: string;
+    CurrentLocation: string;
+    ExpiryDate: string;
+    Price: number;
+    Temperature: string;
+    Owner?: string;
+    Manufacturer?: string;
+}
 
 export default function Dashboard() {
     const router = useRouter();
-    const [medicines, setMedicines] = useState([]);
+    const { user, loading } = useAuth(); // ใช้ context
+    const [medicines, setMedicines] = useState<Medicine[]>([]);
     const [selectedTab, setSelectedTab] = useState('borrow');
     const [totalBorrow, setTotalBorrow] = useState(0);
-    const { loggedInHospital, setLoggedInHospital } = useHospital();
+    const [loggedInHospital, setLoggedInHospital] = useState('Na Mom Hospital');
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+     // redirect ถ้าไม่ login
+    useEffect(() => {
+        if (!loading && !user) {
+            router.push('/');
+        }
+    }, [user, loading, router]);
+    // const { loggedInHospital, setLoggedInHospital } = useHospital();
     const [borrowNumber, setBorrowNumber] = useState(0);
 
+    // fetch medicines
     useEffect(() => {
-        fetch("api/queryAll")
+        const fetchMedicines = async () => {
+            try {
+                setIsLoading(true);
+                setError(null);
+                const response = await fetch('/api/queryAll');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch medicines');
+                }
+                const data = await response.json();
+                if (Array.isArray(data)) {
+                    setMedicines(data);
+                } else if (data && typeof data === 'object') {
+                    setMedicines(Object.values(data));
+                } else {
+                    setMedicines([]);
+                    setError('Invalid data format received');
+                }
+            } catch (error) {
+                setError('Failed to load medicines');
+                setMedicines([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchMedicines();
+    }, []);
+
+    useEffect(() => {
+        fetch("/api/queryAll")
             .then((response) => response.json())
             .then((data) => {
-                const filteredMedicines = data.filter(medicine => medicine.PostingHospital !== loggedInHospital);
+                const filteredMedicines = data.filter((medicine: any) => medicine.PostingHospital !== loggedInHospital);
                 setMedicines(filteredMedicines);
 
-                const borrowCount = data.reduce((total, medicine) => {
+                const borrowCount = data.reduce((total: any, medicine: any) => {
                     if (!medicine.BorrowRecords) return total;
                     const hospitalBorrows = medicine.BorrowRecords.filter(
-                        record => record.BorrowingHospital === loggedInHospital
+                        (record: any) => record.BorrowingHospital === loggedInHospital
                     ).length;
                     return total + hospitalBorrows;
                 }, 0);
@@ -44,6 +95,78 @@ export default function Dashboard() {
             })
             .catch((error) => console.error("Error fetching data:", error));
     }, [loggedInHospital]);
+    
+    // useEffect(() => {
+    //     // Fetch user data
+    //     const fetchUser = async () => {
+    //         try {
+    //             const res = await fetch('/api/auth/me');
+    //             if (res.ok) {
+    //                 const data = await res.json();
+    //                 setUser(data);
+    //             } else {
+    //                 router.push('/');
+    //             }
+    //         } catch (error) {
+    //             console.error('Error fetching user:', error);
+    //             router.push('/');
+    //         }
+    //     };
+
+    //     // Fetch medicines data
+    //     const fetchMedicines = async () => {
+    //         try {
+    //             setIsLoading(true);
+    //             setError(null);
+    //             const response = await fetch('/api/queryAll');
+    //             if (!response.ok) {
+    //                 throw new Error('Failed to fetch medicines');
+    //             }
+    //             const data = await response.json();
+                
+    //             // Ensure data is an array
+    //             if (Array.isArray(data)) {
+    //                 setMedicines(data);
+    //             } else if (data && typeof data === 'object') {
+    //                 // If data is an object, try to convert it to an array
+    //                 const medicinesArray = Object.values(data);
+    //                 setMedicines(medicinesArray);
+    //             } else {
+    //                 setMedicines([]);
+    //                 setError('Invalid data format received');
+    //             }
+    //         } catch (error) {
+    //             console.error('Error fetching medicines:', error);
+    //             setError('Failed to load medicines');
+    //             setMedicines([]);
+    //         } finally {
+    //             setIsLoading(false);
+    //         }
+    //     };
+
+    //     fetchUser();
+    //     fetchMedicines();
+    // }, [router]);
+
+    // useEffect(() => {
+    //     fetch("api/queryAll")
+    //         .then((response) => response.json())
+    //         .then((data) => {
+    //             const filteredMedicines = data.filter(medicine => medicine.PostingHospital !== loggedInHospital);
+    //             setMedicines(filteredMedicines);
+
+    //             const borrowCount = data.reduce((total, medicine) => {
+    //                 if (!medicine.BorrowRecords) return total;
+    //                 const hospitalBorrows = medicine.BorrowRecords.filter(
+    //                     record => record.BorrowingHospital === loggedInHospital
+    //                 ).length;
+    //                 return total + hospitalBorrows;
+    //             }, 0);
+
+    //             setTotalBorrow(borrowCount);
+    //         })
+    //         .catch((error) => console.error("Error fetching data:", error));
+    // }, [loggedInHospital]);
 
     return (
         <div className="container mx-auto p-4">
