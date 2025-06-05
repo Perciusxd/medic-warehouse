@@ -1,4 +1,5 @@
 'use client';
+import { useAuth } from '@/components/providers';
 import React, { createContext, useContext, useState } from 'react';
 
 type HospitalContextType = {
@@ -9,7 +10,8 @@ type HospitalContextType = {
 const HospitalContext = createContext<HospitalContextType | undefined>(undefined);
 
 export const HospitalProvider = ({ children }: { children: React.ReactNode }) => {
-    const [loggedInHospital, setLoggedInHospital] = useState('Na Mom Hospital');
+    const { user } = useAuth(); // Assuming useAuth is defined in your providers.tsx
+    const [loggedInHospital, setLoggedInHospital] = useState('');
 
     return (
         <HospitalContext.Provider value={{ loggedInHospital, setLoggedInHospital }}>

@@ -6,14 +6,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CheckCircle2, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { useAuth } from '@/components/providers';
+import { useEffect } from 'react';
 
 const RegisterPage: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
+    const [role, setRole] = useState('');
+    const [hospitalName, setHospitalName] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
     const router = useRouter();
+
+    const { user } = useAuth(); // Assuming useAuth is defined in your context
+    useEffect(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        // Example: get a parameter named "ref"
+        const ref = searchParams.get('onlyAdmin');
+        console.log(`Ref parameter: ${ref}`);
+        if (!ref) {
+            // If no ref parameter, redirect to home
+            router.push('/');
+        }
+    }, [user, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -26,13 +42,19 @@ const RegisterPage: React.FC = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email, password, name }),
+                body: JSON.stringify({ email, password, name, role, hospitalName }),
             });
 
             const data = await response.json();
 
             if (!response.ok) {
                 throw new Error(data.message || 'Registration failed');
+            } else {
+                setEmail('');
+                setPassword('');
+                setName('');
+                setRole('');
+                setHospitalName('');
             }
 
             setSuccess(true);
@@ -133,6 +155,42 @@ const RegisterPage: React.FC = () => {
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="pl-10 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-colors duration-200"
                                     placeholder="Create a password"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="role" className="text-sm font-medium text-gray-700">
+                                Role
+                            </Label>
+                            <div className="relative">
+                                <Input
+                                    id="role"
+                                    name="role"
+                                    type="text"
+                                    required
+                                    value={role}
+                                    onChange={(e) => setRole(e.target.value)}
+                                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-colors duration-200"
+                                    placeholder="Enter your role"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="hospitalName" className="text-sm font-medium text-gray-700">
+                                Hospital Name
+                            </Label>
+                            <div className="relative">
+                                <Input
+                                    id="hospitalName"
+                                    name="hospitalName"
+                                    type="text"
+                                    required
+                                    value={hospitalName}
+                                    onChange={(e) => setHospitalName(e.target.value)}
+                                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-colors duration-200"
+                                    placeholder="Enter your hospital name"
                                 />
                             </div>
                         </div>

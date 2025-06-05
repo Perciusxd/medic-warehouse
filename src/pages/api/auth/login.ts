@@ -36,7 +36,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const token = await new SignJWT({ 
             id: user._id,
             email: user.email,
-            name: user.name
+            name: user.name,
+            role: user.role,
+            hospitalName: user.hospitalName,
         })
         .setProtectedHeader({ alg: 'HS256' })
         .setExpirationTime('24h')

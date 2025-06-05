@@ -34,7 +34,7 @@ export default function NavDashboard({
 
   return (
     <div>
-      <nav className="flex justify-between p-4 bg-gray-800 text-white">
+      {/* <nav className="flex justify-between p-4 bg-gray-800 text-white">
         <div className="flex space-x-4">
           <Link href="/" className="hover:underline">
             Home
@@ -66,7 +66,7 @@ export default function NavDashboard({
             </div>
           )}
         </div>
-      </nav>
+      </nav> */}
       {children}
     </div>
   );
