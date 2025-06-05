@@ -381,7 +381,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                 </Label>
                                 <Label className="font-normal">
                                     <input type="radio" value="subType" {...register("requestTerm.receiveConditions.condition")} />
-                                    ยืมรายการทดแทน
+                                    ยืมรายการทดแทนได้
                                 </Label>
                                 <Label className="font-normal">
                                     <input type="radio" value="other" {...register("requestTerm.receiveConditions.condition")} />

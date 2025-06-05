@@ -193,7 +193,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                 </Label>
                                 <Label>
                                     <input type="radio" value="subType" {...register("offeredMedicine.returnTerm")} disabled={requestTerm.receiveConditions.condition === "exactType"} />
-                                    ให้ยืมรายการทดแทน
+                                    ให้ยืมรายการทดแทนได้
                                 </Label>
                             </div>
 

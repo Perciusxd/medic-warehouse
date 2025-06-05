@@ -7,6 +7,8 @@ export interface JWTPayload {
   id: string;
   email: string;
   name: string;
+  role?: string;
+  hospitalName?: string; // Optional: Add hospital association if needed
 }
 
 export async function verifyAuth(req: NextApiRequest, res: NextApiResponse) {

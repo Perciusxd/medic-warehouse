@@ -20,6 +20,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useHospital } from "@/context/HospitalContext"
+import { useAuth } from "./providers"
+import router from "next/router"
 
 const mainNavItems = [
   {
@@ -32,17 +34,23 @@ const mainNavItems = [
     href: "/dashboard",
     icon: LayoutDashboard,
   },
-  {
-    title: "About",
-    href: "/about",
-    icon: Info,
-  },
+  // {
+  //   title: "About",
+  //   href: "/about",
+  //   icon: Info,
+  // },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = React.useState(false)
   const { loggedInHospital } = useHospital()
+  const {  user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/");
+  };
 
   return (
     <>
@@ -152,12 +160,25 @@ export function Sidebar() {
                       <AvatarFallback>U</AvatarFallback>
                     </Avatar>
                     {!isCollapsed && (
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium leading-none">User</span>
-                        <span className="text-xs text-muted-foreground line-clamp-1">
-                          {loggedInHospital}
-                        </span>
-                      </div>
+                        <div className="flex items-center justify-between w-full">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium leading-none">{user?.name || 'User'}</span>
+                          <span className="text-xs text-muted-foreground line-clamp-1">
+                          {user?.hospitalName || loggedInHospital}
+                          </span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="ml-2 w-6 h-6 p-0"
+                          onClick={handleLogout}
+                          title="Logout"
+                        >
+                          <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                          <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 12H4m12 0-4 4m4-4-4-4m3-4h2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2"/>
+                          </svg>
+                        </Button>
+                        </div>
                     )}
                   </div>
                 </TooltipTrigger>

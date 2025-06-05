@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Log the request body for debugging
         console.log('Request body:', req.body);
 
-        const { email, password, name } = req.body;
+        const { email, password, name, role, hospitalName } = req.body;
 
         // Validate each field individually with specific error messages
         if (!email) {
@@ -49,6 +49,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const user = await UserModel.create({
             email,
             password: hashedPassword,
+            role,
+            hospitalName,
             name: displayName,
             createdAt: new Date(),
             updatedAt: new Date(),
