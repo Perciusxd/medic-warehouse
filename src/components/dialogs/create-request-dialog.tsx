@@ -69,7 +69,8 @@ const RequestSchema = z.object({
     requestTerm: z.object({
         expectedReturnDate: z.coerce.string({ invalid_type_error: "Expected return date must be a valid date" }),
         receiveConditions: z.object({
-            condition: z.enum(["exactType", "subType", "other"]),
+            condition: z.enum(["exactType", "subType"]),
+            supportType: z.boolean().optional(),
         })
     }),
     selectedHospitals: z.array(z.number().min(1, "At least one hospital must be selected")),
@@ -114,6 +115,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                 expectedReturnDate: undefined,
                 receiveConditions: {
                     condition: "exactType",
+                    supportType: false,
                 },
             },
             selectedHospitals: [],
@@ -168,6 +170,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
             requestData: requestData,
             selectedHospitals: filterHospital
         }
+        console.log('requestBody', requestBody)
         try {
             setLoading(true)
             const response = await fetch("/api/createRequest", {
@@ -189,7 +192,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
             // resetForm()
             resetField("requestMedicine")
             resetField("requestTerm")
-            setValue("urgent", false)
+            setValue("urgent", "normal")
             setValue("selectedHospitals", [])
         } catch (error) {
             console.error("Error submitting form:", error)
@@ -365,18 +368,26 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
 
                             <Label className="mb-2 mt-4">เงื่อนไขการรับยา</Label>
                             <div className="flex flex-col items-start space-y-2">
-                                <Label className="font-normal">
-                                    <input type="radio" value="exactType" {...register("requestTerm.receiveConditions.condition")} />
-                                    ยืมรายการที่ต้องการ
-                                </Label>
-                                <Label className="font-normal">
-                                    <input type="radio" value="subType" {...register("requestTerm.receiveConditions.condition")} />
-                                    ยืมรายการทดแทนได้
-                                </Label>
-                                <Label className="font-normal">
-                                    <input type="radio" value="other" {...register("requestTerm.receiveConditions.condition")} />
-                                    อื่นๆ
-                                </Label>
+                                <div className="flex items-start gap-4">
+                                    <div className="flex flex-col space-y-2">
+                                        <Label className="font-normal">
+                                            <input type="radio" value="exactType" {...register("requestTerm.receiveConditions.condition")} />
+                                            ยืมรายการที่ต้องการ
+                                        </Label>
+                                        <Label className="font-normal">
+                                            <input type="radio" value="subType" {...register("requestTerm.receiveConditions.condition")} />
+                                            ยืมรายการทดแทนได้
+                                        </Label>
+                                    </div>
+                                    <div className="flex items-center gap-2 ml-8">
+                                        <input
+                                            type="checkbox"
+                                            id="supportType"
+                                            {...register("requestTerm.receiveConditions.supportType")}
+                                        />
+                                        <Label htmlFor="supportType" className="font-normal">ขอสนับสนุน</Label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

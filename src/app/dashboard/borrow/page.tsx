@@ -13,6 +13,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import CreateRequestDialog from "@/components/dialogs/create-request-dialog";
 import CreateResponseDialog from "@/components/dialogs/create-response-dialog";
 import { Input } from "@/components/ui/input"
+import { useAuth } from "@/components/providers";
 
 // Icons
 import { MoveLeft, MoveRight, Ban, RefreshCcwIcon } from 'lucide-react';
@@ -30,7 +31,9 @@ type BorrowDashboardProps = {
 };
 
 export default function BorrowDashboard() {
-    const { loggedInHospital } = useHospital();
+    const { user } = useAuth();
+    // const { loggedInHospital } = useHospital();
+    const loggedInHospital = user?.hospitalName;
     const { medicineRequests, loading, error, fetchMedicineRequests } = useMedicineRequests(loggedInHospital);
     const [updatedLast, setUpdatedLast] = useState<Date | null>(null);
     const [tick, setTick] = useState(0);
@@ -51,7 +54,7 @@ export default function BorrowDashboard() {
         return () => clearInterval(interval);
     }, []);
 
-    // console.log('medicineRequests', medicineRequests);
+
     // useEffect(() => {
     //     const borrowNumbers = medicineRequests.length;
     //     console.log('borrrowNumbers', borrowNumbers);
