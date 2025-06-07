@@ -20,6 +20,7 @@ import { Calendar } from "@/components/ui/calendar"
 
 import RequestDetails from "./request-details"
 import { Calendar1 } from "lucide-react"
+import { format } from "date-fns"
 
 export const allHospitalList = [
     {
@@ -42,22 +43,10 @@ export const allHospitalList = [
     },
     {
         id: 4,
-        nameEN: "Hospital D",
-        nameTH: "โรงพยาบาลดี",
-        address: "321 Pine St, Hamletville",
-        phone: "555-3456",
-        specialties: ["Radiology", "Gastroenterology"],
-        rating: 4.2,
-    },
-    {
-        id: 5,
-        nameEN: "Hospital E",
-        nameTH: "โรงพยาบาลดี",
-        address: "654 Maple St, Boroughtown",
-        phone: "555-7890",
-        specialties: ["Psychiatry", "Endocrinology"],
-        rating: 4.7,
-    },
+        nameTH: 'โรงพยาบาลหาดใหญ่',
+        nameEN: 'Hatyai Hospital',
+        address: '123 Main St, City A',
+    }
 ];
 
 const FormSchema = z.object({
@@ -78,7 +67,7 @@ const RequestSchema = z.object({
         manufacturer: z.string().min(1, "Manufacturer is required"),
     }),
     requestTerm: z.object({
-        expectedReturnDate: z.coerce.date({ invalid_type_error: "Expected return date must be a valid date" }),
+        expectedReturnDate: z.coerce.string({ invalid_type_error: "Expected return date must be a valid date" }),
         receiveConditions: z.object({
             condition: z.enum(["exactType", "subType", "other"]),
         })
@@ -284,7 +273,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" className="justify-start text-left font-normal">
                                             {expectedReturnDate
-                                                ? expectedReturnDate.toLocaleDateString()
+                                                ? format(new Date(Number(expectedReturnDate)), 'yyyy-MM-dd')
                                                 : "เลือกวันที่"}
                                             <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                         </Button>
@@ -292,14 +281,15 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                     <PopoverContent className="w-auto p-0">
                                         <Calendar
                                             mode="single"
-                                            selected={expectedReturnDate}
+                                            selected={expectedReturnDate ? new Date(expectedReturnDate) : undefined}
                                             onSelect={(date) => {
                                                 if (date instanceof Date && !isNaN(date.getTime())) {
                                                     const today = new Date();
                                                     today.setHours(0, 0, 0, 0); // normalize time
+                                                    const dateString = date.getTime().toString()
 
                                                     if (date > today) {
-                                                        setValue("requestTerm.expectedReturnDate", date, { shouldValidate: true });
+                                                        setValue("requestTerm.expectedReturnDate", dateString, { shouldValidate: true });
                                                         setDateError(""); // clear error
                                                         setIsCalendarOpen(false); // close popover
                                                     } else {
