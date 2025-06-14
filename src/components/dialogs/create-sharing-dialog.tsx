@@ -21,33 +21,9 @@ import { Calendar } from "@/components/ui/calendar"
 
 import RequestDetails from "./request-details"
 import { Calendar1 } from "lucide-react"
+import { HospitalList } from "@/context/HospitalList"
 
-export const allHospitalList = [
-    {
-        id: 1,
-        nameTH: 'โรงพยาบาลนาหม่อม',
-        nameEN: 'Na Mom Hospital',
-        address: '456 Elm St, City B',
-    },
-    {
-        id: 2,
-        nameTH: 'โรงพยาบาลสงขลา',
-        nameEN: 'Songkhla Hospital',
-        address: '123 Main St, City A',
-    },
-    {
-        id: 3,
-        nameTH: 'โรงพยาบาลสิงหนคร',
-        nameEN: 'Singha Nakhon Hospital',
-        address: '789 Oak St, City C',
-    },
-    {
-        id: 4,
-        nameTH: 'โรงพยาบาลหาดใหญ่',
-        nameEN: 'Hatyai Hospital',
-        address: '123 Main St, City A',
-    }
-];
+const allHospitalList = HospitalList
 
 const SharingFormSchema = z.object({
     sharingMedicine: z.object({
