@@ -32,13 +32,13 @@ export const allHospitalList = [
     {
         id: 2,
         nameTH: 'โรงพยาบาลสงขลา',
-        nameEN: 'Songkhla Hospital',
+        nameEN: 'Songkla Hospital',
         address: '123 Main St, City A',
     },
     {
         id: 3,
-        nameTH: 'โรงพยาบาลสิงหนคร',
-        nameEN: 'Singha Nakhon Hospital',
+        nameTH: 'โรงพยาบาลจะนะ',
+        nameEN: 'Jana Hospital',
         address: '789 Oak St, City C',
     },
     {
