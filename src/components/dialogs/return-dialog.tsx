@@ -38,13 +38,19 @@ function OfferDetails({ selectedMed }: any) {
     console.log('expectedReturnDate', expectedReturnDate)
     const { postingHospitalNameTH } = selectedMed;
     const totalPrice = offerAmount * pricePerUnit;
+
+    const date = new Date(Number(expectedReturnDate)); // convert string to number, then to Date
+    const isValid = !isNaN(date.getTime());
+    const formattedDate = isValid ? format(date, 'dd/MM/yyyy'): "-"; // format to date only
+    console.log(expectedReturnDate);
+    
     return (
         <div className="flex flex-col gap-6">
             <h2 className="text-lg font-semibold">รายละเอียดการตอบรับ</h2>
             <div className="grid grid-cols-2 gap-2 font-light">
                 <div className="flex flex-col gap-1">
                     <Label>วันที่คืน</Label>
-                    <Input disabled value={format(new Date(Number(expectedReturnDate)), "dd/MM/yyyy")} />
+                    <Input disabled value={formattedDate} />
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>โรงพยาบาลที่ให้ยืม</Label>
