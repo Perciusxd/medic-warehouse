@@ -24,7 +24,6 @@ import StatusIndicator from "@/components/ui/status-indicator"
 
 export const columns = (
     
-    loggedInHospital : string,
     handleApproveClick: (med: any) => void,
     handleDeliveryClick: (med: any) => void,
     handleReturnClick: (med: any) => void,
@@ -35,7 +34,6 @@ export const columns = (
         cell:({row})=>{
             const med = row.original;
             const postingHospitalNameEN = med.postingHospitalNameEN;
-            console.log("row.original in status dashbroad ===",med);
             
             const  loggedInHospital  = useHospital();
             
@@ -159,7 +157,6 @@ export const columns = (
             const med = row.original;
             const condition = med.requestTerm.receiveConditions.condition
             const supportType = med.requestTerm.receiveConditions.supportType
-            console.log("===============>>>",loggedInHospital)
 
             let supportTypetDiv;
             let conditionDiv;
@@ -256,12 +253,14 @@ export const columns = (
                                                     requestDetails: med.requestMedicine,
                                                 })}>อยู่ระหว่างการจัดส่ง (เช็คสถานะ)<StatusIndicator status={detail.status} /></Button>)
                                                 : detail.status === 'in-return'
-                                                    ? (<Button variant={'link'} className="flex gap-x-2" onClick={() => handleReturnClick({
-                                                        ...med,
-                                                        responseId: detail.id,
-                                                        offeredMedicine: detail.offeredMedicine,
-                                                        requestDetails: med.requestMedicine,
-                                                    })}>ต้องส่งคืน<StatusIndicator status={detail.status} /></Button>)
+                                                    ? (<Button variant={'link'} className="flex gap-x-2" onClick={() => handleReturnClick(
+                                                        {
+                                                            ...med,
+                                                            responseId: detail.id,
+                                                            offeredMedicine: detail.offeredMedicine,
+                                                            requestDetails: med.requestMedicine,
+                                                        })
+                                                    }>ต้องส่งคืน<StatusIndicator status={detail.status} /></Button>)
                                                     : detail.status === "confirm-return"
                                                         ? (<span className = "flex gap-x-2">รอยืนยันการคืน< StatusIndicator status={detail.status} /></span>)
                                                         : detail.status === 'completed'
