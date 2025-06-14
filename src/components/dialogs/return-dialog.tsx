@@ -35,6 +35,7 @@ function OfferDetails({ selectedMed }: any) {
     const { name, trademark, offerAmount, pricePerUnit, unit, returnConditions, manufacturer } = selectedMed.offeredMedicine;
     const { requestAmount } = selectedMed.requestDetails;
     const { expectedReturnDate } = selectedMed.requestTerm;
+    console.log('expectedReturnDate', expectedReturnDate)
     const { postingHospitalNameTH } = selectedMed;
     const totalPrice = offerAmount * pricePerUnit;
 
@@ -124,7 +125,7 @@ const ReturnFormSchema = z.object({
         manufacturer: z.string().min(1, "กรุณาระบุผู้ผลิตของยา"),
         pricePerUnit: z.number().min(1, "ราคาต่อหน่วยควรมากกว่า 0").max(100000, "ราคาต่อหน่วยควรน้อยกว่า 100000"),
         batchNumber: z.string().min(1, "กรุณาระบุหมายเลขล็อตของยา"),
-        expiredDate: z.coerce.date({ invalid_type_error: "กรุณาระบุวันที่คืนยา"}),
+        expiredDate: z.coerce.string({ invalid_type_error: "กรุณาระบุวันที่คืนยา"}),
     }),
 })
 
@@ -286,7 +287,7 @@ function ReturnDetails({ selectedMed }: any) {
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className="justify-start text-left font-normal">
                                     {expiredDate
-                                        ? format(expiredDate, "dd/MM/yyyy")
+                                        ? format(new Date(Number(expiredDate)), "dd/MM/yyyy")
                                         : "เลือกวันที่"}
                                     <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                 </Button>
@@ -294,14 +295,15 @@ function ReturnDetails({ selectedMed }: any) {
                             <PopoverContent className="w-auto p-0">
                                 <Calendar
                                     mode="single"
-                                    selected={expiredDate}
+                                    selected={expiredDate ? new Date(Number(expiredDate)) : undefined}
                                     onSelect={(date) => {
                                         if (date instanceof Date && !isNaN(date.getTime())) {
                                             const today = new Date();
                                             today.setHours(0, 0, 0, 0); // normalize time
+                                            const dateString = date.getTime().toString()
 
                                             if (date > today) {
-                                                setValue("returnMedicine.expiredDate", date, { shouldValidate: true, shouldDirty: true });
+                                                setValue("returnMedicine.expiredDate", dateString, { shouldValidate: true, shouldDirty: true });
                                                 setDateError(""); // clear error
                                                 setIsCalendarOpen(false); // close popover
                                             } else {
