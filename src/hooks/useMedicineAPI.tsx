@@ -115,7 +115,7 @@ export function useMedicineResponsesInTransfer(loggedInHospital: string) {
     };
 }
 
-export function useMedicineRequestsStatus(loggedInHospital: string) {
+export function useMedicineRequestsStatus(loggedInHospital: string, flag?: string) {
     const [medicineRequests, setMedicineRequests] = useState([]);
     const [loading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -129,8 +129,17 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
         
         try {
             const response = await fetchAllRequestsByStatus(loggedInHospital, "pending");
-            setMedicineRequests(response)
-            return response;
+            let filterRes;
+            if (flag) {
+                filterRes = response.filter((item: any) => item.ticketType === flag);
+            }
+            if (filterRes) {
+                setMedicineRequests(filterRes);
+                return filterRes;
+            } else {
+                setMedicineRequests(response)
+                return response;
+            }
         } catch (error) {
             setError(error.message || "Failed to fetch medicine requests");
         } finally {
