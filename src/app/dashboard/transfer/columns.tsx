@@ -116,27 +116,27 @@ export const columns = (
         },
         enableGlobalFilter: false
     },
-    {
-        accessorKey: "offeredMedicine.name",
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">รายละเอียดการคืน</div>,
-        cell: ({ row }) => {
-            const status = row.getValue("status")
-            const respondingHospitalNameTH = row.original.respondingHospitalNameTH
-            const createdAt = row.original.requestDetails?.requestTerm.expectedReturnDate
-            const date = new Date(createdAt);
-            const daysUntilReturn = differenceInCalendarDays(date, new Date())
-            const formattedDate = format(date, 'dd/MM/yyyy');
-            const timeOnly = format(date, 'HH:mm:ss');
-            return (
-                <div className="flex flex-col">
-                    <div className="text-sm font-medium">คาดว่าจะได้รับคืนในอีก {daysUntilReturn} วัน</div>
-                    <div className="text-xs font-medium text-gray-600">{formattedDate}</div>
-                    {/* <div className="text-xs text-muted-foreground">จัดส่งโดย {respondingHospitalNameTH}</div> */}
-                </div>
-            )
-        },
-        enableGlobalFilter: false
-    },
+    // {
+    //     accessorKey: "offeredMedicine.name",
+    //     header: () => <div className="font-medium text-muted-foreground text-left cursor-default">รายละเอียดการคืน</div>,
+    //     cell: ({ row }) => {
+    //         const status = row.getValue("status")
+    //         const respondingHospitalNameTH = row.original.respondingHospitalNameTH
+    //         const createdAt = row.original.requestDetails?.requestTerm.expectedReturnDate
+    //         const date = new Date(createdAt);
+    //         const daysUntilReturn = differenceInCalendarDays(date, new Date())
+    //         const formattedDate = format(date, 'dd/MM/yyyy');
+    //         const timeOnly = format(date, 'HH:mm:ss');
+    //         return (
+    //             <div className="flex flex-col">
+    //                 <div className="text-sm font-medium">คาดว่าจะได้รับคืนในอีก {daysUntilReturn} วัน</div>
+    //                 <div className="text-xs font-medium text-gray-600">{formattedDate}</div>
+    //                 {/* <div className="text-xs text-muted-foreground">จัดส่งโดย {respondingHospitalNameTH}</div> */}
+    //             </div>
+    //         )
+    //     },
+    //     enableGlobalFilter: false
+    // },
     {
         id: "actions",
         size: 100,
