@@ -14,7 +14,7 @@ export default async function handler(
         return;
     }
     try {
-        const updatedAt = new Date().toString();
+        const updatedAt = Date.now().toString();
         const {
             responseId,
             offeredMedicine,
