@@ -91,7 +91,8 @@ export default function Dashboard() {
         
         fetch("/api/queryAll")
             .then((response) => response.json())
-            .then((data) => {                
+            .then((data) => {
+                console.log("data from API", data);             
                 const filteredMedicines = data.filter((medicine: any) => medicine.PostingHospital !== loggedInHospital);
                 setMedicines(filteredMedicines);
 

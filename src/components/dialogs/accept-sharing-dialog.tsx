@@ -29,7 +29,8 @@ function RequestDetails({ sharingMed }: any) {
     const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber } = sharingDetails.sharingMedicine
     const sharingReturnTerm = sharingDetails.sharingReturnTerm.receiveConditions
     console.log('sharingReturnTerms', sharingReturnTerm)
-    const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy');
+    /* const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy'); */
+    const formattedExpiryDate = format(sharingDetails.sharingMedicine.expiryDate, 'dd/MM/yyyy'); //ดึงมาก่อนนะอิงจากที่มี ดึงไว้ใน columns.tsx
     return (
         <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-2">
@@ -250,11 +251,13 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                     </div>
                 </div>
             </div>
-            <Button type="submit" disabled={loading}>
-                {loading
-                    ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500">ยืนยัน</span></div>
-                    : "ยืนยัน"}
-            </Button>
+            <div className="flex justify-end mt-4">
+                <Button className="pd-20px " type="submit" disabled={loading}>
+                    {loading
+                        ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500 ">ยืนยัน</span></div>
+                        : "ยืนยัน"}
+                </Button>
+            </div>
         </form>
     )
 }

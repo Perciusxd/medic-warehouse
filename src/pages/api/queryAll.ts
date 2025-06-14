@@ -27,7 +27,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       user: {
         id: user.id,
         email: user.email,
-        name: user.name
+        name: user.name,
+        hospitalName: user.hospitalName
       },
       result
     });

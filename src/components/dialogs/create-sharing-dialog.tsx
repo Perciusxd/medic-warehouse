@@ -43,22 +43,10 @@ export const allHospitalList = [
     },
     {
         id: 4,
-        nameEN: "Hospital D",
-        nameTH: "โรงพยาบาลดี",
-        address: "321 Pine St, Hamletville",
-        phone: "555-3456",
-        specialties: ["Radiology", "Gastroenterology"],
-        rating: 4.2,
-    },
-    {
-        id: 5,
-        nameEN: "Hospital E",
-        nameTH: "โรงพยาบาลดี",
-        address: "654 Maple St, Boroughtown",
-        phone: "555-7890",
-        specialties: ["Psychiatry", "Endocrinology"],
-        rating: 4.7,
-    },
+        nameTH: 'โรงพยาบาลหาดใหญ่',
+        nameEN: 'Hatyai Hospital',
+        address: '123 Main St, City A',
+    }
 ];
 
 const SharingFormSchema = z.object({
@@ -88,6 +76,7 @@ const SharingFormSchema = z.object({
 export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
     const { loggedInHospital } = useHospital();
     const postingHospital = allHospitalList.find((hospital) => hospital.nameEN === loggedInHospital);
+    console.log("postingHospital", postingHospital)
     const hospitalList = allHospitalList.filter(hospital => hospital.nameEN !== loggedInHospital)
     const [loading, setLoading] = useState(false);
     const { register, handleSubmit, watch, setValue, getValues, resetField, formState: { errors } } = useForm<z.infer<typeof SharingFormSchema>>({
