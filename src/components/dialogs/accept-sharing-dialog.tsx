@@ -141,13 +141,6 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
     const expectedReturn = watch("expectedReturnDate");
 
     const onSubmit = async (data: z.infer<typeof ResponseFormSchema>) => {
-        const acceptOfferData = {
-            acceptOffer: {
-                responseAmount: data.responseAmount,
-                expectedReturnDate: data.expectedReturnDate,
-            },
-            returnTerm: data.returnTerm
-        }
         const responseBody = {
             sharingId: sharingMed.id,
             acceptOffer: {
@@ -156,7 +149,7 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
             },
             returnTerm: data.returnTerm
         }
-        console.log('responseBody', responseBody)
+        console.log('sharing accept responseBody', responseBody)
         try {
             setLoading(true);
             const response = await fetch("/api/updateSharing", {
@@ -167,7 +160,6 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                 body: JSON.stringify(responseBody),
             })
             const result = await response.json();
-            console.log('result', result)
             setLoading(false);
             onOpenChange(false);
         } catch (error) {

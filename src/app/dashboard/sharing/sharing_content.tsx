@@ -77,6 +77,7 @@ export default function SharingContent() {
                                 setOpenAcceptSharingDialog(open);
                                 if (!open) {
                                     setSelectedMed(null);
+                                    fetchMedicineSharing();
                                 }
                             }}
                         />
