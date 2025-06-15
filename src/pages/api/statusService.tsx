@@ -7,7 +7,7 @@ export const fetchAllRequestsByStatus = async (loggedInHospital: string, status:
     try {
         const body = {
             loggedInHospital: loggedInHospital,
-            status: "pending"
+            status: status
         }
         const response = await fetch("/api/queryRequests", {
             method: "POST",
