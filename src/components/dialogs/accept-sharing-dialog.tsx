@@ -24,11 +24,9 @@ function RequestDetails({ sharingMed }: any) {
     const { createdAt } = sharingMed
     const date = new Date(Number(createdAt)); // convert string to number, then to Date
     const formattedDate = format(date, 'dd/MM/yyyy');
-    console.log('createdAt', createdAt)
     const sharingDetails = sharingMed.sharingDetails
     const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber } = sharingDetails.sharingMedicine
     const sharingReturnTerm = sharingDetails.sharingReturnTerm.receiveConditions
-    console.log('sharingReturnTerms', sharingReturnTerm)
     /* const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy'); */
     const formattedExpiryDate = format(sharingDetails.sharingMedicine.expiryDate, 'dd/MM/yyyy'); //ดึงมาก่อนนะอิงจากที่มี ดึงไว้ใน columns.tsx
     return (
@@ -151,9 +149,14 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
             returnTerm: data.returnTerm
         }
         const responseBody = {
-            responseId: sharingMed.id,
-            acceptOffer: acceptOfferData,
+            sharingId: sharingMed.id,
+            acceptOffer: {
+                responseAmount: data.responseAmount,
+                expectedReturnDate: data.expectedReturnDate,
+            },
+            returnTerm: data.returnTerm
         }
+        console.log('responseBody', responseBody)
         try {
             setLoading(true);
             const response = await fetch("/api/updateSharing", {
