@@ -18,7 +18,7 @@ import { formatDistanceToNow } from "date-fns";
 
 export default function SharingContent() {
     const { loggedInHospital } = useHospital()
-    const { medicineSharing, loading, error, fetchMedicineSharing } = useMedicineSharing(loggedInHospital);
+    const { medicineSharing, loading, error, fetchMedicineSharing } = useMedicineSharing(loggedInHospital, 'pending'); // <--- !change status here to more dynamic, e.g., listen from selected tag (From table)
     console.log("medicineSharing", medicineSharing)
     const [updatedLast, setUpdatedLast] = useState<Date | null>(null);
     const [createSharingDialogOpen, setCreateSharingDialogOpen] = useState(false);

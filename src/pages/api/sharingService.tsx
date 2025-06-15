@@ -6,10 +6,11 @@ import { fetchAssetById } from "./requestService";
 * @param {string} loggedInHospital - The hospital name to filter by
 * @returns {Promise<Array>} - Filtered medicine responses
 */
-export const fetchAllMedicineSharing = async (loggedInHospital: string) => {
+export const fetchAllMedicineSharing = async (loggedInHospital: string, status: string) => {
     try {
         const body = {
             loggedInHospital: loggedInHospital,
+            status: status,
         }
         const response = await fetch("/api/querySharing", {
             method: "POST",
