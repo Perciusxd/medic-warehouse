@@ -11,17 +11,17 @@ import { LoadingSpinner } from '../ui/loading-spinner';
 import { Button } from "@/components/ui/button"
 import { MoveLeft, MoveRight, Plus, HandCoins, Ban, CalendarCheck2, X, Copy } from 'lucide-react';
 
-export function EditPopover(props) {
+export function EditPopover(props: any) {
     const currentDate = new Date();
     const [requestQty, setRequestQty] = useState(props.quantity);
     const [loading, setLoading] = useState(false);
 
-    const handleQtyChange = (e) => {
+    const handleQtyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setRequestQty(value);
     }
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         try {

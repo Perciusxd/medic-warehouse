@@ -27,6 +27,7 @@ export const columns = (
     handleApproveClick: (med: any) => void,
     handleDeliveryClick: (med: any) => void,
     handleReturnClick: (med: any) => void,
+    loggedInHospital: string
 ): ColumnDef<any>[] => [
     { accessorKey: "postingHospitalNameEN",
         size:200,
@@ -34,9 +35,6 @@ export const columns = (
         cell:({row})=>{
             const med = row.original;
             const postingHospitalNameEN = med.postingHospitalNameEN;
-            
-            const  loggedInHospital  = useHospital();
-            
             
         if (postingHospitalNameEN === loggedInHospital) {
             return(
@@ -216,14 +214,14 @@ export const columns = (
             const details = med.responseDetails.slice(0, maxDisplay);
             const hasMore = med.responseDetails.length > maxDisplay;
 
-            const [dialogOpen, setDialogOpen] = useState(false);
-            const handleConfirm = () => {
-                setDialogOpen(false);
-            }
+            // const [dialogOpen, setDialogOpen] = useState(false);
+            // const handleConfirm = () => {
+            //     setDialogOpen(false);
+            // }
 
             return (
                 <div className="flex flex-col gap-y-1 text-gray-600" >
-                    {med.responseDetails.map((detail, index) => (
+                    {med.responseDetails.map((detail: any, index: number) => (
                         <div key={index} className="flex items-center gap-x-2 h-4">
                             <div className="basis-1/2">
                                 <span>{detail.respondingHospitalNameTH}:</span>

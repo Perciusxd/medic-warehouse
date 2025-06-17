@@ -16,12 +16,15 @@ export default async function handler(
     try {
         const {
             loggedInHospital,
+            // Error
+            status
         } = req.body;
         const contract = await initializeFabric();
         try {
             const resultBytes = await contract.evaluateTransaction(
                 "QuerySharingStatusToHospital",
                 loggedInHospital,
+                status
             );
             const resultJson = utf8Decoder.decode(resultBytes);
             const result = JSON.parse(resultJson);

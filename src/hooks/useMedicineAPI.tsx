@@ -24,7 +24,7 @@ export function useMedicineRequests(loggedInHospital: string) {
             const data = await fetchAllMedicineRequests(loggedInHospital);
             setMedicineRequests(data);
             return data;
-        } catch (error) {
+        } catch (error: any) {
             setError(error.message || "Failed to fetch medicine requests");
         } finally {
             setIsLoading(false);
@@ -53,10 +53,11 @@ export function useMedicineSharing(loggedInHospital: string) {
         setIsLoading(true);
         setError(null);
         try {
+            // Error
             const data = await fetchAllMedicineSharing(loggedInHospital);
             setMedicineSharing(data);
             return data;
-        } catch (error) {
+        } catch (error: any) {
             setError(error.message || "Failed to fetch medicine sharing");
         } finally {
             setIsLoading(false);
@@ -96,7 +97,7 @@ export function useMedicineResponsesInTransfer(loggedInHospital: string) {
             const data = await fetchAllMedicineReponsesInTransfer(loggedInHospital);
             setMedicineResponses(data);
             return data;
-        } catch (error) {
+        } catch (error: any) {
             setError(error.message || "Failed to fetch medicine responses");
         } finally {
             setIsLoading(false);
@@ -140,12 +141,12 @@ export function useMedicineRequestsStatus(loggedInHospital: string, flag?: strin
                 setMedicineRequests(response)
                 return response;
             }
-        } catch (error) {
+        } catch (error: any) {
             setError(error.message || "Failed to fetch medicine requests");
         } finally {
             setIsLoading(false);
         }
-    }, [loggedInHospital]);
+    }, [loggedInHospital, flag]);
     
     useEffect(() => {
         fetchMedicineRequests();

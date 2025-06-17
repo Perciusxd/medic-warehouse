@@ -19,7 +19,7 @@ import { Calendar1Icon, ShieldAlert } from "lucide-react"
 
 import RequestDetails from "./request-details"
 
-export default function CreateResponseDialog({ requestData, responseId, dialogTitle, status, openDialog, onOpenChange }) {
+export default function CreateResponseDialog({ requestData, responseId, dialogTitle, status, openDialog, onOpenChange }: any) {
     const { requestTerm } = requestData;
     const ResponseSchema = z.object({
         offeredMedicine: z.object({

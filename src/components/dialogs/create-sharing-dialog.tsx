@@ -22,6 +22,7 @@ import { Calendar } from "@/components/ui/calendar"
 import RequestDetails from "./request-details"
 import { Calendar1 } from "lucide-react"
 import { HospitalList } from "@/context/HospitalList"
+import { useAuth } from "../providers"
 
 const allHospitalList = HospitalList
 
@@ -50,7 +51,12 @@ const SharingFormSchema = z.object({
 });
 
 export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
-    const { loggedInHospital } = useHospital();
+    const { user } = useAuth();
+    // const { loggedInHospital } = useHospital();
+    const loggedInHospital = user?.hospitalName;
+    
+    console.log("loggedInHospital", loggedInHospital);
+    
     const postingHospital = allHospitalList.find((hospital) => hospital.nameEN === loggedInHospital);
     console.log("postingHospital", postingHospital)
     const hospitalList = allHospitalList.filter(hospital => hospital.nameEN !== loggedInHospital)

@@ -84,7 +84,7 @@ export default function Dashboard() {
             setIsLoading(true);
         }
         fetchMedicines();
-    }, [user?.hospitalName]);
+    }, [setLoggedInHospital, user?.hospitalName]);
 
     // useEffect(() => {
     //     console.log("Logged in hospital:", loggedInHospital);

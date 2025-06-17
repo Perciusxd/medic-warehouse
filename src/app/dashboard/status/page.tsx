@@ -1,3 +1,4 @@
+'use client';
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -26,29 +27,29 @@ export default function StatusDashboard() {
     const { loggedInHospital } = useHospital();
     const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequestsStatus(loggedInHospital, 'request');
     const [loading, setLoading] = useState(false);
-    const [selectedMed, setSelectedMed] = useState(null);
+    const [selectedMed, setSelectedMed] = useState<any | null>(null);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [deliveryDialogOpen, setDeliveryDialogOpen] = useState(false);
     const [returnDialogOpen, setReturnDialogOpen] = useState(false);
     const [globalFilter, setGlobalFilter] = useState("");
-
-    const handleApproveClick = (med) => {
+    
+    const handleApproveClick = (med :any) => {
         setSelectedMed(med);
         setConfirmDialogOpen(true);
     }
 
-    const handleDeliveryClick = async (med) => {
+    const handleDeliveryClick = async (med :any) => {
         setSelectedMed(med);
         setDeliveryDialogOpen(true);
     }
 
-    const handleReturnClick = async (med) => {
+    const handleReturnClick = async (med :any) => {
         console.log('handleReturnClick', med);
         setSelectedMed(med);
         setReturnDialogOpen(true);
     }
 
-    const confirmDelivery = async (med) => {
+    const confirmDelivery = async (med :any) => {
         const responseBody = {
             responseId: med.responseId,
             offeredMedicine: med.offeredMedicine,
@@ -91,7 +92,7 @@ export default function StatusDashboard() {
                 ) : (
                     <>
                         <DataTable
-                            columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick)}
+                            columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, loggedInHospital)}
                             data={medicineRequests}
                             globalFilter={globalFilter}
                             setGlobalFilter={setGlobalFilter} />

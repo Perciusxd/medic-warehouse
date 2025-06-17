@@ -21,14 +21,16 @@ export async function verifyAuth(req: NextApiRequest, res: NextApiResponse) {
 
     const secret = new TextEncoder().encode(JWT_SECRET);
     const { payload } = await jwtVerify(token, secret);
-    return payload as JWTPayload;
+    return payload as unknown as JWTPayload;
   } catch (error) {
     console.error('Token verification failed:', error);
     return null;
   }
 }
 
-export function withAuth(handler: Function) {
+export function withAuth(
+  handler: (req: NextApiRequest, res: NextApiResponse) => Promise<any> | void
+) {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     const user = await verifyAuth(req, res);
 
@@ -41,4 +43,4 @@ export function withAuth(handler: Function) {
 
     return handler(req, res);
   };
-} 
+}

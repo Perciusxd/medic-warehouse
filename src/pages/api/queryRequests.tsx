@@ -20,9 +20,12 @@ export default async function handler(
     } = req.body;
     const contract = await initializeFabric();
     try {
+      console.log('loggedInHospital ================', loggedInHospital);
+      
         const resultBytes = await contract.evaluateTransaction(
             "QueryRequestStatus",
-            loggedInHospital
+            loggedInHospital,
+            status
         );
         const resultJson = utf8Decoder.decode(resultBytes);
         const result = JSON.parse(resultJson);

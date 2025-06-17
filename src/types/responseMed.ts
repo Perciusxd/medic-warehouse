@@ -27,4 +27,32 @@ export type ResponseAsset = {
       notes: string;
     };
   };
+  requestDetails: {
+    id: string;
+    postingHospitalAddress: string;
+    postingHospitalId: number;
+    postingHospitalNameEN: string;
+    postingHospitalNameTH: string;
+    requestMedicine: {
+        manufacturer: string;
+        name: string;
+        pricePerUnit: number;
+        quantity: string;
+        requestAmount: number;
+        trademark: string;
+        unit: string;
+    };
+    requestTerm: {
+        expectedReturnDate: string;
+        receiveConditions: {
+            condition: string;
+            supportType: boolean;
+        };
+    };
+    responseIds: string[];
+    status: string;
+    ticketType: string;
+    updatedAt: string;
+    urgent: string;
+  }
 };

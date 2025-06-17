@@ -10,6 +10,7 @@ export const fetchAllMedicineSharing = async (loggedInHospital: string) => {
     try {
         const body = {
             loggedInHospital: loggedInHospital,
+            status: 'sharing'
         }
         const response = await fetch("/api/querySharing", {
             method: "POST",
