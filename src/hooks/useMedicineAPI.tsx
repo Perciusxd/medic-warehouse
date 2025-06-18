@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetchAllMedicineRequests, fetchAssetById, fetchAllMedicineRequestsInProgress } from "@/pages/api/requestService";
 import { fetchAllMedicineReponsesInTransfer } from "@/pages/api/transferService";
-import { fetchAllRequestsByStatus } from "@/pages/api/statusService";
+import { fetchAllStatusByTicketType } from "@/pages/api/statusService";
 import { fetchAllMedicineSharing } from "@/pages/api/sharingService";
 /**
  * Custom hook for managing medicine requests
@@ -130,8 +130,7 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
         setError(null);
         
         try {
-            const response = await fetchAllRequestsByStatus(loggedInHospital, "pending");
-            console.log("useMedicineRequestsStatus == response", response);
+            const response = await fetchAllStatusByTicketType(loggedInHospital, "pending", "request");
             let filterRes;
     
             if (filterRes) {
@@ -157,5 +156,38 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
         loading,
         error,
         fetchMedicineRequests,
+    };
+}
+
+export function useMedicineSharingStatus(loggedInHospital: string) {
+    const [medicineSharing, setMedicineSharing] = useState([]);
+    const [loading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const fetchMedicineSharing = useCallback(async () => {
+        if (!loggedInHospital) return;
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetchAllStatusByTicketType(loggedInHospital, "pending", "sharing");
+            setMedicineSharing(response);
+            return response;
+        } catch (error: any) {
+            setError(error.message || "Failed to fetch medicine sharing");
+        } finally {
+            setIsLoading(false);
+        }
+    }, [loggedInHospital]);
+
+    useEffect(() => {
+        fetchMedicineSharing();
+    }, [fetchMedicineSharing]);
+
+    return {
+        medicineSharing,
+        loading,
+        error,
+        fetchMedicineSharing,
     };
 }
