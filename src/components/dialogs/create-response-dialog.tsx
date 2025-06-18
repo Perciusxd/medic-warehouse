@@ -50,7 +50,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
         getValues,
         resetField,
         control,
-        formState: { errors },
+        formState: { errors,isSubmitted },
     } = useForm<z.infer<typeof ResponseSchema>>({
         resolver: zodResolver(ResponseSchema),
         defaultValues: {
@@ -86,6 +86,9 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
         // manufactureDate: requestData.requestMedicine.manufactureDate,
         // expiryDate: requestData.requestMedicine.expiryDate,
     })
+
+   
+    const isAnyChecked = Object.values(returnConditions || {}).some(Boolean);// Check if any checkbox is checked
 
     useEffect(() => {
         const currentValues = getValues("offeredMedicine");
@@ -219,7 +222,14 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                 <Label className="flex flex-col items-start font-bold">
                                     จำนวนที่ให้ยืม
                                     <Input
-                                        type="number"
+                                        inputMode="numeric"
+                                        placeholder="10" 
+                                        onKeyDown={(e) => {
+                                            const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
+                                            if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
+                                            e.preventDefault();
+                                            }
+                                        }}
                                         {...register("offeredMedicine.offerAmount", { valueAsNumber: true })}
                                         disabled={returnTerm === "exactType"}
                                         className="border p-1 font-light"
@@ -231,7 +241,14 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                 <Label className="flex flex-col items-start">
                                     ราคาต่อหน่วย
                                     <Input
-                                        type="number"
+                                        inputMode="numeric"
+                                        placeholder="10" 
+                                        onKeyDown={(e) => {
+                                            const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
+                                            if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
+                                            e.preventDefault();
+                                            }
+                                        }}
                                         {...register("offeredMedicine.pricePerUnit", { valueAsNumber: true })}
                                         disabled={returnTerm === "exactType"}
                                         className="border p-1"
@@ -261,6 +278,11 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                     <input type="checkbox" {...register("offeredMedicine.returnConditions.supportType")} />
                                         สามารถสนับสนุนได้
                                     </Label>
+                                    {!isAnyChecked && isSubmitted && (
+                                    <p className="text-red-500 text-sm mt-1">
+                                        กรุณาเลือกอย่างน้อย 1 เงื่อนไข
+                                    </p>
+                                    )}
                                 </div>
                         </div>
                     </div>
