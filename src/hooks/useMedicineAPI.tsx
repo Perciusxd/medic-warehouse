@@ -115,8 +115,9 @@ export function useMedicineResponsesInTransfer(loggedInHospital: string) {
     };
 }
 
-export function useMedicineRequestsStatus(loggedInHospital: string, flag?: string) {
+export function useMedicineRequestsStatus(loggedInHospital: string) {
     const [medicineRequests, setMedicineRequests] = useState([]);
+    console.log("useMedicineRequestsStatus == medicineRequests");
     const [loading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -129,10 +130,9 @@ export function useMedicineRequestsStatus(loggedInHospital: string, flag?: strin
         
         try {
             const response = await fetchAllRequestsByStatus(loggedInHospital, "pending");
+            console.log("useMedicineRequestsStatus == response", response);
             let filterRes;
-            if (flag) {
-                filterRes = response.filter((item: any) => item.ticketType === flag);
-            }
+    
             if (filterRes) {
                 setMedicineRequests(filterRes);
                 return filterRes;

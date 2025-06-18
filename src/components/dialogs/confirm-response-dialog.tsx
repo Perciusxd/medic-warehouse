@@ -165,17 +165,17 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
 
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[80vw]">
+            <DialogContent className="max-w-fit">
                 <DialogTitle>{dialogTitle}</DialogTitle>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    <div className="flex gap-4">
-                        <div className="basis-[60%]">
+                    <div className="flex gap-10">
+                        <div className="">
                             <RequestDetailPanel data={data} />
                             <Separator className="my-4" />
                             <ResponseDetailPanel responseData={data} />
                         </div>
 
-                        <div className="basis-[40%] overflow-auto border rounded-md shadow-sm">
+                        <div className=" overflow-auto border rounded-md shadow-sm max-w-fit">
                             <PdfPreview data={data} ref={pdfRef} />
                         </div>
                     </div>

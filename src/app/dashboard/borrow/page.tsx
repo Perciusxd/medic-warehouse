@@ -31,9 +31,9 @@ type BorrowDashboardProps = {
 };
 
 export default function BorrowDashboard() {
-    const { user } = useAuth();
-    // const { loggedInHospital } = useHospital();
-    const loggedInHospital = user?.hospitalName;
+    //const { user } = useAuth();
+    const { loggedInHospital } = useHospital();
+    //const loggedInHospital = user?.hospitalName;
     const { medicineRequests, loading, error, fetchMedicineRequests } = useMedicineRequests(loggedInHospital);
     const [updatedLast, setUpdatedLast] = useState<Date | null>(null);
     const [tick, setTick] = useState(0);
