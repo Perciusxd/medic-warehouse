@@ -25,8 +25,9 @@ function RequestDetails({ sharingMed }: any) {
     const date = new Date(Number(createdAt)); // convert string to number, then to Date
     const formattedDate = format(date, 'dd/MM/yyyy');
     const sharingDetails = sharingMed.sharingDetails
-    const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber } = sharingDetails.sharingMedicine
+    const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber ,sharingAmount } = sharingDetails.sharingMedicine
     const sharingReturnTerm = sharingDetails.sharingReturnTerm.receiveConditions
+    console.log('sharingReturnTermsชชชชชชชชชชชชชชชชชชช', sharingDetails.sharingMedicine)
     /* const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy'); */
     const formattedExpiryDate = format(sharingDetails.sharingMedicine.expiryDate, 'dd/MM/yyyy'); //ดึงมาก่อนนะอิงจากที่มี ดึงไว้ใน columns.tsx
     return (
@@ -58,7 +59,7 @@ function RequestDetails({ sharingMed }: any) {
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>จำนวน</Label>
-                    <Input disabled value={quantity} />
+                    <Input disabled value={sharingAmount} />
                 </div>
                 <div className="grid grid-cols-2 gap-1">
                     <div className="flex flex-col gap-1">
@@ -95,6 +96,7 @@ function RequestDetails({ sharingMed }: any) {
                         <Label>ไม่รับคืน</Label>
                     </div>
                 </div>
+                
             </div>
         </div>
     )
@@ -109,7 +111,14 @@ const ResponseFormSchema = z.object({
         subType: z.boolean(),
         supportType: z.boolean(),
         noReturn: z.boolean(),
-    })
+    }).refine((data) => 
+            Object.values(data).some(value => value === true),
+            {
+                message: "กรุณาเลือกอย่างน้อย 1 เงื่อนไข" ,
+                path: []
+            }
+
+        )
 })
 
 function ResponseDetails({ sharingMed, onOpenChange }: any) {
@@ -123,7 +132,7 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
         setValue,
         getValues,
         resetField,
-        formState: { errors },
+        formState: { errors ,isSubmitted},
     } = useForm<z.infer<typeof ResponseFormSchema>>({
         resolver: zodResolver(ResponseFormSchema),
         defaultValues: {
@@ -139,6 +148,11 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
         }
     })
     const expectedReturn = watch("expectedReturnDate");
+    const returnTerm = watch("returnTerm"); // Get the current values of receiveConditions
+    const isAnyChecked = Object.values(returnTerm || {}).some(Boolean);// Check if any checkbox is checked
+    
+
+
 
     const onSubmit = async (data: z.infer<typeof ResponseFormSchema>) => {
         const responseBody = {
@@ -179,7 +193,16 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                 <div className="grid grid-cols-2 gap-2">
                     <div className="flex flex-col gap-1">
                         <Label>จำนวนที่ยืม</Label>
-                        <Input type="number" {...register("responseAmount", { valueAsNumber: true })} />
+                        <Input 
+                             inputMode="numeric"
+                                    placeholder="10" 
+                                    onKeyDown={(e) => {
+                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
+                                        if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
+                                        e.preventDefault();
+                                        }
+                                    }}
+                        {...register("responseAmount", { valueAsNumber: true })} />
                         {errors.responseAmount?.message && <span className="text-red-500 text-sm">{errors.responseAmount.message}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
@@ -243,6 +266,14 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                             <input type="checkbox" {...register("returnTerm.noReturn")} />
                             <Label>ไม่รับคืน</Label>
                         </div>
+                        <br></br>
+                        <div className="flex flex-col col-span-2">
+                            {!isAnyChecked && isSubmitted && (
+                                <p className="text-red-500 text-sm mt-1">
+                                    กรุณาเลือกอย่างน้อย 1 เงื่อนไข
+                                </p>
+                            )}
+                        </div>                       
                     </div>
                 </div>
             </div>

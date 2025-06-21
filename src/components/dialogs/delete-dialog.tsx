@@ -15,7 +15,7 @@ export function DeleteConfirmationDialog({
     medicineID,
     onConfirm,
     onCancel
-}) {
+}: any) {
     return (
         <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>

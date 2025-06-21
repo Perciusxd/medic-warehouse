@@ -1,3 +1,4 @@
+'use client'
 import { useForm, Controller } from "react-hook-form"
 import { z } from "zod"
 import { formatDate } from "@/lib/utils"
@@ -15,14 +16,17 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar"
 import { Badge } from "@/components/ui/badge"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
-import PdfPreview from "@/components/ui/preview_pdf"
+// import PdfPreview from "@/components/ui/preview_pdf"
 import { Separator } from "@/components/ui/separator"
 
 import { Calendar1Icon, ShieldAlert } from "lucide-react"
 
 import RequestDetails from "./request-details"
 
-function RequestDetailPanel({ data }) {
+import dynamic from 'next/dynamic';
+const PdfPreview = dynamic(() => import('@/components/ui/preview_pdf'), { ssr: false });
+
+function RequestDetailPanel({ data }: any) {
     const { updatedAt, postingHospitalNameTH, name, requestDetails, requestTerm } = data;
     const { requestAmount, quantity, pricePerUnit } = requestDetails || {};
     const totalPrice = requestAmount * pricePerUnit;
@@ -42,7 +46,7 @@ function RequestDetailPanel({ data }) {
 }
 
 
-function ResponseDetailPanel({ responseData }) {
+function ResponseDetailPanel({ responseData }: any) {
     const {
         offeredMedicine,
         responseDetails,
@@ -52,10 +56,10 @@ function ResponseDetailPanel({ responseData }) {
 
     const totalPrice = offeredMedicine.pricePerUnit * offeredMedicine.offerAmount;
 
-    const responseDetail = responseDetails.find(item => item.id === responseId);
+    const responseDetail = responseDetails.find((item:any) => item.id === responseId);
     const respondingHospitalNameTH = responseDetail?.respondingHospitalNameTH || "-";
 
-    const returnTermLabels = {
+    const returnTermLabels: any = {
         exactType: "ส่งคืนตามประเภท",
         otherType: "คืนรายการอื่น",
         supportType: "แบบสนับสนุน",
@@ -83,7 +87,7 @@ function ResponseDetailPanel({ responseData }) {
 }
 
 
-function getConfirmationSchema(requestData) {
+function getConfirmationSchema(requestData: any) {
     return z.object({
         responseId: z.string(),
         offeredMedicine: z.object({
@@ -109,8 +113,8 @@ function getConfirmationSchema(requestData) {
     });
 }
 
-export default function ConfirmResponseDialog({ data, dialogTitle, status, openDialog, onOpenChange }) {
-    const pdfRef = useRef(null);
+export default function ConfirmResponseDialog({ data, dialogTitle, status, openDialog, onOpenChange }: any) {
+    const pdfRef = useRef<{ savePdf?: () => void }>(null);
     const [loading, setLoading] = useState(false);
 
     const requestData = data.requestDetails;
@@ -142,7 +146,7 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
         pdfRef.current?.savePdf?.();
     };
 
-    const onSubmit = async (formData) => {
+    const onSubmit = async (formData: z.infer<typeof ConfirmSchema>) => {
         setLoading(true);
 
         try {
@@ -165,17 +169,17 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
 
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[80vw]">
+            <DialogContent className="max-w-fit">
                 <DialogTitle>{dialogTitle}</DialogTitle>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    <div className="flex gap-4">
-                        <div className="basis-[60%]">
+                    <div className="flex gap-10">
+                        <div className="">
                             <RequestDetailPanel data={data} />
                             <Separator className="my-4" />
                             <ResponseDetailPanel responseData={data} />
                         </div>
 
-                        <div className="basis-[40%] overflow-auto border rounded-md shadow-sm">
+                        <div className=" overflow-auto border rounded-md shadow-sm max-w-fit">
                             <PdfPreview data={data} ref={pdfRef} />
                         </div>
                     </div>

@@ -115,7 +115,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
             const requestDetails = med.requestDetails
             return (
                 <div className="flex flex-col space-x-2">
-                    <span>{requestDetails.requestAmount} {requestDetails.requestMedicine.unit}</span>
+                    <span>{requestDetails.requestMedicine.requestAmount} {requestDetails.requestMedicine.unit}</span>
                     <span className="text-xs text-gray-600">{requestDetails.requestMedicine.quantity}</span>
 
                     {/* <Button className="cursor-default" variant="link" onClick={() => alert("Edit quantity")}>

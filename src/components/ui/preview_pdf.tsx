@@ -1,9 +1,9 @@
+/* eslint-disable jsx-a11y/alt-text */
 'use client';
 import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { Document as PDFDocGen, Page, Text, View, StyleSheet, pdf, Font, Image } from '@react-pdf/renderer';
 import { Document as PDFViewer, Page as PDFPage } from 'react-pdf';
 import { saveAs } from 'file-saver';
-import Sarabun from '/fonts/Sarabun-Light.ttf'
 
 import { pdfjs } from 'react-pdf';
 import { formatDate } from '@/lib/utils';
@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
     image: { width: 80, height: 80, marginHorizontal: 240, marginVertical: 20 },
     text: { marginBottom: 8 },
     table: {
-        display: 'table',
+        display: 'flex',
         width: 'auto',
         // borderStyle: 'solid',
         // borderWidth: 1,
@@ -52,12 +52,12 @@ const styles = StyleSheet.create({
     // section: { marginBottom: 10 }
 });
 
-function MyDocument({ pdfData }) {
+function MyDocument({ pdfData }: any) {
     console.log('MyDocument data', pdfData);
     const selectedResponseId = pdfData.responseId;
 
     const selectedResponseDetail = pdfData.responseDetails.find(
-        (item) => item.id === selectedResponseId
+        (item: any) => item.id === selectedResponseId
     );
 
     if (!selectedResponseDetail) return null;
@@ -76,7 +76,7 @@ function MyDocument({ pdfData }) {
     return (
         <PDFDocGen>
             <Page size="A4" style={styles.body}>
-                <Image style={styles.image} src="/krut_mark.jpg" />
+                <Image style={styles.image} src="/krut_mark.jpg"/>
                 <View style={[styles.table, { marginBottom: 10 }]}>
                     {/* Row 1 */}
                     <View style={styles.tableRow}>
@@ -135,7 +135,7 @@ function MyDocument({ pdfData }) {
 }
 
 
-const PdfPreview = forwardRef(({ data: pdfData }, ref) => {
+const PdfPreview = forwardRef(({ data: pdfData }: any, ref) => {
     const [blob, setBlob] = useState<Blob | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
@@ -152,7 +152,7 @@ const PdfPreview = forwardRef(({ data: pdfData }, ref) => {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [pdfData]);
 
     useImperativeHandle(ref, () => ({
         savePdf: () => {
@@ -165,7 +165,7 @@ const PdfPreview = forwardRef(({ data: pdfData }, ref) => {
     return (
         <div>
             {pdfUrl && (
-                <PDFViewer file={pdfUrl}>
+                <PDFViewer file={pdfUrl} key={pdfUrl}>
                     <PDFPage pageNumber={1} width={520} renderAnnotationLayer={false} renderTextLayer={false} />
                 </PDFViewer>
             )}

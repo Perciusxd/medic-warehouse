@@ -22,7 +22,7 @@ export default async function handler(
         const contract = await initializeFabric();
         try {
             const resultBytes = await contract.submitTransaction(
-                "QuerySharingStatus",
+                "QuerySharingStatusToHospital",
                 loggedInHospital,
                 status
             );

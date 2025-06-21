@@ -5,7 +5,7 @@ import { useState } from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 
-export default function RequestDetails({ requestData, responseForm }) {
+export default function RequestDetails({ requestData, responseForm }: any) {
     const requestDetails = requestData ? {
         id: requestData.id,
         postingHospitalId: requestData.postingHospitalId,

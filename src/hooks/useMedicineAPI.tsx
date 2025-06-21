@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetchAllMedicineRequests, fetchAssetById, fetchAllMedicineRequestsInProgress } from "@/pages/api/requestService";
 import { fetchAllMedicineReponsesInTransfer } from "@/pages/api/transferService";
-import { fetchAllRequestsByStatus } from "@/pages/api/statusService";
+import { fetchAllStatusByTicketType } from "@/pages/api/statusService";
 import { fetchAllMedicineSharing } from "@/pages/api/sharingService";
 /**
  * Custom hook for managing medicine requests
@@ -24,7 +24,7 @@ export function useMedicineRequests(loggedInHospital: string, status: string) {
             const data = await fetchAllMedicineRequests(loggedInHospital, status);
             setMedicineRequests(data);
             return data;
-        } catch (error) {
+        } catch (error: any) {
             setError(error.message || "Failed to fetch medicine requests");
         } finally {
             setIsLoading(false);
@@ -53,10 +53,11 @@ export function useMedicineSharing(loggedInHospital: string, status: string) {
         setIsLoading(true);
         setError(null);
         try {
-            const data = await fetchAllMedicineSharing(loggedInHospital, status);
+            // Error
+            const data = await fetchAllMedicineSharing(loggedInHospital);
             setMedicineSharing(data);
             return data;
-        } catch (error) {
+        } catch (error: any) {
             setError(error.message || "Failed to fetch medicine sharing");
         } finally {
             setIsLoading(false);
@@ -96,7 +97,7 @@ export function useMedicineResponsesInTransfer(loggedInHospital: string) {
             const data = await fetchAllMedicineReponsesInTransfer(loggedInHospital);
             setMedicineResponses(data);
             return data;
-        } catch (error) {
+        } catch (error: any) {
             setError(error.message || "Failed to fetch medicine responses");
         } finally {
             setIsLoading(false);
@@ -115,8 +116,9 @@ export function useMedicineResponsesInTransfer(loggedInHospital: string) {
     };
 }
 
-export function useMedicineRequestsStatus(loggedInHospital: string, status: string) {
+export function useMedicineRequestsStatus(loggedInHospital: string) {
     const [medicineRequests, setMedicineRequests] = useState([]);
+    console.log("useMedicineRequestsStatus == medicineRequests");
     const [loading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -128,14 +130,22 @@ export function useMedicineRequestsStatus(loggedInHospital: string, status: stri
         setError(null);
         
         try {
-            const response = await fetchAllRequestsByStatus(loggedInHospital, status);
-            setMedicineRequests(response);
-        } catch (error) {
+            const response = await fetchAllStatusByTicketType(loggedInHospital, "pending", "request");
+            let filterRes;
+    
+            if (filterRes) {
+                setMedicineRequests(filterRes);
+                return filterRes;
+            } else {
+                setMedicineRequests(response)
+                return response;
+            }
+        } catch (error: any) {
             setError(error.message || "Failed to fetch medicine requests");
         } finally {
             setIsLoading(false);
         }
-    }, [loggedInHospital, status]);
+    }, [loggedInHospital]);
     
     useEffect(() => {
         fetchMedicineRequests();
@@ -146,5 +156,38 @@ export function useMedicineRequestsStatus(loggedInHospital: string, status: stri
         loading,
         error,
         fetchMedicineRequests,
+    };
+}
+
+export function useMedicineSharingStatus(loggedInHospital: string) {
+    const [medicineSharing, setMedicineSharing] = useState([]);
+    const [loading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const fetchMedicineSharing = useCallback(async () => {
+        if (!loggedInHospital) return;
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetchAllStatusByTicketType(loggedInHospital, "pending", "sharing");
+            setMedicineSharing(response);
+            return response;
+        } catch (error: any) {
+            setError(error.message || "Failed to fetch medicine sharing");
+        } finally {
+            setIsLoading(false);
+        }
+    }, [loggedInHospital]);
+
+    useEffect(() => {
+        fetchMedicineSharing();
+    }, [fetchMedicineSharing]);
+
+    return {
+        medicineSharing,
+        loading,
+        error,
+        fetchMedicineSharing,
     };
 }

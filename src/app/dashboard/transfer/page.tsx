@@ -23,8 +23,8 @@ import { ResponseAsset } from "@/types/responseMed";
 export default function TransferDashboard() {
     const { loggedInHospital } = useHospital();
     const { medicineResponses, loading: loadingResponse, error: errorResponse, fetchMedicineResponses } = useMedicineResponsesInTransfer(loggedInHospital);
-    const [selectedMed, setSelectedMed] = useState(null);
-    const [loadingRowId, setLoadingRowId] = useState(null);
+    const [selectedMed, setSelectedMed] = useState<any>(null);
+    const [loadingRowId, setLoadingRowId] = useState<any | null>(null);
     const [globalFilter, setGlobalFilter] = useState("");
     const [loading, setLoading] = useState(false);
     console.log("medicineResponses", medicineResponses)

@@ -17,6 +17,8 @@ export default async function handler(
     const contract = await initializeFabric();
     const { loggedInHospital, status } = req.body;
     try {
+      console.log('loggedInHospital ================', loggedInHospital);
+      
         const resultBytes = await contract.evaluateTransaction(
             "QueryRequestStatus",
             loggedInHospital,
