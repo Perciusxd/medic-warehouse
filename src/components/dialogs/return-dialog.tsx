@@ -35,15 +35,22 @@ function OfferDetails({ selectedMed }: any) {
     const { name, trademark, offerAmount, pricePerUnit, unit, returnConditions, manufacturer } = selectedMed.offeredMedicine;
     const { requestAmount } = selectedMed.requestDetails;
     const { expectedReturnDate } = selectedMed.requestTerm;
+    console.log('expectedReturnDate', expectedReturnDate)
     const { postingHospitalNameTH } = selectedMed;
     const totalPrice = offerAmount * pricePerUnit;
+
+    const date = new Date(Number(expectedReturnDate)); // convert string to number, then to Date
+    const isValid = !isNaN(date.getTime());
+    const formattedDate = isValid ? format(date, 'dd/MM/yyyy'): "-"; // format to date only
+    console.log(expectedReturnDate);
+    
     return (
         <div className="flex flex-col gap-6">
             <h2 className="text-lg font-semibold">รายละเอียดการตอบรับ</h2>
             <div className="grid grid-cols-2 gap-2 font-light">
                 <div className="flex flex-col gap-1">
                     <Label>วันที่คืน</Label>
-                    <Input disabled value={format(expectedReturnDate, "dd/MM/yyyy")} />
+                    <Input disabled value={formattedDate} />
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>โรงพยาบาลที่ให้ยืม</Label>
@@ -118,7 +125,7 @@ const ReturnFormSchema = z.object({
         manufacturer: z.string().min(1, "กรุณาระบุผู้ผลิตของยา"),
         pricePerUnit: z.number().min(1, "ราคาต่อหน่วยควรมากกว่า 0").max(100000, "ราคาต่อหน่วยควรน้อยกว่า 100000"),
         batchNumber: z.string().min(1, "กรุณาระบุหมายเลขล็อตของยา"),
-        expiredDate: z.coerce.date({ invalid_type_error: "กรุณาระบุวันที่คืนยา"}),
+        expiredDate: z.coerce.string({ invalid_type_error: "กรุณาระบุวันที่คืนยา"}),
     }),
 })
 
@@ -276,11 +283,11 @@ function ReturnDetails({ selectedMed }: any) {
                 <div className="grid grid-cols-3 gap-2">
                     <div className="flex flex-col gap-1">
                         <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
-                        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className="justify-start text-left font-normal">
                                     {expiredDate
-                                        ? format(expiredDate, "dd/MM/yyyy")
+                                        ? format(new Date(Number(expiredDate)), "dd/MM/yyyy")
                                         : "เลือกวันที่"}
                                     <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                 </Button>
@@ -288,14 +295,15 @@ function ReturnDetails({ selectedMed }: any) {
                             <PopoverContent className="w-auto p-0">
                                 <Calendar
                                     mode="single"
-                                    selected={expiredDate}
+                                    selected={expiredDate ? new Date(Number(expiredDate)) : undefined}
                                     onSelect={(date) => {
                                         if (date instanceof Date && !isNaN(date.getTime())) {
                                             const today = new Date();
                                             today.setHours(0, 0, 0, 0); // normalize time
+                                            const dateString = date.getTime().toString()
 
                                             if (date > today) {
-                                                setValue("returnMedicine.expiredDate", date, { shouldValidate: true, shouldDirty: true });
+                                                setValue("returnMedicine.expiredDate", dateString, { shouldValidate: true, shouldDirty: true });
                                                 setDateError(""); // clear error
                                                 setIsCalendarOpen(false); // close popover
                                             } else {

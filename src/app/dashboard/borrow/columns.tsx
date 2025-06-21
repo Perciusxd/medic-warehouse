@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import StatusIndicator from "@/components/ui/status-indicator"
 
-import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2Icon, LoaderIcon, ShieldAlertIcon } from "lucide-react"
+import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2Icon, LoaderIcon, ShieldAlertIcon,BookDown ,BookUp, SquareX ,SquareCheck } from "lucide-react"
 
 export const columns = (handleApproveClick: (med: ResponseAsset) => void): ColumnDef<ResponseAsset>[] => [
     // {
@@ -30,6 +30,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
     // },
     {
         accessorKey: "requestDetails.name",
+        size: 150,
         header: ({ column }) => {
             return (
                 <Button
@@ -44,6 +45,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
         },
         cell: ({ row }) => {
             const med = row.original
+             console.log("row.original in borrow dashbroad", med)
             const requestDetails = med.requestDetails
             const name = requestDetails.requestMedicine.name
             const trademark = requestDetails.requestMedicine.trademark
@@ -58,6 +60,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
     },
     {
         accessorKey: "updatedAt",
+        size: 100,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ประกาศเมื่อ</div>,
         cell: ({ row }) => {
             const med = row.original
@@ -80,9 +83,11 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
     // },
     {
         accessorKey: "postingHospitalNameEN",
+        size: 150,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จากโรงพยาบาล</div>,
         cell: ({ row }) => {
-            const postingHospitalNameTH: string = row.original.postingHospitalNameTH
+            const postingHospitalNameTH: string = row.original.requestDetails.postingHospitalNameTH
+            //console.log("Posting Hospital Name:", postingHospitalNameTH)
             return (
                 <div className="flex flex-row">
                     <Avatar>
@@ -90,10 +95,10 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
                         <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
 
-                    <div className="flex flex-col ml-2">
-                        <div className="text-md">{postingHospitalNameTH}</div>
-                        <div className="text-xs text-gray-600">คุณ xxx xxx</div>
-                        <div className="text-xs text-gray-600">ติดต่อ 080xxxxx</div>
+                    <div className="flex flex-col ml-2 justify-center">
+                        <div className="text-md  ">{postingHospitalNameTH}</div>
+                        {/* <div className="text-xs text-gray-600">คุณ xxx xxx</div>
+                        <div className="text-xs text-gray-600">ติดต่อ 080xxxxx</div> */}
                     </div>
 
                 </div>
@@ -101,8 +106,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
         },
         enableGlobalFilter: true
     },
-
-    {
+        {
         accessorKey: "requestDetails.quantity",
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ปริมาณ</div>,
         size: 100,
@@ -121,6 +125,77 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
             )
         },
         enableSorting: true,
+    },
+    {
+        accessorKey: "requestDetails.requestMedicine.requestAmount",
+        size: 100,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่ขอยืม</div>,
+        enableGlobalFilter: false
+    },
+    {
+         accessorKey: "requestDetails.id", 
+         size: 280,
+         header: () => (
+            <div className="font-medium text-muted-foreground text-center cursor-default">
+               <div>
+                    เงื่อนไขการรับยา
+                </div> 
+                <div className="flex flex-row gap-x-2 text-center font-medium justify-center">
+                    <div className="text-center basis-1/2">
+                        ยืมรายการทดแทนได้
+                    </div>
+                    <div className="text-center basis-1/2">
+                        ขอสนับสนุน
+                    </div>
+                </div>
+            </div>
+         ),
+         cell: ({ row }) => {
+            const med = row.original;
+            console.log("med", med);
+            const condition = med.requestDetails.requestTerm.receiveConditions.condition
+            console.log("condition", condition);
+            const supportType = med.requestDetails.requestTerm.receiveConditions.supportType
+            console.log("supportType", supportType);
+            let supportTypetDiv;
+            let conditionDiv;
+
+            if (condition === "exactType"){
+                conditionDiv = <div className="flex text-red-600 items-center"> <SquareX/>Exact Type</div>;
+            }else{
+                conditionDiv = <div className="flex text-green-600 items-center"> <SquareCheck/>Not Exact Type</div>;
+            }
+
+
+            if (supportType === true) { 
+            supportTypetDiv = <div className="flex text-green-600 items-center"> <SquareCheck/>TRUE </div>;
+            } else {
+            supportTypetDiv = <div className="flex text-red-600 items-center"> <SquareX/> FALSE</div>;
+            }
+            
+            return(
+                
+            <div className="flex flex-row gap-x-2 text-center font-medium justify-center">
+
+                     <div className="text-center basis-1/2">
+                        <div className="flex flex-row justify-center">
+                            {conditionDiv} 
+                        </div>
+                   </div>
+                
+                   <div className="text-center basis-1/2">
+                        <div className="flex flex-row justify-center">
+                            {supportTypetDiv} 
+                        </div>
+                   </div>
+
+            </div>
+            )
+    
+            
+         },
+         enableGlobalFilter: false
+         
     },
     {
         accessorKey: "requestDetails.urgent",

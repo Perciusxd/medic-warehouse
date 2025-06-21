@@ -14,15 +14,13 @@ export default async function handler(
     return;
   }
   try {
-    const {
-        loggedInHospital,
-        status,
-    } = req.body;
     const contract = await initializeFabric();
+    const { loggedInHospital, status } = req.body;
     try {
         const resultBytes = await contract.evaluateTransaction(
             "QueryRequestStatus",
-            loggedInHospital
+            loggedInHospital,
+            status
         );
         const resultJson = utf8Decoder.decode(resultBytes);
         const result = JSON.parse(resultJson);

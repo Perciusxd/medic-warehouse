@@ -16,21 +16,27 @@ export default async function handler(
     try {
         const updatedAt = new Date().toString();
         const {
-            responseId,
+            sharingId,
+            returnTerm,
             acceptOffer,
         } = req.body;
+        const acceptOfferAsset = {
+            sharingId: sharingId,
+            returnTerm: returnTerm,
+            acceptOffer: acceptOffer,
+            updatedAt: updatedAt,
+        }
+        console.log('acceptOfferAsset', acceptOfferAsset)
         const contract = await initializeFabric();
         try {
             await contract.submitTransaction(
                 "AcceptSharing",
-                responseId,
-                JSON.stringify(acceptOffer),
-                updatedAt
+                JSON.stringify(acceptOfferAsset)
             );
             console.log("*** Transaction committed successfully");
             res.status(200).json({
                 message: "Transaction committed successfully",
-                assetId: responseId,
+                assetId: sharingId,
             });
         } catch (error) {
             console.error("Error in transaction:", error);

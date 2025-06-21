@@ -27,7 +27,7 @@ export default function TransferDashboard() {
     const [loadingRowId, setLoadingRowId] = useState(null);
     const [globalFilter, setGlobalFilter] = useState("");
     const [loading, setLoading] = useState(false);
-
+    console.log("medicineResponses", medicineResponses)
     const handleApproveClick = async (med: ResponseAsset) => {
         setLoadingRowId(med.id);
         setSelectedMed(med);
@@ -62,7 +62,7 @@ export default function TransferDashboard() {
     useEffect(() => {
         fetchMedicineResponses();
     }, [fetchMedicineResponses]);
-
+    console.log("medicineResponses", medicineResponses)
     return (
         <div>
             <DataTable columns={columns(handleApproveClick, loading, loadingRowId)} data={medicineResponses} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />

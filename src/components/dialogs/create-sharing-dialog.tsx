@@ -21,45 +21,9 @@ import { Calendar } from "@/components/ui/calendar"
 
 import RequestDetails from "./request-details"
 import { Calendar1 } from "lucide-react"
+import { HospitalList } from "@/context/HospitalList"
 
-export const allHospitalList = [
-    {
-        id: 1,
-        nameTH: 'โรงพยาบาลนาหม่อม',
-        nameEN: 'Na Mom Hospital',
-        address: '456 Elm St, City B',
-    },
-    {
-        id: 2,
-        nameTH: 'โรงพยาบาลสงขลา',
-        nameEN: 'Songkhla Hospital',
-        address: '123 Main St, City A',
-    },
-    {
-        id: 3,
-        nameTH: 'โรงพยาบาลสิงหนคร',
-        nameEN: 'Singha Nakhon Hospital',
-        address: '789 Oak St, City C',
-    },
-    {
-        id: 4,
-        nameEN: "Hospital D",
-        nameTH: "โรงพยาบาลดี",
-        address: "321 Pine St, Hamletville",
-        phone: "555-3456",
-        specialties: ["Radiology", "Gastroenterology"],
-        rating: 4.2,
-    },
-    {
-        id: 5,
-        nameEN: "Hospital E",
-        nameTH: "โรงพยาบาลดี",
-        address: "654 Maple St, Boroughtown",
-        phone: "555-7890",
-        specialties: ["Psychiatry", "Endocrinology"],
-        rating: 4.7,
-    },
-];
+const allHospitalList = HospitalList
 
 const SharingFormSchema = z.object({
     sharingMedicine: z.object({
@@ -88,6 +52,7 @@ const SharingFormSchema = z.object({
 export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
     const { loggedInHospital } = useHospital();
     const postingHospital = allHospitalList.find((hospital) => hospital.nameEN === loggedInHospital);
+    console.log("postingHospital", postingHospital)
     const hospitalList = allHospitalList.filter(hospital => hospital.nameEN !== loggedInHospital)
     const [loading, setLoading] = useState(false);
     const { register, handleSubmit, watch, setValue, getValues, resetField, formState: { errors } } = useForm<z.infer<typeof SharingFormSchema>>({
@@ -247,7 +212,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
 
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
-                                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" className="justify-start text-left font-normal">
                                             {expiryDate

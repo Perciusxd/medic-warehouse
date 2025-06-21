@@ -26,13 +26,15 @@ export const columns = (
     handleApproveClick: (med: ResponseAsset) => void,
     loading: boolean = false,
     loadingRowId: string | null = null
-): ColumnDef<ResponseAsset>[] => [
+): ColumnDef<any>[] => [
     {
         accessorKey: "updatedAt",
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">วันที่ขอยืม</div>,
         cell: ({ row }) => {
             const createdAt = row.getValue("updatedAt")
-            const date = new Date(createdAt); // convert string to number, then to Date
+            // console.log('createdAt', createdAt)
+            const date = new Date(Number(createdAt)); // convert string to number, then to Date
+            // console.log('date', date)
             const formattedDate = format(date, 'dd/MM/yyyy'); // format to date only
             const timeOnly = format(date, 'HH:mm:ss'); // format to time only
             return <div>
@@ -120,18 +122,15 @@ export const columns = (
         accessorKey: "offeredMedicine.name",
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">รายละเอียดการคืน</div>,
         cell: ({ row }) => {
-            const status = row.getValue("status")
-            const respondingHospitalNameTH = row.original.respondingHospitalNameTH
             const createdAt = row.original.requestDetails?.requestTerm.expectedReturnDate
-            const date = new Date(createdAt);
+            const date = new Date(Number(createdAt));
             const daysUntilReturn = differenceInCalendarDays(date, new Date())
             const formattedDate = format(date, 'dd/MM/yyyy');
-            const timeOnly = format(date, 'HH:mm:ss');
+
             return (
                 <div className="flex flex-col">
                     <div className="text-sm font-medium">คาดว่าจะได้รับคืนในอีก {daysUntilReturn} วัน</div>
                     <div className="text-xs font-medium text-gray-600">{formattedDate}</div>
-                    {/* <div className="text-xs text-muted-foreground">จัดส่งโดย {respondingHospitalNameTH}</div> */}
                 </div>
             )
         },

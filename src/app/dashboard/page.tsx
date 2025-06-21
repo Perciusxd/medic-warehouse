@@ -86,27 +86,27 @@ export default function Dashboard() {
         fetchMedicines();
     }, [user?.hospitalName]);
 
-    useEffect(() => {
-        console.log("Logged in hospital:", loggedInHospital);
+    // useEffect(() => {
+    //     console.log("Logged in hospital:", loggedInHospital);
         
-        fetch("/api/queryAll")
-            .then((response) => response.json())
-            .then((data) => {                
-                const filteredMedicines = data.filter((medicine: any) => medicine.PostingHospital !== loggedInHospital);
-                setMedicines(filteredMedicines);
+    //     fetch("/api/queryAll")
+    //         .then((response) => response.json())
+    //         .then((data) => {                
+    //             const filteredMedicines = data.filter((medicine: any) => medicine.PostingHospital !== loggedInHospital);
+    //             setMedicines(filteredMedicines);
 
-                const borrowCount = data.reduce((total: any, medicine: any) => {
-                    if (!medicine.BorrowRecords) return total;
-                    const hospitalBorrows = medicine.BorrowRecords.filter(
-                        (record: any) => record.BorrowingHospital === loggedInHospital
-                    ).length;
-                    return total + hospitalBorrows;
-                }, 0);
+    //             const borrowCount = data.reduce((total: any, medicine: any) => {
+    //                 if (!medicine.BorrowRecords) return total;
+    //                 const hospitalBorrows = medicine.BorrowRecords.filter(
+    //                     (record: any) => record.BorrowingHospital === loggedInHospital
+    //                 ).length;
+    //                 return total + hospitalBorrows;
+    //             }, 0);
 
-                setTotalBorrow(borrowCount);
-            })
-            .catch((error) => console.error("Error fetching data:", error));
-    }, [loggedInHospital]);
+    //             setTotalBorrow(borrowCount);
+    //         })
+    //         .catch((error) => console.error("Error fetching data:", error));
+    // }, [loggedInHospital]);
     
     
 
