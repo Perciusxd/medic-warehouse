@@ -3,14 +3,14 @@
  * @param {string} loggedInHospital - The hospital name to filter by
  * @returns {Promise<Array>} - Filtered medicine responses
  */
-export const fetchAllStatusByTicketType = async (loggedInHospital: string, status: string, ticketType: string) => {
+export const fetchAllStatusByTicketType = async (apiEndpoint: string, loggedInHospital: string, status: string, ticketType: string) => {
     try {
         if (ticketType === "sharing") {
             const body = {
                 loggedInHospital: loggedInHospital,
                 status: status,
             }
-            const response = await fetch("/api/querySharing", {
+            const response = await fetch(`${apiEndpoint}/api/sharing/query`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -27,7 +27,7 @@ export const fetchAllStatusByTicketType = async (loggedInHospital: string, statu
                 loggedInHospital: loggedInHospital,
                 status: status,
             }
-            const response = await fetch("/api/queryRequests", {
+            const response = await fetch(`${apiEndpoint}/api/requests/query`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -4,13 +4,13 @@ import { ResponseAsset } from "@/types/responseMed";
  * @param {string} loggedInHospital - The hospital name to filter by
  * @returns {Promise<Array>} - Filtered medicine requests
  */
-export const fetchAllMedicineRequests = async (loggedInHospital: string) => {
+export const fetchAllMedicineRequests = async (apiEndpoint: string, loggedInHospital: string) => {
     try {
         const body = {
             loggedInHospital: loggedInHospital,
             status: "pending"
         }
-        const response = await fetch("/api/queryRequestByStatus", {
+        const response = await fetch(`${apiEndpoint}/api/requests/query-by-status`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -33,9 +33,9 @@ export const fetchAllMedicineRequests = async (loggedInHospital: string) => {
  * @param {string} loggedInHospital - The hospital name to filter by
  * @returns {Promise<Array>} - Filtered medicine responses
  */
-export const fetchAllMedicineRequestsInProgress = async (loggedInHospital: string) => {
+export const fetchAllMedicineRequestsInProgress = async (apiEndpoint: string, loggedInHospital: string) => {
     try {
-        const response = await fetch("api/queryAll");
+        const response = await fetch(`${apiEndpoint}/api/queryAll`);
         if (!response.ok) {
             throw new Error("Failed to fetch medicine requests");
         }
@@ -55,9 +55,9 @@ export const fetchAllMedicineRequestsInProgress = async (loggedInHospital: strin
  * @param {string} assetId - The ID of the asset to fetch
  * @returns {Promise<Object>} - The asset data
  */
-export const fetchAssetById = async (assetId: string) => {
+export const fetchAssetById = async (apiEndpoint: string, assetId: string) => {
     try {
-        const response = await fetch("/api/queryById", {
+        const response = await fetch(`${apiEndpoint}/api/queryById`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -81,14 +81,14 @@ export const fetchAssetById = async (assetId: string) => {
  * @param {string} loggedInHospital - The hospital name to filter by
  * @returns {Promise<Array>} - Medicine requests with asset data
  */
-export const fetchMedicineRequestsWithAssets = async (loggedInHospital: string) => {
+export const fetchMedicineRequestsWithAssets = async (apiEndpoint: string, loggedInHospital: string) => {
     try {
-        const filteredRequests = await fetchAllMedicineRequests(loggedInHospital);
+        const filteredRequests = await fetchAllMedicineRequests(apiEndpoint, loggedInHospital);
 
         // Fetch assets for each requestId
         const requestsWithAssets = await Promise.all(
             filteredRequests.map(async (item: ResponseAsset) => {
-                const asset = await fetchAssetById(item.requestId);
+                const asset = await fetchAssetById(apiEndpoint, item.requestId);
                 return {
                     ...item,
                     asset,
@@ -109,11 +109,11 @@ export const fetchMedicineRequestsWithAssets = async (loggedInHospital: string) 
  * @param {string} medicineName - The name of the medicine to delete
  * @returns {Promise<Response>} - The response from the delete operation
  */
-export const deleteMedicine = async (medicineID: string, medicineName: string) => {
+export const deleteMedicine = async (apiEndpoint: string, medicineID: string, medicineName: string) => {
     try {
         const formattedId = medicineID.toString();
 
-        const response = await fetch(`/api/deleteMed`, {
+        const response = await fetch(`${apiEndpoint}/api/deleteMed`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',

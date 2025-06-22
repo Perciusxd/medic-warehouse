@@ -1,3 +1,4 @@
+import { useApiEndpoint } from "@/context/ApiEndpointContext";
 import { useState, useEffect, useCallback } from "react";
 import { fetchAllMedicineRequests, fetchAssetById, fetchAllMedicineRequestsInProgress } from "@/pages/api/requestService";
 import { fetchAllMedicineReponsesInTransfer } from "@/pages/api/transferService";
@@ -9,6 +10,7 @@ import { fetchAllMedicineSharing } from "@/pages/api/sharingService";
  * @returns {Object} Medicine data and operations
  */
 export function useMedicineRequests(loggedInHospital: string) {
+    const { apiEndpoint } = useApiEndpoint();
     const [medicineRequests, setMedicineRequests] = useState([]);
     const [loading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -21,7 +23,7 @@ export function useMedicineRequests(loggedInHospital: string) {
         setError(null);
 
         try {
-            const data = await fetchAllMedicineRequests(loggedInHospital);
+            const data = await fetchAllMedicineRequests(apiEndpoint, loggedInHospital);
             setMedicineRequests(data);
             return data;
         } catch (error: any) {
@@ -29,7 +31,7 @@ export function useMedicineRequests(loggedInHospital: string) {
         } finally {
             setIsLoading(false);
         }
-    }, [loggedInHospital]);
+    }, [loggedInHospital, apiEndpoint]);
 
     useEffect(() => {
         fetchMedicineRequests();
@@ -82,6 +84,7 @@ export function useMedicineSharing(loggedInHospital: string) {
  * @returns {Object} Medicine data and operations
  */
 export function useMedicineResponsesInTransfer(loggedInHospital: string) {
+    const { apiEndpoint } = useApiEndpoint();
     const [medicineResponses, setMedicineResponses] = useState([]);
     const [loading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -94,7 +97,7 @@ export function useMedicineResponsesInTransfer(loggedInHospital: string) {
         setError(null);
 
         try {
-            const data = await fetchAllMedicineReponsesInTransfer(loggedInHospital);
+            const data = await fetchAllMedicineReponsesInTransfer(apiEndpoint, loggedInHospital);
             setMedicineResponses(data);
             return data;
         } catch (error: any) {
@@ -102,7 +105,7 @@ export function useMedicineResponsesInTransfer(loggedInHospital: string) {
         } finally {
             setIsLoading(false);
         }
-    }, [loggedInHospital]);
+    }, [loggedInHospital, apiEndpoint]);
 
     useEffect(() => {
         fetchMedicineResponses();
@@ -117,6 +120,7 @@ export function useMedicineResponsesInTransfer(loggedInHospital: string) {
 }
 
 export function useMedicineRequestsStatus(loggedInHospital: string) {
+    const { apiEndpoint } = useApiEndpoint();
     const [medicineRequests, setMedicineRequests] = useState([]);
     console.log("useMedicineRequestsStatus == medicineRequests");
     const [loading, setIsLoading] = useState(true);
@@ -130,22 +134,16 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
         setError(null);
         
         try {
-            const response = await fetchAllStatusByTicketType(loggedInHospital, "pending", "request");
-            let filterRes;
-    
-            if (filterRes) {
-                setMedicineRequests(filterRes);
-                return filterRes;
-            } else {
-                setMedicineRequests(response)
-                return response;
-            }
+            const response = await fetchAllStatusByTicketType(apiEndpoint, loggedInHospital, "pending", "request");
+            setMedicineRequests(response)
+            return response;
+
         } catch (error: any) {
             setError(error.message || "Failed to fetch medicine requests");
         } finally {
             setIsLoading(false);
         }
-    }, [loggedInHospital]);
+    }, [loggedInHospital, apiEndpoint]);
     
     useEffect(() => {
         fetchMedicineRequests();
@@ -160,6 +158,7 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
 }
 
 export function useMedicineSharingStatus(loggedInHospital: string) {
+    const { apiEndpoint } = useApiEndpoint();
     const [medicineSharing, setMedicineSharing] = useState([]);
     const [loading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -170,7 +169,7 @@ export function useMedicineSharingStatus(loggedInHospital: string) {
         setError(null);
 
         try {
-            const response = await fetchAllStatusByTicketType(loggedInHospital, "pending", "sharing");
+            const response = await fetchAllStatusByTicketType(apiEndpoint, loggedInHospital, "pending", "sharing");
             setMedicineSharing(response);
             return response;
         } catch (error: any) {
@@ -178,7 +177,7 @@ export function useMedicineSharingStatus(loggedInHospital: string) {
         } finally {
             setIsLoading(false);
         }
-    }, [loggedInHospital]);
+    }, [loggedInHospital, apiEndpoint]);
 
     useEffect(() => {
         fetchMedicineSharing();

@@ -6,13 +6,13 @@ import { fetchAssetById } from "./requestService";
 * @param {string} loggedInHospital - The hospital name to filter by
 * @returns {Promise<Array>} - Filtered medicine responses
 */
-export const fetchAllMedicineReponsesInTransfer = async (loggedInHospital: string) => {
+export const fetchAllMedicineReponsesInTransfer = async (apiEndpoint: string, loggedInHospital: string) => {
     try {
         const body = {
             loggedInHospital: loggedInHospital,
             status: "to-transfer"
         }
-        const response = await fetch("/api/queryRequestByStatus", {
+        const response = await fetch(`${apiEndpoint}/api/queryRequestByStatus`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

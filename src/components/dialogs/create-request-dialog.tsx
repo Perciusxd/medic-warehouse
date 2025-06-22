@@ -22,6 +22,7 @@ import RequestDetails from "./request-details"
 import { Calendar1, Hospital } from "lucide-react"
 import { format } from "date-fns"
 import { HospitalList } from "@/context/HospitalList"
+import { useApiEndpoint } from "@/context/ApiEndpointContext"
 
 const allHospitalList = HospitalList;
 
@@ -64,6 +65,7 @@ const defaultHospital = {
 }
 
 export default function CreateRequestDialog({ requestData, loggedInHospital, openDialog, onOpenChange }: any) {
+    const { apiEndpoint } = useApiEndpoint();
     const postingHospital = allHospitalList.find((hospital) => hospital.nameEN === loggedInHospital);
     const hospitalList = allHospitalList.filter(hospital => hospital.nameEN !== loggedInHospital)
     const [loading, setLoading] = useState(false)
@@ -150,7 +152,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
         console.log('requestBody', requestBody)
         try {
             setLoading(true)
-            const response = await fetch("/api/createRequest", {
+            const response = await fetch(`${apiEndpoint}/api/requests/create`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
