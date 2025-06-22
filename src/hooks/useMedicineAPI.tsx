@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetchAllMedicineRequests, fetchAssetById, fetchAllMedicineRequestsInProgress } from "@/pages/api/requestService";
 import { fetchAllMedicineReponsesInTransfer } from "@/pages/api/transferService";
-import { fetchAllStatusByTicketType } from "@/pages/api/statusService";
+import { fetchAllStatusByTicketType, fetchConfirmStatusByTicketType } from "@/pages/api/statusService";
 import { fetchAllMedicineSharing } from "@/pages/api/sharingService";
 /**
  * Custom hook for managing medicine requests
@@ -54,7 +54,7 @@ export function useMedicineSharing(loggedInHospital: string, status: string) {
         setError(null);
         try {
             // Error
-            const data = await fetchAllMedicineSharing(loggedInHospital);
+            const data = await fetchAllMedicineSharing(loggedInHospital, status);
             setMedicineSharing(data);
             return data;
         } catch (error: any) {
@@ -189,5 +189,38 @@ export function useMedicineSharingStatus(loggedInHospital: string) {
         loading,
         error,
         fetchMedicineSharing,
+    };
+}
+
+export function useMedicineRequestsInConfirm(loggedInHospital: string, status: string) {
+    const [medicineRequestsInConfirm, setMedicineRequestsInConfirm] = useState([]);
+    const [loading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const fetchMedicineRequestsInConfirm = useCallback(async () => {
+        if (!loggedInHospital) return;
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetchConfirmStatusByTicketType(loggedInHospital, status, "request");
+            setMedicineRequestsInConfirm(response);
+            return response;
+        } catch (error: any) {
+            setError(error.message || "Failed to fetch medicine requests");
+        } finally {
+            setIsLoading(false);
+        }
+    }, [loggedInHospital, status]);
+
+    useEffect(() => {
+        fetchMedicineRequestsInConfirm();
+    }, [fetchMedicineRequestsInConfirm]);
+
+    return {
+        medicineRequestsInConfirm,
+        loading,
+        error,
+        fetchMedicineRequestsInConfirm,
     };
 }
