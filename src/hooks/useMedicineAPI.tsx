@@ -131,15 +131,8 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
         
         try {
             const response = await fetchAllStatusByTicketType(loggedInHospital, "pending", "request");
-            let filterRes;
-    
-            if (filterRes) {
-                setMedicineRequests(filterRes);
-                return filterRes;
-            } else {
-                setMedicineRequests(response)
-                return response;
-            }
+            setMedicineRequests(response);
+            return response;
         } catch (error: any) {
             setError(error.message || "Failed to fetch medicine requests");
         } finally {
