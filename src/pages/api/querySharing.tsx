@@ -16,7 +16,8 @@ export default async function handler(
     try {
         const {
             loggedInHospital,
-            status,
+            // Error
+            status
         } = req.body;
         const contract = await initializeFabric();
         try {

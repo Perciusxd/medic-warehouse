@@ -45,3 +45,46 @@ export const fetchAllStatusByTicketType = async (loggedInHospital: string, statu
         throw error;
     }
 };
+
+export const fetchConfirmStatusByTicketType = async (loggedInHospital: string, status: string, ticketType: string) => {
+    try {
+        if (ticketType === "sharing") {
+            const body = {
+                loggedInHospital: loggedInHospital,
+                status: status,
+            }
+            const response = await fetch("/api/querySharingByStatus", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(body),
+            })
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error("Failed to fetch medicine sharing");
+            }
+            return result;
+        } else {
+            const body = {
+                loggedInHospital: loggedInHospital,
+                status: status,
+            }
+            const response = await fetch("/api/queryRequestByStatus", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(body),
+            })
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error("Failed to fetch medicine requests");
+            }
+            return result;
+        }
+    } catch (error) {
+        console.error("Error fetching medicine requests:", error);
+        throw error;
+    }
+}

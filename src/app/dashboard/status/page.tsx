@@ -25,8 +25,8 @@ import ReturnDialog from "@/components/dialogs/return-dialog";
 
 export default function StatusDashboard() {
     const { loggedInHospital } = useHospital();
+    const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequestsStatus(loggedInHospital);
     const { medicineSharing, loading: loadingShare, error: errorShare, fetchMedicineSharing } = useMedicineSharingStatus(loggedInHospital);
-    const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequestsStatus(loggedInHospital, 'pending');
     const [loading, setLoading] = useState(false);
     const [selectedMed, setSelectedMed] = useState<any | null>(null);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
