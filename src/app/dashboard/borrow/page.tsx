@@ -34,10 +34,10 @@ export default function BorrowDashboard() {
     const { user } = useAuth();
     // const { loggedInHospital } = useHospital();
     const loggedInHospital = user?.hospitalName;
-    const { medicineRequests, loading, error, fetchMedicineRequests } = useMedicineRequests(loggedInHospital, 'pending');
+    const { medicineRequests, loading, error, fetchMedicineRequests } = useMedicineRequests(loggedInHospital ?? '', 'pending');
     const [updatedLast, setUpdatedLast] = useState<Date | null>(null);
     const [tick, setTick] = useState(0);
-    const [selectedMed, setSelectedMed] = useState(null);
+    const [selectedMed, setSelectedMed] = useState<ResponseAsset | null>(null);
     const [createRespDialogOpen, setCreateRespDialogOpen] = useState(false);
     const [createRequestDialogOpen, setCreateRequestDialogOpen] = useState(false);
     const [globalFilter, setGlobalFilter] = useState("");

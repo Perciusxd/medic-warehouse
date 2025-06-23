@@ -22,6 +22,7 @@ import { Calendar } from "@/components/ui/calendar"
 import RequestDetails from "./request-details"
 import { Calendar1 } from "lucide-react"
 import { HospitalList } from "@/context/HospitalList"
+import { useAuth } from "../providers"
 
 const allHospitalList = HospitalList
 
@@ -44,21 +45,34 @@ const SharingFormSchema = z.object({
             otherType: z.boolean(),
             supportType: z.boolean(),
             noReturn: z.boolean(),
-        })
+        }).refine((data) => 
+            Object.values(data).some(value => value === true),
+            {
+                message: "กรุณาเลือกอย่างน้อย 1 เงื่อนไข" ,
+                path: []
+            }
+
+        )
     }),
-    selectedHospitals: z.array(z.number()),
+    selectedHospitals: z.array(z.number()).min(1, "กรุณาเลือกโรงพยาบาลอย่างน้อย 1 แห่ง"),
 });
 
 export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
-    const { loggedInHospital } = useHospital();
+    const { user } = useAuth();
+    // const { loggedInHospital } = useHospital();
+    const loggedInHospital = user?.hospitalName;
+    
+    console.log("loggedInHospital", loggedInHospital);
+    
     const postingHospital = allHospitalList.find((hospital) => hospital.nameEN === loggedInHospital);
     console.log("postingHospital", postingHospital)
     const hospitalList = allHospitalList.filter(hospital => hospital.nameEN !== loggedInHospital)
     const [loading, setLoading] = useState(false);
-    const { register, handleSubmit, watch, setValue, getValues, resetField, formState: { errors } } = useForm<z.infer<typeof SharingFormSchema>>({
+    const { register, handleSubmit, watch, setValue, getValues, resetField, formState: { errors , isSubmitted  } } = useForm<z.infer<typeof SharingFormSchema>>({
         resolver: zodResolver(SharingFormSchema),
         defaultValues: {
-            selectedHospitals: [],
+            selectedHospitals: []
+            
         }
     });
 
@@ -72,12 +86,18 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
     const allHospitals = hospitalList.map(hospital => hospital.id)
     const allSelected = selectedHospitals.length === allHospitals.length
 
+    const receiveConditions = watch("sharingReturnTerm.receiveConditions"); // Get the current values of receiveConditions
+    const isAnyChecked = Object.values(receiveConditions || {}).some(Boolean);// Check if any checkbox is checked
+
+
+
+    
     const toggleAllHospitals = () => {
         if (allSelected) {
-            setValue("selectedHospitals", [])
+            setValue("selectedHospitals", [], { shouldValidate: true })
         }
         else {
-            setValue("selectedHospitals", allHospitals)
+            setValue("selectedHospitals", allHospitals, { shouldValidate: true })
         }
     }
 
@@ -86,7 +106,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
         const updated = current.includes(hospitalId)
             ? current.filter((id) => id !== hospitalId)
             : [...current, hospitalId]
-        setValue("selectedHospitals", updated)
+        setValue("selectedHospitals", updated, { shouldValidate: true })
 
     }
 
@@ -184,7 +204,18 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                             </div>
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">จำนวน</Label>
-                                <Input type="number" placeholder="10" {...register("sharingMedicine.sharingAmount", { valueAsNumber: true })} className={errors.sharingMedicine?.sharingAmount ? "border-red-500" : ""} />
+                                <Input 
+                                    inputMode="numeric"
+                                    placeholder="10" 
+                                    onKeyDown={(e) => {
+                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
+                                        if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
+                                        e.preventDefault();
+                                        }
+                                    }}
+                                    
+                                    {...register("sharingMedicine.sharingAmount", { valueAsNumber: true })} className={errors.sharingMedicine?.sharingAmount ? "border-red-500" : ""} 
+                                />
                                 {errors.sharingMedicine?.sharingAmount && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.sharingAmount.message}</span>
                                 )}
@@ -198,7 +229,16 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                             </div>
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">ราคาต่อหน่วย</Label>
-                                <Input type="number" {...register("sharingMedicine.pricePerUnit", { valueAsNumber: true })} />
+                                <Input
+                                     inputMode="numeric"
+                                    placeholder="10" 
+                                    onKeyDown={(e) => {
+                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
+                                        if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
+                                        e.preventDefault();
+                                        }
+                                    }}
+                                {...register("sharingMedicine.pricePerUnit", { valueAsNumber: true })} />
                                 {errors.sharingMedicine?.pricePerUnit && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.pricePerUnit.message}</span>
                                 )}
@@ -253,10 +293,10 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                         </div>
                         <div className="ml-10">
                             <div className="flex items-center justify-between">
-                                <Label>โรงพยาบาลที่ต้องการขอยืม</Label>
+                                <Label>โรงพยาบาลที่ต้องการแจ้งแบ่งปัน</Label>
                             </div>
                             <span className="text-sm text-gray-500 mb-2">
-                                กรุณาเลือกโรงพยาบาลที่ต้องการขอยืม โดยสามารถเลือกได้มากกว่า 1 โรงพยาบาล
+                                กรุณาเลือกโรงพยาบาลที่ต้องการแจ้งแบ่งปัน โดยสามารถเลือกได้มากกว่า 1 โรงพยาบาล
                             </span>
                             <div className="flex items-center gap-2 my-4">
                                 <Checkbox
@@ -270,6 +310,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                 <div className="p-4">
                                     {hospitalList.map(hospital => {
                                         const isChecked = selectedHospitals.includes(hospital.id)
+                                        
                                         return (
                                             <div className="" key={hospital.id}>
                                                 <div className="flex items-center gap-2" key={hospital.id}>
@@ -287,8 +328,11 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                     })}
                                 </div>
                             </ScrollArea>
-
-                            <Label className="mb-2 mt-4">เงื่อนไขการรับยา</Label>
+                            {errors.selectedHospitals && (
+                            <span className="text-red-500 text-sm">{errors.selectedHospitals.message}</span>
+                            )}
+                                                         
+                            <Label className="mb-2 mt-4">เงื่อนไขการรับคืนยา</Label>
                             <div className="flex flex-col items-start space-y-2">
                                 <Label className="font-normal">
                                     <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.exactType")} />
@@ -300,16 +344,21 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                 </Label>
                                 <Label className="font-normal">
                                     <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.supportType")} />
-                                    รับคืนรายการที่รับมอบจากตัวแทนจำหน่าย
+                                    สามารถสนับสนุนได้
                                 </Label>
                                 <Label className="font-normal">
                                     <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.otherType")} />
-                                    อื่นๆ
+                                    รับคืนรายการอื่นได้
                                 </Label>
                                 <Label className="font-normal">
                                     <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.noReturn")} />
                                     ไม่รับคืน
                                 </Label>
+                                    {!isAnyChecked && isSubmitted && (
+                                    <p className="text-red-500 text-sm mt-1">
+                                        กรุณาเลือกอย่างน้อย 1 เงื่อนไข
+                                    </p>
+                                    )}
                             </div>
                         </div>
                     </div>

@@ -29,6 +29,7 @@ export const columns = (
 ): ColumnDef<any>[] => [
     {
         accessorKey: "updatedAt",
+        size:100,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">วันที่ขอยืม</div>,
         cell: ({ row }) => {
             const createdAt = row.getValue("updatedAt")
@@ -97,6 +98,7 @@ export const columns = (
     },
     {
         accessorKey: "status",
+        size:200,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">รายละเอียดยา</div>,
         cell: ({ row }) => {
             const status = row.getValue("status")
@@ -106,13 +108,29 @@ export const columns = (
             const offeredUnit = row.original.offeredMedicine?.unit
             const offeredPricePerUnit = row.original.offeredMedicine?.pricePerUnit
             const price = offeredPricePerUnit * offeredAmount
+            const manufacturer = row.original.offeredMedicine?.manufacturer
+            const returnTermData = row.original.offeredMedicine?.returnTerm
+            console.log("returnTermData.==",returnTermData)
+            let returnTerm;
+
+            if (returnTermData === "exactType"){
+                returnTerm ="ยาตามรายการ"
+                
+            }else{
+                returnTerm = "ยาทดแทน"
+                
+            }
+            //const expiryDate = 
+            console.log("status===",row.original)
 
             return (
                 <div className="flex flex-col">
-                    <div className="text-md font-medium">ยา {offeredMedicineName}</div>
-                    <div className="text-xs text-gray-600">โดย {offeredMedicineTrademark}</div>
-                    <div className="text-md font-medium mt-2">เป็นจำนวน {offeredAmount} {offeredUnit}</div>
-                    <div className="text-xs text-gray-600">คิดเป็นมูลค่า {price} บาท</div>
+                    <div className="text-md font-medium  text-gray-600">ยา: {offeredMedicineName}</div>
+                    <div className="text-md font-medium  text-gray-600">ชื่อการค้า : {offeredMedicineTrademark}</div>
+                    <div className="text-md font-medium  text-gray-600">ผลิตโดย : {manufacturer}</div>
+                    <div className="text-md font-medium  text-gray-600">เป็นจำนวน : {offeredAmount} {offeredUnit}</div>
+                    <div className="text-md font-medium  text-gray-600">คิดเป็นมูลค่า : {price} บาท</div>
+                    <div className="text-md font-medium  text-gray-600">ประเภทยาที่ส่งมอบ : {returnTerm}</div>
                 </div>
             )
         },
@@ -123,6 +141,7 @@ export const columns = (
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">รายละเอียดการคืน</div>,
         cell: ({ row }) => {
             const createdAt = row.original.requestDetails?.requestTerm.expectedReturnDate
+            console.log("med_ticket_type=====",row.original.ticketType)
             const date = new Date(Number(createdAt));
             const daysUntilReturn = differenceInCalendarDays(date, new Date())
             const formattedDate = format(date, 'dd/MM/yyyy');
@@ -144,14 +163,14 @@ export const columns = (
             const med = row.original
             const isLoading = loadingRowId === med.id
             return (
-                <div className="space-x-2">
-                <Button
+                <div className=" flex flex-row  gap-2 max-w-[200px]   ">
+                <Button 
                     variant={'outline'}
                     onClick={() => handleApproveClick(med)}
                 >
                         { isLoading
-                        ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500">ส่งแล้ว</span></div>
-                        : <div className="flex flex-row items-center gap-2"><Check />ส่งแล้ว</div>
+                        ? <div className="flex flex-row items-center gap-2 max-w-[100px]"><LoadingSpinner /><span className="text-gray-500">ส่งแล้ว</span></div>
+                        : <div className="flex flex-row items-center gap-2 max-w-[100px]"><Check />ส่งแล้ว</div>
                     }
                 </Button>
                 <Button

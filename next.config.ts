@@ -1,5 +1,7 @@
 import { experimental } from "@grpc/grpc-js";
 import { NextConfig } from 'next'
+import { Configuration } from "webpack";
+import "@/utils/polyfill"
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -10,17 +12,20 @@ const nextConfig = {
   //     }
   //   }
   // },
-  webpack: (config, { isServer }) => {
+  webpack: (config: Configuration, { isServer }: { isServer: boolean}) => {
     // config.resolve.alias.canvas = false;
     // Needed for PDF rendering libraries
     if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        os: false,
-        path: false,
-        stream: false,
-        canvas: false,
+      config.resolve = {
+        ...config.resolve,
+        fallback: {
+          ...config.resolve?.fallback,
+          fs: false,
+          os: false,
+          path: false,
+          stream: false,
+          canvas: false,
+        },
       };
     }
     return config;
@@ -28,7 +33,8 @@ const nextConfig = {
   reactStrictMode: true,
       swcMinify: true,
       experimental: {
-  }
+        serverExternalPackages: ['@react-pdf/renderer'],
+      }
 };
 
 

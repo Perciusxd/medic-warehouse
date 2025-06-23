@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import * as React from "react"
 import Link from "next/link"
@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/tooltip"
 import { useHospital } from "@/context/HospitalContext"
 import { useAuth } from "./providers"
-import router from "next/router"
+import { useRouter } from "next/navigation"
 
 const mainNavItems = [
   {
@@ -42,6 +42,7 @@ const mainNavItems = [
 ]
 
 export function Sidebar() {
+  const router = useRouter();
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = React.useState(false)
   const { loggedInHospital } = useHospital()

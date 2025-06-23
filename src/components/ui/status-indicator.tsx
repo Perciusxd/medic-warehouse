@@ -1,7 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 
-const STATUS_COLORS = {
+const STATUS_COLORS: any = {
     'urgent': 'bg-red-600',
     'immediate': 'bg-orange-500',
     'normal': 'bg-green-500',
@@ -15,7 +15,7 @@ const STATUS_COLORS = {
     'return-overdue': 'bg-orange-600',
 };
 
-export default function StatusIndicator({ status }) {
+export default function StatusIndicator({ status }: any) {
     const color = STATUS_COLORS[status] || 'bg-gray-400';
 
     return (

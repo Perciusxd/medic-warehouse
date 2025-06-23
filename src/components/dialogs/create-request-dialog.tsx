@@ -19,7 +19,7 @@ import {
 import { Calendar } from "@/components/ui/calendar"
 
 import RequestDetails from "./request-details"
-import { Calendar1 } from "lucide-react"
+import { Calendar1, Hospital } from "lucide-react"
 import { format } from "date-fns"
 import { HospitalList } from "@/context/HospitalList"
 
@@ -42,6 +42,7 @@ const RequestSchema = z.object({
         pricePerUnit: z.number().min(1, "Price per unit must be greater than 0").max(100000, "Price per unit must be less than 100000"),
         unit: z.string().min(1, "Unit is required"),
         manufacturer: z.string().min(1, "Manufacturer is required"),
+        
     }),
     requestTerm: z.object({
         expectedReturnDate: z.coerce.string({ invalid_type_error: "Expected return date must be a valid date" }),
@@ -50,7 +51,7 @@ const RequestSchema = z.object({
             supportType: z.boolean().optional(),
         })
     }),
-    selectedHospitals: z.array(z.number().min(1, "At least one hospital must be selected")),
+    selectedHospitals: z.array(z.number()).min(1, "กรุณาเลือกโรงพยาบาลอย่างน้อย 1 แห่ง"),
 })
 
 const defaultHospital = {
@@ -83,8 +84,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                 trademark: "",
                 description: "",
                 quantity: "",
-                requestAmount: 0,
-                pricePerUnit: 0,
+              
                 unit: "",
                 manufacturer: "",
             },
@@ -112,10 +112,10 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
 
     const toggleAllHospitals = () => {
         if (allSelected) {
-            setValue("selectedHospitals", [])
+            setValue("selectedHospitals", [],{ shouldValidate: true })
         }
         else {
-            setValue("selectedHospitals", allHospitals)
+            setValue("selectedHospitals", allHospitals,{ shouldValidate: true })
         }
     }
 
@@ -124,7 +124,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
         const updated = current.includes(hospitalId)
             ? current.filter((id) => id !== hospitalId)
             : [...current, hospitalId]
-        setValue("selectedHospitals", updated)
+        setValue("selectedHospitals", updated ,{ shouldValidate: true })
     }
 
     const onSubmit = async (data: z.infer<typeof RequestSchema>) => {
@@ -221,7 +221,18 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                             </div>
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">จำนวน</Label>
-                                <Input type="number" placeholder="10" {...register("requestMedicine.requestAmount", { valueAsNumber: true })} className={errors.requestMedicine?.requestAmount ? "border-red-500" : ""} />
+                                <Input 
+                                    inputMode="numeric"
+                                    placeholder="10" 
+                                    onKeyDown={(e) => {
+                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
+                                        if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
+                                        e.preventDefault();
+                                        }
+                                    }}
+                                    
+                                   {...register("requestMedicine.requestAmount", { valueAsNumber: true })} className={errors.requestMedicine?.requestAmount ? "border-red-500" : ""}
+                                />
                                 {errors.requestMedicine?.requestAmount && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.requestAmount.message}</span>
                                 )}
@@ -235,7 +246,16 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                             </div>
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">ราคาต่อหน่วย</Label>
-                                <Input type="number" {...register("requestMedicine.pricePerUnit", { valueAsNumber: true })} />
+                                <Input 
+                                    inputMode="numeric"
+                                    placeholder="10" 
+                                    onKeyDown={(e) => {
+                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
+                                        if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
+                                        e.preventDefault();
+                                        }
+                                    }}
+                                {...register("requestMedicine.pricePerUnit", { valueAsNumber: true })} />
                                 {errors.requestMedicine?.pricePerUnit && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.pricePerUnit.message}</span>
                                 )}
@@ -342,7 +362,10 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                     })}
                                 </div>
                             </ScrollArea>
-
+                            {errors.selectedHospitals && (
+                            <p className="text-red-500 text-sm">{errors.selectedHospitals.message}</p>
+                            )}
+                            
                             <Label className="mb-2 mt-4">เงื่อนไขการรับยา</Label>
                             <div className="flex flex-col items-start space-y-2">
                                 <div className="flex items-start gap-4">
