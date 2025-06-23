@@ -14,11 +14,8 @@ export default async function handler(
     return;
   }
   try {
-    const {
-        loggedInHospital,
-        status,
-    } = req.body;
     const contract = await initializeFabric();
+    const { loggedInHospital, status } = req.body;
     try {
       console.log('loggedInHospital ================', loggedInHospital);
       

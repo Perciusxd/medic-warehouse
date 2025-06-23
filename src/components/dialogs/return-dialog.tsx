@@ -283,7 +283,7 @@ function ReturnDetails({ selectedMed }: any) {
                 <div className="grid grid-cols-3 gap-2">
                     <div className="flex flex-col gap-1">
                         <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
-                        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className="justify-start text-left font-normal">
                                     {expiredDate

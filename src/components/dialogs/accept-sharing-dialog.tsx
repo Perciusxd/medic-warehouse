@@ -24,11 +24,9 @@ function RequestDetails({ sharingMed }: any) {
     const { createdAt } = sharingMed
     const date = new Date(Number(createdAt)); // convert string to number, then to Date
     const formattedDate = format(date, 'dd/MM/yyyy');
-    console.log('createdAt', createdAt)
     const sharingDetails = sharingMed.sharingDetails
     const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber ,sharingAmount } = sharingDetails.sharingMedicine
     const sharingReturnTerm = sharingDetails.sharingReturnTerm.receiveConditions
-    console.log('sharingReturnTermsชชชชชชชชชชชชชชชชชชช', sharingDetails.sharingMedicine)
     /* const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy'); */
     const formattedExpiryDate = format(sharingDetails.sharingMedicine.expiryDate, 'dd/MM/yyyy'); //ดึงมาก่อนนะอิงจากที่มี ดึงไว้ใน columns.tsx
     return (
@@ -156,17 +154,15 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
 
 
     const onSubmit = async (data: z.infer<typeof ResponseFormSchema>) => {
-        const acceptOfferData = {
+        const responseBody = {
+            sharingId: sharingMed.id,
             acceptOffer: {
                 responseAmount: data.responseAmount,
                 expectedReturnDate: data.expectedReturnDate,
             },
             returnTerm: data.returnTerm
         }
-        const responseBody = {
-            responseId: sharingMed.id,
-            acceptOffer: acceptOfferData,
-        }
+        console.log('sharing accept responseBody', responseBody)
         try {
             setLoading(true);
             const response = await fetch("/api/updateSharing", {
@@ -177,7 +173,6 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                 body: JSON.stringify(responseBody),
             })
             const result = await response.json();
-            console.log('result', result)
             setLoading(false);
             onOpenChange(false);
         } catch (error) {
@@ -211,7 +206,7 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                     </div>
                     <div className="flex flex-col gap-1">
                         <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
-                        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className="justify-start text-left font-normal">
                                     {expectedReturn

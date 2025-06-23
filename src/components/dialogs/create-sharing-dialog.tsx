@@ -252,7 +252,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
 
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
-                                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" className="justify-start text-left font-normal">
                                             {expiryDate
