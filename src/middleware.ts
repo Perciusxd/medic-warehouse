@@ -10,7 +10,7 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   // Define public paths that don't require authentication
-  const isPublicPath = path === '/' || path === '/register' || path === '/api/auth/login' || path === '/api/auth/register' || path === '/login';
+  const isPublicPath = path === '/' || path === '/register' || path === '/api/auth/login' || path === '/api/auth/register' || path === '/login' || path === '/api/auth/logout';
 
   // Get the token from the cookies
   const token = request.cookies.get('token')?.value || '';
@@ -45,7 +45,7 @@ export const config = {
   matcher: [
     '/',
     '/dashboard/:path*',
-    '/api/:path*',
+    // '/api/:path*',
     '/register'
   ]
 };
