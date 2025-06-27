@@ -29,6 +29,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Redirect logic
+  if (path.startsWith('/api')) return NextResponse.next();
+
   if (isPublicPath && isAuthenticated) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
@@ -41,11 +43,11 @@ export async function middleware(request: NextRequest) {
 }
 
 // Configure the paths that should be protected
+    // '/api/:path*',
 export const config = {
   matcher: [
     '/',
     '/dashboard/:path*',
-    // '/api/:path*',
     '/register'
   ]
 };
