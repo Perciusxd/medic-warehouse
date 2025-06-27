@@ -57,7 +57,7 @@ export default function LoginPage() {
 
         if (res.ok) {
         await checkAuth(); // Refresh auth state
-        router.push('/dashboard');
+        router.push('/');
         } else {
         setError(data.message || "Login failed");
         }

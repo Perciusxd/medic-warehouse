@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('Logout response:', res);
         if (res.ok) {
           setUser(null);
-          router.push('/'); // Redirect to home after logout
+          router.push('/api'); // Redirect to home after logout
         }
       });
     } catch (error) {
