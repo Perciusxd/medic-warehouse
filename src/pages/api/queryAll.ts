@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { initializeFabric } from "../../../lib/fabricClient";
+// import { initializeFabric } from "../../../lib/fabricClient";
+import { initializeFabric } from "../../lib/fabricClient";
 import { TextDecoder } from "util";
 import { verifyAuth } from '../../lib/auth';
 
