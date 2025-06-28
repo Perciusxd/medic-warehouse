@@ -19,11 +19,13 @@ export default async function handler(
             sharingId,
             returnTerm,
             acceptOffer,
+            status,
         } = req.body;
         const acceptOfferAsset = {
             sharingId: sharingId,
             returnTerm: returnTerm,
             acceptOffer: acceptOffer,
+            status: status,
             updatedAt: updatedAt,
         }
         console.log('acceptOfferAsset', acceptOfferAsset)

@@ -161,7 +161,8 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                 responseAmount: data.responseAmount,
                 expectedReturnDate: data.expectedReturnDate,
             },
-            returnTerm: data.returnTerm
+            returnTerm: data.returnTerm,
+            status: 'offered'
         }
         console.log('sharing accept responseBody', responseBody)
         try {

@@ -24,10 +24,10 @@ import CreateResponseDialog from "@/components/dialogs/create-response-dialog"
 import StatusIndicator from "@/components/ui/status-indicator"
 
 export const columns = (
-    
     handleApproveClick: (med: any) => void,
     handleDeliveryClick: (med: any) => void,
     handleReturnClick: (med: any) => void,
+    handleReConfirmClick: (med: any) => void,
     ticketType: string,
 ): ColumnDef<any>[] => [
     {
@@ -417,12 +417,12 @@ export const columns = (
                                             <Button 
                                                 variant={"link"} 
                                                 className="flex gap-x-2" 
-                                            onClick={() => handleApproveClick({
+                                            onClick={() => handleReConfirmClick({
                                                 ...med,
                                                 responseId: detail.id,
                                                 offeredMedicine: detail.acceptedOffer,
                                                 sharingDetails: med.sharingMedicine,
-                                            })}>ได้รับการยอมรับ ({detail.acceptedOffer?.responseAmount || '-'})<StatusIndicator status={detail.status} />
+                                            })}>รอการยืนยันให้ยืม ({detail.acceptedOffer?.responseAmount || '-'})<StatusIndicator status={detail.status} />
                                             </Button>
                                     )
                                         : detail.status === 'pending'

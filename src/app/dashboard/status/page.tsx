@@ -40,6 +40,12 @@ export default function StatusDashboard() {
         setConfirmDialogOpen(true);
     }
 
+    const handleReConfirmClick = (med :any) => {
+        console.log('handleReConfirmClick', med);
+        setSelectedMed(med);
+        setConfirmDialogOpen(true);
+    }
+
     const handleDeliveryClick = async (med :any) => {
         setSelectedMed(med);
         setDeliveryDialogOpen(true);
@@ -101,7 +107,7 @@ export default function StatusDashboard() {
                     </div>
                 ) : (
                     <DataTable
-                        columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, "request")}
+                        columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, handleReConfirmClick, "request")}
                         data={medicineRequests.filter((med: any) => med.ticketType === "request")}
                         globalFilter={globalFilter}
                         setGlobalFilter={setGlobalFilter} />
@@ -118,7 +124,7 @@ export default function StatusDashboard() {
                     </div>
                 ) : (
                     <DataTable
-                        columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, "sharing")}
+                        columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, handleReConfirmClick, "sharing")}
                         data={medicineSharing}
                         globalFilter={globalFilter}
                         setGlobalFilter={setGlobalFilter} />
