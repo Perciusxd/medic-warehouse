@@ -49,7 +49,7 @@ export function Sidebar() {
   const {  user, logout, loading } = useAuth();
 
   const handleLogout = async () => {
-    await logout()
+    await logout();
   };
 
   return (

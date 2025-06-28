@@ -66,21 +66,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' }).then((res) => {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).then((res) => {
         console.log('Logout response:', res);
         if (res.ok) {
           setUser(null);
-          // router.push('/login'); // Redirect to home after logout
+          router.replace('/login'); // Redirect to home after logout
         }
-      }).finally(() => {
-        console.log('Logout finally block');
-        // setLoading(false);
       });
     } catch (error) {
       setError('Failed to logout');
     } finally {
       setLoading(false);
-      router.push('/login'); // Redirect to home after logout
     }
   };
   return (

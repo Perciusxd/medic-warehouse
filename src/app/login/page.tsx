@@ -25,11 +25,9 @@ export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-    if (user && !loading) {
-        router.push('/');
-    } else if (!user) {
-        setIsLoading(false);
-    }
+        if (!loading && user) {
+        router.replace("/dashboard"); // ⬅️ ใช้ replace ป้องกัน history loop
+        }
     }, [user, loading, router]);
 
     // useEffect(() => {
@@ -56,24 +54,25 @@ export default function LoginPage() {
         const data = await res.json();
 
         if (res.ok) {
-        setIsLoading(true);
-        await checkAuth(); // Refresh auth state
+            await checkAuth(); // Refresh auth state
         // router.push('/');
         } else {
-        setError(data.message || "Login failed");
+            setError(data.message || "Login failed");
+            setIsLoading(false);
         }
     } catch (e) {
         // console.error("Login error:", e);
         setError("An error occurred during login");
+        setIsLoading(false);
     } finally {
-        router.push('/');
+        router.push('/dashboard');
         setTimeout(() => {
             setIsLoading(false);
         }, 1000);
     }
     };
 
-    if (loading) {
+    if (loading || isLoading) {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-900 via-gray-900 to-blue-900 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
