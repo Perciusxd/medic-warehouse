@@ -26,38 +26,39 @@ import RequestDetails from "./request-details"
 import dynamic from 'next/dynamic';
 const PdfPreview = dynamic(() => import('@/components/ui/preview_pdf'), { ssr: false });
 
-function RequestDetailPanel({ data }: any) {
-    const { updatedAt, postingHospitalNameTH, name, requestDetails, requestTerm } = data;
-    const { requestAmount, quantity, pricePerUnit } = requestDetails || {};
-    const totalPrice = requestAmount * pricePerUnit;
+function SharingDetailPanel({ data }: any) {
+    const { createdAt, postingHospitalNameTH, sharingMedicine, sharingReturnTerm } = data;
+    const { name, sharingAmount, quantity, pricePerUnit } = sharingMedicine || {};
+    const totalPrice = sharingAmount * pricePerUnit;
 
     return (
         <div className="flex flex-col gap-2">
-            <h2 className="text-lg font-semibold">รายละเอียดการขอยืม</h2>
+            <h2 className="text-lg font-semibold">รายละเอียดการแบ่งปัน</h2>
             <div className="grid grid-rows-2 gap-1 font-light">
-                <div>วันที่ {formatDate(updatedAt)}</div>
+                <div>วันที่ {formatDate(createdAt)}</div>
                 <div>{postingHospitalNameTH}</div>
-                <div>ขอยืมยา {name}</div>
-                <div>จำนวน {requestAmount} {quantity} เป็นเงิน {totalPrice} บาท</div>
-                <div>คาดว่าจะส่งคืนวันที่ {formatDate(requestTerm?.expectedReturnDate)}</div>
+                <div>แบ่งปันยา {name}</div>
+                <div>จำนวน {sharingAmount} {quantity} เป็นเงิน {totalPrice} บาท</div>
+                <div>คาดว่าจะได้รับคืนวันที่ {formatDate(sharingReturnTerm?.expectedReturnDate)}</div>
             </div>
         </div>
     );
 }
 
 
-function ResponseDetailPanel({ responseData }: any) {
+function AcceptanceDetailPanel({ responseData }: any) {
     const {
-        offeredMedicine,
         responseDetails,
         responseId,
-        updatedAt
+        sharingMedicine
     } = responseData;
-
-    const totalPrice = offeredMedicine.pricePerUnit * offeredMedicine.offerAmount;
 
     const responseDetail = responseDetails.find((item:any) => item.id === responseId);
     const respondingHospitalNameTH = responseDetail?.respondingHospitalNameTH || "-";
+    const acceptedOffer = responseDetail?.acceptedOffer || {};
+    const returnTerm = responseDetail?.returnTerm || {};
+    
+    const totalPrice = sharingMedicine.pricePerUnit * acceptedOffer.responseAmount;
 
     const returnTermLabels: any = {
         exactType: "ส่งคืนตามประเภท",
@@ -66,20 +67,25 @@ function ResponseDetailPanel({ responseData }: any) {
         subType: "คืนรายการทดแทน"
     };
 
+    const getReturnTermText = (returnTerm: any) => {
+        const activeTerms = Object.keys(returnTerm).filter(key => returnTerm[key] === true);
+        return activeTerms.map(term => returnTermLabels[term] || term).join(", ") || "ไม่ระบุ";
+    };
+
     return (
         <div className="flex flex-col gap-2">
-            <h2 className="text-lg font-semibold">รายละเอียดการตอบรับ</h2>
+            <h2 className="text-lg font-semibold">รายละเอียดการยอมรับ</h2>
             <div className="grid grid-rows-2 gap-1 font-light">
-                <div>วันที่ {formatDate(updatedAt)}</div>
+                <div>วันที่ {formatDate(responseDetail?.createdAt)}</div>
                 <div>{respondingHospitalNameTH}</div>
                 <div>
-                    ให้ยืมยา {offeredMedicine.name} ({offeredMedicine.manufacturer})
-                    จำนวน {offeredMedicine.offerAmount}/{offeredMedicine.unit}
+                    ขอรับยา {sharingMedicine.name} ({sharingMedicine.manufacturer})
+                    จำนวน {acceptedOffer.responseAmount}/{sharingMedicine.unit}
                     เป็นเงิน {totalPrice}
                 </div>
                 <div className="flex flex-row gap-2">
                     <div>โดยเงื่อนไขการส่งคืน:</div>
-                    <div>{returnTermLabels[offeredMedicine.returnTerm] || "ไม่ระบุ"}</div>
+                    <div>{getReturnTermText(returnTerm)}</div>
                 </div>
             </div>
         </div>
@@ -87,38 +93,36 @@ function ResponseDetailPanel({ responseData }: any) {
 }
 
 
-function getConfirmationSchema(requestData: any) {
+function getConfirmationSchema(sharingData: any) {
     return z.object({
         responseId: z.string(),
-        offeredMedicine: z.object({
-            name: z.string(),
-            unit: z.string(),
-            // quantity: z.string(),
-            offerAmount: z.number()
+        acceptedOffer: z.object({
+            responseAmount: z.number()
                 .min(1, "กรุณากรอกมากว่า 0")
-                .max(requestData.requestAmount, `กรุณากรอกน้อยกว่า ${requestData.requestAmount}`),
-            trademark: z.string(),
-            pricePerUnit: z.number()
-                .min(1, "Price per unit must be greater than 0")
-                .max(100000, "Price per unit must be less than 100000"),
-            manufacturer: z.string(),
-            returnTerm: z.enum(["exactType", "subType"]),
-            returnConditions: z.object({
-                exactType: z.boolean(),
-                subType: z.boolean(),
-                otherType: z.boolean(),
-                supportType: z.boolean(),
-            }),
+                .max(sharingData.sharingAmount, `กรุณากรอกน้อยกว่า ${sharingData.sharingAmount}`),
+            expectedReturnDate: z.string(),
+        }),
+        returnTerm: z.object({
+            exactType: z.boolean(),
+            subType: z.boolean(),
+            otherType: z.boolean(),
+            supportType: z.boolean(),
+            noReturn: z.boolean(),
         }),
     });
 }
 
-export default function ConfirmResponseDialog({ data, dialogTitle, status, openDialog, onOpenChange }: any) {
+export default function ConfirmSharingDialog({ data, dialogTitle, status, openDialog, onOpenChange }: any) {
     const pdfRef = useRef<{ savePdf?: () => void }>(null);
     const [loading, setLoading] = useState(false);
 
-    const requestData = data.requestDetails;
-    const ConfirmSchema = getConfirmationSchema(requestData);
+    const sharingData = data.sharingMedicine;
+    const ConfirmSchema = getConfirmationSchema(sharingData);
+
+    // Get the response detail for this specific response
+    const responseDetail = data.responseDetails.find((item: any) => item.id === data.responseId);
+    const acceptedOffer = responseDetail?.acceptedOffer || {};
+    const returnTerm = responseDetail?.returnTerm || {};
 
     const {
         register,
@@ -129,15 +133,16 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
         resolver: zodResolver(ConfirmSchema),
         defaultValues: {
             responseId: data.responseId,
-            offeredMedicine: {
-                name: data.offeredMedicine.name,
-                unit: data.offeredMedicine.unit,
-                offerAmount: data.offeredMedicine.offerAmount,
-                trademark: data.offeredMedicine.trademark,
-                pricePerUnit: data.offeredMedicine.pricePerUnit,
-                manufacturer: data.offeredMedicine.manufacturer,
-                returnTerm: data.offeredMedicine.returnTerm,
-                returnConditions: { ...data.offeredMedicine.returnConditions },
+            acceptedOffer: {
+                responseAmount: acceptedOffer.responseAmount || 0,
+                expectedReturnDate: acceptedOffer.expectedReturnDate || "",
+            },
+            returnTerm: {
+                exactType: returnTerm.exactType || false,
+                subType: returnTerm.subType || false,
+                otherType: returnTerm.otherType || false,
+                supportType: returnTerm.supportType || false,
+                noReturn: returnTerm.noReturn || false,
             },
         }
     });
@@ -150,11 +155,15 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
         setLoading(true);
 
         try {
-            const response = await fetch("/api/updateRequest", {
+            const status = 're-confirm';
+            console.log(data)
+            const sharingId = data.responseId; // Get the sharing ID from the data
+            const response = await fetch("/api/updateSharingStatus", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...formData, status }),
+                body: JSON.stringify({ sharingId, status }),
             });
+            console.log('formData', JSON.stringify({ sharingId, status }))
 
             if (!response.ok) throw new Error("Failed to submit");
 
@@ -174,9 +183,9 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="flex gap-10">
                         <div className="">
-                            <RequestDetailPanel data={data} />
+                            <SharingDetailPanel data={data} />
                             <Separator className="my-4" />
-                            <ResponseDetailPanel responseData={data} />
+                            <AcceptanceDetailPanel responseData={data} />
                         </div>
 
                         <div className=" overflow-auto border rounded-md shadow-sm max-w-fit">
@@ -188,10 +197,10 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
                         <Button type="submit">
                             {loading ? (
                                 <span className="flex items-center gap-2 text-muted-foreground">
-                                    <LoadingSpinner /> ยืนยันการให้ยืม
+                                    <LoadingSpinner /> ยืนยันการแบ่งปัน
                                 </span>
                             ) : (
-                                "ยืนยันการให้ยืม"
+                                "ยืนยันการแบ่งปัน"
                             )}
                         </Button>
                         <Button variant="outline" onClick={handleSavePdf}>Save PDF</Button>
@@ -200,4 +209,4 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
             </DialogContent>
         </Dialog>
     );
-}
+} 

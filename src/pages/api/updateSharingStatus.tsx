@@ -17,21 +17,20 @@ export default async function handler(
         const updatedAt = Date.now().toString();
         const {
             sharingId,
-            returnTerm,
-            acceptOffer,
+            status
         } = req.body;
         const acceptOfferAsset = {
             sharingId: sharingId,
-            returnTerm: returnTerm,
-            acceptOffer: acceptOffer,
+            status: status,
             updatedAt: updatedAt,
         }
-        console.log('acceptOfferAsset', acceptOfferAsset)
         const contract = await initializeFabric();
         try {
             await contract.submitTransaction(
-                "AcceptSharing",
-                JSON.stringify(acceptOfferAsset)
+                "UpdateSharingStatus",
+                sharingId,
+                status,
+                updatedAt
             );
             console.log("*** Transaction committed successfully");
             res.status(200).json({

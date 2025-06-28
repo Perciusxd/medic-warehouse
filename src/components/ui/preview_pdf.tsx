@@ -62,12 +62,27 @@ function MyDocument({ pdfData }: any) {
 
     if (!selectedResponseDetail) return null;
 
-    const requestedMedicineName = pdfData.requestDetails.name;
-    const requestedQuantity = pdfData.requestDetails.requestAmount;
+    // Handle both request and sharing data structures
+    const isRequestType = pdfData.ticketType === "request";
+    
+    const requestedMedicineName = isRequestType 
+        ? pdfData.requestDetails?.name || pdfData.requestMedicine?.name
+        : pdfData.sharingDetails?.name || pdfData.sharingMedicine?.name;
+        
+    const requestedQuantity = isRequestType 
+        ? pdfData.requestDetails?.requestAmount || pdfData.requestMedicine?.requestAmount
+        : pdfData.sharingDetails?.sharingAmount || pdfData.sharingMedicine?.sharingAmount;
+    
     const lendingHospitalNameTH = pdfData.postingHospitalNameTH;
     const lendingHospitalAddress = "15 ถนนกาญจนวณิชย์ ตำบลหาดใหญ่ อำเภอหาดใหญ่ จังหวัดสงขลา 90110  "
     const borrowingHospitalNameTH = selectedResponseDetail.respondingHospitalNameTH;
-    const expectedReturnDate = formatDate(pdfData.requestTerm.expectedReturnDate);
+    
+    const expectedReturnDate = isRequestType 
+        ? formatDate(pdfData.requestTerm?.expectedReturnDate)
+        : formatDate(selectedResponseDetail.acceptedOffer?.expectedReturnDate || pdfData.sharingReturnTerm?.expectedReturnDate);
+    
+    const documentType = isRequestType ? "ขอยืมเวชภัณฑ์ยา" : "ขอรับแบ่งปันเวชภัณฑ์ยา";
+    const actionText = isRequestType ? "ขอยืมยา" : "ขอรับแบ่งปันยา";
     const mockNote = "รอการส่งมอบจากตัวแทนจำหน่าย  "
 
     const todayFormat = new Date();
@@ -96,10 +111,10 @@ function MyDocument({ pdfData }: any) {
                 </View>
 
                 <Text style={{ textAlign: 'center' }} >{today}</Text>
-                <Text style={styles.text}>เรื่อง    ขอยืมเวชภัณฑ์ยา</Text>
+                <Text style={styles.text}>เรื่อง    {documentType}</Text>
                 <Text style={styles.text}>เรียน    ผู้อำนวยการ {borrowingHospitalNameTH}</Text>
                 <Text style={{ marginTop: 6, textIndent: 80 }}>
-                    ตามที่โรงพยาบาล {borrowingHospitalNameTH} มีความประสงค์ที่จะขอยืมยา ดังรายการต่อไปนี้
+                    ตามที่โรงพยาบาล {borrowingHospitalNameTH} มีความประสงค์ที่จะ{actionText} ดังรายการต่อไปนี้
                 </Text>
 
                 <View style={[styles.table, { marginTop: 14 }]}>
