@@ -65,14 +65,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).then((res) => {
-        console.log('Logout response:', res);
-        if (res.ok) {
-          setUser(null);
-          router.replace('/login'); // Redirect to home after logout
-        }
+      try {
+      const res = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
       });
+
+      if (res.ok) {
+        setUser(null);
+        router.replace('/login'); // ✅ ชัวร์ว่าทำหลัง token ถูกลบ
+      } else {
+        setError('Logout failed');
+      }
     } catch (error) {
       setError('Failed to logout');
     } finally {
