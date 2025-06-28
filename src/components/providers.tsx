@@ -70,13 +70,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('Logout response:', res);
         if (res.ok) {
           setUser(null);
-          router.push('/api'); // Redirect to home after logout
+          // router.push('/login'); // Redirect to home after logout
         }
+      }).finally(() => {
+        console.log('Logout finally block');
+        // setLoading(false);
       });
     } catch (error) {
       setError('Failed to logout');
     } finally {
       setLoading(false);
+      router.push('/login'); // Redirect to home after logout
     }
   };
   return (

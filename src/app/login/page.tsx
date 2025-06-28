@@ -26,7 +26,7 @@ export default function LoginPage() {
 
     useEffect(() => {
     if (user && !loading) {
-        router.push('/dashboard');
+        router.push('/');
     } else if (!user) {
         setIsLoading(false);
     }
@@ -56,8 +56,9 @@ export default function LoginPage() {
         const data = await res.json();
 
         if (res.ok) {
+        setIsLoading(true);
         await checkAuth(); // Refresh auth state
-        router.push('/');
+        // router.push('/');
         } else {
         setError(data.message || "Login failed");
         }
@@ -65,7 +66,10 @@ export default function LoginPage() {
         // console.error("Login error:", e);
         setError("An error occurred during login");
     } finally {
-        setIsLoading(false);
+        router.push('/');
+        setTimeout(() => {
+            setIsLoading(false);
+        }, 1000);
     }
     };
 
