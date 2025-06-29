@@ -162,7 +162,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[1200px]">
                 <DialogHeader>
-                    <DialogTitle>สร้างการแชร์ยา</DialogTitle>
+                    <DialogTitle>แบ่งปันยา</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -225,7 +225,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                             </div>
                             <div className="col-span-2 flex flex-col gap-2">
                                 <Label className="font-bold">หมายเลขล็อต</Label>
-                                <Input type="text" {...register("sharingMedicine.batchNumber")} placeholder="รอการส่งมอบจากตัวแทนจำหน่าย" />
+                                <Input type="text" {...register("sharingMedicine.batchNumber")} placeholder="LOT-135270" />
                             </div>
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">ราคาต่อหน่วย</Label>
