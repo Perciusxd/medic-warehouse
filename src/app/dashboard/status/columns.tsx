@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge"
 import ConfirmResponseDialog from "@/components/dialogs/confirm-response-dialog"
 import ConfirmSharingDialog from "@/components/dialogs/confirm-sharing-dialog"
 
-import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2Icon, LoaderIcon, ShieldAlertIcon, Truck, Clock, TicketCheck,BookDown ,BookUp, SquareX ,SquareCheck} from "lucide-react"
+import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2Icon, LoaderIcon, ShieldAlertIcon, Truck, Clock, TicketCheck,BookDown ,BookUp, SquareX ,SquareCheck, History} from "lucide-react"
 import CreateResponseDialog from "@/components/dialogs/create-response-dialog"
 import StatusIndicator from "@/components/ui/status-indicator"
 
@@ -365,9 +365,9 @@ export const columns = (
                                             </Button>
                                     )
                                         : detail.status === 'pending'
-                                            ? (<Button variant={'link'} disabled className="flex gap-x-2">รอการตอบกลับ (-)<StatusIndicator status={detail.status} /></Button>)
+                                            ? (<Button variant={'link'} disabled className="flex gap-x-2">รอการยืนยันให้ยืม (-)<StatusIndicator status={detail.status} /></Button>)
                                             : detail.status === 'to-transfer'
-                                                ? (<Button variant={'link'} className="flex gap-x-2">รอการจัดส่ง<StatusIndicator status={detail.status} /></Button>)
+                                                ? (<Button variant={'link'} className="flex gap-x-2">รอส่งมอบ<StatusIndicator status={detail.status} /></Button>)
                                                 : detail.status === 'to-return'
                                                     ? (<Button variant={'link'} className="flex gap-x-2" onClick={() => handleDeliveryClick({
                                                         ...med,
@@ -383,16 +383,17 @@ export const columns = (
                                                                 offeredMedicine: detail.offeredMedicine,
                                                                 requestDetails: med.requestMedicine,
                                                             })
-                                                        }>ต้องส่งคืน<StatusIndicator status={detail.status} /></Button>)
+                                                        }>ได้รับยาที่ยืม(ต้องส่งคืน)<StatusIndicator status={detail.status} /></Button>)
                                                         : detail.status === "confirm-return"
-                                                            ? (<span className = "flex gap-x-2">รอยืนยันการคืน< StatusIndicator status={detail.status} /></span>)
+                                                            ? (<span className="flex gap-x-2">รอยืนยันการได้รับคืน< StatusIndicator status={detail.status} /></span>)
                                                             : detail.status === 'returned'
-                                                                ? (<span className="flex gap-x-2">เสร็จสิ้น<StatusIndicator status={detail.status} /></span>)
+                                                                ? (<span className="flex gap-x-2">ได้คืนยาแล้ว<StatusIndicator status={detail.status} /></span>)
                                                                 : detail.status === 'cancelled'
                                                                     ? (<span className="flex gap-x-2">ยกเลิก<StatusIndicator status={detail.status} /></span>)
                                                                     : null
                                     }
                                 </div>
+                                <History className="w-4 h-4" />
                             </div>
                         ))}
                         {hasMore && <Button variant={'link'} className="">เพิ่มเติม...</Button>}
@@ -422,13 +423,13 @@ export const columns = (
                                                 responseId: detail.id,
                                                 offeredMedicine: detail.acceptedOffer,
                                                 sharingDetails: med.sharingMedicine,
-                                            })}>รอการยืนยันให้ยืม ({detail.acceptedOffer?.responseAmount || '-'})<StatusIndicator status={detail.status} />
+                                            })}>รอยืนยันให้ยืม ({detail.acceptedOffer?.responseAmount || '-'})<StatusIndicator status={detail.status} />
                                             </Button>
                                     )
                                         : detail.status === 'pending'
                                             ? (<Button variant={'link'} disabled className="flex gap-x-2">รอการตอบกลับ (-)<StatusIndicator status={detail.status} /></Button>)
                                             : detail.status === 'to-transfer'
-                                                ? (<Button variant={'link'} className="flex gap-x-2">รอการจัดส่ง<StatusIndicator status={detail.status} /></Button>)
+                                                ? (<Button variant={'link'} className="flex gap-x-2">รอส่งมอบ<StatusIndicator status={detail.status} /></Button>)
                                                 : detail.status === 'to-return'
                                                     ? (<Button variant={'link'} className="flex gap-x-2" onClick={() => handleDeliveryClick({
                                                         ...med,
@@ -454,6 +455,7 @@ export const columns = (
                                                                     : null
                                     }
                                 </div>
+                                <History className="w-4 h-4" />
                             </div>
                         ))}
                         {hasMore && <Button variant={'link'} className="">เพิ่มเติม...</Button>}

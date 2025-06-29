@@ -396,7 +396,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                         <Button type="submit" className="">
                             {loading
                                 ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500">สร้าง</span></div>
-                                : "สร้าง"}
+                                : "ส่งคำขอ"}
                         </Button>
                     </DialogFooter>
                 </form>
