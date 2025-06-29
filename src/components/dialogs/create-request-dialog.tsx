@@ -180,7 +180,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[1200px]">
-                <DialogTitle>Create request</DialogTitle>
+                <DialogTitle>แจ้งขอยืม</DialogTitle>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid grid-cols-2 gap-4">

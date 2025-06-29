@@ -178,6 +178,7 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
             returnTerm: data.returnTerm,
             status: newStatus
         }
+        console.log('accept offer responseBody', responseBody)
         
         try {
             setLoading(true);
