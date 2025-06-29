@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner"
 
-import { DataTable } from "../borrow/data-table";
+import { DataTable } from "../request/data-table";
 import { columns } from "./columns";
 import { columnsConfirmReturn } from "./columns_confirm_return";
 

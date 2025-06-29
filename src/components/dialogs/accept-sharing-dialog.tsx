@@ -25,11 +25,13 @@ function RequestDetails({ sharingMed }: any) {
     const date = new Date(Number(createdAt)); // convert string to number, then to Date
     const formattedDate = format(date, 'dd/MM/yyyy');
     const sharingDetails = sharingMed.sharingDetails
-    const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber ,sharingAmount } = sharingDetails.sharingMedicine
-    const sharingReturnTerm = sharingDetails.sharingReturnTerm.receiveConditions
+    const sharingMedicine = sharingMed.offeredMedicine ? sharingMed.sharingMedicine : sharingDetails.sharingMedicine
+    const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber ,sharingAmount } = sharingMedicine
+    const sharingReturnTerm = sharingMed.offeredMedicine ? sharingMed.sharingReturnTerm.receiveConditions : sharingMed.sharingDetails.sharingReturnTerm.receiveConditions
     //console.log('sharingReturnTermsชชชชชชชชชชชชชชชชชชช', sharingDetails.sharingMedicine)
     /* const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy'); */
-    const formattedExpiryDate = format(sharingDetails.sharingMedicine.expiryDate, 'dd/MM/yyyy'); //ดึงมาก่อนนะอิงจากที่มี ดึงไว้ใน columns.tsx
+    // const formattedExpiryDate = format(sharingDetails.sharingMedicine.expiryDate, 'dd/MM/yyyy'); //ดึงมาก่อนนะอิงจากที่มี ดึงไว้ใน columns.tsx
+    const formattedExpiryDate = format(expiryDate, 'dd/MM/yyyy');
     return (
         <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-2">

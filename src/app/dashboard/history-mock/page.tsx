@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { DataTable } from "../borrow/data-table";
+import { DataTable } from "../request/data-table";
 import { columns } from "./columns";
 import DoughnutChart from "./DoughnutChart";
 import PDFPreviewButton from "./historyPDF";

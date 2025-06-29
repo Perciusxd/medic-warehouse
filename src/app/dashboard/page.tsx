@@ -9,10 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import NotificationNumber from "@/components/ui/notification-number";
 import { useRouter } from "next/navigation";
 import { useHospital } from "@/context/HospitalContext";
-import BorrowDashboard from "./borrow/page";
+import BorrowDashboard from "./request/page";
 import SharingDashboard from "./sharing/page";
-import StatusDashboard from "./status/page";
-import TransferDashboard from "./transfer/page";
+import StatusDashboard from "./transaction-request/page";
+import TransferDashboard from "./transaction-sharing/page";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/providers";
 

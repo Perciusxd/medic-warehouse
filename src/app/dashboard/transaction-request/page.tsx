@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { DataTable } from "../borrow/data-table";
+import { DataTable } from "../request/data-table";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import {
     AlertDialog,

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState, useMemo } from "react";
 
-import { DataTable } from "../borrow/data-table"
+import { DataTable } from "../request/data-table"
 import { columns } from "./columns"
 
 import { useHospital } from "@/context/HospitalContext"
