@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Home, LayoutDashboard, Info, Menu, ChevronLeft, ChevronRight } from "lucide-react"
+import { Home, LayoutDashboard, Info, Menu, ChevronLeft, ChevronRight ,FileClock } from "lucide-react"
 import {
   Sheet,
   SheetContent,
@@ -34,11 +34,11 @@ const mainNavItems = [
     href: "/dashboard",
     icon: LayoutDashboard,
   },
-  // {
-  //   title: "About",
-  //   href: "/about",
-  //   icon: Info,
-  // },
+  {
+    title: "Transaction History",
+    href: "/dashboard/history-mock",
+    icon: FileClock,
+  },
 ]
 
 export function Sidebar() {
