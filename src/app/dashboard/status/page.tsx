@@ -22,6 +22,7 @@ import { useHospital } from "@/context/HospitalContext";
 import { columns } from "./columns";
 import ConfirmResponseDialog from "@/components/dialogs/confirm-response-dialog";
 import ConfirmSharingDialog from "@/components/dialogs/confirm-sharing-dialog";
+import AcceptSharingDialog from "@/components/dialogs/accept-sharing-dialog";
 import ReturnDialog from "@/components/dialogs/return-dialog";
 
 export default function StatusDashboard() {
@@ -31,6 +32,7 @@ export default function StatusDashboard() {
     const [loading, setLoading] = useState(false);
     const [selectedMed, setSelectedMed] = useState<any | null>(null);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [acceptSharingDialogOpen, setAcceptSharingDialogOpen] = useState(false);
     const [deliveryDialogOpen, setDeliveryDialogOpen] = useState(false);
     const [returnDialogOpen, setReturnDialogOpen] = useState(false);
     const [globalFilter, setGlobalFilter] = useState("");
@@ -43,7 +45,7 @@ export default function StatusDashboard() {
     const handleReConfirmClick = (med :any) => {
         console.log('handleReConfirmClick', med);
         setSelectedMed(med);
-        setConfirmDialogOpen(true);
+        setAcceptSharingDialogOpen(true);
     }
 
     const handleDeliveryClick = async (med :any) => {
@@ -162,6 +164,19 @@ export default function StatusDashboard() {
                         }
                     }}
                 />
+            )}
+
+            {selectedMed && selectedMed.ticketType === "sharing" && (
+                <AcceptSharingDialog 
+                    sharingMed={selectedMed}
+                    openDialog={acceptSharingDialogOpen} 
+                    onOpenChange={(open: boolean) => {
+                        setAcceptSharingDialogOpen(open);
+                        if (!open) {
+                            fetchMedicineSharing();
+                            setSelectedMed(null);
+                        }
+                    }}  />
             )}
 
             <ReturnDialog 
