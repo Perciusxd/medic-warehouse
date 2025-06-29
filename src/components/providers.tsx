@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from 'next/navigation';
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface User {
@@ -34,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   // Define checkAuth outside useEffect so it can be passed to context
   const checkAuth = async () => {
@@ -63,9 +65,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      setUser(null);
+      try {
+      const res = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (res.ok) {
+        setUser(null);
+        router.replace('/login'); // ✅ ชัวร์ว่าทำหลัง token ถูกลบ
+      } else {
+        setError('Logout failed');
+      }
     } catch (error) {
       setError('Failed to logout');
     } finally {

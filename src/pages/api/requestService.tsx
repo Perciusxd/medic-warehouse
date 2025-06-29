@@ -4,7 +4,7 @@ import { ResponseAsset } from "@/types/responseMed";
  * @param {string} loggedInHospital - The hospital name to filter by
  * @returns {Promise<Array>} - Filtered medicine requests
  */
-export const fetchAllMedicineRequests = async (loggedInHospital: string, status: string) => {
+export const fetchAllMedicineRequests = async (loggedInHospital: string, status?: string) => {
     try {
         const body = {
             loggedInHospital: loggedInHospital,
