@@ -273,7 +273,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" className="justify-start text-left font-normal">
                                             {expectedReturnDate
-                                                ? format(new Date(Number(expectedReturnDate)), 'yyyy-MM-dd')
+                                                ? format(new Date(Number(expectedReturnDate)), 'dd-MM-yyyy')
                                                 : "เลือกวันที่"}
                                             <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                         </Button>

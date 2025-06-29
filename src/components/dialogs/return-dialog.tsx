@@ -129,7 +129,7 @@ const ReturnFormSchema = z.object({
     }),
 })
 
-function ReturnDetails({ selectedMed }: any) {
+function ReturnDetails({ selectedMed ,onOpenChange }: any) {
     console.log('selectedMed', selectedMed)
     const { loggedInHospital } = useHospital();
     const { requestId, responseId, postingHospitalNameEN } = selectedMed;
@@ -218,6 +218,7 @@ function ReturnDetails({ selectedMed }: any) {
             const result = await response.json()
             console.log("Success:", result)
             setLoading(false);
+            onOpenChange?.(false);
         } catch (error) {
             console.log("Error submitting form:", error)
             setLoading(false);
@@ -353,6 +354,18 @@ function ReturnDetails({ selectedMed }: any) {
 }
 
 export default function ReturnDialog({ open, onOpenChange, selectedMed }: ReturnDialogProps) {
+    if (!selectedMed) {
+        return (
+            <Dialog open={open} onOpenChange={onOpenChange}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>กำลังโหลดข้อมูลยา...</DialogTitle>
+                    </DialogHeader>
+                    <p>โปรดรอสักครู่</p>
+                </DialogContent>
+            </Dialog>
+        );
+    }
     console.log('selectedMed', selectedMed)
     const handleClose = () => {
         onOpenChange(false);
@@ -369,7 +382,7 @@ export default function ReturnDialog({ open, onOpenChange, selectedMed }: Return
                     {/* Offer Details */}
                     <OfferDetails selectedMed={selectedMed} />
                     {/* Request Details */}
-                    <ReturnDetails selectedMed={selectedMed} />
+                    <ReturnDetails selectedMed={selectedMed} onOpenChange={onOpenChange} />
                 </div>
             </DialogContent>
         </Dialog>

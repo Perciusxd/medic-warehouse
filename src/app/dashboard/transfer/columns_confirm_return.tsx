@@ -26,6 +26,31 @@ export const columnsConfirmReturn = (
     loading: boolean = false,
     loadingRowId: string | null = null
 ): ColumnDef<any>[] => [
+     {
+        accessorKey: "ticketType",
+        size:100,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ประเภทคำขอ</div>,
+        cell: ({ row }) => {
+            const ticketType = row.original.ticketType
+            let Type ;
+            switch(ticketType){
+                case "request":
+                    Type = "รายการจากคำขอยืมยา";
+
+                case  "sharing" :
+                    Type = "รายการจากคำขอแบ่งปันยา";
+
+                
+            }
+            return (
+            <div>
+                <div className="text-sm font-medium text-gray-600 ">{Type}</div>
+                
+            </div>
+            )
+        },
+        enableGlobalFilter: false
+    },
     {
         accessorKey: "updatedAt",
         size:100,
@@ -70,6 +95,7 @@ export const columnsConfirmReturn = (
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">รายละเอียดยาที่ส่งคืน</div>,
         cell: ({ row }) => {
             const status = row.getValue("status")
+            console.log("row ===== row ", row.original)
             const offeredMedicineName = row.original.offeredMedicine?.name
             const offeredMedicineTrademark = row.original.offeredMedicine?.trademark
             const offeredAmount = row.original.offeredMedicine?.offerAmount

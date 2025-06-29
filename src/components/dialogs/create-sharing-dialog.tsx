@@ -23,7 +23,7 @@ import RequestDetails from "./request-details"
 import { Calendar1 } from "lucide-react"
 import { HospitalList } from "@/context/HospitalList"
 import { useAuth } from "../providers"
-
+import { format } from "date-fns"
 const allHospitalList = HospitalList
 
 const SharingFormSchema = z.object({
@@ -255,11 +255,12 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                 <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" className="justify-start text-left font-normal">
-                                            {expiryDate
-                                                ? expiryDate.toLocaleDateString()
-                                                : "เลือกวันที่"}
-                                            <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
-                                        </Button>
+                                                    {expiryDate
+                                                        ? format(new Date(Number(expiryDate)), 'dd-MM-yyyy')
+                                                        : "เลือกวันที่"
+                                                    }
+                                                <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
+                                          </Button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-auto p-0">
                                         <Calendar
