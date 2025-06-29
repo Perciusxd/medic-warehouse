@@ -44,7 +44,7 @@ const mainNavItems = [
 export function Sidebar() {
   const router = useRouter();
   const pathname = usePathname()
-  const [isCollapsed, setIsCollapsed] = React.useState(false)
+  const [isCollapsed, setIsCollapsed] = React.useState(true)
   const { loggedInHospital } = useHospital()
   const {  user, logout, loading } = useAuth();
 
