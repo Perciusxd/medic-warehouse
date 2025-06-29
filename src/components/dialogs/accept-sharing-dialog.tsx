@@ -125,6 +125,13 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [dateError, setDateError] = useState(""); // for error message
     const [loading, setLoading] = useState(false);
+    
+    // Check if there's existing acceptedOffer data to pre-populate the form
+    const existingOffer = sharingMed.offeredMedicine || sharingMed.status === 're-confirm';
+    console.log("existingOffer", existingOffer)
+    const existingReturnTerm = sharingMed.returnTerm;
+    const isReconfirm = !!existingOffer;
+    
     const {
         register,
         watch,
@@ -136,14 +143,14 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
     } = useForm<z.infer<typeof ResponseFormSchema>>({
         resolver: zodResolver(ResponseFormSchema),
         defaultValues: {
-            responseAmount: 0,
-            expectedReturnDate: undefined,
+            responseAmount: existingOffer?.responseAmount || 0,
+            expectedReturnDate: existingOffer?.expectedReturnDate ? new Date(existingOffer.expectedReturnDate) : undefined,
             returnTerm: {
-                exactType: false,
-                otherType: false,
-                subType: false,
-                supportType: false,
-                noReturn: false,
+                exactType: existingReturnTerm?.exactType || false,
+                otherType: existingReturnTerm?.otherType || false,
+                subType: existingReturnTerm?.subType || false,
+                supportType: existingReturnTerm?.supportType || false,
+                noReturn: existingReturnTerm?.noReturn || false,
             }
         }
     })
@@ -155,15 +162,21 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
 
 
     const onSubmit = async (data: z.infer<typeof ResponseFormSchema>) => {
+        const isResponse = sharingMed.id.startsWith('RESP');
+        const updateId = isResponse ? sharingMed.id : sharingMed.responseId;
+        const newStatus = existingOffer ? sharingMed.status === 're-confirm' ? 'to-transfer' : 're-confirm' : 'offered';
+        
         const responseBody = {
-            sharingId: sharingMed.id,
+            sharingId: updateId,
             acceptOffer: {
                 responseAmount: data.responseAmount,
                 expectedReturnDate: data.expectedReturnDate,
             },
-            returnTerm: data.returnTerm
+            returnTerm: data.returnTerm,
+            status: newStatus
         }
-        console.log('sharing accept responseBody', responseBody)
+        console.log('accept offer responseBody', responseBody)
+        
         try {
             setLoading(true);
             const response = await fetch("/api/updateSharing", {
@@ -174,6 +187,7 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                 body: JSON.stringify(responseBody),
             })
             const result = await response.json();
+            console.log('accpet offer result', result)
             setLoading(false);
             onOpenChange(false);
         } catch (error) {
@@ -280,8 +294,8 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
             <div className="flex justify-end mt-4">
                 <Button className="pd-20px " type="submit" disabled={loading}>
                     {loading
-                        ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500 ">ยืนยัน</span></div>
-                        : "ยืนยัน"}
+                        ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500 ">{isReconfirm ? "บันทึก" : "ยืนยัน"}</span></div>
+                        : (isReconfirm ? "บันทึกการแก้ไข" : "ยืนยัน")}
                 </Button>
             </div>
         </form>
@@ -289,11 +303,15 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
 }
 
 export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChange }: any) {
+    // Check if this is a re-confirm scenario
+    const isReconfirm = !!sharingMed?.acceptedOffer;
+    const dialogTitle = isReconfirm ? "แก้ไขการยอมรับแบ่งปัน" : "เวชภัณฑ์ยาที่ต้องการแบ่งปัน";
+    
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[700px]">
                 <DialogHeader>
-                    <DialogTitle>เวชภัณฑ์ยาที่ต้องการแบ่งปัน</DialogTitle>
+                    <DialogTitle>{dialogTitle}</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col mt-2 gap-4">
                     <RequestDetails sharingMed={sharingMed} />

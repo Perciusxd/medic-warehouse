@@ -40,7 +40,7 @@ export default function Dashboard() {
      // redirect ถ้าไม่ login
     useEffect(() => {
         if (!loading && !user) {
-            router.push('/');
+            // router.replace('/login');
         }
     }, [user, loading, router]);
     
@@ -52,6 +52,10 @@ export default function Dashboard() {
     
     // fetch medicines
     useEffect(() => {
+        console.log('Quert??');
+        if (loading) return;
+        if (!user) return;
+        
         const fetchMedicines = async () => {
             try {
                 setIsLoading(true);
@@ -84,7 +88,7 @@ export default function Dashboard() {
             setIsLoading(true);
         }
         fetchMedicines();
-    }, [setLoggedInHospital, user?.hospitalName]);
+    }, [setLoggedInHospital, user?.hospitalName, loading, user]);
 
     // useEffect(() => {
     //     console.log("Logged in hospital:", loggedInHospital);

@@ -13,6 +13,7 @@ const STATUS_COLORS: any = {
     'in-return': 'bg-cyan-500',
     'rejected': 'bg-red-500',
     'return-overdue': 'bg-orange-600',
+    'returned': 'bg-green-500',
 };
 
 export default function StatusIndicator({ status }: any) {

@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { initializeFabric } from "../../../lib/fabricClient";
+// import { initializeFabric } from "../../../lib/fabricClient";
+import { initializeFabric } from "../../lib/fabricClient";
 import { TextDecoder } from "util";
 
 const utf8Decoder = new TextDecoder();
@@ -14,16 +15,18 @@ export default async function handler(
         return;
     }
     try {
-        const updatedAt = new Date().toString();
+        const updatedAt = Date.now().toString();
         const {
             sharingId,
             returnTerm,
             acceptOffer,
+            status,
         } = req.body;
         const acceptOfferAsset = {
             sharingId: sharingId,
             returnTerm: returnTerm,
             acceptOffer: acceptOffer,
+            status: status,
             updatedAt: updatedAt,
         }
         console.log('acceptOfferAsset', acceptOfferAsset)

@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-// import { initializeFabric } from "../../../lib/fabricClient";
-import { initializeFabric } from "../../lib/fabricClient";
+import { initializeFabric } from "../../../lib/fabricClient";
 import { TextDecoder } from "util";
+
 const utf8Decoder = new TextDecoder();
 
 export default async function handler(
@@ -14,22 +14,28 @@ export default async function handler(
         return;
     }
     try {
+        const updatedAt = Date.now().toString();
         const {
-            responseId,
-            returnData,
-            selectedHospital
+            sharingId,
+            status
         } = req.body;
+        const acceptOfferAsset = {
+            sharingId: sharingId,
+            status: status,
+            updatedAt: updatedAt,
+        }
         const contract = await initializeFabric();
         try {
             await contract.submitTransaction(
-                "CreateMedicineReturn",
-                responseId,
-                JSON.stringify(returnData),
+                "UpdateSharingStatus",
+                sharingId,
+                status,
+                updatedAt
             );
             console.log("*** Transaction committed successfully");
             res.status(200).json({
                 message: "Transaction committed successfully",
-                returnId: returnData.id,
+                assetId: sharingId,
             });
         } catch (error) {
             console.error("Error in transaction:", error);

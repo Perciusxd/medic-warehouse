@@ -21,6 +21,8 @@ import { useHospital } from "@/context/HospitalContext";
 
 import { columns } from "./columns";
 import ConfirmResponseDialog from "@/components/dialogs/confirm-response-dialog";
+import ConfirmSharingDialog from "@/components/dialogs/confirm-sharing-dialog";
+import AcceptSharingDialog from "@/components/dialogs/accept-sharing-dialog";
 import ReturnDialog from "@/components/dialogs/return-dialog";
 
 export default function StatusDashboard() {
@@ -30,6 +32,7 @@ export default function StatusDashboard() {
     const [loading, setLoading] = useState(false);
     const [selectedMed, setSelectedMed] = useState<any | null>(null);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [acceptSharingDialogOpen, setAcceptSharingDialogOpen] = useState(false);
     const [deliveryDialogOpen, setDeliveryDialogOpen] = useState(false);
     const [returnDialogOpen, setReturnDialogOpen] = useState(false);
     const [globalFilter, setGlobalFilter] = useState("");
@@ -37,6 +40,12 @@ export default function StatusDashboard() {
     const handleApproveClick = (med :any) => {
         setSelectedMed(med);
         setConfirmDialogOpen(true);
+    }
+
+    const handleReConfirmClick = (med :any) => {
+        console.log('handleReConfirmClick', med);
+        setSelectedMed(med);
+        setAcceptSharingDialogOpen(true);
     }
 
     const handleDeliveryClick = async (med :any) => {
@@ -85,6 +94,8 @@ export default function StatusDashboard() {
         fetchMedicineRequests();
         fetchMedicineSharing();
     }, [fetchMedicineRequests, fetchMedicineSharing]);
+
+    console.log('medicineSharing', medicineSharing)
     
     return (
         <>
@@ -98,7 +109,7 @@ export default function StatusDashboard() {
                     </div>
                 ) : (
                     <DataTable
-                        columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, "request")}
+                        columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, handleReConfirmClick, "request")}
                         data={medicineRequests.filter((med: any) => med.ticketType === "request")}
                         globalFilter={globalFilter}
                         setGlobalFilter={setGlobalFilter} />
@@ -115,7 +126,7 @@ export default function StatusDashboard() {
                     </div>
                 ) : (
                     <DataTable
-                        columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, "sharing")}
+                        columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, handleReConfirmClick, "sharing")}
                         data={medicineSharing}
                         globalFilter={globalFilter}
                         setGlobalFilter={setGlobalFilter} />
@@ -123,7 +134,7 @@ export default function StatusDashboard() {
             }
 
             {/* Dialogs */}
-            {selectedMed && (
+            {selectedMed && selectedMed.ticketType === "request" && (
                 <ConfirmResponseDialog
                     data={selectedMed}
                     dialogTitle={"ยืนยันการตอบรับคำขอ"}
@@ -137,6 +148,35 @@ export default function StatusDashboard() {
                         }
                     }}
                 />
+            )}
+
+            {selectedMed && selectedMed.ticketType === "sharing" && (
+                <ConfirmSharingDialog
+                    data={selectedMed}
+                    dialogTitle={"ยืนยันการยอมรับแบ่งปัน"}
+                    status={"to-transfer"}
+                    openDialog={confirmDialogOpen}
+                    onOpenChange={(open: boolean) => {
+                        setConfirmDialogOpen(open);
+                        if (!open) {
+                            fetchMedicineSharing();
+                            setSelectedMed(null);
+                        }
+                    }}
+                />
+            )}
+
+            {selectedMed && selectedMed.ticketType === "sharing" && (
+                <AcceptSharingDialog 
+                    sharingMed={selectedMed}
+                    openDialog={acceptSharingDialogOpen} 
+                    onOpenChange={(open: boolean) => {
+                        setAcceptSharingDialogOpen(open);
+                        if (!open) {
+                            fetchMedicineSharing();
+                            setSelectedMed(null);
+                        }
+                    }}  />
             )}
 
             <ReturnDialog 

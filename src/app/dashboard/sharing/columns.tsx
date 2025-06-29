@@ -66,11 +66,22 @@ export const columns = (
             },
             enableGlobalFilter: true
         },
-        // {
-        //     accessorKey: "status",
-        //     header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Status</div>,
-        //     enableGlobalFilter: false
-        // },
+        {
+            accessorKey: "status",
+            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Status (Debug)</div>,
+            size: 120,
+            cell: ({ row }) => {
+                const med = row.original
+                const status = med.status
+                return (
+                    <div className="flex flex-col">
+                        <StatusIndicator status={status} />
+                        <div className="text-xs text-gray-600 mt-1">{status}</div>
+                    </div>
+                )
+            },
+            enableGlobalFilter: false
+        },
         {
             accessorKey: "sharingDetails.postingHospitalNameTH",
             size: 180,

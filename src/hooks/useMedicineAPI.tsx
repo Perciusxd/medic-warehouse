@@ -43,7 +43,7 @@ export function useMedicineRequests(loggedInHospital: string, status: string) {
     };
 }
 
-export function useMedicineSharing(loggedInHospital: string, status: string) {
+export function useMedicineSharing(loggedInHospital: string, status: string[]) {
     const [medicineSharing, setMedicineSharing] = useState([]);
     const [loading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -53,8 +53,9 @@ export function useMedicineSharing(loggedInHospital: string, status: string) {
         setIsLoading(true);
         setError(null);
         try {
-            // Error
+            // Fixed: Pass the array directly, not the joined string
             const data = await fetchAllMedicineSharing(loggedInHospital, status);
+            console.log("status", status)
             setMedicineSharing(data);
             return data;
         } catch (error: any) {
@@ -131,15 +132,8 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
         
         try {
             const response = await fetchAllStatusByTicketType(loggedInHospital, "pending", "request");
-            let filterRes;
-    
-            if (filterRes) {
-                setMedicineRequests(filterRes);
-                return filterRes;
-            } else {
-                setMedicineRequests(response)
-                return response;
-            }
+            setMedicineRequests(response);
+            return response;
         } catch (error: any) {
             setError(error.message || "Failed to fetch medicine requests");
         } finally {

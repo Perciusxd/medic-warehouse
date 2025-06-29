@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 import { DataTable } from "../borrow/data-table"
 import { columns } from "./columns"
@@ -19,7 +19,11 @@ import { formatDistanceToNow } from "date-fns";
 
 export default function SharingContent() {
     const { loggedInHospital } = useHospital()
-    const { medicineSharing, loading, error, fetchMedicineSharing } = useMedicineSharing(loggedInHospital, 'pending'); // <--- !change status here to more dynamic, e.g., listen from selected tag (From table)
+    
+    // Stabilize the status array reference to prevent infinite re-fetching
+    const statusFilter = useMemo(() => ['pending', 're-confirm'], []);
+    
+    const { medicineSharing, loading, error, fetchMedicineSharing } = useMedicineSharing(loggedInHospital, statusFilter);
     console.log("medicineSharing", medicineSharing)
     const [updatedLast, setUpdatedLast] = useState<Date | null>(null);
     const [createSharingDialogOpen, setCreateSharingDialogOpen] = useState(false);

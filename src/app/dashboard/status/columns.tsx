@@ -17,16 +17,17 @@ import {
 import CreateResponse from "@/components/dialogs/create-response-dialog"
 import { Badge } from "@/components/ui/badge"
 import ConfirmResponseDialog from "@/components/dialogs/confirm-response-dialog"
+import ConfirmSharingDialog from "@/components/dialogs/confirm-sharing-dialog"
 
 import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2Icon, LoaderIcon, ShieldAlertIcon, Truck, Clock, TicketCheck,BookDown ,BookUp, SquareX ,SquareCheck} from "lucide-react"
 import CreateResponseDialog from "@/components/dialogs/create-response-dialog"
 import StatusIndicator from "@/components/ui/status-indicator"
 
 export const columns = (
-    
     handleApproveClick: (med: any) => void,
     handleDeliveryClick: (med: any) => void,
     handleReturnClick: (med: any) => void,
+    handleReConfirmClick: (med: any) => void,
     ticketType: string,
 ): ColumnDef<any>[] => [
     {
@@ -385,7 +386,7 @@ export const columns = (
                                                         }>ต้องส่งคืน<StatusIndicator status={detail.status} /></Button>)
                                                         : detail.status === "confirm-return"
                                                             ? (<span className = "flex gap-x-2">รอยืนยันการคืน< StatusIndicator status={detail.status} /></span>)
-                                                            : detail.status === 'completed'
+                                                            : detail.status === 'returned'
                                                                 ? (<span className="flex gap-x-2">เสร็จสิ้น<StatusIndicator status={detail.status} /></span>)
                                                                 : detail.status === 'cancelled'
                                                                     ? (<span className="flex gap-x-2">ยกเลิก<StatusIndicator status={detail.status} /></span>)
@@ -398,7 +399,66 @@ export const columns = (
                     </div>
                 );
             }else{
-                
+                const med = row.original;
+                const maxDisplay = 3;
+                const details = med.responseDetails.slice(0, maxDisplay);
+                const hasMore = med.responseDetails.length > maxDisplay;
+                console.log("detail", med.responseDetails)
+
+                return (
+                    <div className="flex flex-col gap-y-1 text-gray-600" >
+                        {med.responseDetails.map((detail: any, index: any) => (
+                            <div key={index} className="flex items-center gap-x-2 h-4">
+                                <div className="basis-1/2">
+                                    <span>{detail.respondingHospitalNameTH}:</span>
+                                </div>
+                                <div className="basis-1/2">
+                                    {detail.status === 'offered' ? (
+                                            <Button 
+                                                variant={"link"} 
+                                                className="flex gap-x-2" 
+                                            onClick={() => handleReConfirmClick({
+                                                ...med,
+                                                responseId: detail.id,
+                                                offeredMedicine: detail.acceptedOffer,
+                                                sharingDetails: med.sharingMedicine,
+                                            })}>รอการยืนยันให้ยืม ({detail.acceptedOffer?.responseAmount || '-'})<StatusIndicator status={detail.status} />
+                                            </Button>
+                                    )
+                                        : detail.status === 'pending'
+                                            ? (<Button variant={'link'} disabled className="flex gap-x-2">รอการตอบกลับ (-)<StatusIndicator status={detail.status} /></Button>)
+                                            : detail.status === 'to-transfer'
+                                                ? (<Button variant={'link'} className="flex gap-x-2">รอการจัดส่ง<StatusIndicator status={detail.status} /></Button>)
+                                                : detail.status === 'to-return'
+                                                    ? (<Button variant={'link'} className="flex gap-x-2" onClick={() => handleDeliveryClick({
+                                                        ...med,
+                                                        responseId: detail.id,
+                                                        acceptedMedicine: detail.acceptedMedicine,
+                                                        sharingDetails: med.sharingMedicine,
+                                                    })}>อยู่ระหว่างการจัดส่ง (เช็คสถานะ)<StatusIndicator status={detail.status} /></Button>)
+                                                    : detail.status === 'in-return'
+                                                        ? (<Button variant={'link'} className="flex gap-x-2" onClick={() => handleReturnClick(
+                                                            {
+                                                                ...med,
+                                                                responseId: detail.id,
+                                                                acceptedMedicine: detail.acceptedMedicine,
+                                                                sharingDetails: med.sharingMedicine,
+                                                            })
+                                                        }>รอการคืน<StatusIndicator status={detail.status} /></Button>)
+                                                        : detail.status === "confirm-return"
+                                                            ? (<span className = "flex gap-x-2">รอยืนยันการคืน< StatusIndicator status={detail.status} /></span>)
+                                                            : detail.status === 'completed'
+                                                                ? (<span className="flex gap-x-2">เสร็จสิ้น<StatusIndicator status={detail.status} /></span>)
+                                                                : detail.status === 'cancelled'
+                                                                    ? (<span className="flex gap-x-2">ยกเลิก<StatusIndicator status={detail.status} /></span>)
+                                                                    : null
+                                    }
+                                </div>
+                            </div>
+                        ))}
+                        {hasMore && <Button variant={'link'} className="">เพิ่มเติม...</Button>}
+                    </div>
+                );
             }
         },
     },
