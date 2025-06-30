@@ -1,15 +1,15 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner"
 
 import { DataTable } from "../request/data-table";
-import { columns } from "./columns";
-import { columnsConfirmReturn } from "./columns_confirm_return";
+import { columns as columnsRequestToHospital } from "./columns_request_to_hospital";
+import { columns as columnSharing } from "./columns_sharing_to_hospital";
 
-import { useMedicineRequests, useMedicineResponsesInTransfer, useMedicineRequestsInConfirm } from "@/hooks/useMedicineAPI";
+import { useMedicineRequests, useMedicineResponsesInTransfer, useMedicineRequestsInConfirm, useMedicineSharingStatus, useMedicineRequestsStatus } from "@/hooks/useMedicineAPI";
 import { useHospital } from "@/context/HospitalContext";
 
 import {
@@ -23,20 +23,21 @@ import { ResponseAsset } from "@/types/responseMed";
 
 export default function TransferDashboard() {
     const { loggedInHospital } = useHospital();
-    const { medicineResponses, loading: loadingResponse, error: errorResponse, fetchMedicineResponses } = useMedicineResponsesInTransfer(loggedInHospital);
-    const { medicineRequestsInConfirm, loading: loadingInConfirm, error: errorInConfirm, fetchMedicineRequestsInConfirm } = useMedicineRequestsInConfirm(loggedInHospital, "confirm-return");
+    const statusFilter = useMemo(() => ["offered", "to-transfer", "to-return", "returned"], []);
+    const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequests(loggedInHospital, statusFilter);
+    const { medicineSharing, loading: loadingShare, error: errorShare, fetchMedicineSharing } = useMedicineSharingStatus(loggedInHospital);
     const [selectedMed, setSelectedMed] = useState<any>(null);
     const [loadingRowId, setLoadingRowId] = useState<any | null>(null);
     const [globalFilter, setGlobalFilter] = useState("");
     const [loading, setLoading] = useState(false);
-    console.log("medicineResponses", medicineResponses)
-    const handleApproveClick = async (med: ResponseAsset) => {
+    
+    const handleStatusClick = async (med: ResponseAsset, status: string) => {
         setLoadingRowId(med.id);
         setSelectedMed(med);
         const responseBody = {
             responseId: med.id,
             offeredMedicine: med.offeredMedicine,
-            status: "to-return",
+            status: status,
         }
         setLoading(true)
         try {
@@ -53,61 +54,75 @@ export default function TransferDashboard() {
             }
 
             const result = await response.json()
-            fetchMedicineResponses();
+            console.log(result)
+            toast.success(status === "to-transfer" ? "ยืนยันการส่งมอบเรียบร้อยแล้ว" : "ยืนยันการรับคืนเรียบร้อยแล้ว", {
+                description: result.message,
+            })
+            fetchMedicineRequests();
             setLoading(false)
         } catch (error) {
             console.error("Error submitting form:", error)
-            setLoading(false)
-        }
-    }
-
-    const handleConfirmReturn = async (med: ResponseAsset) => {
-        setLoadingRowId(med.id);
-        setSelectedMed(med);
-        const responseBody = {
-            responseId: med.id,
-            offeredMedicine: med.offeredMedicine,
-            status: "returned",
-        }
-        setLoading(true)
-        try {
-            const response = await fetch("/api/updateRequest", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(responseBody),
+            toast.error("เกิดข้อผิดพลาดในการยืนยัน", {
+                description: error.message || "เกิดข้อผิดพลาดในการยืนยัน",
             })
-
-            if (!response.ok) {
-                throw new Error("Failed to confirm return")
-            }
-
-            const result = await response.json()
-            fetchMedicineRequestsInConfirm();
             setLoading(false)
-            toast.success("ยืนยันการรับคืนเรียบร้อยแล้ว")
-        } catch (error) {
-            console.error("Error confirming return:", error)
-            setLoading(false)
-            toast.error("เกิดข้อผิดพลาดในการยืนยันการรับคืน")
         }
     }
+
+    // const handleConfirmReturn = async (med: ResponseAsset) => {
+    //     setLoadingRowId(med.id);
+    //     setSelectedMed(med);
+    //     const responseBody = {
+    //         responseId: med.id,
+    //         offeredMedicine: med.offeredMedicine,
+    //         status: "returned",
+    //     }
+    //     setLoading(true)
+    //     try {
+    //         const response = await fetch("/api/updateRequest", {
+    //             method: "POST",
+    //             headers: {
+    //                 "Content-Type": "application/json",
+    //             },
+    //             body: JSON.stringify(responseBody),
+    //         })
+
+    //         if (!response.ok) {
+    //             throw new Error("Failed to confirm return")
+    //         }
+
+    //         const result = await response.json()
+    //         fetchMedicineRequestsInConfirm();
+    //         setLoading(false)
+    //         toast.success("ยืนยันการรับคืนเรียบร้อยแล้ว")
+    //     } catch (error) {
+    //         console.error("Error confirming return:", error)
+    //         setLoading(false)
+    //         toast.error("เกิดข้อผิดพลาดในการยืนยันการรับคืน")
+    //     }
+    // }
 
     useEffect(() => {
-        fetchMedicineResponses();
-        fetchMedicineRequestsInConfirm();
-    }, [fetchMedicineResponses, fetchMedicineRequestsInConfirm]);
-    console.log("medicineRequestsInConfirm", medicineRequestsInConfirm)
+        fetchMedicineRequests();
+        fetchMedicineSharing();
+    }, [fetchMedicineRequests, fetchMedicineSharing]);
+    console.log("medicineRequests", medicineRequests)
+    console.log("medicineSharing", medicineSharing)
+
     return (
         <div>
-            <div>
-                <h1>Transfer</h1>
-                <DataTable columns={columns(handleApproveClick, loading, loadingRowId)} data={medicineResponses} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+            <div >
+                <h1>ให้ยืมยา (ขาดแคลน)</h1>
+                <div className="bg-white shadow rounded">
+                    <DataTable columns={columnsRequestToHospital(handleStatusClick)} data={medicineRequests} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+                </div>
+                {/* <DataTable columns={columns(handleApproveClick, loading, loadingRowId)} data={medicineResponses} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} /> */}
             </div>
-            <div>
-                <h1>Confirm Return</h1>
-                <DataTable columns={columnsConfirmReturn(handleConfirmReturn, loading, loadingRowId)} data={medicineRequestsInConfirm} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+            <div className="mt-12">
+                <h1>ให้ยืม (แบ่งปัน)</h1>
+                <div className="bg-white shadow rounded">
+                    <DataTable columns={columnSharing(handleStatusClick)} data={medicineSharing} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+                </div>
             </div>
         </div>
     )

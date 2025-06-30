@@ -8,7 +8,7 @@ import { fetchAllMedicineSharing } from "@/pages/api/sharingService";
  * @param {string} loggedInHospital - The currently logged in hospital
  * @returns {Object} Medicine data and operations
  */
-export function useMedicineRequests(loggedInHospital: string, status: string) {
+export function useMedicineRequests(loggedInHospital: string, status: string[]) {
     const [medicineRequests, setMedicineRequests] = useState([]);
     const [loading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
