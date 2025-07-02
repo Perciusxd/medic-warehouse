@@ -24,11 +24,11 @@ import { useAuth } from "./providers"
 import { useRouter } from "next/navigation"
 
 const mainNavItems = [
-  {
-    title: "Home",
-    href: "/",
-    icon: Home,
-  },
+  // {
+  //   title: "Home",
+  //   href: "/",
+  //   icon: Home,
+  // },
   {
     title: "Dashboard",
     href: "/dashboard",
