@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { RefreshCcwIcon } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner"
@@ -12,14 +14,8 @@ import { columns as columnSharing } from "./columns_sharing_to_hospital";
 import { useMedicineRequests, useMedicineResponsesInTransfer, useMedicineRequestsInConfirm, useMedicineSharingStatus, useMedicineRequestsStatus } from "@/hooks/useMedicineAPI";
 import { useHospital } from "@/context/HospitalContext";
 
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { ResponseAsset } from "@/types/responseMed";
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 export default function TransferDashboard() {
     const { loggedInHospital } = useHospital();
@@ -30,6 +26,7 @@ export default function TransferDashboard() {
     const [loadingRowId, setLoadingRowId] = useState<any | null>(null);
     const [globalFilter, setGlobalFilter] = useState("");
     const [loading, setLoading] = useState(false);
+    const [updatedLast, setUpdatedLast] = useState<Date | null>(null);
     
     const handleStatusClick = async (med: ResponseAsset, status: string) => {
         setLoadingRowId(med.id);
@@ -111,6 +108,19 @@ export default function TransferDashboard() {
 
     return (
         <div>
+            <div className="flex items-center justify-between mb-4">
+                <div /> {/* Placeholder for alignment, can add search if needed */}
+                <div className="flex items-center space-x-2">
+                    <Button variant={"outline"} onClick={() => {
+                        fetchMedicineRequests();
+                        fetchMedicineSharing();
+                        setUpdatedLast(new Date());
+                    }}>
+                        <RefreshCcwIcon />
+                        {updatedLast ? `Updated ${formatDistanceToNow(updatedLast, { addSuffix: true })}` : ""}
+                    </Button>
+                </div>
+            </div>
             <div >
                 <h1>ให้ยืมยา (ขาดแคลน)</h1>
                 <div className="bg-white shadow rounded">
@@ -120,9 +130,18 @@ export default function TransferDashboard() {
             </div>
             <div className="mt-12">
                 <h1>ให้ยืม (แบ่งปัน)</h1>
-                <div className="bg-white shadow rounded">
-                    <DataTable columns={columnSharing(handleStatusClick)} data={medicineSharing} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
-                </div>
+                {
+                    loadingShare ? (
+                        <div className="p-8 flex flex-col items-center justify-center">
+                            <LoadingSpinner width="48" height="48" />
+                            <p className="mt-4 text-gray-500">Loading medicines...</p>
+                        </div>
+                    ) : (
+                        <div className="bg-white shadow rounded">
+                            <DataTable columns={columnSharing()} data={medicineSharing} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+                        </div>
+                    )
+                }
             </div>
         </div>
     )
