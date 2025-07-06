@@ -26,7 +26,7 @@ function RequestDetails({ sharingMed }: any) {
     const formattedDate = format(date, 'dd/MM/yyyy');
     const sharingDetails = sharingMed.sharingDetails
     const sharingMedicine = sharingMed.offeredMedicine ? sharingMed.sharingMedicine : sharingDetails.sharingMedicine
-    const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber ,sharingAmount } = sharingMedicine
+    const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber, sharingAmount } = sharingMedicine
     const sharingReturnTerm = sharingMed.offeredMedicine ? sharingMed.sharingReturnTerm.receiveConditions : sharingMed.sharingDetails.sharingReturnTerm.receiveConditions
     //console.log('sharingReturnTermsชชชชชชชชชชชชชชชชชชช', sharingDetails.sharingMedicine)
     /* const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy'); */
@@ -98,42 +98,48 @@ function RequestDetails({ sharingMed }: any) {
                         <Label>ไม่รับคืน</Label>
                     </div>
                 </div>
-                
+
             </div>
         </div>
     )
 }
 
-const ResponseFormSchema = z.object({
-    responseAmount: z.number().min(1, { message: "จำนวนที่ยืมต้องมีค่ามากกว่า 0" }),
-    expectedReturnDate: z.coerce.date().min(new Date(), { message: "วันที่ยืมต้องเป็นวันที่ในอนาคต" }),
-    returnTerm: z.object({
-        exactType: z.boolean(),
-        otherType: z.boolean(),
-        subType: z.boolean(),
-        supportType: z.boolean(),
-        noReturn: z.boolean(),
-    }).refine((data) => 
+function ResponseFormSchema(sharingMedicine: any) {
+    const maxAmount = sharingMedicine?.sharingAmount ?? Infinity;
+    return z.object({
+        responseAmount: z.number().min(1, { message: "จำนวนที่ยืมต้องมีค่ามากกว่า 0" }).max(maxAmount, { message: `จำนวนที่ยืมต้องไม่เกิน ${maxAmount}` }),
+        expectedReturnDate: z.coerce.date().min(new Date(), { message: "วันที่ยืมต้องเป็นวันที่ในอนาคต" }),
+        returnTerm: z.object({
+            exactType: z.boolean(),
+            otherType: z.boolean(),
+            subType: z.boolean(),
+            supportType: z.boolean(),
+            noReturn: z.boolean(),
+        }).refine((data) =>
             Object.values(data).some(value => value === true),
             {
-                message: "กรุณาเลือกอย่างน้อย 1 เงื่อนไข" ,
+                message: "กรุณาเลือกอย่างน้อย 1 เงื่อนไข",
                 path: []
             }
 
         )
-})
+    })
+}
 
 function ResponseDetails({ sharingMed, onOpenChange }: any) {
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [dateError, setDateError] = useState(""); // for error message
     const [loading, setLoading] = useState(false);
-    
+
     // Check if there's existing acceptedOffer data to pre-populate the form
     const existingOffer = sharingMed.offeredMedicine || sharingMed.status === 're-confirm';
-    console.log("existingOffer", existingOffer)
     const existingReturnTerm = sharingMed.returnTerm;
     const isReconfirm = !!existingOffer;
-    
+
+    const ResponseShema = ResponseFormSchema(sharingMed.sharingDetails.sharingMedicine)
+    console.log('sharingMed', sharingMed)
+    console.log('sharingMed.sharingMedicine', sharingMed.sharingDetails.sharingMedicine)
+
     const {
         register,
         watch,
@@ -141,9 +147,9 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
         setValue,
         getValues,
         resetField,
-        formState: { errors ,isSubmitted},
-    } = useForm<z.infer<typeof ResponseFormSchema>>({
-        resolver: zodResolver(ResponseFormSchema),
+        formState: { errors, isSubmitted },
+    } = useForm<z.infer<typeof ResponseShema>>({
+        resolver: zodResolver(ResponseShema),
         defaultValues: {
             responseAmount: existingOffer?.responseAmount || 0,
             expectedReturnDate: existingOffer?.expectedReturnDate ? new Date(existingOffer.expectedReturnDate) : undefined,
@@ -159,15 +165,15 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
     const expectedReturn = watch("expectedReturnDate");
     const returnTerm = watch("returnTerm"); // Get the current values of receiveConditions
     const isAnyChecked = Object.values(returnTerm || {}).some(Boolean);// Check if any checkbox is checked
-    
 
 
 
-    const onSubmit = async (data: z.infer<typeof ResponseFormSchema>) => {
+
+    const onSubmit = async (data: z.infer<typeof ResponseShema>) => {
         const isResponse = sharingMed.id.startsWith('RESP');
         const updateId = isResponse ? sharingMed.id : sharingMed.responseId;
         const newStatus = existingOffer ? sharingMed.status === 're-confirm' ? 'to-transfer' : 're-confirm' : 'offered';
-        
+
         const responseBody = {
             sharingId: updateId,
             acceptOffer: {
@@ -178,7 +184,7 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
             status: newStatus
         }
         console.log('accept offer responseBody', responseBody)
-        
+
         try {
             setLoading(true);
             const response = await fetch("/api/updateSharing", {
@@ -197,8 +203,8 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
             setLoading(false);
         }
     }
-    
-    const onError = (errors: FieldErrors<z.infer<typeof ResponseFormSchema>>) => {
+
+    const onError = (errors: FieldErrors<z.infer<typeof ResponseShema>>) => {
         console.error("❌ Form validation errors:", errors);
     }
 
@@ -209,16 +215,16 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                 <div className="grid grid-cols-2 gap-2">
                     <div className="flex flex-col gap-1">
                         <Label>จำนวนที่ยืม</Label>
-                        <Input 
-                             inputMode="numeric"
-                                    placeholder="10" 
-                                    onKeyDown={(e) => {
-                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
-                                        if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
-                                        e.preventDefault();
-                                        }
-                                    }}
-                        {...register("responseAmount", { valueAsNumber: true })} />
+                        <Input
+                            inputMode="numeric"
+                            placeholder="10"
+                            onKeyDown={(e) => {
+                                const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
+                                if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
+                                    e.preventDefault();
+                                }
+                            }}
+                            {...register("responseAmount", { valueAsNumber: true })} />
                         {errors.responseAmount?.message && <span className="text-red-500 text-sm">{errors.responseAmount.message}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
@@ -289,7 +295,7 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                                     กรุณาเลือกอย่างน้อย 1 เงื่อนไข
                                 </p>
                             )}
-                        </div>                       
+                        </div>
                     </div>
                 </div>
             </div>
@@ -308,7 +314,7 @@ export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChan
     // Check if this is a re-confirm scenario
     const isReconfirm = !!sharingMed?.acceptedOffer;
     const dialogTitle = isReconfirm ? "แก้ไขการยอมรับแบ่งปัน" : "เวชภัณฑ์ยาที่ต้องการแบ่งปัน";
-    
+
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[700px]">
