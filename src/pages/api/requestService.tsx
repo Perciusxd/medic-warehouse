@@ -84,7 +84,7 @@ export const fetchAssetById = async (assetId: string) => {
  */
 export const fetchMedicineRequestsWithAssets = async (loggedInHospital: string) => {
     try {
-        const filteredRequests = await fetchAllMedicineRequests(loggedInHospital, 'pending');
+        const filteredRequests = await fetchAllMedicineRequests(loggedInHospital, ['pending']);
 
         // Fetch assets for each requestId
         const requestsWithAssets = await Promise.all(

@@ -22,6 +22,7 @@ import ConfirmSharingDialog from "@/components/dialogs/confirm-sharing-dialog"
 import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2Icon, LoaderIcon, ShieldAlertIcon, Truck, Clock, TicketCheck,BookDown ,BookUp, SquareX ,SquareCheck, History} from "lucide-react"
 import CreateResponseDialog from "@/components/dialogs/create-response-dialog"
 import StatusIndicator from "@/components/ui/status-indicator"
+import ReturnConditionIndicator from "@/components/ui/return-condition-indicator"
 
 export const columns = (
     handleApproveClick: (med: any) => void,
@@ -252,67 +253,9 @@ export const columns = (
                 const noReturn = receiveConditions.noReturn
               
                 
-                let exactTypeDiv;
-                if (exactType === true) {
-                    exactTypeDiv = <div className="flex text-green-600 items-center"> <SquareCheck/>{exactType}รับคืนเฉพาะรายการนี้</div>;
-                }
-                else if (exactType === false) {
-                    exactTypeDiv = <div className="flex text-red-600 items-center"> <SquareX/>{exactType}รับคืนเฉพาะรายการนี้</div>;
-                }
-
-                let subTypeDiv;
-                 if (subType === true) {
-                    subTypeDiv = <div className="flex text-green-600 items-center"> <SquareCheck/>รับคืนรายการอื่นได้</div>;
-                }
-                else if (subType === false) {
-                    subTypeDiv = <div className="flex text-red-600 items-center"> <SquareX/>รับคืนรายการอื่นได้</div>;
-                }
-
-                let supportTypeDiv;
-                if (supportType === true) {
-                    supportTypeDiv = <div className="flex text-green-600 items-center"> <SquareCheck/>ขอสนับสนุน</div>;
-                }
-                else if (supportType === false) {
-                    supportTypeDiv = <div className="flex text-red-600 items-center"> <SquareX/>ขอสนับสนุน</div>;
-                }
-
-                let otherTypeDiv;
-                if (otherType === true) {
-                    otherTypeDiv = <div className="flex text-green-600 items-center"> <SquareCheck/>รับคืนรายการทดแทน</div>;
-                }
-                else if (otherType === false) {
-                    otherTypeDiv = <div className="flex text-red-600 items-center"> <SquareX/>รับคืนรายการทดแทน</div>;
-                }
-
-                let noReturnDiv;   
-                if (noReturn === true) {
-                    noReturnDiv = <div className="flex text-green-600 items-center"> <SquareCheck/>ไม่ต้องคืน</div>;
-                }
-                else if (noReturn === false) {
-                    noReturnDiv = <div className="flex text-red-600 items-center"> <SquareX/>false</div>;
-                }
-
-                if (noReturn === true) {
-                    return (
-                        <div className="flex flex-row justify-center">
-                        {noReturnDiv}
-                        </div>
-                    )
-                    
-                }else  {
-                    return (
-                    <div className="flex flex-row">
-                        <div className="flex flex-col items-left gap-2 basis-1/2">
-                            <div className="basis-1/2 text-left gap-1">{exactTypeDiv} </div>
-                            <div className="basis-1/2 text-left gap-1">{subTypeDiv}</div>
-                        </div>
-                         <div className="flex flex-col items-left gap-2 basis-1/2">
-                            <div className="basis-1/2 text-left gap-1">{supportTypeDiv}</div>
-                            <div className="basis-1/2 text-left gap-1">{otherTypeDiv}</div>
-                        </div>
-                    </div>
-                    )
-                }
+                return (
+                  <ReturnConditionIndicator status={{ exactType, subType, supportType, otherType, noReturn }} />
+                );
             }
     
             
@@ -404,7 +347,7 @@ export const columns = (
                 const maxDisplay = 3;
                 const details = med.responseDetails.slice(0, maxDisplay);
                 const hasMore = med.responseDetails.length > maxDisplay;
-                console.log("detail", med.responseDetails)
+                console.log("med ----><", med)
 
                 return (
                     <div className="flex flex-col gap-y-1 text-gray-600" >

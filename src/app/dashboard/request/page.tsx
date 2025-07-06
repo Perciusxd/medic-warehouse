@@ -1,6 +1,6 @@
 "use client"
 import * as React from "react"
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { z } from "zod";
 import { formatDistanceToNow } from 'date-fns';
 
@@ -34,7 +34,8 @@ export default function BorrowDashboard() {
     const { user } = useAuth();
     // const { loggedInHospital } = useHospital();
     const loggedInHospital = user?.hospitalName;
-    const { medicineRequests, loading, error, fetchMedicineRequests } = useMedicineRequests(loggedInHospital ?? '', 'pending');
+    const statusFilter = useMemo(() => ['pending'], []);
+    const { medicineRequests, loading, error, fetchMedicineRequests } = useMedicineRequests(loggedInHospital ?? '', statusFilter);
     const [updatedLast, setUpdatedLast] = useState<Date | null>(null);
     const [tick, setTick] = useState(0);
     const [selectedMed, setSelectedMed] = useState<ResponseAsset | null>(null);

@@ -7,6 +7,7 @@ const STATUS_COLORS: any = {
     'normal': 'bg-green-500',
     'pending': 'bg-yellow-400',
     'offered': 'bg-blue-400',
+    're-confirm': 'bg-purple-400',
     'to-transfer': 'bg-indigo-500',
     'in-transfer': 'bg-purple-500',
     'to-return': 'bg-teal-500',
