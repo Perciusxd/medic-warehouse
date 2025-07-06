@@ -173,7 +173,7 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
     const onSubmit = async (data: z.infer<typeof ResponseShema>) => {
         const isResponse = sharingMed.id.startsWith('RESP');
         const updateId = isResponse ? sharingMed.id : sharingMed.responseId;
-        const newStatus = existingOffer ? sharingMed.status === 're-confirm' ? 'to-transfer' : 're-confirm' : 'offered';
+        const newStatus = existingOffer ? 're-confirm' : sharingMed.acceptedOffer ? 'to-transfer' : 'offered';
 
         const responseBody = {
             sharingId: updateId,
