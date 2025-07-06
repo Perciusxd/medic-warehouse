@@ -5,6 +5,7 @@ import StatusIndicator from "@/components/ui/status-indicator";
 
 export const columns = (
     handleReturnClick: (med: any) => void,
+    handleConfirmReceiveDelivery: (med: any) => void,
 ) => [
     {
         accessorKey: "createdAt",
@@ -20,9 +21,20 @@ export const columns = (
             console.log('med', med)
             const status = row.original.status;
             return <div>
-                <StatusIndicator status={status} />
-                <div className="text-sm font-medium text-gray-600">{status}</div>
-                <Button variant={"link"} className="flex gap-x-2" onClick={() => handleReturnClick(med)}>รับคืน<StatusIndicator status={status} /></Button>
+                {
+                    status === 'to-confirm' ? (
+                        <div>
+                            <StatusIndicator status={status} />
+                            <div className="text-sm font-medium text-gray-600">{status}</div>
+                            <Button variant={"link"} className="flex gap-x-2" onClick={() => handleConfirmReceiveDelivery(med)}>รับคืน<StatusIndicator status={status} /></Button>
+                        </div>
+                    ) : status === 'in-return' ? (
+                        <div>
+                            <StatusIndicator status={status} />
+                            <div className="text-sm font-medium text-gray-600">{status}</div>
+                        </div>
+                    ) : null
+                }
             </div>
         }
     },

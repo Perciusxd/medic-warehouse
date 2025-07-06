@@ -31,13 +31,14 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import ReturnDialog from '@/components/dialogs/return-dialog';
+import ConfirmationDialog from '@/components/dialogs/confirmation-dialog';
 
 export default function TransferDashboard() {
     const { loggedInHospital } = useHospital();
     const statusFilter = useMemo(() => ["offered", "to-transfer", "to-return", "returned"], []);
     const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequests(loggedInHospital, statusFilter);
     const { medicineSharing, loading: loadingShare, error: errorShare, fetchMedicineSharing } = useMedicineSharingStatus(loggedInHospital);
-    const { medicineSharingInReturn, loading: loadingReturn, error: errorReturn, fetchMedicineSharingInReturn } = useMedicineSharingInReturn(loggedInHospital, "in-return");
+    const { medicineSharingInReturn, loading: loadingReturn, error: errorReturn, fetchMedicineSharingInReturn } = useMedicineSharingInReturn(loggedInHospital, "to-confirm");
     const [selectedMed, setSelectedMed] = useState<any>(null);
     const [loadingRowId, setLoadingRowId] = useState<any | null>(null);
     const [globalFilter, setGlobalFilter] = useState("");
@@ -48,6 +49,7 @@ export default function TransferDashboard() {
     const [acceptSharingDialogOpen, setAcceptSharingDialogOpen] = useState(false);
     const [deliveryDialogOpen, setDeliveryDialogOpen] = useState(false);
     const [returnDialogOpen, setReturnDialogOpen] = useState(false);
+    const [confirmReceiveDeliveryDialogOpen, setConfirmReceiveDeliveryDialogOpen] = useState(false);
 
     const handleApproveClick = (med: any) => {
         setSelectedMed(med);
@@ -110,13 +112,21 @@ export default function TransferDashboard() {
         }
     }
 
+    const handleConfirmReceiveDelivery = async (med: any) => {
+        console.log('handleConfirmReceiveDelivery', med);
+        setSelectedMed(med);
+        setConfirmReceiveDeliveryDialogOpen(true);
+    }
+
     const confirmDelivery = async (med: any) => {
+        console.log(med)
         const responseBody = {
             sharingId: med.responseId,
             acceptOffer: med.acceptedOffer,
-            status: "in-return",
+            status: "to-confirm",
             returnTerm: med.sharingReturnTerm,
         }
+        console.log('responseBody', responseBody)
         setLoading(true)
         try {
             const response = await fetch("/api/updateSharing", {
@@ -141,6 +151,15 @@ export default function TransferDashboard() {
             setLoading(false)
             return false;
         }
+    }
+
+    const confirmReceiveDelivery = async (med: any) => {
+        const responseBody = {
+            sharingId: med.responseId,
+            acceptOffer: med.acceptedOffer,
+            status: "in-return",
+        }
+        return true;
     }
 
     // const handleConfirmReturn = async (med: ResponseAsset) => {
@@ -224,7 +243,7 @@ export default function TransferDashboard() {
             <div>
                 <h1>รับคืน</h1>
                 <div className="bg-white shadow rounded">
-                    <DataTable columns={columnSharingInReturn(handleReturnClick)} data={medicineSharingInReturn} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+                    <DataTable columns={columnSharingInReturn(handleReturnClick, handleConfirmReceiveDelivery)} data={medicineSharingInReturn} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
                 </div>
             </div>
 

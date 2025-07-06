@@ -141,6 +141,7 @@ export const columns = (
                                         responseId: detail.id,
                                         offeredMedicine: detail.acceptedOffer,
                                         sharingDetails: med.sharingMedicine,
+                                        acceptedOffer: detail.acceptedOffer,
                                     })}>รอส่งมอบ<StatusIndicator status={detail.status} /></Button>
                                 ) : detail.status === 'in-return' ? (
                                     <Button variant={'link'} className="flex gap-x-2">รอรับคืน<StatusIndicator status={detail.status} /></Button> 
