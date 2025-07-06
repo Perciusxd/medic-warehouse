@@ -7,8 +7,9 @@ import { formatDistanceToNow } from "date-fns";
 import { DataTable } from "../request/data-table";
 import { columns as columnsRequestToHospital } from "./columns_request_to_hospital";
 import { columns as columnSharing } from "./columns_sharing_to_hospital";
+import { columns as columnSharingInReturn } from "./column_mock_return";
 
-import { useMedicineRequests, useMedicineResponsesInTransfer, useMedicineRequestsInConfirm, useMedicineSharingStatus, useMedicineRequestsStatus } from "@/hooks/useMedicineAPI";
+import { useMedicineRequests, useMedicineResponsesInTransfer, useMedicineRequestsInConfirm, useMedicineSharingStatus, useMedicineRequestsStatus, useMedicineSharingInReturn } from "@/hooks/useMedicineAPI";
 import { useHospital } from "@/context/HospitalContext";
 
 import { ResponseAsset } from "@/types/responseMed";
@@ -29,12 +30,14 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import ReturnDialog from '@/components/dialogs/return-dialog';
 
 export default function TransferDashboard() {
     const { loggedInHospital } = useHospital();
     const statusFilter = useMemo(() => ["offered", "to-transfer", "to-return", "returned"], []);
     const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequests(loggedInHospital, statusFilter);
     const { medicineSharing, loading: loadingShare, error: errorShare, fetchMedicineSharing } = useMedicineSharingStatus(loggedInHospital);
+    const { medicineSharingInReturn, loading: loadingReturn, error: errorReturn, fetchMedicineSharingInReturn } = useMedicineSharingInReturn(loggedInHospital, "in-return");
     const [selectedMed, setSelectedMed] = useState<any>(null);
     const [loadingRowId, setLoadingRowId] = useState<any | null>(null);
     const [globalFilter, setGlobalFilter] = useState("");
@@ -44,6 +47,7 @@ export default function TransferDashboard() {
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [acceptSharingDialogOpen, setAcceptSharingDialogOpen] = useState(false);
     const [deliveryDialogOpen, setDeliveryDialogOpen] = useState(false);
+    const [returnDialogOpen, setReturnDialogOpen] = useState(false);
 
     const handleApproveClick = (med: any) => {
         setSelectedMed(med);
@@ -60,6 +64,12 @@ export default function TransferDashboard() {
         console.log('handleDeliveryClick', med);
         setSelectedMed(med);
         setDeliveryDialogOpen(true);
+    }
+
+    const handleReturnClick = async (med :any) => {
+        console.log('handleReturnClick', med);
+        setSelectedMed(med);
+        setReturnDialogOpen(true);
     }
 
     const handleStatusClick = async (med: ResponseAsset, status: string) => {
@@ -169,7 +179,9 @@ export default function TransferDashboard() {
     useEffect(() => {
         fetchMedicineRequests();
         fetchMedicineSharing();
-    }, [fetchMedicineRequests, fetchMedicineSharing]);
+        fetchMedicineSharingInReturn();
+    }, [fetchMedicineRequests, fetchMedicineSharing, fetchMedicineSharingInReturn]);
+    console.log("medicineSharingInReturn", medicineSharingInReturn)
 
     return (
         <div>
@@ -203,10 +215,17 @@ export default function TransferDashboard() {
                         </div>
                     ) : (
                         <div className="bg-white shadow rounded">
-                            <DataTable columns={columnSharing(handleApproveClick, handleReConfirmClick, handleDeliveryClick)} data={medicineSharing} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+                            <DataTable columns={columnSharing(handleApproveClick, handleReConfirmClick, handleDeliveryClick, handleReturnClick)} data={medicineSharing} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
                         </div>
                     )
                 }
+            </div>
+
+            <div>
+                <h1>รับคืน</h1>
+                <div className="bg-white shadow rounded">
+                    <DataTable columns={columnSharingInReturn(handleReturnClick)} data={medicineSharingInReturn} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+                </div>
             </div>
 
             {selectedMed && selectedMed.ticketType === "sharing" && (
@@ -290,7 +309,18 @@ export default function TransferDashboard() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-            
+
+            <ReturnDialog
+                selectedMed={selectedMed}
+                open={returnDialogOpen}
+                onOpenChange={(open: boolean) => {
+                    setReturnDialogOpen(open);
+                    if (!open) {
+                        fetchMedicineSharingInReturn();
+                        setSelectedMed(null);
+                    }
+                }}
+            />
         </div>
     )
 }

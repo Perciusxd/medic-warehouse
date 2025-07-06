@@ -128,19 +128,21 @@ function ResponseFormSchema(sharingMedicine: any) {
 }
 
 function ResponseDetails({ sharingMed, onOpenChange }: any) {
+    console.log('sharingMed', sharingMed)
+    console.log('sharingMed.sharingMedicine', sharingMed.sharingDetails.sharingMedicine)
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [dateError, setDateError] = useState(""); // for error message
     const [loading, setLoading] = useState(false);
 
     // Check if there's existing acceptedOffer data to pre-populate the form
-    const existingOffer = sharingMed.offeredMedicine || sharingMed.status === 're-confirm';
+    const existingOffer = sharingMed.offeredMedicine;
     const existingReturnTerm = sharingMed.returnTerm;
     const isReconfirm = !!existingOffer;
     console.log('existingOffer', existingOffer)
+    console.log('existingReturnTerm', existingReturnTerm)
 
     const ResponseShema = ResponseFormSchema(sharingMed.sharingDetails.sharingMedicine)
-    console.log('sharingMed', sharingMed)
-    console.log('sharingMed.sharingMedicine', sharingMed.sharingDetails.sharingMedicine)
+    
 
     const {
         register,
@@ -153,14 +155,14 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
     } = useForm<z.infer<typeof ResponseShema>>({
         resolver: zodResolver(ResponseShema),
         defaultValues: {
-            responseAmount: existingOffer ? sharingMed.acceptedOffer.responseAmount : 0,
-            expectedReturnDate: existingOffer ? new Date(sharingMed.acceptedOffer.expectedReturnDate) : undefined,
+            responseAmount: existingOffer?.responseAmount || sharingMed.acceptedOffer?.responseAmount || 0,
+            expectedReturnDate: existingOffer?.expectedReturnDate ? new Date(existingOffer.expectedReturnDate) : sharingMed.acceptedOffer?.expectedReturnDate ? new Date(sharingMed.acceptedOffer.expectedReturnDate) : undefined,
             returnTerm: {
-                exactType: existingReturnTerm ? existingReturnTerm.exactType : false,
-                otherType: existingReturnTerm ? existingReturnTerm.otherType : false,
-                subType: existingReturnTerm ? existingReturnTerm.subType : false,
-                supportType: existingReturnTerm ? existingReturnTerm.supportType : false,
-                noReturn: existingReturnTerm ? existingReturnTerm.noReturn : false,
+                exactType: existingReturnTerm?.exactType || false,
+                otherType: existingReturnTerm?.otherType || false,
+                subType: existingReturnTerm?.subType || false,
+                supportType: existingReturnTerm?.supportType || false,
+                noReturn: existingReturnTerm?.noReturn || false,
             }
         }
     })
@@ -224,14 +226,15 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                                 }
                             }}
                             {...register("responseAmount", { valueAsNumber: true })}
-                            disabled={existingOffer} />
+                            disabled={sharingMed.status === 're-confirm'}
+                             />
                         {errors.responseAmount?.message && <span className="text-red-500 text-sm">{errors.responseAmount.message}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
                         <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
                         <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                             <PopoverTrigger asChild>
-                                <Button variant="outline" className="justify-start text-left font-normal" disabled={existingOffer}>
+                                <Button variant="outline" className="justify-start text-left font-normal" disabled={sharingMed.status === 're-confirm'} >
                                     {expectedReturn
                                         ? format(expectedReturn, "dd/MM/yyyy")
                                         : "เลือกวันที่"}
@@ -269,23 +272,23 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                         <div className="flex flex-row gap-1">
-                            <input type="checkbox" {...register("returnTerm.exactType")} disabled={existingOffer} />
+                            <input type="checkbox" {...register("returnTerm.exactType")} disabled={sharingMed.status === 're-confirm'} />
                             <Label>รับคืนเฉพาะรายการนี้</Label>
                         </div>
                         <div className="flex flex-row gap-1">
-                            <input type="checkbox" {...register("returnTerm.otherType")} disabled={existingOffer} />
+                            <input type="checkbox" {...register("returnTerm.otherType")} disabled={sharingMed.status === 're-confirm'} />
                             <Label>รับคืนรายการอื่นได้</Label>
                         </div>
                         <div className="flex flex-row gap-1">
-                            <input type="checkbox" {...register("returnTerm.subType")} disabled={existingOffer} />
+                            <input type="checkbox" {...register("returnTerm.subType")} disabled={sharingMed.status === 're-confirm'} />
                             <Label>รับคืนรายการทดแทน</Label>
                         </div>
                         <div className="flex flex-row gap-1">
-                            <input type="checkbox" {...register("returnTerm.supportType")} disabled={existingOffer} />
+                            <input type="checkbox" {...register("returnTerm.supportType")} disabled={sharingMed.status === 're-confirm'} />
                             <Label>สามารถสนับสนุนได้</Label>
                         </div>
                         <div className="flex flex-row gap-1">
-                            <input type="checkbox" {...register("returnTerm.noReturn")} disabled={existingOffer} />
+                            <input type="checkbox" {...register("returnTerm.noReturn")} disabled={sharingMed.status === 're-confirm'} />
                             <Label>ไม่รับคืน</Label>
                         </div>
                         <br></br>

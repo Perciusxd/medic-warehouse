@@ -28,19 +28,13 @@ export type SharingAsset = {
         | "returned"
         | "cancelled";
       updatedAt: string;
-      responseDetails: [
-        acceptedOffer: {
-          responseAmount: number;
-          expectedReturnDate: string;
-          returnTerm: {
-            exactType: boolean;
-            otherType: boolean;
-            subType: boolean;
-            supportType: boolean;
-            noReturn: boolean;
-          };
-        },
-      ];
+      returnTerm: {
+        exactType: boolean;
+        otherType: boolean;
+        subType: boolean;
+        supportType: boolean;
+        noReturn: boolean;
+      };
     },
   ];
   sharingMedicine: {

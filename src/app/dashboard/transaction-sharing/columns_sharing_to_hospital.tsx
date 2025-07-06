@@ -14,6 +14,7 @@ export const columns = (
     handleApproveClick: (med: any) => void,
     handleReConfirmClick: (med: any) => void,
     handleDeliveryClick: (med: any) => void,
+    handleReturnClick: (med: any) => void,
 ): ColumnDef<SharingAsset>[] => [
     {
         accessorKey: "createdAt",
@@ -129,6 +130,8 @@ export const columns = (
                                         responseId: detail.id,
                                         offeredMedicine: detail.acceptedOffer,
                                         sharingDetails: med.sharingMedicine,
+                                        responseStatus: detail.status,
+                                        returnTerm: detail.returnTerm,
                                     })}>แจ้งขอยืม ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></Button>
                                 ) : detail.status === 're-confirm' ? (
                                     <Button variant={'link'} className="flex gap-x-2">รอยืนยันให้ยืม ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></Button>

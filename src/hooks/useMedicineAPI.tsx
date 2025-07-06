@@ -218,3 +218,36 @@ export function useMedicineRequestsInConfirm(loggedInHospital: string, status: s
         fetchMedicineRequestsInConfirm,
     };
 }
+
+export function useMedicineSharingInReturn(loggedInHospital: string, status: string) {
+    const [medicineSharingInReturn, setMedicineSharingInReturn] = useState([]);
+    const [loading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const fetchMedicineSharingInReturn = useCallback(async () => {
+        if (!loggedInHospital) return;
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetchConfirmStatusByTicketType(loggedInHospital, status, "sharing");
+            setMedicineSharingInReturn(response);
+            return response;
+        } catch (error: any) {
+            setError(error.message || "Failed to fetch medicine sharing");
+        } finally {
+            setIsLoading(false);
+        }
+    }, [loggedInHospital, status]);
+
+    useEffect(() => {
+        fetchMedicineSharingInReturn();
+    }, [fetchMedicineSharingInReturn]);
+
+    return {
+        medicineSharingInReturn,
+        loading,
+        error,
+        fetchMedicineSharingInReturn,
+    };
+}
