@@ -1,42 +1,86 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useMemo } from 'react';
+import { RefreshCcwIcon } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+
+import { DataTable } from "../request/data-table";
+import { columns as columnsRequestToHospital } from "./columns_request_to_hospital";
+import { columns as columnSharing } from "./columns_sharing_to_hospital";
+import { columns as columnSharingInReturn } from "./column_mock_return";
+
+import { useMedicineRequests, useMedicineSharingStatus, useMedicineSharingInReturn } from "@/hooks/useMedicineAPI";
+import { useHospital } from "@/context/HospitalContext";
+
+import { ResponseAsset } from "@/types/responseMed";
 
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner"
-
-import { DataTable } from "../request/data-table";
-import { columns } from "./columns";
-import { columnsConfirmReturn } from "./columns_confirm_return";
-
-import { useMedicineRequests, useMedicineResponsesInTransfer, useMedicineRequestsInConfirm } from "@/hooks/useMedicineAPI";
-import { useHospital } from "@/context/HospitalContext";
-
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { ResponseAsset } from "@/types/responseMed";
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import ConfirmSharingDialog from '@/components/dialogs/confirm-sharing-dialog';
+import AcceptSharingDialog from '@/components/dialogs/accept-sharing-dialog';
+import ReturnDialog from '@/components/dialogs/return-dialog';
+import ConfirmationDialog from '@/components/dialogs/confirmation-dialog';
+import ReturnSharingDialog from '@/components/dialogs/return-sharing-dialog';
 
 export default function TransferDashboard() {
     const { loggedInHospital } = useHospital();
-    const { medicineResponses, loading: loadingResponse, error: errorResponse, fetchMedicineResponses } = useMedicineResponsesInTransfer(loggedInHospital);
-    const { medicineRequestsInConfirm, loading: loadingInConfirm, error: errorInConfirm, fetchMedicineRequestsInConfirm } = useMedicineRequestsInConfirm(loggedInHospital, "confirm-return");
+    const statusFilterRequest = useMemo(() => ["offered", "to-transfer", "to-return", "returned"], []);
+    const statusFilterSharing = useMemo(() => ["to-confirm", "in-return"], []);
+    const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequests(loggedInHospital, statusFilterRequest);
+    const { medicineSharing, loading: loadingShare, error: errorShare, fetchMedicineSharing } = useMedicineSharingStatus(loggedInHospital);
+    const { medicineSharingInReturn, loading: loadingReturn, error: errorReturn, fetchMedicineSharingInReturn } = useMedicineSharingInReturn(loggedInHospital, statusFilterSharing);
     const [selectedMed, setSelectedMed] = useState<any>(null);
     const [loadingRowId, setLoadingRowId] = useState<any | null>(null);
     const [globalFilter, setGlobalFilter] = useState("");
     const [loading, setLoading] = useState(false);
-    console.log("medicineResponses", medicineResponses)
-    const handleApproveClick = async (med: ResponseAsset) => {
+    const [updatedLast, setUpdatedLast] = useState<Date | null>(null);
+
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [acceptSharingDialogOpen, setAcceptSharingDialogOpen] = useState(false);
+    const [deliveryDialogOpen, setDeliveryDialogOpen] = useState(false);
+    const [returnDialogOpen, setReturnDialogOpen] = useState(false);
+    const [confirmReceiveDeliveryDialogOpen, setConfirmReceiveDeliveryDialogOpen] = useState(false);
+    const [dialogConfig, setDialogConfig] = useState<{
+        title: string;
+        description: string;
+        confirmButtonText: string;
+        successMessage: string;
+        errorMessage: string;
+        onConfirm: (med: any) => Promise<boolean>;
+        refetchFunction: () => void;
+    } | null>(null);
+    const [returnSharingDialogOpen, setReturnSharingDialogOpen] = useState(false);
+
+    const handleApproveClick = (med: any) => {
+        setSelectedMed(med);
+        setConfirmDialogOpen(true);
+    }
+
+    const handleReConfirmClick = (med: any) => {
+        console.log('handleReConfirmClick', med);
+        setSelectedMed(med);
+        setAcceptSharingDialogOpen(true);
+    }
+
+    const handleDeliveryClick = async (med: any) => {
+        console.log('handleDeliveryClick', med);
+        setSelectedMed(med);
+        setDeliveryDialogOpen(true);
+    }
+
+    const handleReturnClick = async (med: any) => {
+        console.log('handleReturnClick', med);
+        setSelectedMed(med);
+        setReturnDialogOpen(true);
+    }
+
+    const handleStatusClick = async (med: ResponseAsset, status: string) => {
         setLoadingRowId(med.id);
         setSelectedMed(med);
         const responseBody = {
             responseId: med.id,
             offeredMedicine: med.offeredMedicine,
-            status: "to-return",
+            status: status,
         }
         setLoading(true)
         try {
@@ -53,25 +97,86 @@ export default function TransferDashboard() {
             }
 
             const result = await response.json()
-            fetchMedicineResponses();
+            console.log(result)
+            toast.success(status === "to-transfer" ? "ยืนยันการส่งมอบเรียบร้อยแล้ว" : "ยืนยันการรับคืนเรียบร้อยแล้ว", {
+                description: result.message,
+            })
+            fetchMedicineRequests();
             setLoading(false)
         } catch (error) {
             console.error("Error submitting form:", error)
+            toast.error("เกิดข้อผิดพลาดในการยืนยัน", {
+                description: error instanceof Error ? error.message : "เกิดข้อผิดพลาดในการยืนยัน",
+            })
             setLoading(false)
         }
     }
 
-    const handleConfirmReturn = async (med: ResponseAsset) => {
-        setLoadingRowId(med.id);
+    // Helper function to configure dialog for different actions
+    const openConfirmationDialog = (med: any, actionType: 'receive-delivery' | 'delivery' | 'return') => {
         setSelectedMed(med);
+
+        const configs = {
+            'receive-delivery': {
+                title: "ยืนยันการรับของ",
+                description: "คุณต้องการยืนยันการรับของจาก {hospitalName} หรือไม่?",
+                confirmButtonText: "ยืนยันการรับของ",
+                successMessage: "ยืนยันการรับของเรียบร้อยแล้ว",
+                errorMessage: "เกิดข้อผิดพลาดในการยืนยัน",
+                onConfirm: confirmReceiveDelivery,
+                refetchFunction: fetchMedicineSharingInReturn,
+            },
+            'delivery': {
+                title: "ยืนยันการจัดส่ง",
+                description: "คุณต้องการยืนยันการจัดส่งของไปยัง {hospitalName} หรือไม่?",
+                confirmButtonText: "ยืนยันการจัดส่ง",
+                successMessage: "ยืนยันการจัดส่งเรียบร้อยแล้ว",
+                errorMessage: "เกิดข้อผิดพลาดในการยืนยัน",
+                onConfirm: confirmDelivery,
+                refetchFunction: fetchMedicineRequests,
+            },
+            'return': {
+                title: "ยืนยันการรับคืน",
+                description: "คุณต้องการยืนยันการรับคืนจาก {hospitalName} หรือไม่?",
+                confirmButtonText: "ยืนยันการรับคืน",
+                successMessage: "ยืนยันการรับคืนเรียบร้อยแล้ว",
+                errorMessage: "เกิดข้อผิดพลาดในการยืนยัน",
+                onConfirm: confirmReturn,
+                refetchFunction: fetchMedicineRequests,
+            }
+        };
+
+        setDialogConfig(configs[actionType]);
+        setConfirmReceiveDeliveryDialogOpen(true);
+    };
+
+    const handleConfirmReceiveDelivery = async (med: any) => {
+        console.log('handleConfirmReceiveDelivery', med);
+        openConfirmationDialog(med, 'receive-delivery');
+    }
+
+    const handleDeliveryConfirm = async (med: any) => {
+        console.log('handleDeliveryConfirm', med);
+        openConfirmationDialog(med, 'delivery');
+    }
+
+    const handleReturnConfirm = async (med: any) => {
+        console.log('handleReturnConfirm', med);
+        openConfirmationDialog(med, 'return');
+    }
+
+    const confirmDelivery = async (med: any) => {
+        console.log(med)
         const responseBody = {
-            responseId: med.id,
-            offeredMedicine: med.offeredMedicine,
-            status: "returned",
+            sharingId: med.responseId,
+            acceptOffer: med.acceptedOffer,
+            status: "to-confirm",
+            returnTerm: med.sharingReturnTerm,
         }
+        console.log('responseBody', responseBody)
         setLoading(true)
         try {
-            const response = await fetch("/api/updateRequest", {
+            const response = await fetch("/api/updateSharing", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -80,35 +185,289 @@ export default function TransferDashboard() {
             })
 
             if (!response.ok) {
-                throw new Error("Failed to confirm return")
+                throw new Error("Failed to submit")
             }
 
             const result = await response.json()
-            fetchMedicineRequestsInConfirm();
+            console.log('result', result)
+            fetchMedicineRequests();
             setLoading(false)
-            toast.success("ยืนยันการรับคืนเรียบร้อยแล้ว")
+            return true;
         } catch (error) {
-            console.error("Error confirming return:", error)
+            console.error("Error submitting form:", error)
             setLoading(false)
-            toast.error("เกิดข้อผิดพลาดในการยืนยันการรับคืน")
+            return false;
         }
     }
 
+    // Additional submit functions for different scenarios
+    const confirmReturn = async (med: any) => {
+        console.log('med in confirmReturn', med)
+        const responseBody = {
+            sharingId: med.responseId,
+            status: "returned",
+        }
+        console.log('confirmReturn', responseBody)
+        setLoading(true)
+        try {
+            const response = await fetch("/api/updateSharingStatus", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(responseBody),
+            })
+
+            if (!response.ok) {
+                throw new Error("Failed to submit")
+            }
+
+            const result = await response.json()
+            fetchMedicineSharing();
+            setLoading(false)
+            return true;
+        } catch (error) {
+            console.error("Error submitting form:", error)
+            setLoading(false)
+            return false;
+        }
+    }
+
+    const confirmReceiveDelivery = async (med: any) => {
+        const responseBody = {
+            sharingId: med.id,
+            status: "in-return",
+        }
+        setLoading(true)
+        try {
+            const response = await fetch("/api/updateSharingStatus", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(responseBody),
+            })
+
+            if (!response.ok) {
+                throw new Error("Failed to submit")
+            }
+
+            const result = await response.json()
+            console.log('result', result)
+            fetchMedicineSharingInReturn();
+            setLoading(false)
+            return true;
+        } catch (error) {
+            console.error("Error submitting form:", error)
+            setLoading(false)
+            return false;
+        }
+    }
+
+    const handleReturnSharingClick = async (med: any) => {
+        // console.log('handleReturnSharingClick', med);
+        setSelectedMed(med);
+        setReturnSharingDialogOpen(true);
+    }
+
+    // const handleConfirmReturn = async (med: ResponseAsset) => {
+    //     setLoadingRowId(med.id);
+    //     setSelectedMed(med);
+    //     const responseBody = {
+    //         responseId: med.id,
+    //         offeredMedicine: med.offeredMedicine,
+    //         status: "returned",
+    //     }
+    //     setLoading(true)
+    //     try {
+    //         const response = await fetch("/api/updateRequest", {
+    //             method: "POST",
+    //             headers: {
+    //                 "Content-Type": "application/json",
+    //             },
+    //             body: JSON.stringify(responseBody),
+    //         })
+
+    //         if (!response.ok) {
+    //             throw new Error("Failed to confirm return")
+    //         }
+
+    //         const result = await response.json()
+    //         fetchMedicineRequestsInConfirm();
+    //         setLoading(false)
+    //         toast.success("ยืนยันการรับคืนเรียบร้อยแล้ว")
+    //     } catch (error) {
+    //         console.error("Error confirming return:", error)
+    //         setLoading(false)
+    //         toast.error("เกิดข้อผิดพลาดในการยืนยันการรับคืน")
+    //     }
+    // }
+
     useEffect(() => {
-        fetchMedicineResponses();
-        fetchMedicineRequestsInConfirm();
-    }, [fetchMedicineResponses, fetchMedicineRequestsInConfirm]);
-    console.log("medicineRequestsInConfirm", medicineRequestsInConfirm)
+        fetchMedicineRequests();
+        fetchMedicineSharing();
+        fetchMedicineSharingInReturn();
+    }, [fetchMedicineRequests, fetchMedicineSharing, fetchMedicineSharingInReturn]);
+    // console.log("medicineSharingInReturn", medicineSharingInReturn)
+
     return (
         <div>
-            <div>
-                <h1>Transfer</h1>
-                <DataTable columns={columns(handleApproveClick, loading, loadingRowId)} data={medicineResponses} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+            <div className="flex items-center justify-between mb-4">
+                <div /> {/* Placeholder for alignment, can add search if needed */}
+                <div className="flex items-center space-x-2">
+                    <Button variant={"outline"} onClick={() => {
+                        fetchMedicineRequests();
+                        fetchMedicineSharing();
+                        fetchMedicineSharingInReturn();
+                        setUpdatedLast(new Date());
+                    }}>
+                        <RefreshCcwIcon />
+                        {updatedLast ? `Updated ${formatDistanceToNow(updatedLast, { addSuffix: true })}` : ""}
+                    </Button>
+                </div>
             </div>
+
             <div>
-                <h1>Confirm Return</h1>
-                <DataTable columns={columnsConfirmReturn(handleConfirmReturn, loading, loadingRowId)} data={medicineRequestsInConfirm} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+                <h1>ให้ยืมยา (ขาดแคลน)</h1>
+                {
+                    loadingRequest ? (
+                        <div className="p-8 flex flex-col items-center justify-center">
+                            <LoadingSpinner width="48" height="48" />
+                            <p className="mt-4 text-gray-500">Loading medicines...</p>
+                        </div>
+                    ) : (
+                        <div className="bg-white shadow rounded">
+                            <DataTable columns={columnsRequestToHospital(handleStatusClick)} data={medicineRequests} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+                        </div>
+                    )
+                }
             </div>
+
+            <div className="mt-12">
+                <h1>ให้ยืม (แบ่งปัน)</h1>
+                {
+                    loadingShare ? (
+                        <div className="p-8 flex flex-col items-center justify-center">
+                            <LoadingSpinner width="48" height="48" />
+                            <p className="mt-4 text-gray-500">Loading medicines...</p>
+                        </div>
+                    ) : (
+                        <div className="bg-white shadow rounded">
+                            <DataTable columns={columnSharing(handleApproveClick, handleReConfirmClick, handleDeliveryClick, handleReturnClick, handleReturnConfirm)} data={medicineSharing} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+                        </div>
+                    )
+                }
+            </div>
+
+            <div>
+                <h1>รับคืน</h1>
+                {
+                    loadingReturn ? (
+                        <div className="p-8 flex flex-col items-center justify-center">
+                            <LoadingSpinner width="48" height="48" />
+                            <p className="mt-4 text-gray-500">Loading medicines...</p>
+                        </div>
+                    ) : (
+                        <div className="bg-white shadow rounded">
+                            <DataTable columns={columnSharingInReturn(handleReturnSharingClick, handleConfirmReceiveDelivery)} data={medicineSharingInReturn} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+                        </div>
+                    )
+                }
+            </div>
+
+            {selectedMed && selectedMed.ticketType === "sharing" && confirmDialogOpen && (
+                <ConfirmSharingDialog
+                    data={selectedMed}
+                    dialogTitle={"ยืนยันการยอมรับแบ่งปัน"}
+                    status="to-transfer"
+                    openDialog={confirmDialogOpen}
+                    onOpenChange={(open: boolean) => {
+                        setConfirmDialogOpen(open);
+                        if (!open) {
+                            fetchMedicineSharing();
+                            setSelectedMed(null);
+                        }
+                    }}
+                />
+            )}
+
+            {selectedMed && selectedMed.ticketType === "sharing" && acceptSharingDialogOpen && (
+                <AcceptSharingDialog
+                    sharingMed={selectedMed}
+                    openDialog={acceptSharingDialogOpen}
+                    onOpenChange={(open: boolean) => {
+                        setAcceptSharingDialogOpen(open);
+                        if (!open) {
+                            fetchMedicineSharing();
+                            setSelectedMed(null);
+                        }
+                    }} />
+            )}
+
+            {selectedMed && dialogConfig && confirmReceiveDeliveryDialogOpen && (
+                <ConfirmationDialog
+                    open={confirmReceiveDeliveryDialogOpen}
+                    onOpenChange={(open: boolean) => {
+                        setConfirmReceiveDeliveryDialogOpen(open);
+                        if (!open) {
+                            dialogConfig.refetchFunction();
+                            setSelectedMed(null);
+                            setDialogConfig(null);
+                        }
+                    }}
+                    selectedMed={selectedMed}
+                    title={dialogConfig.title}
+                    description={dialogConfig.description}
+                    confirmButtonText={dialogConfig.confirmButtonText}
+                    successMessage={dialogConfig.successMessage}
+                    errorMessage={dialogConfig.errorMessage}
+                    loading={loading}
+                    onConfirm={dialogConfig.onConfirm}
+                />
+            )}
+
+            {selectedMed && selectedMed.ticketType === "sharing" && deliveryDialogOpen && (
+                <ConfirmSharingDialog
+                    data={selectedMed}
+                    dialogTitle="ยืนยันการจัดส่ง"
+                    status="to-confirm"
+                    openDialog={deliveryDialogOpen}
+                    onOpenChange={(open: boolean) => {
+                        setDeliveryDialogOpen(open);
+                        if (!open) {
+                            fetchMedicineSharing();
+                            setSelectedMed(null);
+                        }
+                    }}
+                    onConfirm={confirmDelivery}
+                />
+            )}
+
+            {/* <ReturnDialog
+                selectedMed={selectedMed}
+                open={returnDialogOpen}
+                onOpenChange={(open: boolean) => {
+                    setReturnDialogOpen(open);
+                    if (!open) {
+                        fetchMedicineSharingInReturn();
+                        setSelectedMed(null);
+                    }
+                }}
+            /> */}
+
+            {selectedMed && selectedMed.ticketType === "sharing" && returnSharingDialogOpen && (
+                <ReturnSharingDialog
+                    selectedMed={selectedMed}
+                    open={returnSharingDialogOpen}
+                    onOpenChange={(open: boolean) => {
+                        setReturnSharingDialogOpen(open);
+                        if (!open) {
+                            fetchMedicineSharingInReturn();
+                            setSelectedMed(null);
+                        }
+                    }}
+                />
+            )}
         </div>
     )
 }

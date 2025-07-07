@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/components/providers";
 import { HospitalProvider } from "@/context/HospitalContext";
 import { Sidebar } from "@/components/sidebar";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
           <HospitalProvider>
             <div className="relative flex min-h-screen">
               <Sidebar />
+              <Toaster position="top-right" richColors />
               <main className="flex-1">{children}</main>
             </div>
           </HospitalProvider>

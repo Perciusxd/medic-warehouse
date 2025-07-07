@@ -4,11 +4,12 @@ import { ResponseAsset } from "@/types/responseMed";
  * @param {string} loggedInHospital - The hospital name to filter by
  * @returns {Promise<Array>} - Filtered medicine requests
  */
-export const fetchAllMedicineRequests = async (loggedInHospital: string, status?: string) => {
+export const fetchAllMedicineRequests = async (loggedInHospital: string, status: string[]) => {
     try {
+        const statusParam = JSON.stringify(status);
         const body = {
             loggedInHospital: loggedInHospital,
-            status: status
+            status: statusParam
         }
         const response = await fetch("/api/queryRequestByStatus", {
             method: "POST",
@@ -83,7 +84,7 @@ export const fetchAssetById = async (assetId: string) => {
  */
 export const fetchMedicineRequestsWithAssets = async (loggedInHospital: string) => {
     try {
-        const filteredRequests = await fetchAllMedicineRequests(loggedInHospital, 'pending');
+        const filteredRequests = await fetchAllMedicineRequests(loggedInHospital, ['pending']);
 
         // Fetch assets for each requestId
         const requestsWithAssets = await Promise.all(

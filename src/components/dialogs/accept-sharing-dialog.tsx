@@ -21,12 +21,13 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
 
 function RequestDetails({ sharingMed }: any) {
+    console.log('sharingMed RequestDetails', sharingMed)
     const { createdAt } = sharingMed
     const date = new Date(Number(createdAt)); // convert string to number, then to Date
     const formattedDate = format(date, 'dd/MM/yyyy');
     const sharingDetails = sharingMed.sharingDetails
     const sharingMedicine = sharingMed.offeredMedicine ? sharingMed.sharingMedicine : sharingDetails.sharingMedicine
-    const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber ,sharingAmount } = sharingMedicine
+    const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber, sharingAmount } = sharingMedicine
     const sharingReturnTerm = sharingMed.offeredMedicine ? sharingMed.sharingReturnTerm.receiveConditions : sharingMed.sharingDetails.sharingReturnTerm.receiveConditions
     //console.log('sharingReturnTermsชชชชชชชชชชชชชชชชชชช', sharingDetails.sharingMedicine)
     /* const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy'); */
@@ -98,42 +99,51 @@ function RequestDetails({ sharingMed }: any) {
                         <Label>ไม่รับคืน</Label>
                     </div>
                 </div>
-                
+
             </div>
         </div>
     )
 }
 
-const ResponseFormSchema = z.object({
-    responseAmount: z.number().min(1, { message: "จำนวนที่ยืมต้องมีค่ามากกว่า 0" }),
-    expectedReturnDate: z.coerce.date().min(new Date(), { message: "วันที่ยืมต้องเป็นวันที่ในอนาคต" }),
-    returnTerm: z.object({
-        exactType: z.boolean(),
-        otherType: z.boolean(),
-        subType: z.boolean(),
-        supportType: z.boolean(),
-        noReturn: z.boolean(),
-    }).refine((data) => 
+function ResponseFormSchema(sharingMedicine: any) {
+    const maxAmount = sharingMedicine?.sharingAmount ?? Infinity;
+    return z.object({
+        responseAmount: z.number().min(1, { message: "จำนวนที่ยืมต้องมีค่ามากกว่า 0" }).max(maxAmount, { message: `จำนวนที่ยืมต้องไม่เกิน ${maxAmount}` }),
+        expectedReturnDate: z.coerce.date().min(new Date(), { message: "วันที่ยืมต้องเป็นวันที่ในอนาคต" }),
+        returnTerm: z.object({
+            exactType: z.boolean(),
+            otherType: z.boolean(),
+            subType: z.boolean(),
+            supportType: z.boolean(),
+            noReturn: z.boolean(),
+        }).refine((data) =>
             Object.values(data).some(value => value === true),
             {
-                message: "กรุณาเลือกอย่างน้อย 1 เงื่อนไข" ,
+                message: "กรุณาเลือกอย่างน้อย 1 เงื่อนไข",
                 path: []
             }
 
         )
-})
+    })
+}
 
 function ResponseDetails({ sharingMed, onOpenChange }: any) {
+    console.log('sharingMed', sharingMed)
+    console.log('sharingMed.sharingMedicine', sharingMed.sharingDetails.sharingMedicine)
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [dateError, setDateError] = useState(""); // for error message
     const [loading, setLoading] = useState(false);
-    
+
     // Check if there's existing acceptedOffer data to pre-populate the form
-    const existingOffer = sharingMed.offeredMedicine || sharingMed.status === 're-confirm';
-    console.log("existingOffer", existingOffer)
+    const existingOffer = sharingMed.offeredMedicine;
     const existingReturnTerm = sharingMed.returnTerm;
     const isReconfirm = !!existingOffer;
+    console.log('existingOffer', existingOffer)
+    console.log('existingReturnTerm', existingReturnTerm)
+
+    const ResponseShema = ResponseFormSchema(sharingMed.sharingDetails.sharingMedicine)
     
+
     const {
         register,
         watch,
@@ -141,12 +151,12 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
         setValue,
         getValues,
         resetField,
-        formState: { errors ,isSubmitted},
-    } = useForm<z.infer<typeof ResponseFormSchema>>({
-        resolver: zodResolver(ResponseFormSchema),
+        formState: { errors, isSubmitted },
+    } = useForm<z.infer<typeof ResponseShema>>({
+        resolver: zodResolver(ResponseShema),
         defaultValues: {
-            responseAmount: existingOffer?.responseAmount || 0,
-            expectedReturnDate: existingOffer?.expectedReturnDate ? new Date(existingOffer.expectedReturnDate) : undefined,
+            responseAmount: existingOffer?.responseAmount || sharingMed.acceptedOffer?.responseAmount || 0,
+            expectedReturnDate: existingOffer?.expectedReturnDate ? new Date(existingOffer.expectedReturnDate) : sharingMed.acceptedOffer?.expectedReturnDate ? new Date(sharingMed.acceptedOffer.expectedReturnDate) : undefined,
             returnTerm: {
                 exactType: existingReturnTerm?.exactType || false,
                 otherType: existingReturnTerm?.otherType || false,
@@ -159,15 +169,12 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
     const expectedReturn = watch("expectedReturnDate");
     const returnTerm = watch("returnTerm"); // Get the current values of receiveConditions
     const isAnyChecked = Object.values(returnTerm || {}).some(Boolean);// Check if any checkbox is checked
-    
 
-
-
-    const onSubmit = async (data: z.infer<typeof ResponseFormSchema>) => {
+    const onSubmit = async (data: z.infer<typeof ResponseShema>) => {
         const isResponse = sharingMed.id.startsWith('RESP');
         const updateId = isResponse ? sharingMed.id : sharingMed.responseId;
-        const newStatus = existingOffer ? sharingMed.status === 're-confirm' ? 'to-transfer' : 're-confirm' : 'offered';
-        
+        const newStatus = existingOffer ? 're-confirm' : sharingMed.acceptedOffer ? 'to-transfer' : 'offered';
+
         const responseBody = {
             sharingId: updateId,
             acceptOffer: {
@@ -178,7 +185,7 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
             status: newStatus
         }
         console.log('accept offer responseBody', responseBody)
-        
+
         try {
             setLoading(true);
             const response = await fetch("/api/updateSharing", {
@@ -197,8 +204,8 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
             setLoading(false);
         }
     }
-    
-    const onError = (errors: FieldErrors<z.infer<typeof ResponseFormSchema>>) => {
+
+    const onError = (errors: FieldErrors<z.infer<typeof ResponseShema>>) => {
         console.error("❌ Form validation errors:", errors);
     }
 
@@ -209,23 +216,25 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                 <div className="grid grid-cols-2 gap-2">
                     <div className="flex flex-col gap-1">
                         <Label>จำนวนที่ยืม</Label>
-                        <Input 
-                             inputMode="numeric"
-                                    placeholder="10" 
-                                    onKeyDown={(e) => {
-                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
-                                        if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
-                                        e.preventDefault();
-                                        }
-                                    }}
-                        {...register("responseAmount", { valueAsNumber: true })} />
+                        <Input
+                            inputMode="numeric"
+                            placeholder="10"
+                            onKeyDown={(e) => {
+                                const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
+                                if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
+                                    e.preventDefault();
+                                }
+                            }}
+                            {...register("responseAmount", { valueAsNumber: true })}
+                            disabled={sharingMed.status === 're-confirm'}
+                             />
                         {errors.responseAmount?.message && <span className="text-red-500 text-sm">{errors.responseAmount.message}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
                         <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
                         <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                             <PopoverTrigger asChild>
-                                <Button variant="outline" className="justify-start text-left font-normal">
+                                <Button variant="outline" className="justify-start text-left font-normal" disabled={sharingMed.status === 're-confirm'} >
                                     {expectedReturn
                                         ? format(expectedReturn, "dd/MM/yyyy")
                                         : "เลือกวันที่"}
@@ -261,36 +270,41 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                         </Popover>
                         {errors.expectedReturnDate?.message && <span className="text-red-500 text-sm">{errors.expectedReturnDate.message}</span>}
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                        <div className="flex flex-row gap-1">
-                            <input type="checkbox"  {...register("returnTerm.exactType")} />
-                            <Label>รับคืนเฉพาะรายการนี้</Label>
+                    
+                    <div className="flex flex-col gap-1 mt-4">
+                        <Label>แผนการคืน</Label>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="flex flex-row gap-1">
+                                <input type="checkbox" {...register("returnTerm.exactType")} disabled={sharingMed.status === 're-confirm'} />
+                                <Label className="font-normal">คืนรายการนี้</Label>
+                            </div>
+                            <div className="flex flex-row gap-1">
+                                <input type="checkbox" {...register("returnTerm.otherType")} disabled={sharingMed.status === 're-confirm'} />
+                                <Label className="font-normal">คืนรายการอื่น</Label>
+                            </div>
+                            <div className="flex flex-row gap-1">
+                                <input type="checkbox" {...register("returnTerm.subType")} disabled={sharingMed.status === 're-confirm'} />
+                                <Label className="font-normal">คืนยาทดแทน</Label>
+                            </div>
+                            <div className="flex flex-row gap-1">
+                                <input type="checkbox" {...register("returnTerm.supportType")} disabled={sharingMed.status === 're-confirm'} />
+                                <Label className="font-normal">ขอสนับสนุน</Label>
+                            </div>
+                            <div className="flex items-start flex-row gap-1">
+                                <input type="checkbox" {...register("returnTerm.noReturn")} disabled={sharingMed.status === 're-confirm'} />
+                                <Label className="font-normal">ไม่ต้องคืน</Label>
+                            </div>
+                            <br></br>
+                            <div className="flex flex-col col-span-2">
+                                {!isAnyChecked && isSubmitted && (
+                                    <p className="text-red-500 text-sm mt-1">
+                                        กรุณาเลือกอย่างน้อย 1 เงื่อนไข
+                                    </p>
+                                )}
+                            </div>
                         </div>
-                        <div className="flex flex-row gap-1">
-                            <input type="checkbox" {...register("returnTerm.otherType")} />
-                            <Label>รับคืนรายการอื่นได้</Label>
-                        </div>
-                        <div className="flex flex-row gap-1">
-                            <input type="checkbox" {...register("returnTerm.subType")} />
-                            <Label>รับคืนรายการทดแทน</Label>
-                        </div>
-                        <div className="flex flex-row gap-1">
-                            <input type="checkbox" {...register("returnTerm.supportType")} />
-                            <Label>สามารถสนับสนุนได้</Label>
-                        </div>
-                        <div className="flex flex-row gap-1">
-                            <input type="checkbox" {...register("returnTerm.noReturn")} />
-                            <Label>ไม่รับคืน</Label>
-                        </div>
-                        <br></br>
-                        <div className="flex flex-col col-span-2">
-                            {!isAnyChecked && isSubmitted && (
-                                <p className="text-red-500 text-sm mt-1">
-                                    กรุณาเลือกอย่างน้อย 1 เงื่อนไข
-                                </p>
-                            )}
-                        </div>                       
                     </div>
+                    
                 </div>
             </div>
             <div className="flex justify-end mt-4">
@@ -308,7 +322,7 @@ export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChan
     // Check if this is a re-confirm scenario
     const isReconfirm = !!sharingMed?.acceptedOffer;
     const dialogTitle = isReconfirm ? "แก้ไขการยอมรับแบ่งปัน" : "เวชภัณฑ์ยาที่ต้องการแบ่งปัน";
-    
+
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[700px]">
