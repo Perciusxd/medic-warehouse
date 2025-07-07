@@ -155,8 +155,6 @@ export default function ConfirmSharingDialog({ data, dialogTitle, status, openDi
         setLoading(true);
 
         try {
-            const status = 're-confirm';
-            console.log(data)
             const sharingId = data.responseId; // Get the sharing ID from the data
             const response = await fetch("/api/updateSharingStatus", {
                 method: "POST",

@@ -202,14 +202,15 @@ export default function TransferDashboard() {
 
     // Additional submit functions for different scenarios
     const confirmReturn = async (med: any) => {
+        console.log('med in confirmReturn', med)
         const responseBody = {
-            responseId: med.id,
-            offeredMedicine: med.offeredMedicine,
+            sharingId: med.responseId,
             status: "returned",
         }
+        console.log('confirmReturn', responseBody)
         setLoading(true)
         try {
-            const response = await fetch("/api/updateRequest", {
+            const response = await fetch("/api/updateSharingStatus", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -352,7 +353,7 @@ export default function TransferDashboard() {
                         </div>
                     ) : (
                         <div className="bg-white shadow rounded">
-                            <DataTable columns={columnSharing(handleApproveClick, handleReConfirmClick, handleDeliveryClick, handleReturnClick)} data={medicineSharing} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+                                <DataTable columns={columnSharing(handleApproveClick, handleReConfirmClick, handleDeliveryClick, handleReturnClick, handleReturnConfirm)} data={medicineSharing} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
                         </div>
                     )
                 }
@@ -378,7 +379,7 @@ export default function TransferDashboard() {
                 <ConfirmSharingDialog
                     data={selectedMed}
                     dialogTitle={"ยืนยันการยอมรับแบ่งปัน"}
-                    status={"to-transfer"}
+                    status="to-transfer"
                     openDialog={confirmDialogOpen}
                     onOpenChange={(open: boolean) => {
                         setConfirmDialogOpen(open);
@@ -427,14 +428,9 @@ export default function TransferDashboard() {
 
             { selectedMed && selectedMed.ticketType === "sharing" && deliveryDialogOpen && (
                 <ConfirmSharingDialog
-                    selectedMed={selectedMed}
-                    title="ยืนยันการจัดส่ง"
-                    description="คุณต้องการยืนยันการจัดส่งของจาก {hospitalName} หรือไม่?"
-                    confirmButtonText="ยืนยันการจัดส่ง"
-                    successMessage="ยืนยันการจัดส่งเรียบร้อยแล้ว"
-                    errorMessage="เกิดข้อผิดพลาดในการยืนยัน"
-                    loading={loading}
-                    onConfirm={confirmDelivery}
+                    data={selectedMed}
+                    dialogTitle="ยืนยันการจัดส่ง"
+                    status="to-confirm"
                     openDialog={deliveryDialogOpen}
                     onOpenChange={(open: boolean) => {
                         setDeliveryDialogOpen(open);
@@ -443,6 +439,7 @@ export default function TransferDashboard() {
                             setSelectedMed(null);
                         }
                     }}
+                    onConfirm={confirmDelivery}
                 />
             )}
 
