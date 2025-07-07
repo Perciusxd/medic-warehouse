@@ -270,36 +270,41 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                         </Popover>
                         {errors.expectedReturnDate?.message && <span className="text-red-500 text-sm">{errors.expectedReturnDate.message}</span>}
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                        <div className="flex flex-row gap-1">
-                            <input type="checkbox" {...register("returnTerm.exactType")} disabled={sharingMed.status === 're-confirm'} />
-                            <Label>รับคืนเฉพาะรายการนี้</Label>
-                        </div>
-                        <div className="flex flex-row gap-1">
-                            <input type="checkbox" {...register("returnTerm.otherType")} disabled={sharingMed.status === 're-confirm'} />
-                            <Label>รับคืนรายการอื่นได้</Label>
-                        </div>
-                        <div className="flex flex-row gap-1">
-                            <input type="checkbox" {...register("returnTerm.subType")} disabled={sharingMed.status === 're-confirm'} />
-                            <Label>รับคืนรายการทดแทน</Label>
-                        </div>
-                        <div className="flex flex-row gap-1">
-                            <input type="checkbox" {...register("returnTerm.supportType")} disabled={sharingMed.status === 're-confirm'} />
-                            <Label>สามารถสนับสนุนได้</Label>
-                        </div>
-                        <div className="flex flex-row gap-1">
-                            <input type="checkbox" {...register("returnTerm.noReturn")} disabled={sharingMed.status === 're-confirm'} />
-                            <Label>ไม่รับคืน</Label>
-                        </div>
-                        <br></br>
-                        <div className="flex flex-col col-span-2">
-                            {!isAnyChecked && isSubmitted && (
-                                <p className="text-red-500 text-sm mt-1">
-                                    กรุณาเลือกอย่างน้อย 1 เงื่อนไข
-                                </p>
-                            )}
+                    
+                    <div className="flex flex-col gap-1 mt-4">
+                        <Label>แผนการคืน</Label>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="flex flex-row gap-1">
+                                <input type="checkbox" {...register("returnTerm.exactType")} disabled={sharingMed.status === 're-confirm'} />
+                                <Label className="font-normal">คืนรายการนี้</Label>
+                            </div>
+                            <div className="flex flex-row gap-1">
+                                <input type="checkbox" {...register("returnTerm.otherType")} disabled={sharingMed.status === 're-confirm'} />
+                                <Label className="font-normal">คืนรายการอื่น</Label>
+                            </div>
+                            <div className="flex flex-row gap-1">
+                                <input type="checkbox" {...register("returnTerm.subType")} disabled={sharingMed.status === 're-confirm'} />
+                                <Label className="font-normal">คืนยาทดแทน</Label>
+                            </div>
+                            <div className="flex flex-row gap-1">
+                                <input type="checkbox" {...register("returnTerm.supportType")} disabled={sharingMed.status === 're-confirm'} />
+                                <Label className="font-normal">ขอสนับสนุน</Label>
+                            </div>
+                            <div className="flex items-start flex-row gap-1">
+                                <input type="checkbox" {...register("returnTerm.noReturn")} disabled={sharingMed.status === 're-confirm'} />
+                                <Label className="font-normal">ไม่ต้องคืน</Label>
+                            </div>
+                            <br></br>
+                            <div className="flex flex-col col-span-2">
+                                {!isAnyChecked && isSubmitted && (
+                                    <p className="text-red-500 text-sm mt-1">
+                                        กรุณาเลือกอย่างน้อย 1 เงื่อนไข
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     </div>
+                    
                 </div>
             </div>
             <div className="flex justify-end mt-4">

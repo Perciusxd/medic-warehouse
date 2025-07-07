@@ -120,7 +120,7 @@ export const columns = (
             return (
                 <div className="flex flex-col">
                     {med.responseDetails.map((detail, index) => (
-                        <div key={index} className="flex items-center gap-x-2 h-4">
+                        <div key={index} className="flex items-center gap-x-2 gap-y-2 h-4">
                             <div className="basis-1/2">
                                 <span>{detail.respondingHospitalNameTH}:</span>
                             </div>
@@ -128,7 +128,7 @@ export const columns = (
                                 { detail.status === 'pending' ? (
                                     <div className="flex gap-x-2">แจ้งแบ่งปัน<StatusIndicator status={detail.status} /></div>
                                 ) : detail.status === 'offered' ? (
-                                    <Button variant={'link'} className="flex gap-x-2" onClick={() => handleReConfirmClick({
+                                    <Button variant={'link'} className="flex gap-x-2 p-0" onClick={() => handleReConfirmClick({
                                         ...med,
                                         responseId: detail.id,
                                         offeredMedicine: detail.acceptedOffer,
@@ -137,9 +137,9 @@ export const columns = (
                                         returnTerm: detail.returnTerm,
                                     })}>แจ้งขอยืม ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></Button>
                                 ) : detail.status === 're-confirm' ? (
-                                    <Button variant={'link'} className="flex gap-x-2">รอยืนยันให้ยืม ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></Button>
+                                    <Button variant={'link'} className="flex gap-x-2 p-0">รอยืนยันให้ยืม ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></Button>
                                 ) : detail.status === 'to-transfer' ? (
-                                    <Button variant={'link'} className="flex gap-x-2" onClick={() => handleDeliveryClick({
+                                    <Button variant={'link'} className="flex gap-x-2 p-0" onClick={() => handleDeliveryClick({
                                         ...med,
                                         responseId: detail.id,
                                         offeredMedicine: detail.acceptedOffer,
@@ -153,7 +153,7 @@ export const columns = (
                                 )  : detail.status === 'to-return' ? (
                                     <div className="flex gap-x-2">รอรับคืน<StatusIndicator status={detail.status} /></div>
                                 ) : detail.status === 'confirm-return' ? (
-                                    <Button variant={'link'} className="flex gap-x-2" onClick={() => handleReturnConfirm({
+                                    <Button variant={'link'} className="flex gap-x-2 p-0" onClick={() => handleReturnConfirm({
                                         ...med,
                                         responseId: detail.id,
                                         offeredMedicine: detail.acceptedOffer,

@@ -353,7 +353,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                 </Label>
                                 <Label className="font-normal">
                                     <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.noReturn")} />
-                                    ไม่รับคืน
+                                    ไม่รับคืน (ให้เปล่า)
                                 </Label>
                                     {!isAnyChecked && isSubmitted && (
                                     <p className="text-red-500 text-sm mt-1">

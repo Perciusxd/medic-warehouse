@@ -12,6 +12,10 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Hospital, Pill, Package, AlertTriangle, CheckCircle2, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface ConfirmationDialogProps {
@@ -59,6 +63,43 @@ export default function ConfirmationDialog({
     const medicineName = getMedicineName(selectedMed);
     const medicineAmount = getMedicineAmount(selectedMed);
 
+    // Determine dialog theme based on action type
+    const isDestructive = confirmButtonText.includes('ลบ') || confirmButtonText.includes('ยกเลิก') || confirmButtonText.includes('ปฏิเสธ');
+    const isSuccess = confirmButtonText.includes('ยืนยัน') || confirmButtonText.includes('อนุมัติ') || confirmButtonText.includes('ยอมรับ');
+
+    const getThemeColors = () => {
+        if (isDestructive) {
+            return {
+                headerBg: 'bg-red-50',
+                headerText: 'text-red-800',
+                icon: <AlertTriangle className="h-6 w-6 text-red-600" />,
+                confirmBg: 'bg-red-600 hover:bg-red-700',
+                cardBg: 'bg-gradient-to-r from-red-50 to-orange-50',
+                borderColor: 'border-red-200'
+            };
+        } else if (isSuccess) {
+            return {
+                headerBg: 'bg-green-50',
+                headerText: 'text-green-800',
+                icon: <CheckCircle2 className="h-6 w-6 text-green-600" />,
+                confirmBg: 'bg-green-600 hover:bg-green-700',
+                cardBg: 'bg-gradient-to-r from-green-50 to-emerald-50',
+                borderColor: 'border-green-200'
+            };
+        } else {
+            return {
+                headerBg: 'bg-blue-50',
+                headerText: 'text-blue-800',
+                icon: <Package className="h-6 w-6 text-blue-600" />,
+                confirmBg: 'bg-blue-600 hover:bg-blue-700',
+                cardBg: 'bg-gradient-to-r from-blue-50 to-indigo-50',
+                borderColor: 'border-blue-200'
+            };
+        }
+    };
+
+    const theme = getThemeColors();
+
     return (
         <AlertDialog
             open={open}
@@ -66,34 +107,101 @@ export default function ConfirmationDialog({
                 if (isOpen) onOpenChange(true);
             }}
         >
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>{title}</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        {description.replace('{hospitalName}', hospitalName)}
-                        <div className="flex flex-col gap-2 mt-4">
-                            <div className="flex flex-row items-center gap-2">
-                                <span>ชื่อยา:</span>
-                                <span>{medicineName}</span>
+            <AlertDialogContent className="max-w-[500px]">
+                <AlertDialogHeader className="space-y-4">
+                    <div className={`${theme.headerBg} -m-6 mb-0 p-6 rounded-t-lg border-b ${theme.borderColor}`}>
+                        <AlertDialogTitle className={`flex items-center gap-3 text-xl font-semibold ${theme.headerText}`}>
+                            {theme.icon}
+                            {title}
+                        </AlertDialogTitle>
+                    </div>
+                    
+                    <div className="pt-4">
+                        <AlertDialogDescription className="text-base text-gray-700 mb-4">
+                            {description.replace('{hospitalName}', hospitalName)}
+                        </AlertDialogDescription>
+
+                        {/* Enhanced Information Card */}
+                        <Card className={`border-2 ${theme.borderColor} shadow-sm`}>
+                            <CardContent className={`${theme.cardBg} p-4 space-y-4`}>
+                                {/* Hospital Information */}
+                                {hospitalName && (
+                                    <div className="flex items-center gap-3 p-3 bg-white/70 rounded-lg">
+                                        <Hospital className="h-5 w-5 text-blue-600" />
+                                        <div className="flex-1">
+                                            <span className="text-sm font-medium text-gray-600">โรงพยาบาล:</span>
+                                            <div className="font-semibold text-gray-900">{hospitalName}</div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <Separator className="bg-white/50" />
+
+                                {/* Medicine Information */}
+                                <div className="space-y-3">
+                                    {medicineName && (
+                                        <div className="flex items-center gap-3 p-3 bg-white/70 rounded-lg">
+                                            <Pill className="h-5 w-5 text-purple-600" />
+                                            <div className="flex-1">
+                                                <span className="text-sm font-medium text-gray-600">ชื่อยา:</span>
+                                                <div className="font-semibold text-gray-900">{medicineName}</div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {medicineAmount && (
+                                        <div className="flex items-center gap-3 p-3 bg-white/70 rounded-lg">
+                                            <Package className="h-5 w-5 text-green-600" />
+                                            <div className="flex-1">
+                                                <span className="text-sm font-medium text-gray-600">จำนวน:</span>
+                                                <Badge variant="secondary" className="ml-2 bg-white/80 text-gray-900 font-semibold">
+                                                    {medicineAmount}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Warning message for destructive actions */}
+                        {isDestructive && (
+                            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg mt-4">
+                                <AlertTriangle className="h-4 w-4 text-red-600" />
+                                <span className="text-sm text-red-700 font-medium">
+                                    การดำเนินการนี้ไม่สามารถยกเลิกได้
+                                </span>
                             </div>
-                            <div className="flex flex-row items-center gap-2">
-                                <span>จำนวน:</span>
-                                <span>{medicineAmount}</span>
-                            </div>
-                        </div>
-                    </AlertDialogDescription>
+                        )}
+                    </div>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => onOpenChange(false)}>
-                        Cancel
+
+                <AlertDialogFooter className="gap-3 pt-6 border-t border-gray-200">
+                    <AlertDialogCancel 
+                        onClick={() => onOpenChange(false)}
+                        className="min-w-[100px] flex items-center gap-2"
+                    >
+                        <X className="h-4 w-4" />
+                        ยกเลิก
                     </AlertDialogCancel>
+                    
                     <AlertDialogAction asChild>
                         {loading ? (
-                            <Button className="flex flex-row items-center gap-2 text-muted-foreground" disabled>
-                                <LoadingSpinner /> {confirmButtonText}
+                            <Button 
+                                className={`min-w-[140px] flex items-center gap-2 ${theme.confirmBg}`} 
+                                disabled
+                            >
+                                <LoadingSpinner className="h-4 w-4" />
+                                กำลังดำเนินการ...
                             </Button>
                         ) : (
-                            <Button onClick={handleConfirm}>
+                            <Button 
+                                onClick={handleConfirm}
+                                className={`min-w-[140px] flex items-center gap-2 ${theme.confirmBg}`}
+                            >
+                                {isSuccess && <CheckCircle2 className="h-4 w-4" />}
+                                {isDestructive && <AlertTriangle className="h-4 w-4" />}
+                                {!isSuccess && !isDestructive && <Package className="h-4 w-4" />}
                                 {confirmButtonText}
                             </Button>
                         )}

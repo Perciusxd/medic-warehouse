@@ -1,49 +1,108 @@
 'use client'
-import { useForm, Controller } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { formatDate } from "@/lib/utils"
 // import { format, formatDate, sub } from "date-fns"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 
-import { Checkbox } from "@/components/ui/checkbox"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
-import { Badge } from "@/components/ui/badge"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 // import PdfPreview from "@/components/ui/preview_pdf"
 import { Separator } from "@/components/ui/separator"
-
-import { Calendar1Icon, ShieldAlert } from "lucide-react"
-
-import RequestDetails from "./request-details"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { CalendarDays, Hospital, Pill, Package, ArrowRight, DollarSign, Clock, CheckCircle2, AlertCircle, FileText } from "lucide-react"
 
 import dynamic from 'next/dynamic';
 const PdfPreview = dynamic(() => import('@/components/ui/preview_pdf'), { ssr: false });
 
 function SharingDetailPanel({ data }: any) {
     const { createdAt, postingHospitalNameTH, sharingMedicine, sharingReturnTerm } = data;
-    const { name, sharingAmount, quantity, pricePerUnit } = sharingMedicine || {};
+    const { name, sharingAmount, quantity, pricePerUnit, manufacturer, unit } = sharingMedicine || {};
     const totalPrice = sharingAmount * pricePerUnit;
 
     return (
-        <div className="flex flex-col gap-2">
-            <h2 className="text-lg font-semibold">รายละเอียดการแบ่งปัน</h2>
-            <div className="grid grid-rows-2 gap-1 font-light">
-                <div>วันที่ {formatDate(createdAt)}</div>
-                <div>{postingHospitalNameTH}</div>
-                <div>แบ่งปันยา {name}</div>
-                <div>จำนวน {sharingAmount} {quantity} เป็นเงิน {totalPrice} บาท</div>
-                <div>คาดว่าจะได้รับคืนวันที่ {formatDate(sharingReturnTerm?.expectedReturnDate)}</div>
-            </div>
-        </div>
+        <Card className="w-full">
+            <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-blue-700">
+                    <Package className="h-5 w-5" />
+                    รายละเอียดการแบ่งปัน
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {/* Date and Hospital */}
+                <div className="grid grid-cols-1 gap-3">
+                    <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
+                        <CalendarDays className="h-4 w-4 text-blue-600" />
+                        <span className="text-sm font-medium text-blue-800">วันที่:</span>
+                        <span className="text-sm text-blue-700">{formatDate(createdAt)}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
+                        <Hospital className="h-4 w-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-800">โรงพยาบาล:</span>
+                        <span className="text-sm text-green-700">{postingHospitalNameTH}</span>
+                    </div>
+                </div>
+
+                {/* Medicine Information */}
+                <div className="border rounded-lg p-4 bg-gradient-to-r from-purple-50 to-pink-50">
+                    <div className="flex items-center gap-2 mb-3">
+                        <Pill className="h-4 w-4 text-purple-600" />
+                        <span className="font-semibold text-purple-800">ข้อมูลยา</span>
+                    </div>
+                    
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">ชื่อยา:</span>
+                            <span className="font-medium text-gray-900">{name}</span>
+                        </div>
+                        {manufacturer && (
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-600">ผู้ผลิต:</span>
+                                <span className="text-sm text-gray-700">{manufacturer}</span>
+                            </div>
+                        )}
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">จำนวนแบ่งปัน:</span>
+                            <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                                {sharingAmount} {unit || quantity}
+                            </Badge>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">ราคาต่อหน่วย:</span>
+                            <span className="text-sm text-gray-700">{pricePerUnit} บาท</span>
+                        </div>
+                        <Separator className="my-2" />
+                        <div className="flex justify-between items-center pt-2">
+                            <span className="font-medium text-gray-800 flex items-center gap-1">
+                                <DollarSign className="h-4 w-4" />
+                                ราคารวม:
+                            </span>
+                            <Badge variant="default" className="bg-purple-600 text-white text-base px-3 py-1">
+                                {totalPrice.toLocaleString()} บาท
+                            </Badge>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Expected Return Date */}
+                {sharingReturnTerm?.expectedReturnDate && (
+                    <div className="flex items-center gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                        <Clock className="h-4 w-4 text-amber-600" />
+                        <span className="text-sm font-medium text-amber-800">คาดว่าจะได้รับคืน:</span>
+                        <span className="text-sm text-amber-700 font-medium">
+                            {formatDate(sharingReturnTerm.expectedReturnDate)}
+                        </span>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     );
 }
+
 
 
 function AcceptanceDetailPanel({ responseData }: any) {
@@ -72,26 +131,98 @@ function AcceptanceDetailPanel({ responseData }: any) {
         return activeTerms.map(term => returnTermLabels[term] || term).join(", ") || "ไม่ระบุ";
     };
 
+    const getReturnTermBadges = (returnTerm: any) => {
+        const activeTerms = Object.keys(returnTerm).filter(key => returnTerm[key] === true);
+        return activeTerms.map(term => returnTermLabels[term] || term);
+    };
+
     return (
-        <div className="flex flex-col gap-2">
-            <h2 className="text-lg font-semibold">รายละเอียดการยอมรับ</h2>
-            <div className="grid grid-rows-2 gap-1 font-light">
-                <div>วันที่ {formatDate(responseDetail?.createdAt)}</div>
-                <div>{respondingHospitalNameTH}</div>
-                <div>
-                    ขอรับยา {sharingMedicine.name} ({sharingMedicine.manufacturer})
-                    จำนวน {acceptedOffer.responseAmount}/{sharingMedicine.unit}
-                    เป็นเงิน {totalPrice}
+        <Card className="w-full">
+            <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-green-700">
+                    <CheckCircle2 className="h-5 w-5" />
+                    รายละเอียดการยอมรับ
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {/* Response Date and Hospital */}
+                <div className="grid grid-cols-1 gap-3">
+                    <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
+                        <CalendarDays className="h-4 w-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-800">วันที่ตอบรับ:</span>
+                        <span className="text-sm text-green-700">{formatDate(responseDetail?.createdAt)}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
+                        <Hospital className="h-4 w-4 text-blue-600" />
+                        <span className="text-sm font-medium text-blue-800">โรงพยาบาลผู้รับ:</span>
+                        <span className="text-sm text-blue-700">{respondingHospitalNameTH}</span>
+                    </div>
                 </div>
-                <div className="flex flex-row gap-2">
-                    <div>โดยเงื่อนไขการส่งคืน:</div>
-                    <div>{getReturnTermText(returnTerm)}</div>
+
+                {/* Requested Medicine Details */}
+                <div className="border rounded-lg p-4 bg-gradient-to-r from-green-50 to-emerald-50">
+                    <div className="flex items-center gap-2 mb-3">
+                        <Pill className="h-4 w-4 text-green-600" />
+                        <span className="font-semibold text-green-800">ยาที่ขอรับ</span>
+                    </div>
+                    
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">ชื่อยา:</span>
+                            <span className="font-medium text-gray-900">{sharingMedicine.name}</span>
+                        </div>
+                        {sharingMedicine.manufacturer && (
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-600">ผู้ผลิต:</span>
+                                <span className="text-sm text-gray-700">({sharingMedicine.manufacturer})</span>
+                            </div>
+                        )}
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">จำนวนที่ขอ:</span>
+                            <Badge variant="secondary" className="bg-green-100 text-green-800">
+                                {acceptedOffer.responseAmount}/{sharingMedicine.unit}
+                            </Badge>
+                        </div>
+                        <Separator className="my-2" />
+                        <div className="flex justify-between items-center pt-2">
+                            <span className="font-medium text-gray-800 flex items-center gap-1">
+                                <DollarSign className="h-4 w-4" />
+                                มูลค่ารวม:
+                            </span>
+                            <Badge variant="default" className="bg-green-600 text-white text-base px-3 py-1">
+                                {totalPrice.toLocaleString()} บาท
+                            </Badge>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
+
+                {/* Return Terms */}
+                <div className="border rounded-lg p-4 bg-gradient-to-r from-orange-50 to-yellow-50">
+                    <div className="flex items-center gap-2 mb-3">
+                        <ArrowRight className="h-4 w-4 text-orange-600" />
+                        <span className="font-semibold text-orange-800">เงื่อนไขการส่งคืน</span>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2">
+                        {getReturnTermBadges(returnTerm).length > 0 ? (
+                            getReturnTermBadges(returnTerm).map((term, index) => (
+                                <Badge key={index} variant="outline" className="bg-orange-100 text-orange-800 border-orange-300">
+                                    {term}
+                                </Badge>
+                            ))
+                        ) : (
+                            <Badge variant="outline" className="bg-gray-100 text-gray-600 border-gray-300">
+                                <AlertCircle className="h-3 w-3 mr-1" />
+                                ไม่ระบุเงื่อนไข
+                            </Badge>
+                        )}
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
     );
 }
-
 
 function getConfirmationSchema(sharingData: any) {
     return z.object({
@@ -176,32 +307,69 @@ export default function ConfirmSharingDialog({ data, dialogTitle, status, openDi
 
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[1000px]">
-                <DialogTitle>{dialogTitle}</DialogTitle>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    <div className="flex gap-10">
-                        <div className="">
+            <DialogContent className="max-w-[1200px] max-h-[90vh] overflow-y-auto">
+                <DialogTitle className="flex items-center gap-2 text-xl font-semibold text-gray-800 pb-2">
+                    <FileText className="h-5 w-5" />
+                    {dialogTitle}
+                </DialogTitle>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    <div className="grid lg:grid-cols-2 gap-6">
+                        {/* Left Panel - Details */}
+                        <div className="space-y-4">
                             <SharingDetailPanel data={data} />
-                            <Separator className="my-4" />
                             <AcceptanceDetailPanel responseData={data} />
                         </div>
 
-                        <div className=" overflow-auto border rounded-md shadow-sm max-w-fit">
-                            <PdfPreview data={data} ref={pdfRef} />
+                        {/* Right Panel - PDF Preview */}
+                        <div className="flex flex-col">
+                            <div className="border rounded-lg shadow-sm overflow-hidden bg-white">
+                                <div className="bg-gray-50 px-4 py-2 border-b">
+                                    <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                                        <FileText className="h-4 w-4" />
+                                        ตัวอย่างเอกสาร
+                                    </h3>
+                                </div>
+                                <div className="p-2">
+                                    <PdfPreview data={data} ref={pdfRef} />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <DialogFooter>
-                        <Button type="submit">
+                    <DialogFooter className="gap-2 pt-4 border-t">
+                        <Button 
+                            type="submit" 
+                            className="min-w-[160px] bg-green-600 hover:bg-green-700"
+                            disabled={loading}
+                        >
                             {loading ? (
-                                <span className="flex items-center gap-2 text-muted-foreground">
-                                    <LoadingSpinner /> ยืนยันการแบ่งปัน
+                                <span className="flex items-center gap-2">
+                                    <LoadingSpinner className="h-4 w-4" />
+                                    กำลังยืนยัน...
                                 </span>
                             ) : (
-                                "ยืนยันการแบ่งปัน"
+                                <span className="flex items-center gap-2">
+                                    <CheckCircle2 className="h-4 w-4" />
+                                    ยืนยันการแบ่งปัน
+                                </span>
                             )}
                         </Button>
-                        <Button variant="outline" onClick={handleSavePdf}>Save PDF</Button>
+                        <Button 
+                            type="button"
+                            variant="outline" 
+                            onClick={handleSavePdf}
+                            className="min-w-[120px]"
+                        >
+                            <FileText className="h-4 w-4 mr-2" />
+                            บันทึก PDF
+                        </Button>
+                        <Button 
+                            type="button"
+                            variant="outline" 
+                            onClick={() => onOpenChange(false)}
+                        >
+                            ยกเลิก
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>

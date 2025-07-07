@@ -115,7 +115,7 @@ export default function TransferDashboard() {
     // Helper function to configure dialog for different actions
     const openConfirmationDialog = (med: any, actionType: 'receive-delivery' | 'delivery' | 'return') => {
         setSelectedMed(med);
-        
+
         const configs = {
             'receive-delivery': {
                 title: "ยืนยันการรับของ",
@@ -145,7 +145,7 @@ export default function TransferDashboard() {
                 refetchFunction: fetchMedicineRequests,
             }
         };
-        
+
         setDialogConfig(configs[actionType]);
         setConfirmReceiveDeliveryDialogOpen(true);
     };
@@ -223,7 +223,7 @@ export default function TransferDashboard() {
             }
 
             const result = await response.json()
-            fetchMedicineRequests();
+            fetchMedicineSharing();
             setLoading(false)
             return true;
         } catch (error) {
@@ -353,7 +353,7 @@ export default function TransferDashboard() {
                         </div>
                     ) : (
                         <div className="bg-white shadow rounded">
-                                <DataTable columns={columnSharing(handleApproveClick, handleReConfirmClick, handleDeliveryClick, handleReturnClick, handleReturnConfirm)} data={medicineSharing} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+                            <DataTable columns={columnSharing(handleApproveClick, handleReConfirmClick, handleDeliveryClick, handleReturnClick, handleReturnConfirm)} data={medicineSharing} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
                         </div>
                     )
                 }
@@ -426,7 +426,7 @@ export default function TransferDashboard() {
                 />
             )}
 
-            { selectedMed && selectedMed.ticketType === "sharing" && deliveryDialogOpen && (
+            {selectedMed && selectedMed.ticketType === "sharing" && deliveryDialogOpen && (
                 <ConfirmSharingDialog
                     data={selectedMed}
                     dialogTitle="ยืนยันการจัดส่ง"
@@ -456,17 +456,17 @@ export default function TransferDashboard() {
             /> */}
 
             {selectedMed && selectedMed.ticketType === "sharing" && returnSharingDialogOpen && (
-            <ReturnSharingDialog
-                selectedMed={selectedMed}
-                open={returnSharingDialogOpen}
-                onOpenChange={(open: boolean) => {
-                    setReturnSharingDialogOpen(open);
-                    if (!open) {
-                        fetchMedicineSharingInReturn();
-                        setSelectedMed(null);
-                    }
-                }}
-            />
+                <ReturnSharingDialog
+                    selectedMed={selectedMed}
+                    open={returnSharingDialogOpen}
+                    onOpenChange={(open: boolean) => {
+                        setReturnSharingDialogOpen(open);
+                        if (!open) {
+                            fetchMedicineSharingInReturn();
+                            setSelectedMed(null);
+                        }
+                    }}
+                />
             )}
         </div>
     )
