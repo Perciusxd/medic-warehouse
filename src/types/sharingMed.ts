@@ -23,6 +23,7 @@ export type SharingAsset = {
         | "offered"
         | "re-confirm"
         | "to-transfer"
+        | "to-confirm"
         | "in-return"
         | "to-return"
         | "returned"

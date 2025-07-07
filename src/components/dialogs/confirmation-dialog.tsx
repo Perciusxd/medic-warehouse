@@ -41,9 +41,9 @@ export default function ConfirmationDialog({
     errorMessage,
     loading,
     onConfirm,
-    getHospitalName = (med) => med?.responseDetails?.respondingHospitalNameTH || med?.respondingHospitalNameTH || '',
-    getMedicineName = (med) => med?.sharingMedicine?.name || '',
-    getMedicineAmount = (med) => med?.offeredMedicine?.responseAmount || '',
+    getHospitalName = (med) => med?.displayHospitalName || med?.responseDetails?.respondingHospitalNameTH || med?.respondingHospitalNameTH || '',
+    getMedicineName = (med) => med?.displayMedicineName || med?.sharingMedicine?.name || '',
+    getMedicineAmount = (med) => med?.displayMedicineAmount || med?.offeredMedicine?.responseAmount || med?.acceptedOffer?.responseAmount || '',
 }: ConfirmationDialogProps) {
     const handleConfirm = async () => {
         const result = await onConfirm(selectedMed);

@@ -46,12 +46,13 @@ export const fetchAllStatusByTicketType = async (loggedInHospital: string, statu
     }
 };
 
-export const fetchConfirmStatusByTicketType = async (loggedInHospital: string, status: string, ticketType: string) => {
+export const fetchConfirmStatusByTicketType = async (loggedInHospital: string, status: string[], ticketType: string) => {
     try {
         if (ticketType === "sharing") {
+            const statusParam = JSON.stringify(status);
             const body = {
                 loggedInHospital: loggedInHospital,
-                status: status,
+                status: statusParam,
             }
             const response = await fetch("/api/querySharingByStatus", {
                 method: "POST",
@@ -66,9 +67,10 @@ export const fetchConfirmStatusByTicketType = async (loggedInHospital: string, s
             }
             return result;
         } else {
+            const statusParam = JSON.stringify(status);
             const body = {
                 loggedInHospital: loggedInHospital,
-                status: status,
+                status: statusParam,
             }
             const response = await fetch("/api/queryRequestByStatus", {
                 method: "POST",

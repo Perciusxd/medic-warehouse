@@ -18,15 +18,21 @@ export const columns = (
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">สถานะ</div>,
         cell: ({ row }: { row: any }) => {
             const med = row.original;
-            console.log('med', med)
             const status = row.original.status;
+            console.log('status', status)
+            console.log('mock data med', med)
             return <div>
                 {
                     status === 'to-confirm' ? (
                         <div>
-                            <StatusIndicator status={status} />
-                            <div className="text-sm font-medium text-gray-600">{status}</div>
-                            <Button variant={"link"} className="flex gap-x-2" onClick={() => handleConfirmReceiveDelivery(med)}>รับคืน<StatusIndicator status={status} /></Button>
+                            <Button variant={"link"} className="flex gap-x-2" onClick={() => 
+                                handleConfirmReceiveDelivery({
+                                    ...med,
+                                    displayHospitalName: med.sharingDetails.postingHospitalNameTH,
+                                    displayMedicineName: med.sharingDetails.sharingMedicine.name,
+                                    displayMedicineAmount: med.acceptedOffer.responseAmount,
+                                    // displayHospi
+                                })}>ยืนยันการรับของ<StatusIndicator status={status} /></Button>
                         </div>
                     ) : status === 'in-return' ? (
                         <div>
