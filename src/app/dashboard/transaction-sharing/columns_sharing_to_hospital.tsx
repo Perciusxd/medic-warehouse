@@ -149,6 +149,8 @@ export const columns = (
                                     <Button variant={'link'} className="flex gap-x-2">รอยืนยันการรับของ<StatusIndicator status={detail.status} /></Button>
                                 )  : detail.status === 'to-return' ? (
                                     <Button variant={'link'} className="flex gap-x-2">รอรับคืน<StatusIndicator status={detail.status} /></Button>
+                                ) : detail.status === 'confirm-return' ? (
+                                    <Button variant={'link'} className="flex gap-x-2">รอยืนยันการคืน<StatusIndicator status={detail.status} /></Button>
                                 ) : detail.status === 'returned' ? (
                                     <Button variant={'link'} className="flex gap-x-2">เสร็จสิ้น<StatusIndicator status={detail.status} /></Button>
                                 ) : detail.status === 'cancelled' ? (

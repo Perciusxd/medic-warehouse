@@ -26,6 +26,7 @@ export type SharingAsset = {
         | "to-confirm"
         | "in-return"
         | "to-return"
+        | "confirm-return"
         | "returned"
         | "cancelled";
       updatedAt: string;

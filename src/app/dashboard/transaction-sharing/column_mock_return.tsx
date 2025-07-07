@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import StatusIndicator from "@/components/ui/status-indicator";
 
 export const columns = (
-    handleReturnClick: (med: any) => void,
+    handleReturnSharingClick: (med: any) => void,
     handleConfirmReceiveDelivery: (med: any) => void,
 ) => [
     {
@@ -19,8 +19,8 @@ export const columns = (
         cell: ({ row }: { row: any }) => {
             const med = row.original;
             const status = row.original.status;
-            console.log('status', status)
-            console.log('mock data med', med)
+            // console.log('status', status)
+            // console.log('mock data med', med)
             return <div>
                 {
                     status === 'to-confirm' ? (
@@ -36,8 +36,7 @@ export const columns = (
                         </div>
                     ) : status === 'in-return' ? (
                         <div>
-                            <StatusIndicator status={status} />
-                            <div className="text-sm font-medium text-gray-600">{status}</div>
+                            <Button variant={"link"} className="flex gap-x-2" onClick={() => handleReturnSharingClick(med)}>ต้องส่งคืน<StatusIndicator status={status} /></Button>
                         </div>
                     ) : null
                 }
