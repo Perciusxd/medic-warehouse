@@ -96,6 +96,8 @@ export default function StatusDashboard() {
     }, [fetchMedicineRequests, fetchMedicineSharing]);
 
     console.log('medicineSharing', medicineSharing)
+    console.log('medicineRequests', medicineRequests);
+    
     
     return (
         <>
@@ -110,7 +112,7 @@ export default function StatusDashboard() {
                 ) : (
                     <DataTable
                         columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, handleReConfirmClick, "request")}
-                        data={medicineRequests.filter((med: any) => med.ticketType === "request")}
+                        data={(medicineRequests as any)?.result?.filter((med: any) => med.ticketType === "request")}
                         globalFilter={globalFilter}
                         setGlobalFilter={setGlobalFilter} />
                 )
