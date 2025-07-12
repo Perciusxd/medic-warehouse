@@ -4,13 +4,28 @@ import { useEffect, useRef } from "react";
 import Chart from "chart.js/auto";
 import { Button } from "@/components/ui/button"
 
-const DoughnutChart = () => {
+interface DoughnutChartProps {
+  data: {
+    labels: string[];
+    datasets: {
+      data: number[];
+      backgroundColor: string[];
+      hoverOffset?: number;
+    }[];
+  };
+  options?: any;
+  query?: any;
+}
+
+
+
+const DoughnutChart = ({ data, options, query }: DoughnutChartProps) => {
     const chartRef = useRef<HTMLCanvasElement | null>(null);
     const chartInstance = useRef<Chart | null>(null);
     
     const xValues = ["แจ้งแบ่งปัน", "รอยืนยันให้ยืม", "รอส่งมอบ", "รอรับคืน", "เสร็จสิ้น"];
     const yValues = [1, 1, 2, 7, 1];
-    const summary = yValues.reduce((acc, val) => acc + val, 0);
+    const summary = data.datasets[0].data.reduce((acc, val) => acc + val, 0);
     const barColors = [
       "#b91d47",
       "#00aba9",
@@ -18,6 +33,10 @@ const DoughnutChart = () => {
       "#e8c3b9",
       "#1e7145",
     ];
+
+  const onQuery = (label: string) => {
+    query(label);
+  }
 
   useEffect(() => {
     if (chartRef.current) {
@@ -27,8 +46,9 @@ const DoughnutChart = () => {
           labels: xValues,
           datasets: [
             {
-              backgroundColor: barColors,
-              data: yValues,
+              backgroundColor: data.datasets[0].backgroundColor || barColors,
+              // data: yValues,
+              data: data.datasets[0].data,
             },
           ],
         },
@@ -38,6 +58,16 @@ const DoughnutChart = () => {
               display: false, 
             },
           },
+          onClick: (event: any, elements: any) => {
+            if (elements && elements.length > 0) {
+              
+            const chart = elements[0];
+            const label = data.labels[chart.index];
+            if (label) {
+              onQuery(label);
+            }
+            }
+          },
         },
       });
     }
@@ -46,7 +76,7 @@ const DoughnutChart = () => {
     return () => {
       chartInstance.current?.destroy();
     };
-  }, [xValues, yValues]);
+  }, [xValues, yValues, barColors, data.datasets, data.labels, onQuery]);
 
   return (
         <div className="flex flex-col w-full m-[20px]">
@@ -55,17 +85,17 @@ const DoughnutChart = () => {
             </div>
         
             <div className="flex flex-wrap justify-center gap-4 mt-4">
-                {xValues.map((label, i) => (
-                <div key={label} className="flex items-center gap-2 text-sm">
+                {data.datasets[0].data.map((label, i) => (                  
+                <div key={i} className="flex items-center gap-2 text-sm">
                     <div
                     style={{
                         width: "16px",
                         height: "16px",
-                        backgroundColor: barColors[i],
+                        backgroundColor: data.datasets[0].backgroundColor[i],
                         borderRadius: "50%",
                     }}
                     />
-                    <span>{label} ({yValues[i]})</span>
+                    <span>{data.labels[i]} ({data.datasets[0].data[i]})</span>
                 </div>
                 ))
                 }

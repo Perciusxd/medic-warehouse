@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/alt-text */
 "use client";
 import { useEffect, useState } from "react";
 import { pdf, Document as PDFDocGen, Page, Text, View, StyleSheet ,Font ,Image} from "@react-pdf/renderer";
@@ -84,20 +85,30 @@ export default function PDFPreviewButton({ data }: { data: any[] }) {
   return (
     <Dialog onOpenChange={(open) => open && generatePDF()}>
       <DialogTrigger asChild>
-        <Button > พิมพ์เอกสารการเรียกคืนยา </Button>
+      <Button>พิมพ์เอกสารการเรียกคืนยา</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl h-[90vh]">
-        <DialogHeader>
-          <DialogTitle>Preview PDF</DialogTitle>
-        </DialogHeader>
-        <div className="bg-white p-2 rounded border">
-          {blobUrl && <PDFViewer key={blobUrl} file={blobUrl}><PDFPage pageNumber={1} /></PDFViewer>}
+      <DialogContent className="max-w-4xl w-full h-[90vh]">
+      <DialogHeader>
+        <DialogTitle>Preview PDF</DialogTitle>
+      </DialogHeader>
+      <div className="bg-white p-2 rounded border w-full h-[70vh] flex justify-center items-center overflow-auto">
+        {blobUrl && (
+        <div className="w-full h-full flex justify-center items-center">
+          <PDFViewer
+          key={blobUrl}
+          file={blobUrl}
+          className="w-full h-full"
+          >
+          <PDFPage pageNumber={1} width={600} />
+          </PDFViewer>
         </div>
-        <DialogFooter className="mt-4">
-          <DialogClose asChild>
-            <Button variant="ghost">ปิด</Button>
-          </DialogClose>
-        </DialogFooter>
+        )}
+      </div>
+      <DialogFooter className="mt-4">
+        <DialogClose asChild>
+        <Button variant="ghost">ปิด</Button>
+        </DialogClose>
+      </DialogFooter>
       </DialogContent>
     </Dialog>
   );

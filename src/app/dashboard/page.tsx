@@ -52,7 +52,6 @@ export default function Dashboard() {
     
     // fetch medicines
     useEffect(() => {
-        console.log('Quert??');
         if (loading) return;
         if (!user) return;
         
