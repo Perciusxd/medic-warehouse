@@ -76,8 +76,10 @@ export const columns = (handleStatusClick: (med: ResponseAsset, status: string) 
                 status === "offered" ? "รอยืนยัน" : status === "to-transfer" ? (
                     <Button variant={"link"} className="p-0" onClick={() => handleStatusClick(row.original, "to-return")}>รอส่งมอบ<StatusIndicator status={status} /></Button>
                 ) : status === "to-return" ? (
-                    <Button variant={"link"} className="p-0" onClick={() => handleStatusClick(row.original, "returned")}>รอส่งคืน<StatusIndicator status={status} /></Button>
-                ) : status === "in-return" ? "รอยืนยันการได้รับคืน" : status === "returned" ? "ได้รับคืนแล้ว" : status === "cancelled" ? "ยกเลิก" : ""
+                    <Button variant={"link"} className="p-0" disabled>รอรับคืนยา<StatusIndicator status={status} /></Button>
+                ) : status === "confirm-return" ? (
+                    <Button variant={"link"} className="p-0" onClick={() => handleStatusClick(row.original, "returned")} >โปรดยืนยันการคืนยา<StatusIndicator status={status} /></Button>
+                ): status === "in-return" ? "รอยืนยันการได้รับคืน" : status === "returned" ? "ได้รับคืนแล้ว" : status === "cancelled" ? "ยกเลิก" : ""
             }</div>
         }
     },
@@ -85,9 +87,10 @@ export const columns = (handleStatusClick: (med: ResponseAsset, status: string) 
         id: "action",
         size: 10,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ประวัติ</div>,
-        cell: ({  }) => {
+        cell: ({ row }) => {
+            const status = row.getValue("status") as string
             return <div className="text-sm font-medium text-gray-600">
-                <History className="w-4 h-4" />
+                <History className="w-4 h-4" /> 
             </div>
         }
     }

@@ -113,10 +113,14 @@ export const columns = (
         cell: ({ row }) => {
             const med = row.original;
             const responseDetails = row.original.responseDetails;
+            console.log('responseDetails????????????', responseDetails)
             const maxDisplay = 3;
             const details = responseDetails.slice(0, maxDisplay);
             const hasMore = responseDetails.length > maxDisplay;
+            
 
+
+            
             return (
                 <div className="flex flex-col">
                     {med.responseDetails.map((detail, index) => (
@@ -145,7 +149,7 @@ export const columns = (
                                         offeredMedicine: detail.acceptedOffer,
                                         sharingDetails: med.sharingMedicine,
                                         acceptedOffer: detail.acceptedOffer,
-                                    })}>รอส่งมอบ<StatusIndicator status={detail.status} /></Button>
+                                    })}>ส่งมอบ<StatusIndicator status={detail.status} /></Button>
                                 ) : detail.status === 'in-return' ? (
                                     <div className="flex gap-x-2">รอรับคืน<StatusIndicator status={detail.status} /></div> 
                                 ) : detail.status === 'to-confirm' ? (
@@ -159,7 +163,7 @@ export const columns = (
                                         offeredMedicine: detail.acceptedOffer,
                                         sharingDetails: med.sharingMedicine,
                                         responseStatus: detail.status,
-                                    })}>รอยืนยันการคืน<StatusIndicator status={detail.status} /></Button>
+                                    })}>โปรดยืนยันการคืนยา<StatusIndicator status={detail.status} /></Button>
                                 ) : detail.status === 'returned' ? (
                                     <div className="flex gap-x-2">เสร็จสิ้น<StatusIndicator status={detail.status} /></div>
                                 ) : detail.status === 'cancelled' ? (

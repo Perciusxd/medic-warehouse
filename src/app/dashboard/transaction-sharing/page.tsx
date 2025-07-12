@@ -6,7 +6,6 @@ import { formatDistanceToNow } from "date-fns";
 import { DataTable } from "../request/data-table";
 import { columns as columnsRequestToHospital } from "./columns_request_to_hospital";
 import { columns as columnSharing } from "./columns_sharing_to_hospital";
-import { columns as columnSharingInReturn } from "./column_mock_return";
 
 import { useMedicineRequests, useMedicineSharingStatus, useMedicineSharingInReturn } from "@/hooks/useMedicineAPI";
 import { useHospital } from "@/context/HospitalContext";
@@ -24,7 +23,7 @@ import ReturnSharingDialog from '@/components/dialogs/return-sharing-dialog';
 
 export default function TransferDashboard() {
     const { loggedInHospital } = useHospital();
-    const statusFilterRequest = useMemo(() => ["offered", "to-transfer", "to-return", "returned"], []);
+    const statusFilterRequest = useMemo(() => ["offered", "to-transfer", "to-return", "returned","confirm-return"], []);
     const statusFilterSharing = useMemo(() => ["to-confirm", "in-return"], []);
     const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequests(loggedInHospital, statusFilterRequest);
     const { medicineSharing, loading: loadingShare, error: errorShare, fetchMedicineSharing } = useMedicineSharingStatus(loggedInHospital);
@@ -358,22 +357,7 @@ export default function TransferDashboard() {
                     )
                 }
             </div>
-
-            <div>
-                <h1>รับคืน</h1>
-                {
-                    loadingReturn ? (
-                        <div className="p-8 flex flex-col items-center justify-center">
-                            <LoadingSpinner width="48" height="48" />
-                            <p className="mt-4 text-gray-500">Loading medicines...</p>
-                        </div>
-                    ) : (
-                        <div className="bg-white shadow rounded">
-                            <DataTable columns={columnSharingInReturn(handleReturnSharingClick, handleConfirmReceiveDelivery)} data={medicineSharingInReturn} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
-                        </div>
-                    )
-                }
-            </div>
+                
 
             {selectedMed && selectedMed.ticketType === "sharing" && confirmDialogOpen && (
                 <ConfirmSharingDialog

@@ -48,7 +48,6 @@ export const columns = (
             )
         },
         cell: ({ row }) => {
-            if(row.original.ticketType === "request"){
                 //const raw = row.getValue("updatedAt");
                 const raw = row.original.updatedAt
                 const date = new Date(Number(raw)); // convert string to number, then to Date
@@ -60,20 +59,7 @@ export const columns = (
                     <div className="text-sm font-medium text-gray-600">{formattedDate}</div>
                     <div className="text-xs text-muted-foreground">{timeOnly}</div>
                 </div>);
-            }else{
-                //const raw = row.getValue("createdAt");
-                const raw = row.original.createdAt
-                console.log("raw===createdAt==", raw);
-                const date = new Date(Number(raw)); // convert string to number, then to Date
-                const isValid = !isNaN(date.getTime());
-                const formattedDate = isValid ? format(date, 'dd/MM/yyyy'): "-"; // format to date only
-                const timeOnly = isValid ? format(date, 'HH:mm:ss'): "-"; // format to time only
-
-                return (<div>
-                    <div className="text-sm font-medium text-gray-600">{formattedDate}</div>
-                    <div className="text-xs text-muted-foreground">{timeOnly}</div>
-                </div>);
-            }
+            
         },
         enableGlobalFilter: true
     },
@@ -93,8 +79,6 @@ export const columns = (
             )
         },
         cell: ({ row }) => {
-            console.log("row===", row.original);
-            if(row.original.ticketType === "request"){
             const medName = row.original.requestMedicine.name;
             const medTrademark = row.original.requestMedicine.trademark;
 
@@ -104,17 +88,7 @@ export const columns = (
                     <div className="text-xs text-muted-foreground">{medTrademark}</div>
                 </div>
             )
-            }else{
-                const medName = row.original.sharingMedicine.name;
-                const medTrademark = row.original.sharingMedicine.trademark;
-
-                return (
-                    <div className="flex flex-col">
-                        <div className="text-sm font-medium text-gray-600">{medName}</div>
-                        <div className="text-xs text-muted-foreground">{medTrademark}</div>
-                    </div>
-                )
-            }
+           
         },
         enableGlobalFilter: true
     },
@@ -123,7 +97,6 @@ export const columns = (
         size: 150,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ขนาด/หน่วย</div>,
         cell:({ row }) => {
-            if(row.original.ticketType === "request"){
                 const med = row.original;
                 const quantity = med.requestMedicine.quantity;
                 const unit = med.requestMedicine.unit
@@ -132,18 +105,7 @@ export const columns = (
                         <div className="text-sm font-medium text-gray-600">{quantity}</div>
                         <div className="text-xs text-muted-foreground">{unit}</div>
                     </div>
-                )
-            }else{
-                const med = row.original;
-                const quantity = med.sharingMedicine.quantity;
-                const unit = med.sharingMedicine.unit
-                return(
-                    <div className="flex flex-col">
-                        <div className="text-sm font-medium text-gray-600">{quantity}</div>
-                        <div className="text-xs text-muted-foreground">{unit}</div>
-                    </div>
-                )
-            }
+                )           
         },  
         enableGlobalFilter: true
     },
@@ -152,19 +114,11 @@ export const columns = (
         size: 100,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่ขอยืม</div>,
         cell: ({ row }) => {
-            if(row.original.ticketType === "request"){
                 const med = row.original;
                 const requestAmount = med.requestMedicine.requestAmount;
                 return (
                     <div className="text-sm font-medium text-gray-600">{requestAmount}</div>
-                )
-            }else{
-                const med = row.original;
-                const sharingAmount = med.sharingMedicine.sharingAmount;
-                return (
-                    <div className="text-sm font-medium text-gray-600">{sharingAmount}</div>
-                )
-            }
+                )         
         },
         enableGlobalFilter: false
     },
@@ -172,8 +126,6 @@ export const columns = (
          accessorKey: "requestDetails.id", 
          size: 280,
          header: () => {
-        
-            if(ticketType==="request"){
                 return (
                     <div className="font-medium text-muted-foreground text-center cursor-default">
                         <div>
@@ -189,16 +141,9 @@ export const columns = (
                         </div>
                     </div>
                     
-                )
-            }else{
-                return (
-                    <div className="font-medium text-muted-foreground text-left cursor-default flex flex-row justify-center">เงื่อนไขการคืน</div>
-                )
-            }
-            
+                )        
          },
          cell:({row})=>{
-            if(row.original.ticketType === "request"){
                 const med = row.original;
                 const condition = med.requestTerm.receiveConditions.condition
                 const supportType = med.requestTerm.receiveConditions.supportType
@@ -236,175 +181,96 @@ export const columns = (
                     </div>
 
                 </div>
-                )
-            }else{
-                const med = row.original.sharingReturnTerm
-
-                const receiveConditions = med.receiveConditions
-              
-                const exactType = receiveConditions.exactType
-                
-                const subType = receiveConditions.subType
-               
-                const supportType = receiveConditions.supportType
-              
-                const otherType = receiveConditions.otherType
-               
-                const noReturn = receiveConditions.noReturn
-              
-                
-                return (
-                  <ReturnConditionIndicator status={{ exactType, subType, supportType, otherType, noReturn }} />
-                );
-            }
-    
-            
+                )    
          },
          enableGlobalFilter: false
     },
     {
         accessorKey: "responseDetails",
-        size: 300,
+        size: 350,
         header: () => (
-            <div className="flex flex-row gap-x-2">
-                <div className="font-medium text-muted-foreground text-left cursor-default basis-1/2">
-                    สถานะการตอบกลับ
+            <div className="flex flex-row gap-x-2 justify-between">
+                <div className="font-medium text-muted-foreground text-center cursor-default basis-1/3 justify-center">
+                    โรงพยาบาลที่ให้ยืม
                 </div>
-                <div className="font-medium text-muted-foreground text-left cursor-default  basis-1/2">
-                    (จำนวนที่ให้ยืม)
+                <div className="font-medium text-muted-foreground  cursor-default text-center  basis-1/2 justify-center ">
+                    สถานะ(จำนวนยาที่ได้ยืม)
+                </div>
+                <div className="flex justify-center basis-1/6">
+                    <History className="w-4 h-4 text-muted-foreground cursor-pointer" />
                 </div>
             </div>
         ),
         cell: ({ row }) => {
-            if(row.original.ticketType === "request"){
                 const med = row.original;
                 const maxDisplay = 3;
                 const details = med.responseDetails.slice(0, maxDisplay);
                 const hasMore = med.responseDetails.length > maxDisplay;
-
+                
             // const [dialogOpen, setDialogOpen] = useState(false);
             // const handleConfirm = () => {
             //     setDialogOpen(false);
             // }
-
+            
             return (
-                    <div className="flex flex-col gap-y-1 text-gray-600" >
+                    <div className="" >
                         {med.responseDetails.map((detail: any, index: any) => (
-                            <div key={index} className="flex items-center gap-x-2 h-4">
-                                <div className="basis-1/2">
+                            <div key={index} className="flex flex-row  items-center  justify-between">
+                                <div className="text-sm font-medium text-gray-600 flex justify-center basis-1/3">
                                     <span>{detail.respondingHospitalNameTH}:</span>
                                 </div>
-                                <div className="basis-1/2">
-                                    {detail.status === 'offered' ? (
+                                <div className="text-sm font-medium text-gray-600 flex  basis-1/2 items-center text-center justify-center">
+                                    <div className="flex items-center gap-x-1 basis-1/2">
+                                        {detail.status === 'offered' ? (
                                             <Button 
                                                 variant={"link"} 
-                                                className="flex gap-x-2" 
+                                                className="flex gap-x-1  " 
                                             onClick={() => handleApproveClick({
                                                 ...med,
                                                 responseId: detail.id,
                                                 offeredMedicine: detail.offeredMedicine,
                                                 requestDetails: med.requestMedicine,
-                                            })}>ได้รับการยืนยัน ({detail.offeredMedicine.offerAmount})<StatusIndicator status={detail.status} />
+                                            })}>ได้รับการยืนยัน <StatusIndicator status={detail.status} />
                                             </Button>
-                                    )
+                                            
+                                        )
                                         : detail.status === 'pending'
-                                            ? (<Button variant={'link'} disabled className="flex gap-x-2">รอการยืนยันให้ยืม (-)<StatusIndicator status={detail.status} /></Button>)
+                                            ? (<Button variant={'link'} disabled className="flex gap-x-1  ">รอการยืนยันให้ยืม<StatusIndicator status={detail.status} /></Button>)
                                             : detail.status === 'to-transfer'
-                                                ? (<Button variant={'link'} className="flex gap-x-2">รอส่งมอบ<StatusIndicator status={detail.status} /></Button>)
+                                                ? (<Button variant={'link'} className="flex gap-x-1  " disabled>รอส่งมอบ<StatusIndicator status={detail.status} /></Button>)
                                                 : detail.status === 'to-return'
-                                                    ? (<Button variant={'link'} className="flex gap-x-2" onClick={() => handleDeliveryClick({
+                                                    ? (<Button variant={'link'} className="flex gap-x-1  " onClick={() => handleDeliveryClick({
                                                         ...med,
                                                         responseId: detail.id,
                                                         offeredMedicine: detail.offeredMedicine,
                                                         requestDetails: med.requestMedicine,
                                                     })}>อยู่ระหว่างการจัดส่ง (เช็คสถานะ)<StatusIndicator status={detail.status} /></Button>)
                                                     : detail.status === 'in-return'
-                                                        ? (<Button variant={'link'} className="flex gap-x-2" onClick={() => handleReturnClick(
+                                                        ? (<Button variant={'link'} className="flex gap-x-1  " onClick={() => handleReturnClick(
                                                             {
                                                                 ...med,
                                                                 responseId: detail.id,
                                                                 offeredMedicine: detail.offeredMedicine,
                                                                 requestDetails: med.requestMedicine,
                                                             })
-                                                        }>ได้รับยาที่ยืม(ต้องส่งคืน)<StatusIndicator status={detail.status} /></Button>)
+                                                        }>ได้รับยาที่ยืม(ส่งคืน)<StatusIndicator status={detail.status} /></Button>)
                                                         : detail.status === "confirm-return"
-                                                            ? (<span className="flex gap-x-2">รอยืนยันการได้รับคืน< StatusIndicator status={detail.status} /></span>)
+                                                            ? (<span className="flex gap-x-1  ">รอยืนยันการได้รับคืน< StatusIndicator status={detail.status} /></span>)
                                                             : detail.status === 'returned'
-                                                                ? (<span className="flex gap-x-2">ได้คืนยาแล้ว<StatusIndicator status={detail.status} /></span>)
+                                                                ? (<span className="flex gap-x-1   ">ได้คืนยาแล้ว<StatusIndicator status={detail.status} /></span>)
                                                                 : detail.status === 'cancelled'
-                                                                    ? (<span className="flex gap-x-2">ยกเลิก<StatusIndicator status={detail.status} /></span>)
+                                                                    ? (<span className="flex gap-x-1  ">ยกเลิก<StatusIndicator status={detail.status} /></span>)
                                                                     : null
-                                    }
+                                            }
+                                    </div>
+                                    <div className="flex ">({detail.offeredMedicine.offerAmount})</div>
                                 </div>
-                                <History className="w-4 h-4" />
+                                <div className="flex justify-center basis-1/6"><History className="w-4 h-4 text-muted-foreground cursor-pointer" /></div>
                             </div>
                         ))}
                         {hasMore && <Button variant={'link'} className="">เพิ่มเติม...</Button>}
                     </div>
                 );
-            }else{
-                const med = row.original;
-                const maxDisplay = 3;
-                const details = med.responseDetails.slice(0, maxDisplay);
-                const hasMore = med.responseDetails.length > maxDisplay;
-                console.log("med ----><", med)
-
-                return (
-                    <div className="flex flex-col gap-y-1 text-gray-600" >
-                        {med.responseDetails.map((detail: any, index: any) => (
-                            <div key={index} className="flex items-center gap-x-2 h-4">
-                                <div className="basis-1/2">
-                                    <span>{detail.respondingHospitalNameTH}:</span>
-                                </div>
-                                <div className="basis-1/2">
-                                    {detail.status === 'offered' ? (
-                                            <Button 
-                                                variant={"link"} 
-                                                className="flex gap-x-2" 
-                                            onClick={() => handleReConfirmClick({
-                                                ...med,
-                                                responseId: detail.id,
-                                                offeredMedicine: detail.acceptedOffer,
-                                                sharingDetails: med.sharingMedicine,
-                                            })}>รอยืนยันให้ยืม ({detail.acceptedOffer?.responseAmount || '-'})<StatusIndicator status={detail.status} />
-                                            </Button>
-                                    )
-                                        : detail.status === 'pending'
-                                            ? (<Button variant={'link'} disabled className="flex gap-x-2">รอการตอบกลับ (-)<StatusIndicator status={detail.status} /></Button>)
-                                            : detail.status === 'to-transfer'
-                                                ? (<Button variant={'link'} className="flex gap-x-2">รอส่งมอบ<StatusIndicator status={detail.status} /></Button>)
-                                                : detail.status === 'to-return'
-                                                    ? (<Button variant={'link'} className="flex gap-x-2" onClick={() => handleDeliveryClick({
-                                                        ...med,
-                                                        responseId: detail.id,
-                                                        acceptedMedicine: detail.acceptedMedicine,
-                                                        sharingDetails: med.sharingMedicine,
-                                                    })}>อยู่ระหว่างการจัดส่ง (เช็คสถานะ)<StatusIndicator status={detail.status} /></Button>)
-                                                    : detail.status === 'in-return'
-                                                        ? (<Button variant={'link'} className="flex gap-x-2" onClick={() => handleReturnClick(
-                                                            {
-                                                                ...med,
-                                                                responseId: detail.id,
-                                                                acceptedMedicine: detail.acceptedMedicine,
-                                                                sharingDetails: med.sharingMedicine,
-                                                            })
-                                                        }>รอการคืน<StatusIndicator status={detail.status} /></Button>)
-                                                        : detail.status === "confirm-return"
-                                                            ? (<span className = "flex gap-x-2">รอยืนยันการคืน< StatusIndicator status={detail.status} /></span>)
-                                                            : detail.status === 'completed'
-                                                                ? (<span className="flex gap-x-2">เสร็จสิ้น<StatusIndicator status={detail.status} /></span>)
-                                                                : detail.status === 'cancelled'
-                                                                    ? (<span className="flex gap-x-2">ยกเลิก<StatusIndicator status={detail.status} /></span>)
-                                                                    : null
-                                    }
-                                </div>
-                                <History className="w-4 h-4" />
-                            </div>
-                        ))}
-                        {hasMore && <Button variant={'link'} className="">เพิ่มเติม...</Button>}
-                    </div>
-                );
-            }
         },
     },
 ]
