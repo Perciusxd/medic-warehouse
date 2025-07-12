@@ -186,7 +186,7 @@ export function useMedicineSharingStatus(loggedInHospital: string) {
     };
 }
 
-export function useMedicineRequestsInConfirm(loggedInHospital: string, status: string) {
+export function useMedicineRequestsInConfirm(loggedInHospital: string, status: string[]) {
     const [medicineRequestsInConfirm, setMedicineRequestsInConfirm] = useState([]);
     const [loading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
