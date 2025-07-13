@@ -23,7 +23,7 @@ import ReturnSharingDialog from '@/components/dialogs/return-sharing-dialog';
 
 export default function TransferDashboard() {
     const { loggedInHospital } = useHospital();
-    const statusFilterRequest = useMemo(() => ["offered", "to-transfer", "to-return", "returned","confirm-return"], []);
+    const statusFilterRequest = useMemo(() => ["offered", "to-transfer", "to-return", "in-return", "returned","confirm-return"], []);
     const statusFilterSharing = useMemo(() => ["to-confirm", "in-return"], []);
     const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequests(loggedInHospital, statusFilterRequest);
     const { medicineSharing, loading: loadingShare, error: errorShare, fetchMedicineSharing } = useMedicineSharingStatus(loggedInHospital);

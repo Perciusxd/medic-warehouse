@@ -27,7 +27,7 @@ import AcceptSharingDialog from "@/components/dialogs/accept-sharing-dialog";
 import ReturnDialog from "@/components/dialogs/return-dialog";
 import { formatDistanceToNow } from "date-fns";
 export default function StatusDashboard() {
-    const statusFilterSharing = useMemo(() => ["to-confirm", "in-return","returned","to-transfer","confirm-return"], []);
+    const statusFilterSharing = useMemo(() => ["to-confirm", "in-return","returned","to-transfer","confirm-return", "re-confirm", "offered"], []);
     const { loggedInHospital } = useHospital();
     const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequestsStatus(loggedInHospital);
     const { medicineSharingInReturn, loading: loadingReturn, error: errorReturn, fetchMedicineSharingInReturn } = useMedicineSharingInReturn(loggedInHospital, statusFilterSharing);
@@ -252,7 +252,8 @@ export default function StatusDashboard() {
                 ) : (
                     <DataTable
                         columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, handleReConfirmClick, "request")}
-                        data={(medicineRequests as any)?.result?.filter((med: any) => med.ticketType === "request")}
+                        // data={(medicineRequests as any)?.result?.filter((med: any) => med.ticketType === "request")}
+                        data={medicineRequests}
                         globalFilter={globalFilter}
                         setGlobalFilter={setGlobalFilter} />
                 )

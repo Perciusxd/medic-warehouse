@@ -30,10 +30,11 @@ export default async function handler(
           throw new Error("Failed to query asset by ID");
         }
         const result = await response.json();
-        return res.status(200).json({
-          message: "Asset queried successfully",
-          result,
-        });
+        res.status(200).json(result);
+        // return res.status(200).json({
+        //   message: "Asset queried successfully",
+        //   result,
+        // });
       }).catch((error) => {
         console.error("Error querying asset by ID:", error);
         return res.status(500).json({

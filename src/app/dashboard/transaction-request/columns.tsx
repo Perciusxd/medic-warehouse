@@ -263,7 +263,7 @@ export const columns = (
                                                                     : null
                                             }
                                     </div>
-                                    <div className="flex ">({detail.offeredMedicine.offerAmount})</div>
+                                    {/* <div className="flex ">({detail.offeredMedicine.offerAmount})</div> */}
                                 </div>
                                 <div className="flex justify-center basis-1/6"><History className="w-4 h-4 text-muted-foreground cursor-pointer" /></div>
                             </div>
