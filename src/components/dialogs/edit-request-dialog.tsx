@@ -101,6 +101,7 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
 
     const onSubmit = async (data: z.infer<typeof RequestSchema>) => {
         const filterPendingResponse = responseDetails.filter((item: any) => item.status === 'pending')
+        console.log('filterPendingResponse', filterPendingResponse)
         const filterHospital = hospitalList.filter(hospital => data.selectedHospitals.includes(hospital.id))
         const requestData = {
             id: `REQ-${Date.now()}`,
@@ -137,10 +138,10 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
             const result = await response.json()
             console.log('result', result)
             const selectedMedBody = {
-                requestId: selectedMed.id,
+                id: selectedMed.id,
                 status: 'cancelled'
             }
-            await fetch("/api/updateRequestStatus", {
+            await fetch("/api/updateTicketStatus", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -150,10 +151,10 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
 
             filterPendingResponse.forEach(async (item: any) => {
                 const responseBody = {
-                    requestId: item.id,
+                    id: item.id,
                     status: 'cancelled'
                 }
-                await fetch("/api/updateRequestStatus", {
+                await fetch("/api/updateTicketStatus", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
