@@ -21,20 +21,25 @@ import ReturnDialog from '@/components/dialogs/return-dialog';
 import ConfirmationDialog from '@/components/dialogs/confirmation-dialog';
 import ReturnSharingDialog from '@/components/dialogs/return-sharing-dialog';
 import EditSharingDialog from '@/components/dialogs/edit-sharing-dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const sharingStatusOptions = [
+    { value: "all", label: "All Statuses" },
+    { value: "pending", label: "Pending" },
+    { value: "cancelled", label: "Cancelled" },
+];
 
 export default function TransferDashboard() {
     const { loggedInHospital } = useHospital();
     const statusFilterRequest = useMemo(() => ["offered", "to-transfer", "to-return", "in-return", "returned","confirm-return"], []);
     const statusFilterSharing = useMemo(() => ["pending", "cancelled"], []);
     const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequests(loggedInHospital, statusFilterRequest);
-    const { medicineSharing, loading: loadingShare, error: errorShare, fetchMedicineSharing } = useMedicineSharingStatus(loggedInHospital, statusFilterSharing);
     const { medicineSharingInReturn, loading: loadingReturn, error: errorReturn, fetchMedicineSharingInReturn } = useMedicineSharingInReturn(loggedInHospital, statusFilterSharing);
     const [selectedMed, setSelectedMed] = useState<any>(null);
     const [loadingRowId, setLoadingRowId] = useState<any | null>(null);
     const [globalFilter, setGlobalFilter] = useState("");
     const [loading, setLoading] = useState(false);
     const [updatedLast, setUpdatedLast] = useState<Date | null>(null);
-
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [acceptSharingDialogOpen, setAcceptSharingDialogOpen] = useState(false);
     const [deliveryDialogOpen, setDeliveryDialogOpen] = useState(false);
@@ -51,6 +56,18 @@ export default function TransferDashboard() {
         refetchFunction: () => void;
     } | null>(null);
     const [returnSharingDialogOpen, setReturnSharingDialogOpen] = useState(false);
+
+    const [sharingStatusFilter, setSharingStatusFilter] = useState("all");
+    const [sharingStatusFilterOptions, setSharingStatusFilterOptions] = useState(sharingStatusOptions);
+
+    const selectedStatuses = useMemo(() => {
+        const allStatuses = ["pending", "cancelled"]
+        return sharingStatusFilter === "all"
+            ? allStatuses
+            : [sharingStatusFilter];
+    }, [sharingStatusFilter]);
+
+    const { medicineSharing, loading: loadingShare, error: errorShare, fetchMedicineSharing } = useMedicineSharingStatus(loggedInHospital, selectedStatuses);
 
     const handleApproveClick = (med: any) => {
         setSelectedMed(med);
@@ -351,7 +368,23 @@ export default function TransferDashboard() {
             </div>
 
             <div className="mt-12">
-                <h1>ให้ยืม (แบ่งปัน)</h1>
+                <div className="flex items-center justify-between mb-4">
+                    <h1>ให้ยืม (แบ่งปัน)</h1>
+                    <div className="w-48">
+                        <Select value={sharingStatusFilter} onValueChange={setSharingStatusFilter}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Filter by status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {sharingStatusFilterOptions.map(option => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                        {option.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
                 {
                     loadingShare ? (
                         <div className="p-8 flex flex-col items-center justify-center">
