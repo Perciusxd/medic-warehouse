@@ -29,11 +29,19 @@ export const columns = (
     handleDeliveryClick: (med: any) => void,
     handleReturnClick: (med: any) => void,
     handleReConfirmClick: (med: any) => void,
+    handleEditClick: (med: any) => void,
     ticketType: string,
 ): ColumnDef<any>[] => [
     {
-        accessorKey: "requestMedicine",
-        size: 150,
+        id: "edit",
+        size: 25,
+        cell: ({ row }) => {
+            return <Button variant={'link'} className="flex p-0 hover:bg-indigo-300" onClick={() => handleEditClick(row.original)}><Pencil className="cursor-pointer" /></Button>
+        }
+    },
+    {
+        accessorKey: "createdAt",
+        size: 60,
         header: ({column}) => {
             
             return (
@@ -65,7 +73,7 @@ export const columns = (
     },
     {
         accessorKey: "requestMedicine.name",
-        size: 250,
+        size: 60,
         header: ({ column }) => {
             return (
                 <Button
@@ -94,7 +102,7 @@ export const columns = (
     },
     {
         accessorKey: "requestMedicine.quantity",
-        size: 150,
+        size: 60,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ขนาด/หน่วย</div>,
         cell:({ row }) => {
                 const med = row.original;
@@ -111,13 +119,14 @@ export const columns = (
     },
     {
         accessorKey: "requestMedicine.requestAmount",
-        size: 100,
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่ขอยืม</div>,
+        size: 60,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่ขอยืม (ยืนยัน)</div>,
         cell: ({ row }) => {
                 const med = row.original;
                 const requestAmount = med.requestMedicine.requestAmount;
+                const remainingAmount = med.remainingAmount;
                 return (
-                    <div className="text-sm font-medium text-gray-600">{requestAmount}</div>
+                    <div className="text-sm font-medium text-gray-600">{requestAmount} ({requestAmount - remainingAmount})</div>
                 )         
         },
         enableGlobalFilter: false
@@ -187,7 +196,7 @@ export const columns = (
     },
     {
         accessorKey: "responseDetails",
-        size: 350,
+        size: 150,
         header: () => (
             <div className="flex flex-row gap-x-2 justify-between">
                 <div className="font-medium text-muted-foreground text-center cursor-default basis-1/3 justify-center">
@@ -263,7 +272,7 @@ export const columns = (
                                                                     : null
                                             }
                                     </div>
-                                    <div className="flex ">({detail.offeredMedicine.offerAmount})</div>
+                                    {/* <div className="flex ">({detail.offeredMedicine.offerAmount})</div> */}
                                 </div>
                                 <div className="flex justify-center basis-1/6"><History className="w-4 h-4 text-muted-foreground cursor-pointer" /></div>
                             </div>

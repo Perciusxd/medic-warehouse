@@ -26,12 +26,14 @@ import ConfirmSharingDialog from "@/components/dialogs/confirm-sharing-dialog";
 import AcceptSharingDialog from "@/components/dialogs/accept-sharing-dialog";
 import ReturnDialog from "@/components/dialogs/return-dialog";
 import { formatDistanceToNow } from "date-fns";
+import EditRequestDialog from "@/components/dialogs/edit-request-dialog";
 export default function StatusDashboard() {
-    const statusFilterSharing = useMemo(() => ["to-confirm", "in-return","returned","to-transfer","confirm-return"], []);
+    const statusFilterSharing = useMemo(() => ["to-confirm", "in-return","returned","to-transfer","confirm-return", "re-confirm", "offered"], []);
+    const statusFilterRequest = useMemo(() => ["pending", "cancelled"], []);
     const { loggedInHospital } = useHospital();
-    const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequestsStatus(loggedInHospital);
+    const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequestsStatus(loggedInHospital, statusFilterRequest);
     const { medicineSharingInReturn, loading: loadingReturn, error: errorReturn, fetchMedicineSharingInReturn } = useMedicineSharingInReturn(loggedInHospital, statusFilterSharing);
-    const { medicineSharing, loading: loadingShare, error: errorShare, fetchMedicineSharing } = useMedicineSharingStatus(loggedInHospital);
+    const { medicineSharing, loading: loadingShare, error: errorShare, fetchMedicineSharing } = useMedicineSharingStatus(loggedInHospital, statusFilterSharing);
     const [loading, setLoading] = useState(false);
     const [selectedMed, setSelectedMed] = useState<any | null>(null);
     const [updatedLast, setUpdatedLast] = useState<Date | null>(null);
@@ -42,6 +44,7 @@ export default function StatusDashboard() {
     const [globalFilter, setGlobalFilter] = useState("");
     const [returnSharingDialogOpen, setReturnSharingDialogOpen] = useState(false);
     const [confirmReceiveDeliveryDialogOpen, setConfirmReceiveDeliveryDialogOpen] = useState(false);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [dialogConfig, setDialogConfig] = useState<{
         title: string;
         description: string;
@@ -183,6 +186,12 @@ export default function StatusDashboard() {
         setSelectedMed(med);
         setReturnDialogOpen(true);
     }
+
+    const handleEditClick = async (med :any) => {
+        console.log('handleEditClick', med);
+        setSelectedMed(med);
+        setEditDialogOpen(true);
+    }
     
 
     const confirmDelivery = async (med :any) => {
@@ -251,8 +260,9 @@ export default function StatusDashboard() {
                     </div>
                 ) : (
                     <DataTable
-                        columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, handleReConfirmClick, "request")}
-                        data={(medicineRequests as any)?.result?.filter((med: any) => med.ticketType === "request")}
+                        columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, handleReConfirmClick, handleEditClick, "request")}
+                        // data={(medicineRequests as any)?.result?.filter((med: any) => med.ticketType === "request")}
+                        data={medicineRequests}
                         globalFilter={globalFilter}
                         setGlobalFilter={setGlobalFilter} />
                 )
@@ -276,7 +286,7 @@ export default function StatusDashboard() {
             }           
 
             {/* Dialogs */}
-            {selectedMed && selectedMed.ticketType === "request" && (
+            {selectedMed && selectedMed.ticketType === "request" && confirmDialogOpen && (
                 <ConfirmResponseDialog
                     data={selectedMed}
                     dialogTitle={"ยืนยันการตอบรับคำขอ"}
@@ -284,6 +294,20 @@ export default function StatusDashboard() {
                     openDialog={confirmDialogOpen}
                     onOpenChange={(open: boolean) => {
                         setConfirmDialogOpen(open);
+                        if (!open) {
+                            fetchMedicineRequests();
+                            setSelectedMed(null);
+                        }
+                    }}
+                />
+            )}
+
+            { selectedMed && selectedMed.ticketType === "request" && editDialogOpen && (
+                <EditRequestDialog
+                    selectedMed={selectedMed}
+                    openDialog={editDialogOpen}
+                    onOpenChange={(open: boolean) => {
+                        setEditDialogOpen(open);
                         if (!open) {
                             fetchMedicineRequests();
                             setSelectedMed(null);

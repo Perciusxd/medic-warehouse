@@ -1,116 +1,116 @@
-import { useForm, FieldErrors } from "react-hook-form"
-import { z } from "zod"
-import { useEffect, useRef, useState } from "react"
+"use client"
+import z from "zod"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useHospital } from "@/context/HospitalContext"
+import { useState } from "react"
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import { DialogFooter } from "@/components/ui/dialog"
+import { toast } from "sonner"
 
-import RequestDetails from "./request-details"
-import { Calendar1 } from "lucide-react"
-import { HospitalList } from "@/context/HospitalList"
 import { useAuth } from "../providers"
+import { HospitalList } from "@/context/HospitalList"
+
 import { format } from "date-fns"
-const allHospitalList = HospitalList
+import { Calendar1 } from "lucide-react"
 
-const SharingFormSchema = z.object({
-    sharingMedicine: z.object({
-        name: z.string().min(1, "กรุณาระบุชื่อยา"),
-        trademark: z.string().min(1, "กรุณาระบุยี่ห้อยา"),
-        quantity: z.string().min(1, "กรุณาระบุจำนวนยา"),
-        sharingAmount: z.number().min(1, "กรุณาระบุจำนวนยา"),
-        pricePerUnit: z.number().min(1, "กรุณาระบุราคาต่อหน่วย"),
-        unit: z.string().min(1, "กรุณาระบุหน่วยยา"),
-        batchNumber: z.string().min(1, "กรุณาระบุหมายเลขกลุ่มยา"),
-        manufacturer: z.string().min(1, "กรุณาระบุผู้ผลิต"),
-        expiryDate: z.string().min(1, "กรุณาระบุวันที่หมดอายุ"),
-    }),
-    sharingReturnTerm: z.object({
-        receiveConditions: z.object({
-            exactType: z.boolean(),
-            subType: z.boolean(),
-            otherType: z.boolean(),
-            supportType: z.boolean(),
-            noReturn: z.boolean(),
-        }).refine((data) => 
-            Object.values(data).some(value => value === true),
-            {
-                message: "กรุณาเลือกอย่างน้อย 1 เงื่อนไข" ,
-                path: []
-            }
 
-        )
-    }),
-    selectedHospitals: z.array(z.number()).min(1, "กรุณาเลือกโรงพยาบาลอย่างน้อย 1 แห่ง"),
-});
+function EditSharingFormSchema({selectedMed}: any) {
+    return z.object({
+        sharingMedicine: z.object({
+            name: z.string().min(1, "กรุณาระบุชื่อยา"),
+            trademark: z.string().min(1, "กรุณาระบุยี่ห้อยา"),
+            quantity: z.string().min(1, "กรุณาระบุจำนวนยา"),
+            sharingAmount: z.number().min(1, "กรุณาระบุจำนวนยา"),
+            pricePerUnit: z.number().min(1, "กรุณาระบุราคาต่อหน่วย"),
+            unit: z.string().min(1, "กรุณาระบุหน่วยยา"),
+            batchNumber: z.string().min(1, "กรุณาระบุหมายเลขกลุ่มยา"),
+            manufacturer: z.string().min(1, "กรุณาระบุผู้ผลิต"),
+            expiryDate: z.string().min(1, "กรุณาระบุวันที่หมดอายุ"),
+        }),
+        sharingReturnTerm: z.object({
+            receiveConditions: z.object({
+                exactType: z.boolean(),
+                subType: z.boolean(),
+                otherType: z.boolean(),
+                supportType: z.boolean(),
+                noReturn: z.boolean(),
+            }).refine((data) =>
+                Object.values(data).some(value => value === true),
+                {
+                    message: "กรุณาเลือกอย่างน้อย 1 เงื่อนไข",
+                    path: []
+                }
 
-export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
+            )
+        }),
+        selectedHospitals: z.array(z.number()).min(1, "กรุณาเลือกโรงพยาบาลอย่างน้อย 1 แห่ง"),
+    })
+}
+
+
+export default function EditSharingDialog({ selectedMed, openDialog, onOpenChange }: any) {
     const { user } = useAuth();
-    // const { loggedInHospital } = useHospital();
     const loggedInHospital = user?.hospitalName;
+    const hospitalList = HospitalList;
+    const allHospitals = hospitalList.map(hospital => hospital.id)
+    const [allSelected, setAllSelected] = useState(false);
+    const postingHospital = hospitalList.find((hospital) => hospital.nameEN === loggedInHospital);
     
-    console.log("loggedInHospital", loggedInHospital);
+    const { responseDetails } = selectedMed;
+    const prevSelectedHospitals = responseDetails.map((item: any) => item.respondingHospitalNameEN);
     
-    const postingHospital = allHospitalList.find((hospital) => hospital.nameEN === loggedInHospital);
-    console.log("postingHospital", postingHospital)
-    const hospitalList = allHospitalList.filter(hospital => hospital.nameEN !== loggedInHospital)
-    const [loading, setLoading] = useState(false);
-    const { register, handleSubmit, watch, setValue, getValues, resetField, formState: { errors , isSubmitted  } } = useForm<z.infer<typeof SharingFormSchema>>({
-        resolver: zodResolver(SharingFormSchema),
-        defaultValues: {
-            selectedHospitals: []
-            
-        }
-    });
+    const { sharingMedicine, sharingReturnTerm } = selectedMed;
+    const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+    const [dateError, setDateError] = useState("");
 
+    const editSharingFormSchema = EditSharingFormSchema({selectedMed})
+    const { register, handleSubmit, watch, setValue, getValues, resetField, formState: { errors , isSubmitted  } } = useForm<z.infer<typeof editSharingFormSchema>>({
+        resolver: zodResolver(editSharingFormSchema),
+        defaultValues: {
+            sharingMedicine: {
+                name: sharingMedicine.name,
+                trademark: sharingMedicine.trademark,
+                quantity: sharingMedicine.quantity,
+                sharingAmount: selectedMed.remainingAmount || sharingMedicine.sharingAmount,
+                pricePerUnit: sharingMedicine.pricePerUnit,
+                unit: sharingMedicine.unit,
+                batchNumber: sharingMedicine.batchNumber,
+                manufacturer: sharingMedicine.manufacturer,
+                expiryDate: sharingMedicine.expiryDate
+            },
+            sharingReturnTerm: {
+                receiveConditions: {
+                    exactType: sharingReturnTerm.receiveConditions.exactType,
+                    subType: sharingReturnTerm.receiveConditions.subType,
+                    otherType: sharingReturnTerm.receiveConditions.otherType,
+                    supportType: sharingReturnTerm.receiveConditions.supportType,
+                    noReturn: sharingReturnTerm.receiveConditions.noReturn
+                }
+            },
+            selectedHospitals: []
+        }
+    })
     const selectedHospitals = watch("selectedHospitals")
-    const quantity = watch("sharingMedicine.sharingAmount")
+    const quantity = watch("sharingMedicine.quantity")
     const pricePerUnit = watch("sharingMedicine.pricePerUnit")
     const expiryDate = watch("sharingMedicine.expiryDate")
+    const [loading, setLoading] = useState(false);
+    const receiveConditions = watch("sharingReturnTerm.receiveConditions");
+    const isAnyChecked = Object.values(receiveConditions || {}).some(Boolean);
 
-    const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-    const [dateError, setDateError] = useState(""); // for error message
-    const allHospitals = hospitalList.map(hospital => hospital.id)
-    const allSelected = selectedHospitals.length === allHospitals.length
-
-    const receiveConditions = watch("sharingReturnTerm.receiveConditions"); // Get the current values of receiveConditions
-    const isAnyChecked = Object.values(receiveConditions || {}).some(Boolean);// Check if any checkbox is checked
-
-
-
-    
-    const toggleAllHospitals = () => {
-        if (allSelected) {
-            setValue("selectedHospitals", [], { shouldValidate: true })
-        }
-        else {
-            setValue("selectedHospitals", allHospitals, { shouldValidate: true })
-        }
-    }
-
-    const toggleHospitalSelection = (hospitalId: number) => {
-        const current = getValues("selectedHospitals") || []
-        const updated = current.includes(hospitalId)
-            ? current.filter((id) => id !== hospitalId)
-            : [...current, hospitalId]
-        setValue("selectedHospitals", updated, { shouldValidate: true })
-
-    }
-
-    const onSubmit = async (data: z.infer<typeof SharingFormSchema>) => {
+    const onSubmit = async (data: z.infer<typeof editSharingFormSchema>) => {
+        const filterPendingResponse = responseDetails.filter((item: any) => item.status === 'pending')
+        console.log('filterPendingResponse', filterPendingResponse)
         const filterHospital = hospitalList.filter(hospital => data.selectedHospitals.includes(hospital.id))
         const sharingMedicine = {
             id: `SHARE-${Date.now()}`,
@@ -133,38 +133,75 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
             const response = await fetch("/api/createSharing", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
-                body: JSON.stringify(sharingBody),
+                body: JSON.stringify(sharingBody)
             })
-
             if (!response.ok) {
                 throw new Error("Failed to submit")
             }
-
             const result = await response.json()
+            // update ticket status to cancelled
+            const selectedMedBody = {
+                sharingId: selectedMed.id,
+                status: 'cancelled'
+            }
+            await fetch("/api/updateSharingStatus", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(selectedMedBody)
+            })
+            // update response status to cancelled
+            filterPendingResponse.forEach(async (item: any) => {
+                const responseBody = {
+                    sharingId: item.id,
+                    status: 'cancelled'
+                }
+                await fetch("/api/updateSharingStatus", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(responseBody)
+                })
+            })
             setLoading(false)
             onOpenChange(false)
-            resetField("sharingMedicine")
-            resetField("sharingReturnTerm")
-            setValue("selectedHospitals", [])
+            toast.success("แก้ไขข้อมูลยาเรียบร้อย")
         } catch (error) {
             console.error("Error submitting form:", error)
-            setLoading(false)
+            toast.error("เกิดข้อผิดพลาดในการแก้ไขข้อมูลยา")
         }
     }
 
-    const onError = (errors: FieldErrors<z.infer<typeof SharingFormSchema>>) => {
-        console.error("❌ Form validation errors:", errors);
+    const toggleAllHospitals = () => {
+        if (allSelected) { 
+            setValue("selectedHospitals", [], { shouldValidate: true })
+        }
+        else {
+            setValue("selectedHospitals", allHospitals, { shouldValidate: true })
+        }
     }
+    const toggleHospitalSelection = (hospitalId: number) => {
+        console.log('toggleHospitalSelection', hospitalId)
+        const current = getValues("selectedHospitals") || []
+        console.log('current', current)
+        const updated = current.includes(hospitalId)
+            ? current.filter((id) => id !== hospitalId)
+            : [...current, hospitalId]
+        setValue("selectedHospitals", updated, { shouldValidate: true })
+    }
+
 
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[1200px]">
                 <DialogHeader>
-                    <DialogTitle>แบ่งปันยา</DialogTitle>
+                    <DialogTitle>แก้ไขข้อมูลยา</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)}>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="col-span-2 flex flex-col gap-2">
@@ -204,17 +241,17 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                             </div>
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">จำนวน</Label>
-                                <Input 
+                                <Input
                                     inputMode="numeric"
-                                    placeholder="10" 
+                                    placeholder="10"
                                     onKeyDown={(e) => {
                                         const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
                                         if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
-                                        e.preventDefault();
+                                            e.preventDefault();
                                         }
                                     }}
-                                    
-                                    {...register("sharingMedicine.sharingAmount", { valueAsNumber: true })} className={errors.sharingMedicine?.sharingAmount ? "border-red-500" : ""} 
+
+                                    {...register("sharingMedicine.sharingAmount", { valueAsNumber: true })} className={errors.sharingMedicine?.sharingAmount ? "border-red-500" : ""}
                                 />
                                 {errors.sharingMedicine?.sharingAmount && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.sharingAmount.message}</span>
@@ -230,15 +267,15 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">ราคาต่อหน่วย</Label>
                                 <Input
-                                     inputMode="numeric"
-                                    placeholder="10" 
+                                    inputMode="numeric"
+                                    placeholder="10"
                                     onKeyDown={(e) => {
                                         const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
                                         if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
-                                        e.preventDefault();
+                                            e.preventDefault();
                                         }
                                     }}
-                                {...register("sharingMedicine.pricePerUnit", { valueAsNumber: true })} />
+                                    {...register("sharingMedicine.pricePerUnit", { valueAsNumber: true })} />
                                 {errors.sharingMedicine?.pricePerUnit && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.pricePerUnit.message}</span>
                                 )}
@@ -255,12 +292,12 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                 <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" className="justify-start text-left font-normal">
-                                                    {expiryDate
-                                                        ? format(new Date(Number(expiryDate)), 'dd-MM-yyyy')
-                                                        : "เลือกวันที่"
-                                                    }
-                                                <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
-                                          </Button>
+                                            {expiryDate
+                                                ? format(new Date(Number(expiryDate)), 'dd-MM-yyyy')
+                                                : "เลือกวันที่"
+                                            }
+                                            <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
+                                        </Button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-auto p-0">
                                         <Calendar
@@ -271,7 +308,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                                     const today = new Date();
                                                     today.setHours(0, 0, 0, 0); // normalize time
                                                     const stringDate = date.getTime().toString();
-                                                    console.log('stringDate', stringDate)
+
                                                     if (date > today) {
                                                         setValue("sharingMedicine.expiryDate", stringDate, { shouldValidate: true });
                                                         setDateError(""); // clear error
@@ -312,14 +349,15 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                 <div className="p-4">
                                     {hospitalList.map(hospital => {
                                         const isChecked = selectedHospitals.includes(hospital.id)
-                                        
+                                        const isPrevChecked = prevSelectedHospitals.includes(hospital.nameEN)
                                         return (
                                             <div className="" key={hospital.id}>
                                                 <div className="flex items-center gap-2" key={hospital.id}>
                                                     <Checkbox
                                                         id={`hospital-${hospital.id}`}
                                                         className="cursor-pointer"
-                                                        checked={isChecked}
+                                                        checked={isChecked || isPrevChecked}
+                                                        disabled={isPrevChecked}
                                                         onCheckedChange={() => toggleHospitalSelection(hospital.id)}
                                                     />
                                                     <Label htmlFor={`hospital-${hospital.id}`} className="font-normal">{hospital.nameTH}</Label>
@@ -331,9 +369,9 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                 </div>
                             </ScrollArea>
                             {errors.selectedHospitals && (
-                            <span className="text-red-500 text-sm">{errors.selectedHospitals.message}</span>
+                                <span className="text-red-500 text-sm">{errors.selectedHospitals.message}</span>
                             )}
-                                                         
+
                             <Label className="mb-2 mt-4">เงื่อนไขการรับคืนยา</Label>
                             <div className="flex flex-col items-start space-y-2">
                                 <Label className="font-normal">
@@ -356,11 +394,11 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                     <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.noReturn")} />
                                     ไม่รับคืน (ให้เปล่า)
                                 </Label>
-                                    {!isAnyChecked && isSubmitted && (
+                                {!isAnyChecked && (
                                     <p className="text-red-500 text-sm mt-1">
                                         กรุณาเลือกอย่างน้อย 1 เงื่อนไข
                                     </p>
-                                    )}
+                                )}
                             </div>
                         </div>
                     </div>
@@ -375,5 +413,5 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                 </form>
             </DialogContent>
         </Dialog>
-    );
+    )
 }

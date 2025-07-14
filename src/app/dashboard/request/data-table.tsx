@@ -100,7 +100,7 @@ export function DataTable<TData, TValue>({
                                     data-state={row.getIsSelected() && "selected"}
                                 >
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell className="text-center" key={cell.id} style={{ minWidth: cell.column.columnDef.size, maxWidth: cell.column.columnDef.size }}>
+                                        <TableCell className="" key={cell.id} style={{ minWidth: cell.column.columnDef.size, maxWidth: cell.column.columnDef.size }}>
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                         </TableCell>
                                     ))}
