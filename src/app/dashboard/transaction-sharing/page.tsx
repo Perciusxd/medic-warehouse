@@ -25,9 +25,9 @@ import EditSharingDialog from '@/components/dialogs/edit-sharing-dialog';
 export default function TransferDashboard() {
     const { loggedInHospital } = useHospital();
     const statusFilterRequest = useMemo(() => ["offered", "to-transfer", "to-return", "in-return", "returned","confirm-return"], []);
-    const statusFilterSharing = useMemo(() => ["to-confirm", "in-return"], []);
+    const statusFilterSharing = useMemo(() => ["pending", "cancelled"], []);
     const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequests(loggedInHospital, statusFilterRequest);
-    const { medicineSharing, loading: loadingShare, error: errorShare, fetchMedicineSharing } = useMedicineSharingStatus(loggedInHospital);
+    const { medicineSharing, loading: loadingShare, error: errorShare, fetchMedicineSharing } = useMedicineSharingStatus(loggedInHospital, statusFilterSharing);
     const { medicineSharingInReturn, loading: loadingReturn, error: errorReturn, fetchMedicineSharingInReturn } = useMedicineSharingInReturn(loggedInHospital, statusFilterSharing);
     const [selectedMed, setSelectedMed] = useState<any>(null);
     const [loadingRowId, setLoadingRowId] = useState<any | null>(null);

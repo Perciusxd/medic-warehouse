@@ -153,7 +153,7 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
     };
 }
 
-export function useMedicineSharingStatus(loggedInHospital: string) {
+export function useMedicineSharingStatus(loggedInHospital: string, status: string[]) {
     const [medicineSharing, setMedicineSharing] = useState([]);
     const [loading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -164,7 +164,7 @@ export function useMedicineSharingStatus(loggedInHospital: string) {
         setError(null);
 
         try {
-            const response = await fetchAllStatusByTicketType(loggedInHospital, "pending", "sharing");
+            const response = await fetchAllStatusByTicketType(loggedInHospital, status, "sharing");
             setMedicineSharing(response);
             return response;
         } catch (error: any) {
@@ -172,7 +172,7 @@ export function useMedicineSharingStatus(loggedInHospital: string) {
         } finally {
             setIsLoading(false);
         }
-    }, [loggedInHospital]);
+    }, [loggedInHospital, status]);
 
     useEffect(() => {
         fetchMedicineSharing();
