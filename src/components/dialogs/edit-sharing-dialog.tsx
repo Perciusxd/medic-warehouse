@@ -109,6 +109,8 @@ export default function EditSharingDialog({ selectedMed, openDialog, onOpenChang
     const isAnyChecked = Object.values(receiveConditions || {}).some(Boolean);
 
     const onSubmit = async (data: z.infer<typeof editSharingFormSchema>) => {
+        const filterPendingResponse = responseDetails.filter((item: any) => item.status === 'pending')
+        console.log('filterPendingResponse', filterPendingResponse)
         const filterHospital = hospitalList.filter(hospital => data.selectedHospitals.includes(hospital.id))
         const sharingMedicine = {
             id: `SHARE-${Date.now()}`,
@@ -139,6 +141,32 @@ export default function EditSharingDialog({ selectedMed, openDialog, onOpenChang
                 throw new Error("Failed to submit")
             }
             const result = await response.json()
+            // update ticket status to cancelled
+            const selectedMedBody = {
+                sharingId: selectedMed.id,
+                status: 'cancelled'
+            }
+            await fetch("/api/updateSharingStatus", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(selectedMedBody)
+            })
+            // update response status to cancelled
+            filterPendingResponse.forEach(async (item: any) => {
+                const responseBody = {
+                    sharingId: item.id,
+                    status: 'cancelled'
+                }
+                await fetch("/api/updateSharingStatus", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(responseBody)
+                })
+            })
             setLoading(false)
             onOpenChange(false)
             toast.success("แก้ไขข้อมูลยาเรียบร้อย")
