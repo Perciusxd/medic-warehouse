@@ -29,11 +29,18 @@ const sharingStatusOptions = [
     { value: "cancelled", label: "Cancelled" },
 ];
 
+const requestStatusOptions = [
+    { value: "all", label: "All Statuses" },
+    { value: "offered", label: "Offered" },
+    { value: "to-transfer", label: "To Transfer" },
+    { value: "to-return", label: "To Return" },
+    { value: "in-return", label: "In Return" },
+    { value: "returned", label: "Returned" },
+];
+
 export default function TransferDashboard() {
     const { loggedInHospital } = useHospital();
-    const statusFilterRequest = useMemo(() => ["offered", "to-transfer", "to-return", "in-return", "returned","confirm-return"], []);
     const statusFilterSharing = useMemo(() => ["pending", "cancelled"], []);
-    const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequests(loggedInHospital, statusFilterRequest);
     const { medicineSharingInReturn, loading: loadingReturn, error: errorReturn, fetchMedicineSharingInReturn } = useMedicineSharingInReturn(loggedInHospital, statusFilterSharing);
     const [selectedMed, setSelectedMed] = useState<any>(null);
     const [loadingRowId, setLoadingRowId] = useState<any | null>(null);
@@ -57,6 +64,18 @@ export default function TransferDashboard() {
     } | null>(null);
     const [returnSharingDialogOpen, setReturnSharingDialogOpen] = useState(false);
 
+    // Request status filter
+    const [requestStatusFilter, setRequestStatusFilter] = useState("all");
+    const [requestStatusFilterOptions, setRequestStatusFilterOptions] = useState(requestStatusOptions);
+    const selectedRequestStatuses = useMemo(() => {
+        const allStatuses = ["offered", "to-transfer", "to-return", "in-return", "returned"]
+        return requestStatusFilter === "all"
+            ? allStatuses
+            : [requestStatusFilter];
+    }, [requestStatusFilter]);
+    const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequests(loggedInHospital, selectedRequestStatuses);
+
+    // Sharing status filter
     const [sharingStatusFilter, setSharingStatusFilter] = useState("all");
     const [sharingStatusFilterOptions, setSharingStatusFilterOptions] = useState(sharingStatusOptions);
 
@@ -352,7 +371,24 @@ export default function TransferDashboard() {
             </div>
 
             <div>
-                <h1>ให้ยืมยา (ขาดแคลน)</h1>
+                <div className="flex items-center justify-between mb-4">
+                    <h1>ให้ยืมยา (ขาดแคลน)</h1>
+                    <div className="w-48">
+                        <Select value={requestStatusFilter} onValueChange={setRequestStatusFilter}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Filter by status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {requestStatusFilterOptions.map(option => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                        {option.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
                 {
                     loadingRequest ? (
                         <div className="p-8 flex flex-col items-center justify-center">

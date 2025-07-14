@@ -30,7 +30,7 @@ export default function StatusDashboard() {
     const statusFilterSharing = useMemo(() => ["to-confirm", "in-return","returned","to-transfer","confirm-return", "re-confirm", "offered"], []);
     const statusFilterRequest = useMemo(() => ["pending", "cancelled"], []);
     const { loggedInHospital } = useHospital();
-    const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequestsStatus(loggedInHospital);
+    const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequestsStatus(loggedInHospital, statusFilterRequest);
     const { medicineSharingInReturn, loading: loadingReturn, error: errorReturn, fetchMedicineSharingInReturn } = useMedicineSharingInReturn(loggedInHospital, statusFilterSharing);
     const { medicineSharing, loading: loadingShare, error: errorShare, fetchMedicineSharing } = useMedicineSharingStatus(loggedInHospital, statusFilterSharing);
     const [loading, setLoading] = useState(false);
