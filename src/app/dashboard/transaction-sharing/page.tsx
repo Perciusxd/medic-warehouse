@@ -20,6 +20,7 @@ import AcceptSharingDialog from '@/components/dialogs/accept-sharing-dialog';
 import ReturnDialog from '@/components/dialogs/return-dialog';
 import ConfirmationDialog from '@/components/dialogs/confirmation-dialog';
 import ReturnSharingDialog from '@/components/dialogs/return-sharing-dialog';
+import EditSharingDialog from '@/components/dialogs/edit-sharing-dialog';
 
 export default function TransferDashboard() {
     const { loggedInHospital } = useHospital();
@@ -39,6 +40,7 @@ export default function TransferDashboard() {
     const [deliveryDialogOpen, setDeliveryDialogOpen] = useState(false);
     const [returnDialogOpen, setReturnDialogOpen] = useState(false);
     const [confirmReceiveDeliveryDialogOpen, setConfirmReceiveDeliveryDialogOpen] = useState(false);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [dialogConfig, setDialogConfig] = useState<{
         title: string;
         description: string;
@@ -162,6 +164,12 @@ export default function TransferDashboard() {
     const handleReturnConfirm = async (med: any) => {
         console.log('handleReturnConfirm', med);
         openConfirmationDialog(med, 'return');
+    }
+
+    const handleEditClick = async (med: any) => {
+        console.log('handleEditClick', med);
+        setSelectedMed(med);
+        setEditDialogOpen(true);
     }
 
     const confirmDelivery = async (med: any) => {
@@ -352,12 +360,24 @@ export default function TransferDashboard() {
                         </div>
                     ) : (
                         <div className="bg-white shadow rounded">
-                            <DataTable columns={columnSharing(handleApproveClick, handleReConfirmClick, handleDeliveryClick, handleReturnClick, handleReturnConfirm)} data={medicineSharing} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+                            <DataTable columns={columnSharing(handleApproveClick, handleReConfirmClick, handleDeliveryClick, handleReturnClick, handleReturnConfirm, handleEditClick)} data={medicineSharing} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
                         </div>
                     )
                 }
             </div>
-                
+
+            { selectedMed && editDialogOpen && (
+                <EditSharingDialog
+                    selectedMed={selectedMed}
+                    openDialog={editDialogOpen}
+                    onOpenChange={(open: boolean) => {
+                        setEditDialogOpen(open);
+                        if (!open) {
+                            setSelectedMed(null);
+                        }
+                    }}
+                />
+            )}
 
             {selectedMed && selectedMed.ticketType === "sharing" && confirmDialogOpen && (
                 <ConfirmSharingDialog

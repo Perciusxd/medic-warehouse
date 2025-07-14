@@ -4,11 +4,12 @@ import { SharingAsset } from "@/types/sharingMed"
 import { ColumnDef } from "@tanstack/react-table"
 // import { formatDate } from "@/lib/utils"
 import { format, differenceInCalendarDays } from "date-fns"
-import { History } from "lucide-react"
+import { History, Edit, Pencil } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import StatusIndicator from "@/components/ui/status-indicator"
 import ReturnConditionIndicator from "@/components/ui/return-condition-indicator"
+import { Progress } from "@/components/ui/progress"
 
 export const columns = (
     handleApproveClick: (med: any) => void,
@@ -16,10 +17,18 @@ export const columns = (
     handleDeliveryClick: (med: any) => void,
     handleReturnClick: (med: any) => void,
     handleReturnConfirm: (med: any) => void,
+    handleEditClick: (med: any) => void,
 ): ColumnDef<SharingAsset>[] => [
     {
+        id: "edit",
+        size: 25,
+        cell: ({ row }) => {
+            return <Button variant={'link'} className="flex p-0 hover:bg-indigo-300" onClick={() => handleEditClick(row.original)}><Pencil className="cursor-pointer" /></Button>
+        }
+    },
+    {
         accessorKey: "createdAt",
-        size: 100,
+        size: 60,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">วันที่แจ้ง</div>,
         cell: ({ row }) => {
             const createdAt = row.getValue("createdAt")
@@ -36,7 +45,7 @@ export const columns = (
     {
         id: "sharingMedicineName",
         accessorFn: (row) => row.sharingMedicine.name,
-        size: 100,
+        size: 60,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ชื่อยา</div>,
         cell: ({ row }) => {
             const medName = row.original.sharingMedicine.name;
@@ -53,8 +62,8 @@ export const columns = (
     {
         id: "sharingMedicineQuantity",
         accessorFn: (row) => row.sharingMedicine.quantity,
-        size: 100,
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวน</div>,
+        size: 40,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ขนาด</div>,
         cell: ({ row }) => {
             const quantity = row.original.sharingMedicine.quantity;
             const unit = row.original.sharingMedicine.unit;
@@ -68,16 +77,49 @@ export const columns = (
         }
     },
     {
+        id: "sharingMedicineRemainingAmount",
+        accessorFn: (row) => row.remainingAmount,
+        size: 70,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวน (ยืนยัน)</div>,
+        cell: ({ row }) => {
+            const sharingAmount = row.original.sharingMedicine.sharingAmount;
+            const remainingAmount = row.original.remainingAmount;
+            const remainingAmountPercentage = ((sharingAmount - remainingAmount) / sharingAmount) * 100;
+            let progressClass = "w-full h-4";
+            if (remainingAmountPercentage === 100) {
+                progressClass += " [&>div]:bg-green-500";
+            } else if (remainingAmountPercentage >= 50) {
+                progressClass += " [&>div]:bg-yellow-500";
+            } else if (remainingAmountPercentage < 25) {
+                progressClass += " [&>div]:bg-orange-500";
+            }
+            // return (
+            //     <div className="relative w-[50px]">
+            //         <div className="text-xs text-muted-foreground">{(sharingAmount - remainingAmount)} / {sharingAmount}</div>
+            //         <Progress value={remainingAmountPercentage} className={progressClass} />
+            //         <div className="absolute inset-0 flex items-center justify-center text-[10px] font-medium text-foreground">
+            //             {Math.round(remainingAmountPercentage)}%
+            //         </div>
+            //     </div>
+            // )
+            return <div className="">{ sharingAmount } ({remainingAmount})</div>
+        }
+    },
+    {
         id: "sharingMedicinePricePerUnit",
         accessorFn: (row) => row.sharingMedicine.pricePerUnit,
-        size: 100,
+        size: 70,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ราคาต่อหน่วย</div>,
         cell: ({ row }) => {
+            const shareAmount = row.original.sharingMedicine.sharingAmount;
             const pricePerUnit = row.original.sharingMedicine.pricePerUnit;
+            const unit = row.original.sharingMedicine.unit;
+            const totalPrice = shareAmount * pricePerUnit;
 
             return (
                 <div className="flex flex-col">
-                    <div className="text-sm font-medium text-gray-600">{pricePerUnit} บาท</div>
+                    <div className="text-sm font-medium text-gray-600">{pricePerUnit} บาท /{unit}</div>
+                    <div className="text-xs text-muted-foreground">รวม {totalPrice} บาท</div>
                 </div>
             )
         }
@@ -105,7 +147,7 @@ export const columns = (
     // },
     {
         id: "responseDetailsHospitalName",
-        size: 100,
+        size: 200,
         header: () => <div className="flex font-medium text-muted-foreground text-left cursor-default">
             <div className="basis-1/2">ผู้ตอบกลับ</div>
             <div className="basis-1/2">สถานะ</div>

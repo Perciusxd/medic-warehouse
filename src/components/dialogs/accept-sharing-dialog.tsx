@@ -32,7 +32,7 @@ function RequestDetails({ sharingMed }: any) {
     //console.log('sharingReturnTermsชชชชชชชชชชชชชชชชชชช', sharingDetails.sharingMedicine)
     /* const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy'); */
     // const formattedExpiryDate = format(sharingDetails.sharingMedicine.expiryDate, 'dd/MM/yyyy'); //ดึงมาก่อนนะอิงจากที่มี ดึงไว้ใน columns.tsx
-    const formattedExpiryDate = format(expiryDate, 'dd/MM/yyyy');
+    const formattedExpiryDate = isNaN(Number(expiryDate)) ? "ยังไม่ระบุ" : format(new Date(Number(expiryDate)), 'dd/MM/yyyy');
     return (
         <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-2">
@@ -109,7 +109,7 @@ function ResponseFormSchema(sharingMedicine: any) {
     const maxAmount = sharingMedicine?.sharingAmount ?? Infinity;
     return z.object({
         responseAmount: z.number().min(1, { message: "จำนวนที่ยืมต้องมีค่ามากกว่า 0" }).max(maxAmount, { message: `จำนวนที่ยืมต้องไม่เกิน ${maxAmount}` }),
-        expectedReturnDate: z.coerce.date().min(new Date(), { message: "วันที่ยืมต้องเป็นวันที่ในอนาคต" }),
+        expectedReturnDate: z.string().min(1, { message: "วันที่ยืมต้องเป็นวันที่ในอนาคต" }),
         returnTerm: z.object({
             exactType: z.boolean(),
             otherType: z.boolean(),
@@ -156,7 +156,7 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
         resolver: zodResolver(ResponseShema),
         defaultValues: {
             responseAmount: existingOffer?.responseAmount || sharingMed.acceptedOffer?.responseAmount || 0,
-            expectedReturnDate: existingOffer?.expectedReturnDate ? new Date(existingOffer.expectedReturnDate) : sharingMed.acceptedOffer?.expectedReturnDate ? new Date(sharingMed.acceptedOffer.expectedReturnDate) : undefined,
+            expectedReturnDate: existingOffer?.expectedReturnDate ? existingOffer.expectedReturnDate : sharingMed.acceptedOffer?.expectedReturnDate ? sharingMed.acceptedOffer.expectedReturnDate : undefined,
             returnTerm: {
                 exactType: existingReturnTerm?.exactType || false,
                 otherType: existingReturnTerm?.otherType || false,
@@ -169,6 +169,8 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
     const expectedReturn = watch("expectedReturnDate");
     const returnTerm = watch("returnTerm"); // Get the current values of receiveConditions
     const isAnyChecked = Object.values(returnTerm || {}).some(Boolean);// Check if any checkbox is checked
+
+    console.log('expectedReturn', expectedReturn)
 
     const onSubmit = async (data: z.infer<typeof ResponseShema>) => {
         const isResponse = sharingMed.id.startsWith('RESP');
@@ -236,7 +238,7 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className="justify-start text-left font-normal" disabled={sharingMed.status === 're-confirm'} >
                                     {expectedReturn
-                                        ? format(expectedReturn, "dd/MM/yyyy")
+                                        ? format(new Date(Number(expectedReturn)), "dd/MM/yyyy")
                                         : "เลือกวันที่"}
                                     <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                 </Button>
@@ -244,14 +246,16 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                             <PopoverContent className="w-auto p-0">
                                 <Calendar
                                     mode="single"
-                                    selected={expectedReturn}
+                                    selected={expectedReturn ? new Date(Number(expectedReturn)) : undefined}
                                     onSelect={(date) => {
                                         if (date instanceof Date && !isNaN(date.getTime())) {
                                             const today = new Date();
                                             today.setHours(0, 0, 0, 0); // normalize time
+                                            const stringDate = date.getTime().toString();
+                                            console.log('stringDate', stringDate)
 
                                             if (date > today) {
-                                                setValue("expectedReturnDate", date, { shouldValidate: true, shouldDirty: true });
+                                                setValue("expectedReturnDate", stringDate, { shouldValidate: true, shouldDirty: true });
                                                 setDateError(""); // clear error
                                                 setIsCalendarOpen(false); // close popover
                                             } else {

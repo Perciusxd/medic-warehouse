@@ -61,4 +61,5 @@ export type SharingAsset = {
     };
   };
   ticketType: "sharing" | "request";
+  remainingAmount: number;
 };
