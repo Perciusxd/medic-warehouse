@@ -36,6 +36,7 @@ const requestStatusOptions = [
     { value: "to-return", label: "To Return" },
     { value: "in-return", label: "In Return" },
     { value: "returned", label: "Returned" },
+    { value: "confirm-return", label: "To Confirm" },
 ];
 
 export default function TransferDashboard() {
@@ -68,7 +69,7 @@ export default function TransferDashboard() {
     const [requestStatusFilter, setRequestStatusFilter] = useState("all");
     const [requestStatusFilterOptions, setRequestStatusFilterOptions] = useState(requestStatusOptions);
     const selectedRequestStatuses = useMemo(() => {
-        const allStatuses = ["offered", "to-transfer", "to-return", "in-return", "returned"]
+        const allStatuses = ["offered", "to-transfer", "to-return", "in-return", "returned", "confirm-return"]
         return requestStatusFilter === "all"
             ? allStatuses
             : [requestStatusFilter];

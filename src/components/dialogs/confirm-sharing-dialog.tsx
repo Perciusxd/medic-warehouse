@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge"
 import { CalendarDays, Hospital, Pill, Package, ArrowRight, DollarSign, Clock, CheckCircle2, AlertCircle, FileText } from "lucide-react"
 
 import dynamic from 'next/dynamic';
-const PdfPreview = dynamic(() => import('@/components/ui/preview_pdf'), { ssr: false });
+const PdfPreview = dynamic(() => import('@/components/ui/pdf_creator/preview_pdf'), { ssr: false });
 
 function SharingDetailPanel({ data }: any) {
     const { createdAt, postingHospitalNameTH, sharingMedicine, sharingReturnTerm } = data;
