@@ -34,7 +34,7 @@ export const columns = (
 ): ColumnDef<any>[] => [
         {
             id: "edit",
-            size: 25,
+            size: 30,
             cell: ({ row }) => {
                 return <Button variant={'link'} className="flex p-0 hover:bg-indigo-300" onClick={() => handleEditClick(row.original)}><Pencil className="cursor-pointer" /></Button>
             }
@@ -161,16 +161,16 @@ export const columns = (
                 let conditionDiv;
 
                 if (condition === "exactType") {
-                    conditionDiv = <div className="flex text-red-600 items-center"> <SquareX />Exact Type</div>
+                    conditionDiv = <div className="flex text-red-600 items-center"> <SquareX /> ยืมตามรายการที่ขอ</div>
                 } else {
-                    conditionDiv = <div className="flex text-green-600 items-center"> <SquareCheck />Not Exact Type</div>;
+                    conditionDiv = <div className="flex text-green-600 items-center"> <SquareCheck /> ยืมรายการทดแทนได้</div>;
                 }
 
 
                 if (supportType === true) {
-                    supportTypetDiv = <div className="flex text-green-600 items-center"> <SquareCheck />TRUE </div>
+                    supportTypetDiv = <div className="flex text-green-600 items-center"> <SquareCheck /> ใช่</div>
                 } else {
-                    supportTypetDiv = <div className="flex text-red-600 items-center"> <SquareX /> FALSE</div>;
+                    supportTypetDiv = <div className="flex text-red-600 items-center"> <SquareX /> ไม่</div>;
                 }
 
                 return (

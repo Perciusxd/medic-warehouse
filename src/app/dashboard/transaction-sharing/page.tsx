@@ -21,7 +21,7 @@ import ReturnDialog from '@/components/dialogs/return-dialog';
 import ConfirmationDialog from '@/components/dialogs/confirmation-dialog';
 import ReturnSharingDialog from '@/components/dialogs/return-sharing-dialog';
 import EditSharingDialog from '@/components/dialogs/edit-sharing-dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MultiSelect } from "@/components/ui/multi-select";
 
 const sharingStatusOptions = [
     { value: "all", label: "All Statuses" },
@@ -66,25 +66,25 @@ export default function TransferDashboard() {
     const [returnSharingDialogOpen, setReturnSharingDialogOpen] = useState(false);
 
     // Request status filter
-    const [requestStatusFilter, setRequestStatusFilter] = useState("all");
-    const [requestStatusFilterOptions, setRequestStatusFilterOptions] = useState(requestStatusOptions);
+    const [requestStatusFilter, setRequestStatusFilter] = useState<string[]>([]);
+    const [requestStatusFilterOptions, setRequestStatusFilterOptions] = useState(requestStatusOptions.filter(o => o.value !== 'all'));
+
     const selectedRequestStatuses = useMemo(() => {
-        const allStatuses = ["offered", "to-transfer", "to-return", "in-return", "returned", "confirm-return"]
-        return requestStatusFilter === "all"
-            ? allStatuses
-            : [requestStatusFilter];
+        if (requestStatusFilter.length === 0) {
+            return ["offered", "to-transfer", "to-return", "in-return", "returned", "confirm-return"];
+        }
+        return requestStatusFilter;
     }, [requestStatusFilter]);
     const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequests(loggedInHospital, selectedRequestStatuses);
 
     // Sharing status filter
-    const [sharingStatusFilter, setSharingStatusFilter] = useState("all");
-    const [sharingStatusFilterOptions, setSharingStatusFilterOptions] = useState(sharingStatusOptions);
-
+    const [sharingStatusFilter, setSharingStatusFilter] = useState<string[]>([]);
+    const [sharingStatusFilterOptions, setSharingStatusFilterOptions] = useState(sharingStatusOptions.filter(o => o.value !== 'all'));
     const selectedStatuses = useMemo(() => {
-        const allStatuses = ["pending", "cancelled"]
-        return sharingStatusFilter === "all"
-            ? allStatuses
-            : [sharingStatusFilter];
+        if (sharingStatusFilter.length === 0) {
+            return ["pending", "cancelled"];
+        }
+        return sharingStatusFilter;
     }, [sharingStatusFilter]);
 
     const { medicineSharing, loading: loadingShare, error: errorShare, fetchMedicineSharing } = useMedicineSharingStatus(loggedInHospital, selectedStatuses);
@@ -374,66 +374,36 @@ export default function TransferDashboard() {
             <div>
                 <div className="flex items-center justify-between mb-4">
                     <h1>ให้ยืมยา (ขาดแคลน)</h1>
-                    <div className="w-48">
-                        <Select value={requestStatusFilter} onValueChange={setRequestStatusFilter}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Filter by status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {requestStatusFilterOptions.map(option => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                        {option.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                    <div className="w-auto">
+                        <MultiSelect
+                            options={requestStatusFilterOptions}
+                            selected={requestStatusFilter}
+                            onChange={setRequestStatusFilter}
+                            placeholder="All"
+                        />
                     </div>
                 </div>
 
-                {
-                    loadingRequest ? (
-                        <div className="p-8 flex flex-col items-center justify-center">
-                            <LoadingSpinner width="48" height="48" />
-                            <p className="mt-4 text-gray-500">Loading medicines...</p>
-                        </div>
-                    ) : (
-                        <div className="bg-white shadow rounded">
-                            <DataTable columns={columnsRequestToHospital(handleStatusClick)} data={medicineRequests} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
-                        </div>
-                    )
-                }
+                <div className="bg-white shadow rounded">
+                    <DataTable columns={columnsRequestToHospital(handleStatusClick)} data={medicineRequests} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} loading={loadingRequest} />
+                </div>
             </div>
 
             <div className="mt-12">
                 <div className="flex items-center justify-between mb-4">
                     <h1>ให้ยืม (แบ่งปัน)</h1>
-                    <div className="w-48">
-                        <Select value={sharingStatusFilter} onValueChange={setSharingStatusFilter}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Filter by status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {sharingStatusFilterOptions.map(option => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                        {option.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                    <div className="w-auto">
+                         <MultiSelect
+                            options={sharingStatusFilterOptions}
+                            selected={sharingStatusFilter}
+                            onChange={setSharingStatusFilter}
+                            placeholder="All"
+                        />
                     </div>
                 </div>
-                {
-                    loadingShare ? (
-                        <div className="p-8 flex flex-col items-center justify-center">
-                            <LoadingSpinner width="48" height="48" />
-                            <p className="mt-4 text-gray-500">Loading medicines...</p>
-                        </div>
-                    ) : (
-                        <div className="bg-white shadow rounded">
-                            <DataTable columns={columnSharing(handleApproveClick, handleReConfirmClick, handleDeliveryClick, handleReturnClick, handleReturnConfirm, handleEditClick)} data={medicineSharing} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
-                        </div>
-                    )
-                }
+                <div className="bg-white shadow rounded">
+                    <DataTable columns={columnSharing(handleApproveClick, handleReConfirmClick, handleDeliveryClick, handleReturnClick, handleReturnConfirm, handleEditClick)} data={medicineSharing} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} loading={loadingShare} />
+                </div>
             </div>
 
             { selectedMed && editDialogOpen && (
