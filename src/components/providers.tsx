@@ -9,6 +9,9 @@ interface User {
   name: string;
   role?: 'admin' | 'user'; // Optional: Add role if needed
   hospitalName?: string; // Optional: Add hospital association if needed
+  contact?: string; // Optional: Add contact if needed
+  address?: string; // Optional: Add address if needed
+  director?: string; // Optional: Add director if needed
 }
 
 interface AuthContextType {

@@ -37,10 +37,11 @@ export default async function handler(
                     throw new Error('Failed to query sharing by status');
                 }
                 const result = await response.json();
-                return res.status(200).json({
-                    message: 'Sharing queried successfully',
-                    result
-                });
+                res.status(200).json(result);
+                // return res.status(200).json({
+                //     message: 'Sharing queried successfully',
+                //     result
+                // });
             }).catch(error => {
                 console.error('Error querying sharing by status:', error);
                 return res.status(500).json({

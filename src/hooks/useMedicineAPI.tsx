@@ -117,7 +117,7 @@ export function useMedicineResponsesInTransfer(loggedInHospital: string) {
     };
 }
 
-export function useMedicineRequestsStatus(loggedInHospital: string) {
+export function useMedicineRequestsStatus(loggedInHospital: string, status: string[]) {
     const [medicineRequests, setMedicineRequests] = useState([]);
     console.log("useMedicineRequestsStatus == medicineRequests");
     const [loading, setIsLoading] = useState(true);
@@ -131,7 +131,7 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
         setError(null);
         
         try {
-            const response = await fetchAllStatusByTicketType(loggedInHospital, "pending", "request");
+            const response = await fetchAllStatusByTicketType(loggedInHospital, status, "request");
             setMedicineRequests(response);
             return response;
         } catch (error: any) {
@@ -139,7 +139,7 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
         } finally {
             setIsLoading(false);
         }
-    }, [loggedInHospital]);
+    }, [loggedInHospital, status]);
     
     useEffect(() => {
         fetchMedicineRequests();
@@ -153,7 +153,7 @@ export function useMedicineRequestsStatus(loggedInHospital: string) {
     };
 }
 
-export function useMedicineSharingStatus(loggedInHospital: string) {
+export function useMedicineSharingStatus(loggedInHospital: string, status: string[]) {
     const [medicineSharing, setMedicineSharing] = useState([]);
     const [loading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -164,7 +164,7 @@ export function useMedicineSharingStatus(loggedInHospital: string) {
         setError(null);
 
         try {
-            const response = await fetchAllStatusByTicketType(loggedInHospital, "pending", "sharing");
+            const response = await fetchAllStatusByTicketType(loggedInHospital, status, "sharing");
             setMedicineSharing(response);
             return response;
         } catch (error: any) {
@@ -172,7 +172,7 @@ export function useMedicineSharingStatus(loggedInHospital: string) {
         } finally {
             setIsLoading(false);
         }
-    }, [loggedInHospital]);
+    }, [loggedInHospital, status]);
 
     useEffect(() => {
         fetchMedicineSharing();
@@ -186,7 +186,7 @@ export function useMedicineSharingStatus(loggedInHospital: string) {
     };
 }
 
-export function useMedicineRequestsInConfirm(loggedInHospital: string, status: string) {
+export function useMedicineRequestsInConfirm(loggedInHospital: string, status: string[]) {
     const [medicineRequestsInConfirm, setMedicineRequestsInConfirm] = useState([]);
     const [loading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);

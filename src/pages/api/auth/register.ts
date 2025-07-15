@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Log the request body for debugging
         console.log('Request body:', req.body);
 
-        const { email, password, name, role, hospitalName } = req.body;
+        const { email, username, address, contact, director, password, name, role, hospitalName } = req.body;
 
         // Validate each field individually with specific error messages
         if (!email) {
@@ -20,6 +20,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
         if (!password) {
             return res.status(400).json({ message: 'Password is required' });
+        }
+        if (!username) {
+            return res.status(400).json({ message: 'Username is required' });
         }
 
         // Validate email format
@@ -36,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         await dbConnect();
         
         // Check for existing user
-        const existingUser = await UserModel.findOne({ email });
+        const existingUser = await UserModel.findOne({ email, username });
         if (existingUser) {
             return res.status(409).json({ message: 'User already exists' });
         }
@@ -48,7 +51,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const hashedPassword = await hash(password, 10);
         const user = await UserModel.create({
             email,
+            username,
             password: hashedPassword,
+            address: address || '',
+            contact: contact || '',
+            director: director || '',
             role,
             hospitalName,
             name: displayName,
@@ -59,6 +66,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(201).json({ 
             message: 'User registered successfully', 
             userId: user._id,
+            username: user.username,
+            hospitalName: user.hospitalName,
+            email: user.email,
+            name: user.name,
+            address: user.address,
+            contact: user.contact,
+            director: user.director,
             user: {
                 email: user.email,
                 name: user.name

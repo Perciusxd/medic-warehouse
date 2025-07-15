@@ -152,7 +152,7 @@ export const columns = (
             cell: ({ row }) => {
                 const med = row.original
                 const sharingDetails = med.sharingDetails
-                const expiryDate = format(sharingDetails.sharingMedicine.expiryDate, 'dd/MM/yyyy');
+                const expiryDate = isNaN(Number(sharingDetails.sharingMedicine.expiryDate)) ? "ยังไม่ระบุ" : format(new Date(Number(sharingDetails.sharingMedicine.expiryDate)), 'dd/MM/yyyy');
                 return (
                     <div className="flex flex-col">
                         <div className="text-md">{expiryDate}</div>

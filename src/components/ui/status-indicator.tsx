@@ -15,6 +15,7 @@ const STATUS_COLORS: any = {
     'rejected': 'bg-red-500',
     'return-overdue': 'bg-orange-600',
     'returned': 'bg-green-500',
+    'cancelled': 'bg-red-500',
 };
 
 export default function StatusIndicator({ status }: any) {
