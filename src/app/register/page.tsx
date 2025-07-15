@@ -15,6 +15,10 @@ const RegisterPage: React.FC = () => {
     const [name, setName] = useState('');
     const [role, setRole] = useState('');
     const [hospitalName, setHospitalName] = useState('');
+    const [address, setAddress] = useState('');
+    const [contact, setContact] = useState('');
+    const [director, setDirector] = useState('');
+    const [username, setUsername] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
     const router = useRouter();
@@ -42,7 +46,7 @@ const RegisterPage: React.FC = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email, password, name, role, hospitalName }),
+                body: JSON.stringify({ email, password, name, role, hospitalName, address, contact, director, username }),
             });
 
             const data = await response.json();
@@ -55,6 +59,11 @@ const RegisterPage: React.FC = () => {
                 setName('');
                 setRole('');
                 setHospitalName('');
+                setAddress('');
+                setContact('');
+                setDirector('');
+                setUsername('');
+                setError('');
             }
 
             setSuccess(true);
@@ -139,6 +148,24 @@ const RegisterPage: React.FC = () => {
                         </div>
 
                         <div className="space-y-2">
+                            <Label htmlFor="username" className="text-sm font-medium text-gray-700">
+                                Username
+                            </Label>
+                            <div className="relative">
+                                <Input
+                                    id="username"
+                                    name="username"
+                                    type="text"
+                                    required
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-colors duration-200"
+                                    placeholder="Enter your username"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
                             <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                                 Password
                             </Label>
@@ -191,6 +218,59 @@ const RegisterPage: React.FC = () => {
                                     onChange={(e) => setHospitalName(e.target.value)}
                                     className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-colors duration-200"
                                     placeholder="Enter your hospital name"
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="address" className="text-sm font-medium text-gray-700">
+                                Address
+                            </Label>
+                            <div className="relative">
+                                <Input
+                                    id="address"
+                                    name="address"
+                                    type="text"
+                                    required
+                                    value={address}
+                                    onChange={(e) => setAddress(e.target.value)}
+                                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-colors duration-200"
+                                    placeholder="Enter your address"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="contact" className="text-sm font-medium text-gray-700">
+                                Contact
+                            </Label>
+                            <div className="relative">
+                                <Input
+                                    id="contact"
+                                    name="contact"
+                                    type="text"
+                                    required
+                                    value={contact}
+                                    onChange={(e) => setContact(e.target.value)}
+                                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-colors duration-200"
+                                    placeholder="Enter contact number"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="director" className="text-sm font-medium text-gray-700">
+                                Director
+                            </Label>
+                            <div className="relative">
+                                <Input
+                                    id="director"
+                                    name="director"
+                                    type="text"
+                                    required
+                                    value={director}
+                                    onChange={(e) => setDirector(e.target.value)}
+                                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-colors duration-200"
+                                    placeholder="Enter director's name"
                                 />
                             </div>
                         </div>

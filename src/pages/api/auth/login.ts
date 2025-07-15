@@ -16,20 +16,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const { email, password } = req.body;
 
         if (!email || !password) {
-            return res.status(400).json({ message: 'Email and password are required' });
+            return res.status(400).json({ message: 'Email/Username and password are required' });
         }
 
         await dbConnect();
-        const user = await UserModel.findOne({ email });
+        const user = await UserModel.findOne({
+            $or: [
+            { email: email },
+            { username: email }
+            ]
+        });
 
         if (!user) {
-            return res.status(401).json({ message: 'Invalid email or password' });
+            return res.status(401).json({ message: 'Invalid email/username or password' });
         }
 
         const isValid = await compare(password, user.password);
 
         if (!isValid) {
-            return res.status(401).json({ message: 'Invalid email or password' });
+            return res.status(401).json({ message: 'Invalid email/username or password' });
         }
 
         const secret = new TextEncoder().encode(JWT_SECRET);
@@ -39,6 +44,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             name: user.name,
             role: user.role,
             hospitalName: user.hospitalName,
+            address: user.address,
+            contact: user.contact,
+            director: user.director
         })
         .setProtectedHeader({ alg: 'HS256' })
         .setExpirationTime('24h')
@@ -50,7 +58,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             serialize('token', token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
+                sameSite: 'lax',
                 maxAge: 86400, // 1 day
                 path: '/',
             })
