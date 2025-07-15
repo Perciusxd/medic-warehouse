@@ -48,12 +48,16 @@ const styles = StyleSheet.create({
         // borderBottomWidth: 1,
         // borderRightWidth: 1,
         padding: 4,
+        flexWrap: 'wrap',
+        maxWidth: '100%',
     },
     // section: { marginBottom: 10 }
 });
 
 function MyDocument({ pdfData }: any) {
     console.log('pdfData', pdfData);
+    const { userData } = pdfData;
+    const { address, director, contact } = userData;
     const { offeredMedicine, requestMedicine } = pdfData;
     const selectedResponseId = pdfData.responseId;
 
@@ -75,7 +79,7 @@ function MyDocument({ pdfData }: any) {
         : pdfData.sharingDetails?.sharingAmount || pdfData.sharingMedicine?.sharingAmount;
     
     const lendingHospitalNameTH = pdfData.postingHospitalNameTH;
-    const lendingHospitalAddress = "15 ถนนกาญจนวณิชย์ ตำบลหาดใหญ่ อำเภอหาดใหญ่ จังหวัดสงขลา 90110  "
+    const lendingHospitalAddress = address;
     const borrowingHospitalNameTH = selectedResponseDetail.respondingHospitalNameTH;
     
     const expectedReturnDate = isRequestType 
@@ -107,7 +111,7 @@ function MyDocument({ pdfData }: any) {
                         <Text style={[styles.tableCell, { flex: 1 }]}></Text>
                         <Text style={[styles.tableCell, { flex: 1 }]}></Text>
                         {/* <Text style={[styles.tableCell, { flex: 1 }]}></Text> */}
-                        <Text style={[styles.tableCell, { flex: 1 }]}>ที่อยู่ {lendingHospitalAddress}</Text>
+                        <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {lendingHospitalAddress}</Text>
                     </View>
                 </View>
 
@@ -141,24 +145,24 @@ function MyDocument({ pdfData }: any) {
                 </Text>
 
                 <Text style={{ marginTop: 30, textIndent: 280 }}>ขอแสดงความนับถือ</Text>
-                <Text style={{ marginTop: 100, textIndent: 280 }}>ชื่อผู้อำนวยการ </Text>
+                <Text style={{ marginTop: 100, textIndent: 280 }}>{director} </Text>
                 <Text style={{ textIndent: 280 }}>ผู้อำนวยการ {lendingHospitalNameTH}</Text>
                 <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
-                <Text>ติดต่อ</Text>
+                <Text>ติดต่อ {contact}</Text>
             </Page>
         </PDFDocGen>
     );
 }
 
 
-const PdfPreview = forwardRef(({ data: pdfData }: any, ref) => {
+const PdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => {
     const [blob, setBlob] = useState<Blob | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
     useEffect(() => {
         let cancelled = false;
         const generatePdf = async () => {
-            const generatedBlob = await pdf(<MyDocument pdfData={pdfData} />).toBlob();
+            const generatedBlob = await pdf(<MyDocument pdfData={{...pdfData, userData}} />).toBlob();
             if (!cancelled) {
                 setBlob(generatedBlob);
                 setPdfUrl(URL.createObjectURL(generatedBlob));

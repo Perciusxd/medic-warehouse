@@ -16,9 +16,9 @@ import { CalendarDays, Hospital, Pill, Package, ArrowRight, DollarSign, Clock, C
 
 import dynamic from 'next/dynamic';
 const PdfPreview = dynamic(() => import('@/components/ui/pdf_creator/preview_pdf'), { ssr: false });
+import { useAuth } from "@/components/providers";
 
 function RequestDetailPanel({ data }: any) {
-    console.log(data)
     const { updatedAt, postingHospitalNameTH, requestDetails, requestTerm, manufacturer } = data;
     const { name, requestAmount, unit, pricePerUnit } = requestDetails || {};
     const totalPrice = requestAmount * pricePerUnit;
@@ -243,6 +243,7 @@ function getConfirmationSchema(requestData: any) {
 }
 
 export default function ConfirmResponseDialog({ data, dialogTitle, status, openDialog, onOpenChange }: any) {
+    const { user } = useAuth();
     const pdfRef = useRef<{ savePdf?: () => void }>(null);
     const [loading, setLoading] = useState(false);
 
@@ -322,7 +323,7 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
                                         </h3>
                                     </div>
                                     <div className="p-2">
-                                        <PdfPreview data={data} ref={pdfRef} />
+                                        <PdfPreview data={data} userData={user} ref={pdfRef} />
                                     </div>
                                 </div>
                             </div>
