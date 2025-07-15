@@ -266,7 +266,7 @@ export default function StatusDashboard() {
             </div>
 
             {/* Sharing Section */}
-            <div className="mt-32">ขอยืมยืม (แบ่งปัน)</div>
+            <div className="mt-32">ขอยืม (แบ่งปัน)</div>
             <div className="bg-white shadow rounded">
                 <DataTable
                     columns={columnSharingInReturn(handleReturnSharingClick, handleConfirmReceiveDelivery)}
