@@ -9,6 +9,9 @@ export interface JWTPayload {
   name: string;
   role?: string;
   hospitalName?: string; // Optional: Add hospital association if needed
+  contact?: string; // Optional: Add contact if needed
+  address?: string; // Optional: Add address if needed
+  director?: string; // Optional: Add director if needed
 }
 
 export async function verifyAuth(req: NextApiRequest, res: NextApiResponse) {
