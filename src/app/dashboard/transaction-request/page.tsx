@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState ,useMemo} from "react";
+import { useEffect, useState, useMemo } from "react";
 import { RefreshCcwIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "../request/data-table";
@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import ConfirmationDialog from '@/components/dialogs/confirmation-dialog';
 import ReturnSharingDialog from '@/components/dialogs/return-sharing-dialog';
-import { useMedicineRequestsStatus, useMedicineSharingStatus,useMedicineSharingInReturn } from "@/hooks/useMedicineAPI";
+import { useMedicineRequestsStatus, useMedicineSharingStatus, useMedicineSharingInReturn } from "@/hooks/useMedicineAPI";
 import { useHospital } from "@/context/HospitalContext";
 import { columns as columnSharingInReturn } from "./column_mock_return";
 import { columns } from "./columns";
@@ -27,8 +27,9 @@ import AcceptSharingDialog from "@/components/dialogs/accept-sharing-dialog";
 import ReturnDialog from "@/components/dialogs/return-dialog";
 import { formatDistanceToNow } from "date-fns";
 import EditRequestDialog from "@/components/dialogs/edit-request-dialog";
+
 export default function StatusDashboard() {
-    const statusFilterSharing = useMemo(() => ["to-confirm", "in-return","returned","to-transfer","confirm-return", "re-confirm", "offered"], []);
+    const statusFilterSharing = useMemo(() => ["to-confirm", "in-return", "returned", "to-transfer", "confirm-return", "re-confirm", "offered"], []);
     const statusFilterRequest = useMemo(() => ["pending", "cancelled"], []);
     const { loggedInHospital } = useHospital();
     const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequestsStatus(loggedInHospital, statusFilterRequest);
@@ -64,7 +65,7 @@ export default function StatusDashboard() {
         console.log('handleConfirmReceiveDelivery', med);
         openConfirmationDialog(med, 'receive-delivery');
     }
-    const openConfirmationDialog = (med: any, actionType: 'receive-delivery' | 'delivery' | 'return' ) => {
+    const openConfirmationDialog = (med: any, actionType: 'receive-delivery' | 'delivery' | 'return') => {
         setSelectedMed(med);
 
         const configs = {
@@ -95,7 +96,7 @@ export default function StatusDashboard() {
                 onConfirm: confirmReturn,
                 refetchFunction: fetchMedicineRequests,
             }
-            
+
         };
 
         setDialogConfig(configs[actionType]);
@@ -165,36 +166,36 @@ export default function StatusDashboard() {
         }
     }
 
-    const handleApproveClick = (med :any) => {
+    const handleApproveClick = (med: any) => {
         setSelectedMed(med);
         setConfirmDialogOpen(true);
     }
 
-    const handleReConfirmClick = (med :any) => {
+    const handleReConfirmClick = (med: any) => {
         console.log('handleReConfirmClick', med);
         setSelectedMed(med);
         setAcceptSharingDialogOpen(true);
     }
 
-    const handleDeliveryClick = async (med :any) => {
+    const handleDeliveryClick = async (med: any) => {
         setSelectedMed(med);
         setDeliveryDialogOpen(true);
     }
 
-    const handleReturnClick = async (med :any) => {
+    const handleReturnClick = async (med: any) => {
         console.log('handleReturnClick===', med);
         setSelectedMed(med);
         setReturnDialogOpen(true);
     }
 
-    const handleEditClick = async (med :any) => {
+    const handleEditClick = async (med: any) => {
         console.log('handleEditClick', med);
         setSelectedMed(med);
         setEditDialogOpen(true);
     }
-    
 
-    const confirmDelivery = async (med :any) => {
+
+    const confirmDelivery = async (med: any) => {
         const responseBody = {
             responseId: med.responseId,
             offeredMedicine: med.offeredMedicine,
@@ -228,16 +229,16 @@ export default function StatusDashboard() {
     useEffect(() => {
         fetchMedicineRequests();
         fetchMedicineSharingInReturn();
-    }, [fetchMedicineRequests,fetchMedicineSharingInReturn ]);
+    }, [fetchMedicineRequests, fetchMedicineSharingInReturn]);
 
     console.log('medicineSharing', medicineSharing)
     console.log('medicineRequests', medicineRequests);
-    
-    
+
+
     return (
         <>
             <div className="flex items-center justify-between mb-4">
-                 <div /> {/* Placeholder for alignment, can add search if needed */}
+                <div /> {/* Placeholder for alignment, can add search if needed */}
                 <div className="flex items-center space-x-2">
                     <Button variant={"outline"} onClick={() => {
                         fetchMedicineRequests();
@@ -251,39 +252,30 @@ export default function StatusDashboard() {
             </div>
 
             {/* Request Section */}
-            <>ขอยืม</>
-            {
-                loadingRequest ? (
-                    <div className="p-8 flex flex-col items-center justify-center">
-                        <LoadingSpinner width="48" height="48" />
-                        <p className="mt-4 text-gray-500">Loading medicines...</p>
-                    </div>
-                ) : (
-                    <DataTable
-                        columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, handleReConfirmClick, handleEditClick, "request")}
-                        // data={(medicineRequests as any)?.result?.filter((med: any) => med.ticketType === "request")}
-                        data={medicineRequests}
-                        globalFilter={globalFilter}
-                        setGlobalFilter={setGlobalFilter} />
-                )
-            }
+            <>ขอยืม (ขาดแคลน)</>
+
+            <div className="bg-white shadow rounded">
+                <DataTable
+                    columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, handleReConfirmClick, handleEditClick, "request")}
+                    // data={(medicineRequests as any)?.result?.filter((med: any) => med.ticketType === "request")}
+                    data={medicineRequests}
+                    globalFilter={globalFilter}
+                    setGlobalFilter={setGlobalFilter}
+                    loading={loadingRequest}
+                />
+            </div>
 
             {/* Sharing Section */}
-            <>ให้ยืม</>
-            {
-                loadingReturn ? (
-                    <div className="p-8 flex flex-col items-center justify-center">
-                        <LoadingSpinner width="48" height="48" />
-                        <p className="mt-4 text-gray-500">Loading medicines...</p>
-                    </div>
-                ) : (
-                    <DataTable
-                        columns={columnSharingInReturn(handleReturnSharingClick, handleConfirmReceiveDelivery)}
-                        data={medicineSharingInReturn}
-                        globalFilter={globalFilter}
-                        setGlobalFilter={setGlobalFilter} />
-                )
-            }           
+            <div className="mt-32">ขอยืมยืม (แบ่งปัน)</div>
+            <div className="bg-white shadow rounded">
+                <DataTable
+                    columns={columnSharingInReturn(handleReturnSharingClick, handleConfirmReceiveDelivery)}
+                    data={medicineSharingInReturn}
+                    globalFilter={globalFilter}
+                    setGlobalFilter={setGlobalFilter}
+                    loading={loadingReturn}
+                />
+            </div>
 
             {/* Dialogs */}
             {selectedMed && selectedMed.ticketType === "request" && confirmDialogOpen && (
@@ -302,7 +294,7 @@ export default function StatusDashboard() {
                 />
             )}
 
-            { selectedMed && selectedMed.ticketType === "request" && editDialogOpen && (
+            {selectedMed && selectedMed.ticketType === "request" && editDialogOpen && (
                 <EditRequestDialog
                     selectedMed={selectedMed}
                     openDialog={editDialogOpen}
@@ -316,62 +308,62 @@ export default function StatusDashboard() {
                 />
             )}
 
-           {selectedMed && dialogConfig && confirmReceiveDeliveryDialogOpen && (
-                           <ConfirmationDialog
-                               open={confirmReceiveDeliveryDialogOpen}
-                               onOpenChange={(open: boolean) => {
-                                   setConfirmReceiveDeliveryDialogOpen(open);
-                                   if (!open) {
-                                       dialogConfig.refetchFunction();
-                                       setSelectedMed(null);
-                                       setDialogConfig(null);
-                                   }
-                               }}
-                               selectedMed={selectedMed}
-                               title={dialogConfig.title}
-                               description={dialogConfig.description}
-                               confirmButtonText={dialogConfig.confirmButtonText}
-                               successMessage={dialogConfig.successMessage}
-                               errorMessage={dialogConfig.errorMessage}
-                               loading={loading}
-                               onConfirm={dialogConfig.onConfirm}
-                           />
-                       )}
-                       {selectedMed && selectedMed.ticketType === "sharing" && returnSharingDialogOpen && (
-                                       <ReturnSharingDialog
-                                           selectedMed={selectedMed}
-                                           open={returnSharingDialogOpen}
-                                           onOpenChange={(open: boolean) => {
-                                               setReturnSharingDialogOpen(open);
-                                               if (!open) {
-                                                   fetchMedicineSharingInReturn();
-                                                   setSelectedMed(null);
-                                               }
-                                           }}
-                                       />
-                                   )}
-                               
-                                 
+            {selectedMed && dialogConfig && confirmReceiveDeliveryDialogOpen && (
+                <ConfirmationDialog
+                    open={confirmReceiveDeliveryDialogOpen}
+                    onOpenChange={(open: boolean) => {
+                        setConfirmReceiveDeliveryDialogOpen(open);
+                        if (!open) {
+                            dialogConfig.refetchFunction();
+                            setSelectedMed(null);
+                            setDialogConfig(null);
+                        }
+                    }}
+                    selectedMed={selectedMed}
+                    title={dialogConfig.title}
+                    description={dialogConfig.description}
+                    confirmButtonText={dialogConfig.confirmButtonText}
+                    successMessage={dialogConfig.successMessage}
+                    errorMessage={dialogConfig.errorMessage}
+                    loading={loading}
+                    onConfirm={dialogConfig.onConfirm}
+                />
+            )}
+            {selectedMed && selectedMed.ticketType === "sharing" && returnSharingDialogOpen && (
+                <ReturnSharingDialog
+                    selectedMed={selectedMed}
+                    open={returnSharingDialogOpen}
+                    onOpenChange={(open: boolean) => {
+                        setReturnSharingDialogOpen(open);
+                        if (!open) {
+                            fetchMedicineSharingInReturn();
+                            setSelectedMed(null);
+                        }
+                    }}
+                />
+            )}
 
-            <ReturnDialog 
-                selectedMed={selectedMed}                
-                open={returnDialogOpen} 
+
+
+            <ReturnDialog
+                selectedMed={selectedMed}
+                open={returnDialogOpen}
                 onOpenChange={(open: boolean) => {
                     setReturnDialogOpen(open);
                     if (!open) {
                         fetchMedicineRequests();
                         setSelectedMed(null);
                     }
-                }}  />
-    
+                }} />
+
             {/* AlertDialog for delivery */}
             <AlertDialog open={deliveryDialogOpen} onOpenChange={setDeliveryDialogOpen}>
-                <AlertDialogContent>                 
+                <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>ยืนยันการรับของ</AlertDialogTitle>
                         <AlertDialogDescription>
-                             คุณต้องการยืนยันการจัดส่งของจาก {selectedMed?.responseDetails?.respondingHospitalNameTH} หรือไม่?
-                            
+                            คุณต้องการยืนยันการจัดส่งของจาก {selectedMed?.responseDetails?.respondingHospitalNameTH} หรือไม่?
+
                             <div className="flex flex-col gap-2 mt-4">
                                 <div className="flex flex-row items-center gap-2">
                                     <span>ชื่อยา:</span>
@@ -410,7 +402,7 @@ export default function StatusDashboard() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-           
+
         </>
     )
 }

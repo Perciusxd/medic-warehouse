@@ -53,7 +53,14 @@ const styles = StyleSheet.create({
 });
 
 function MyDocument({ pdfData }: any) {
-    console.log('MyDocument data', pdfData);
+    const { offeredMedicine, requestDetails, requestTerm, responseDetail, returnData } = pdfData;
+    const returnMedicine = returnData.returnMedicine;
+    console.log("offeredMedicine", offeredMedicine)
+    console.log('returnData', returnData)
+    const { returnConditions } = offeredMedicine;
+    const { exactType, otherType, supportType, subType } = returnConditions;
+    const returnTerm = exactType ? "ส่งคืนตามประเภท" : otherType ? "คืนรายการอื่น" : supportType ? "แบบสนับสนุน" : "คืนรายการทดแทน";
+    
     const selectedResponseId = pdfData.responseId;
 
     const selectedResponseDetail = pdfData.responseDetails.find(
@@ -64,26 +71,20 @@ function MyDocument({ pdfData }: any) {
 
     // Handle both request and sharing data structures
     const isRequestType = pdfData.ticketType === "request";
-    
-    const requestedMedicineName = isRequestType 
+
+    const requestedMedicineName = isRequestType
         ? pdfData.requestDetails?.name || pdfData.requestMedicine?.name
         : pdfData.sharingDetails?.name || pdfData.sharingMedicine?.name;
-        
-    const requestedQuantity = isRequestType 
+
+    const requestedQuantity = isRequestType
         ? pdfData.requestDetails?.requestAmount || pdfData.requestMedicine?.requestAmount
         : pdfData.sharingDetails?.sharingAmount || pdfData.sharingMedicine?.sharingAmount;
-    
+
     const lendingHospitalNameTH = pdfData.postingHospitalNameTH;
     const lendingHospitalAddress = "15 ถนนกาญจนวณิชย์ ตำบลหาดใหญ่ อำเภอหาดใหญ่ จังหวัดสงขลา 90110  "
     const borrowingHospitalNameTH = selectedResponseDetail.respondingHospitalNameTH;
-    
-    const expectedReturnDate = isRequestType 
-        ? formatDate(pdfData.requestTerm?.expectedReturnDate)
-        : formatDate(selectedResponseDetail.acceptedOffer?.expectedReturnDate || pdfData.sharingReturnTerm?.expectedReturnDate);
-    
+
     const documentType = isRequestType ? "ขอยืมเวชภัณฑ์ยา" : "ขอรับแบ่งปันเวชภัณฑ์ยา";
-    const actionText = isRequestType ? "ขอยืมยา" : "ขอรับแบ่งปันยา";
-    const mockNote = "รอการส่งมอบจากตัวแทนจำหน่าย  "
 
     const todayFormat = new Date();
     const today = format(todayFormat, 'dd/MM/yyyy');
@@ -91,7 +92,7 @@ function MyDocument({ pdfData }: any) {
     return (
         <PDFDocGen>
             <Page size="A4" style={styles.body}>
-                <Image style={styles.image} src="/krut_mark.jpg"/>
+                <Image style={styles.image} src="/krut_mark.jpg" />
                 <View style={[styles.table, { marginBottom: 10 }]}>
                     {/* Row 1 */}
                     <View style={styles.tableRow}>
@@ -113,35 +114,60 @@ function MyDocument({ pdfData }: any) {
                 <Text style={{ textAlign: 'center' }} >{today}</Text>
                 <Text style={styles.text}>เรื่อง    {documentType}</Text>
                 <Text style={styles.text}>เรียน    ผู้อำนวยการ {borrowingHospitalNameTH}</Text>
-                <Text style={{ marginTop: 6, textIndent: 80 }}>
-                    ตามที่โรงพยาบาล {borrowingHospitalNameTH} มีความประสงค์ที่จะ{actionText} ดังรายการต่อไปนี้
+                <Text style={{ marginTop: 6, textIndent: 80, flexWrap: 'wrap', maxWidth: '100%' }}>
+                    เนื่องด้วย {lendingHospitalNameTH} มีความประสงค์ที่จะขอคืนยา ซึ่งเป็นการคืนยา{returnTerm} ดังรายการต่อไปนี้  
                 </Text>
 
-                <View style={[styles.table, { marginTop: 14 }]}>
+                <Text style={{ marginTop: 14, textDecoration: 'underline' }}>รายการยาที่ยืม</Text>
+
+                <View style={[styles.table, { marginTop: 6 }]}>
                     <View style={styles.tableRow}>
                         <Text style={styles.tableHeader}>รายการ</Text>
                         <Text style={styles.tableHeader}>จำนวน </Text>
-                        <Text style={styles.tableHeader}>วันกำหนดคืน </Text>
-                        <Text style={styles.tableHeader}>หมายเหตุ</Text>
+                        <Text style={styles.tableHeader}>ราคา </Text>
+                        <Text style={styles.tableHeader}>มูลค่า</Text>
+                        <Text style={styles.tableHeader}>ผู้ผลิต</Text>
+                        <Text style={styles.tableHeader}>วันที่ขอยืม </Text>
                     </View>
                     <View style={styles.tableRow}>
                         <Text style={styles.tableCell}>{requestedMedicineName}</Text>
-                        <Text style={styles.tableCell}>{requestedQuantity}</Text>
-                        <Text style={styles.tableCell}>{expectedReturnDate}</Text>
-                        <Text style={styles.tableCell}>{mockNote}</Text>
+                        <Text style={styles.tableCell}>{requestedQuantity} {offeredMedicine.unit}</Text>
+                        <Text style={styles.tableCell}>{offeredMedicine.pricePerUnit}</Text>
+                        <Text style={styles.tableCell}>{requestedQuantity * offeredMedicine.pricePerUnit}</Text>
+                        <Text style={styles.tableCell}>{offeredMedicine.manufacturer}</Text>
+                        <Text style={styles.tableCell}>{formatDate(pdfData.requestTerm?.expectedReturnDate)}</Text>
                     </View>
                 </View>
 
-                <Text style={{ marginTop: 30, textIndent: 80 }}>
-                    ทั้งนี้ {borrowingHospitalNameTH} จะส่งคืนยาให้แก่โรงพยาบาล {lendingHospitalNameTH} ภายในวันที่ {expectedReturnDate} และหากมีการเปลี่ยนแปลงจะต้องแจ้งให้ทราบล่วงหน้า
-                </Text>
-                <Text style={{ marginTop: 30, textIndent: 80 }}>
-                    จึงเรียนมาเพื่อโปรดพิจารณาและ {borrowingHospitalNameTH} ขอขอบคุณ {lendingHospitalNameTH} ณ โอกาสนี้
+                <Text style={{ marginTop: 14, textDecoration: 'underline' }}>รายการยาที่คืน</Text>
+
+                <View style={[styles.table, { marginTop: 6 }]}>
+                    <View style={styles.tableRow}>
+                        <Text style={styles.tableHeader}>รายการ</Text>
+                        <Text style={styles.tableHeader}>จำนวน </Text>
+                        <Text style={styles.tableHeader}>ราคาต่อหน่วย</Text>
+                        <Text style={styles.tableHeader}>มูลค่า</Text>
+                        <Text style={styles.tableHeader}>ผู้ผลิต</Text>
+                        <Text style={styles.tableHeader}>วันที่คืน </Text>
+                    </View>
+                    <View style={styles.tableRow}>
+                        <Text style={[styles.tableCell, {width: '20%'}]}>{returnMedicine.name}</Text>
+                        <Text style={styles.tableCell}>{returnMedicine.returnAmount} ({returnMedicine.quantity})</Text>
+                        <Text style={styles.tableCell}>{returnMedicine.pricePerUnit}</Text>
+                        <Text style={styles.tableCell}>{returnMedicine.returnAmount * returnMedicine.pricePerUnit}</Text>
+                        <Text style={styles.tableCell}>{returnMedicine.manufacturer}</Text>
+                        <Text style={styles.tableCell}>{formatDate(returnMedicine.returnDate)}</Text>
+                    </View>
+                </View>
+
+                <Text style={{
+                    marginTop: 30, textIndent: 80, flexWrap: 'wrap', maxWidth: '100%', }}>
+                    จึงเรียนมาเพื่อโปรดพิจารณาและดำเนินการต่อไป
                 </Text>
 
                 <Text style={{ marginTop: 30, textIndent: 280 }}>ขอแสดงความนับถือ</Text>
-                <Text style={{ marginTop: 100, textIndent: 280 }}>ชื่อผู้อำนวยการ</Text>
-                <Text style={{ textIndent: 280 }}>ผู้อำนวยการ {borrowingHospitalNameTH}</Text>
+                <Text style={{ marginTop: 100, textIndent: 280 }}>ชื่อผู้อำนวยการ </Text>
+                <Text style={{ textIndent: 280 }}>ผู้อำนวยการ {lendingHospitalNameTH}</Text>
                 <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
                 <Text>ติดต่อ</Text>
             </Page>
@@ -150,14 +176,13 @@ function MyDocument({ pdfData }: any) {
 }
 
 
-const PdfPreview = forwardRef(({ data: pdfData }: any, ref) => {
+const ReturnPdfPreview = forwardRef(({ data: pdfData, returnData }: any, ref) => {
     const [blob, setBlob] = useState<Blob | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-
     useEffect(() => {
         let cancelled = false;
         const generatePdf = async () => {
-            const generatedBlob = await pdf(<MyDocument pdfData={pdfData} />).toBlob();
+            const generatedBlob = await pdf(<MyDocument pdfData={{...pdfData, returnData}} />).toBlob();
             if (!cancelled) {
                 setBlob(generatedBlob);
                 setPdfUrl(URL.createObjectURL(generatedBlob));
@@ -167,12 +192,14 @@ const PdfPreview = forwardRef(({ data: pdfData }: any, ref) => {
         return () => {
             cancelled = true;
         };
-    }, [pdfData]);
+    }, [pdfData, returnData]);
 
     useImperativeHandle(ref, () => ({
         savePdf: () => {
+            const currentDate = new Date(); 
+            const formattedDate = format(currentDate, 'ddMMyyyy');
             if (blob) {
-                saveAs(blob, 'document.pdf');
+                saveAs(blob, `return_document_${formattedDate}.pdf`);
             }
         },
     }));
@@ -188,5 +215,5 @@ const PdfPreview = forwardRef(({ data: pdfData }: any, ref) => {
     );
 });
 
-PdfPreview.displayName = 'PdfPreview';
-export default PdfPreview;
+ReturnPdfPreview.displayName = 'ReturnPdfPreview';
+export default ReturnPdfPreview;
