@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useHospital } from "@/context/HospitalContext";
 import { FieldErrors, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import dynamic from 'next/dynamic';
 
 // Components
 import { Button } from "@/components/ui/button"
@@ -24,6 +25,10 @@ import { Calendar1 } from "lucide-react"
 import { format } from "date-fns"
 import { z } from "zod"
 import { toast } from "sonner"
+import { saveAs } from "file-saver";
+import { pdf } from "@react-pdf/renderer";
+import MyDocument from "@/components/ui/pdf_creator/return_pdf";
+const ReturnPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/return_pdf'), { ssr: false });
 
 interface ReturnDialogProps {
     open: boolean;
@@ -32,20 +37,19 @@ interface ReturnDialogProps {
 }
 
 function OfferDetails({ selectedMed }: any) {
-    const { name, trademark, offerAmount, pricePerUnit, unit, returnConditions, manufacturer } = selectedMed.offeredMedicine;
-    const { requestAmount } = selectedMed.requestDetails;
-    const { expectedReturnDate } = selectedMed.requestTerm;
-    console.log('expectedReturnDate', expectedReturnDate)
-    const { postingHospitalNameTH } = selectedMed;
+    const { offeredMedicine, requestDetails, requestTerm, responseDetail } = selectedMed;
+    const { name, trademark, offerAmount, pricePerUnit, unit, returnConditions, manufacturer } = offeredMedicine;
+    const { requestAmount } = requestDetails;
+    const { expectedReturnDate } = requestTerm;
     const totalPrice = offerAmount * pricePerUnit;
 
     const date = new Date(Number(expectedReturnDate)); // convert string to number, then to Date
     const isValid = !isNaN(date.getTime());
-    const formattedDate = isValid ? format(date, 'dd/MM/yyyy'): "-"; // format to date only
+    const formattedDate = isValid ? format(date, 'dd/MM/yyyy') : "-"; // format to date only
     console.log(expectedReturnDate);
-    
+
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 border p-4 rounded-lg">
             <h2 className="text-lg font-semibold">รายละเอียดการตอบรับ</h2>
             <div className="grid grid-cols-2 gap-2 font-light">
                 <div className="flex flex-col gap-1">
@@ -54,7 +58,7 @@ function OfferDetails({ selectedMed }: any) {
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>โรงพยาบาลที่ให้ยืม</Label>
-                    <Input disabled value={postingHospitalNameTH} />
+                    <Input disabled value={responseDetail.respondingHospitalNameTH} />
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>รายการยา</Label>
@@ -90,7 +94,7 @@ function OfferDetails({ selectedMed }: any) {
                         <Input disabled value={manufacturer} />
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-1">
+                <div className="grid grid-cols-1 gap-2">
                     <div className="flex flex-row gap-1">
                         <input type="radio" checked={returnConditions.exactType} disabled />
                         <Label>รับคืนเฉพาะรายการนี้</Label>
@@ -125,11 +129,12 @@ const ReturnFormSchema = z.object({
         manufacturer: z.string().min(1, "กรุณาระบุผู้ผลิตของยา"),
         pricePerUnit: z.number().min(1, "ราคาต่อหน่วยควรมากกว่า 0").max(100000, "ราคาต่อหน่วยควรน้อยกว่า 100000"),
         batchNumber: z.string().min(1, "กรุณาระบุหมายเลขล็อตของยา"),
-        expiredDate: z.coerce.string({ invalid_type_error: "กรุณาระบุวันที่คืนยา"}),
+        returnDate: z.coerce.string({ invalid_type_error: "กรุณาระบุวันที่คืนยา" }),
     }),
 })
 
-function ReturnDetails({ selectedMed ,onOpenChange }: any) {
+function ReturnDetails({ selectedMed, onOpenChange }: any) {
+    const pdfRef = useRef<{ savePdf?: () => void }>(null);
     console.log('selectedMed', selectedMed)
     const { loggedInHospital } = useHospital();
     const { requestId, responseId, postingHospitalNameEN } = selectedMed;
@@ -164,13 +169,14 @@ function ReturnDetails({ selectedMed ,onOpenChange }: any) {
                 quantity: "",
                 pricePerUnit: 1,
                 batchNumber: "",
-                expiredDate: undefined,
+                returnDate: undefined,
             }
         }
     })
 
-    const expiredDate = watch("returnMedicine.expiredDate");
+    const returnDate = watch("returnMedicine.returnDate");
     const watchReturnType = watch("returnType");
+    const watchAllFields = watch();
 
     // set name and manufacturer to requestMedicine if returnType is exactType
     useEffect(() => {
@@ -182,8 +188,7 @@ function ReturnDetails({ selectedMed ,onOpenChange }: any) {
     }, [watchReturnType, name, manufacturer, trademark, setValue])
 
     const onError = (errors: FieldErrors<z.infer<typeof ReturnFormSchema>>) => {
-        console.error("❌ Form validation errors:", errors);
-        toast.success("กรุณาระบุข้อมูลให้ครบถ้วน")
+        toast.error("กรุณาระบุข้อมูลให้ครบถ้วน")
     };
 
     const onSubmit = async (data: z.infer<typeof ReturnFormSchema>) => {
@@ -225,8 +230,13 @@ function ReturnDetails({ selectedMed ,onOpenChange }: any) {
         }
     }
 
+    const handleSavePdf = () => {
+        pdfRef.current?.savePdf?.();
+        toast.success("สร้างเอกสารคืนยาแล้ว")
+    };
+
     return (
-        <form onSubmit={handleSubmit(onSubmit, onError)} className="flex flex-col gap-6 ml-12">
+        <form onSubmit={handleSubmit(onSubmit, onError)} className="flex flex-col col-span-2 gap-6 border p-4 rounded-lg">
             <h2 className="text-lg font-semibold">รายการคืน</h2>
             <div className="flex flex-col gap-3">
                 <div className="grid grid-cols-4 gap-2">
@@ -248,38 +258,38 @@ function ReturnDetails({ selectedMed ,onOpenChange }: any) {
                     <div className="flex flex-col gap-1">
                         <Label>รายการยา</Label>
                         <Input placeholder="รายการยา" {...register("returnMedicine.name")} disabled={watchReturnType === "exactType"} />
-                        {errors.returnMedicine?.name && <span className="text-red-500 text-sm">{errors.returnMedicine.name.message}</span>}
+                        {errors.returnMedicine?.name && <span className="text-red-500 text-xs">{errors.returnMedicine.name.message}</span>}
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                         <div className="flex flex-col gap-1">
                             <Label>ขนาด</Label>
                             <Input placeholder="1mg" {...register("returnMedicine.quantity")} />
-                            {errors.returnMedicine?.quantity && <span className="text-red-500 text-sm">{errors.returnMedicine.quantity.message}</span>}
+                            {errors.returnMedicine?.quantity && <span className="text-red-500 text-xs">{errors.returnMedicine.quantity.message}</span>}
                         </div>
                         <div className="flex flex-col gap-1">
                             <Label>รูปแบบ/หน่วย</Label>
                             <Input placeholder="Tablet" {...register("returnMedicine.unit")} />
-                            {errors.returnMedicine?.unit && <span className="text-red-500 text-sm">{errors.returnMedicine.unit.message}</span>}
+                            {errors.returnMedicine?.unit && <span className="text-red-500 text-xs">{errors.returnMedicine.unit.message}</span>}
                         </div>
                     </div>
                     <div className="flex flex-col gap-1">
                         <Label>ชื่อการค้า</Label>
                         <Input placeholder="ชื่อการค้า" {...register("returnMedicine.trademark")} disabled={watchReturnType === "exactType"} />
-                        {errors.returnMedicine?.trademark && <span className="text-red-500 text-sm">{errors.returnMedicine.trademark.message}</span>}
+                        {errors.returnMedicine?.trademark && <span className="text-red-500 text-xs">{errors.returnMedicine.trademark.message}</span>}
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                         <div className="flex flex-col gap-1">
                             <Label>ผู้ผลิต</Label>
                             <Input placeholder="ผู้ผลิต" {...register("returnMedicine.manufacturer")} disabled={watchReturnType === "exactType"} />
-                            {errors.returnMedicine?.manufacturer && <span className="text-red-500 text-sm">{errors.returnMedicine.manufacturer.message}</span>}
+                            {errors.returnMedicine?.manufacturer && <span className="text-red-500 text-xs">{errors.returnMedicine.manufacturer.message}</span>}
                         </div>
                         <div className="flex flex-col gap-1">
                             <Label>หมายเลขล็อต</Label>
                             <Input placeholder="B234" {...register("returnMedicine.batchNumber")} />
-                            {errors.returnMedicine?.batchNumber && <span className="text-red-500 text-sm">{errors.returnMedicine.batchNumber.message}</span>}
+                            {errors.returnMedicine?.batchNumber && <span className="text-red-500 text-xs">{errors.returnMedicine.batchNumber.message}</span>}
                         </div>
                     </div>
-                    
+
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                     <div className="flex flex-col gap-1">
@@ -287,8 +297,8 @@ function ReturnDetails({ selectedMed ,onOpenChange }: any) {
                         <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className="justify-start text-left font-normal">
-                                    {expiredDate
-                                        ? format(new Date(Number(expiredDate)), "dd/MM/yyyy")
+                                    {returnDate
+                                        ? format(new Date(Number(returnDate)), "dd/MM/yyyy")
                                         : "เลือกวันที่"}
                                     <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                 </Button>
@@ -296,7 +306,7 @@ function ReturnDetails({ selectedMed ,onOpenChange }: any) {
                             <PopoverContent className="w-auto p-0">
                                 <Calendar
                                     mode="single"
-                                    selected={expiredDate ? new Date(Number(expiredDate)) : undefined}
+                                    selected={returnDate ? new Date(Number(returnDate)) : undefined}
                                     onSelect={(date) => {
                                         if (date instanceof Date && !isNaN(date.getTime())) {
                                             const today = new Date();
@@ -304,7 +314,7 @@ function ReturnDetails({ selectedMed ,onOpenChange }: any) {
                                             const dateString = date.getTime().toString()
 
                                             if (date > today) {
-                                                setValue("returnMedicine.expiredDate", dateString, { shouldValidate: true, shouldDirty: true });
+                                                setValue("returnMedicine.returnDate", dateString, { shouldValidate: true, shouldDirty: true });
                                                 setDateError(""); // clear error
                                                 setIsCalendarOpen(false); // close popover
                                             } else {
@@ -319,21 +329,21 @@ function ReturnDetails({ selectedMed ,onOpenChange }: any) {
                                     initialFocus
                                 />
                                 {dateError && (
-                                    <div className="text-red-500 text-sm px-4 py-2">{dateError}</div>
+                                    <div className="text-red-500 text-xs px-4 py-2">{dateError}</div>
                                 )}
                             </PopoverContent>
                         </Popover>
-                        {errors.returnMedicine?.expiredDate && <span className="text-red-500 text-sm">{errors.returnMedicine.expiredDate.message}</span>}
+                        {errors.returnMedicine?.returnDate && <span className="text-red-500 text-xs">{errors.returnMedicine.returnDate.message}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
                         <Label>จำนวนที่ให้คืน</Label>
                         <Input placeholder="500" type="number" {...register("returnMedicine.returnAmount", { valueAsNumber: true })} />
-                        {errors.returnMedicine?.returnAmount && <span className="text-red-500 text-sm">{errors.returnMedicine.returnAmount.message}</span>}
+                        {errors.returnMedicine?.returnAmount && <span className="text-red-500 text-xs">{errors.returnMedicine.returnAmount.message}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
                         <Label>ราคาต่อหน่วย</Label>
                         <Input placeholder="20" type="number" {...register("returnMedicine.pricePerUnit", { valueAsNumber: true })} />
-                        {errors.returnMedicine?.pricePerUnit && <span className="text-red-500 text-sm">{errors.returnMedicine.pricePerUnit.message}</span>}
+                        {errors.returnMedicine?.pricePerUnit && <span className="text-red-500 text-xs">{errors.returnMedicine.pricePerUnit.message}</span>}
                     </div>
                 </div>
 
@@ -344,10 +354,19 @@ function ReturnDetails({ selectedMed ,onOpenChange }: any) {
                     </div>
                     <Input className="col-span-2" type="text" placeholder="เหตุผลที่ขอสนับสนุน" />
                 </div>
+
+                <div style={{ display: 'none' }}>
+                    <ReturnPdfPreview data={selectedMed} returnData={watchAllFields} ref={pdfRef} />
+                </div>
+
+            </div>
+
+            <div className="flex flex-row gap-2 items-center justify-center">
                 <Button type="submit">
                     {loading
                         ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500">สร้าง</span></div>
-                        : "ตกลง/พิมพ์เอกสาร"}</Button>
+                        : "ตกลง"}</Button>
+                <Button variant="outline" type="button" onClick={handleSavePdf}>สร้างเอกสาร</Button>
             </div>
         </form>
     )
@@ -373,16 +392,16 @@ export default function ReturnDialog({ open, onOpenChange, selectedMed }: Return
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[1600px]">
+            <DialogContent className="sm:max-w-[1300px]">
                 <DialogHeader>
                     <DialogTitle>ส่งคืน</DialogTitle>
                 </DialogHeader>
                 {/* <div className="flex flex-row gap-2"> */}
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                     {/* Offer Details */}
                     <OfferDetails selectedMed={selectedMed} />
                     {/* Request Details */}
-                    <ReturnDetails selectedMed={selectedMed} onOpenChange={onOpenChange} />
+                    <ReturnDetails selectedMed={selectedMed} onOpenChange={onOpenChange} className="col-span-2" />
                 </div>
             </DialogContent>
         </Dialog>

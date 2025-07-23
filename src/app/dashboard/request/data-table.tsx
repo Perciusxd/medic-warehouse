@@ -22,19 +22,22 @@ import {
 } from "@/components/ui/table"
 
 import { ChevronRightIcon, ChevronLeftIcon } from "lucide-react"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[],
     globalFilter?: string
     setGlobalFilter?: (filter: string) => void
+    loading?: boolean
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
     globalFilter,
-    setGlobalFilter
+    setGlobalFilter,
+    loading,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
 
@@ -93,7 +96,16 @@ export function DataTable<TData, TValue>({
                         ))}
                     </TableHeader>
                     <TableBody>
-                        {table.getRowModel().rows?.length ? (
+                        {loading ? (
+                            <TableRow>
+                                <TableCell colSpan={columns.length} className="h-24 text-center">
+                                    <div className="flex items-center justify-center">
+                                        <LoadingSpinner width="48" height="48" />
+                                        <p className="mt-4 text-gray-500">Loading medicines...</p>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ) : table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
                                     key={row.id}

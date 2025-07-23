@@ -48,12 +48,17 @@ const styles = StyleSheet.create({
         // borderBottomWidth: 1,
         // borderRightWidth: 1,
         padding: 4,
+        flexWrap: 'wrap',
+        maxWidth: '100%',
     },
     // section: { marginBottom: 10 }
 });
 
 function MyDocument({ pdfData }: any) {
-    console.log('MyDocument data', pdfData);
+    console.log('pdfData', pdfData);
+    const { userData } = pdfData;
+    const { address, director, contact } = userData;
+    const { offeredMedicine, requestMedicine } = pdfData;
     const selectedResponseId = pdfData.responseId;
     
     const selectedResponseDetail = pdfData.responseDetails.find(
@@ -78,7 +83,7 @@ function MyDocument({ pdfData }: any) {
  
 
     const lendingHospitalNameTH = pdfData.postingHospitalNameTH;
-    const lendingHospitalAddress = "15 ถนนกาญจนวณิชย์ ตำบลหาดใหญ่ อำเภอหาดใหญ่ จังหวัดสงขลา 90110  "
+    const lendingHospitalAddress = address;
     const borrowingHospitalNameTH = selectedResponseDetail.respondingHospitalNameTH;
     
     const expectedReturnDate = isRequestType 
@@ -110,7 +115,7 @@ function MyDocument({ pdfData }: any) {
                         <Text style={[styles.tableCell, { flex: 1 }]}></Text>
                         <Text style={[styles.tableCell, { flex: 1 }]}></Text>
                         {/* <Text style={[styles.tableCell, { flex: 1 }]}></Text> */}
-                        <Text style={[styles.tableCell, { flex: 1 }]}>ที่อยู่ {lendingHospitalAddress}</Text>
+                        <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {lendingHospitalAddress}</Text>
                     </View>
                 </View>
 
@@ -118,7 +123,7 @@ function MyDocument({ pdfData }: any) {
                 <Text style={styles.text}>เรื่อง    {documentType}</Text>
                 <Text style={styles.text}>เรียน    ผู้อำนวยการ {borrowingHospitalNameTH}</Text>
                 <Text style={{ marginTop: 6, textIndent: 80 }}>
-                    ตามที่โรงพยาบาล {borrowingHospitalNameTH} มีความประสงค์ที่จะ{actionText} ดังรายการต่อไปนี้
+                    ตามที่{borrowingHospitalNameTH} มีความประสงค์ที่จะ{actionText} ดังรายการต่อไปนี้
                 </Text>
 
                 <View style={[styles.table, { marginTop: 14 }]}>
@@ -129,39 +134,39 @@ function MyDocument({ pdfData }: any) {
                         <Text style={styles.tableHeader}>หมายเหตุ</Text>
                     </View>
                     <View style={styles.tableRow}>
-                        <Text style={styles.tableCell}>{requestedMedicineName}</Text>
-                        <Text style={styles.tableCell}>{requestedQuantity}</Text>
+                        <Text style={styles.tableCell}>{requestMedicine.name }</Text>
+                        <Text style={styles.tableCell}>{requestMedicine.requestAmount} ({requestMedicine.unit})</Text>
                         <Text style={styles.tableCell}>{expectedReturnDate}</Text>
                         <Text style={styles.tableCell}>{mockNote}</Text>
                     </View>
                 </View>
 
                 <Text style={{ marginTop: 30, textIndent: 80 }}>
-                    ทั้งนี้ {borrowingHospitalNameTH} จะส่งคืนยาให้แก่โรงพยาบาล {lendingHospitalNameTH} ภายในวันที่ {expectedReturnDate} และหากมีการเปลี่ยนแปลงจะต้องแจ้งให้ทราบล่วงหน้า
+                    ทั้งนี้ {lendingHospitalNameTH} จะส่งคืนยาให้แก่{borrowingHospitalNameTH} ภายในวันที่ {expectedReturnDate} และหากมีการเปลี่ยนแปลงจะต้องแจ้งให้ทราบล่วงหน้า
                 </Text>
                 <Text style={{ marginTop: 30, textIndent: 80 }}>
-                    จึงเรียนมาเพื่อโปรดพิจารณาและ {borrowingHospitalNameTH} ขอขอบคุณ {lendingHospitalNameTH} ณ โอกาสนี้
+                    จึงเรียนมาเพื่อโปรดพิจารณาและ {lendingHospitalNameTH} ขอขอบคุณ {borrowingHospitalNameTH} ณ โอกาสนี้
                 </Text>
 
                 <Text style={{ marginTop: 30, textIndent: 280 }}>ขอแสดงความนับถือ</Text>
-                <Text style={{ marginTop: 100, textIndent: 280 }}>ชื่อผู้อำนวยการ</Text>
-                <Text style={{ textIndent: 280 }}>ผู้อำนวยการ {borrowingHospitalNameTH}</Text>
+                <Text style={{ marginTop: 100, textIndent: 280 }}>{director} </Text>
+                <Text style={{ textIndent: 280 }}>ผู้อำนวยการ {lendingHospitalNameTH}</Text>
                 <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
-                <Text>ติดต่อ</Text>
+                <Text>ติดต่อ {contact}</Text>
             </Page>
         </PDFDocGen>
     );
 }
 
 
-const PdfPreview = forwardRef(({ data: pdfData }: any, ref) => {
+const PdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => {
     const [blob, setBlob] = useState<Blob | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
     useEffect(() => {
         let cancelled = false;
         const generatePdf = async () => {
-            const generatedBlob = await pdf(<MyDocument pdfData={pdfData} />).toBlob();
+            const generatedBlob = await pdf(<MyDocument pdfData={{...pdfData, userData}} />).toBlob();
             if (!cancelled) {
                 setBlob(generatedBlob);
                 setPdfUrl(URL.createObjectURL(generatedBlob));
