@@ -68,7 +68,7 @@ export default function TransferDashboard() {
     const [requestStatusFilter, setRequestStatusFilter] = useState("all");
     const [requestStatusFilterOptions, setRequestStatusFilterOptions] = useState(requestStatusOptions);
     const selectedRequestStatuses = useMemo(() => {
-        const allStatuses = ["offered", "to-transfer", "to-return", "in-return", "returned"]
+        const allStatuses = ["offered", "to-transfer", "to-return", "in-return", "returned", "confirm-return"]
         return requestStatusFilter === "all"
             ? allStatuses
             : [requestStatusFilter];
@@ -150,7 +150,7 @@ export default function TransferDashboard() {
     }
 
     // Helper function to configure dialog for different actions
-    const openConfirmationDialog = (med: any, actionType: 'receive-delivery' | 'delivery' | 'return') => {
+    const openConfirmationDialog = (med: any, actionType: 'receive-delivery' | 'delivery' | 'confirm-return' | 'to-transfer') => {
         setSelectedMed(med);
 
         const configs = {
@@ -172,13 +172,22 @@ export default function TransferDashboard() {
                 onConfirm: confirmDelivery,
                 refetchFunction: fetchMedicineRequests,
             },
-            'return': {
+            'confirm-return': {
                 title: "ยืนยันการรับคืน",
                 description: "คุณต้องการยืนยันการรับคืนจาก {hospitalName} หรือไม่?",
                 confirmButtonText: "ยืนยันการรับคืน",
                 successMessage: "ยืนยันการรับคืนเรียบร้อยแล้ว",
                 errorMessage: "เกิดข้อผิดพลาดในการยืนยัน",
                 onConfirm: confirmReturn,
+                refetchFunction: fetchMedicineRequests,
+            },
+            'to-transfer': {
+                title: "ยืนยันการจัดส่ง",
+                description: "คุณต้องการยืนยันการจัดส่งของไปยัง {hospitalName} หรือไม่?",
+                confirmButtonText: "ยืนยันการจัดส่ง",
+                successMessage: "ยืนยันการจัดส่งเรียบร้อยแล้ว",
+                errorMessage: "เกิดข้อผิดพลาดในการยืนยัน",
+                onConfirm: confirmDeliveryFromRequests,
                 refetchFunction: fetchMedicineRequests,
             }
         };
@@ -199,13 +208,54 @@ export default function TransferDashboard() {
 
     const handleReturnConfirm = async (med: any) => {
         console.log('handleReturnConfirm', med);
-        openConfirmationDialog(med, 'return');
+        openConfirmationDialog(med, 'confirm-return');
     }
 
     const handleEditClick = async (med: any) => {
         console.log('handleEditClick', med);
         setSelectedMed(med);
         setEditDialogOpen(true);
+    }
+
+
+
+    const handleconfirmDeliveryFromRequests = async (med: any) => {
+        console.log('handleconfirmDeliveryFromRequests', med);
+        openConfirmationDialog(med, 'to-transfer');
+    }
+
+    const confirmDeliveryFromRequests = async (med: any) => {
+        console.log(med)
+        const responseBody = {
+            responseId: med.id,
+            offeredMedicine: med.offeredMedicine,
+            status: 'to-return',
+        }
+        console.log('responseBody', responseBody)
+        setLoading(true)
+        try {
+            const response = await fetch("/api/updateRequest", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(responseBody),
+            })
+
+            if (!response.ok) {
+                throw new Error("Failed to submit")
+            }
+
+            const result = await response.json()
+            console.log('result', result)
+            fetchMedicineRequests();
+            setLoading(false)
+            return true;
+        } catch (error) {
+            console.error("Error submitting form:", error)
+            setLoading(false)
+            return false;
+        }
     }
 
     const confirmDelivery = async (med: any) => {
@@ -245,34 +295,67 @@ export default function TransferDashboard() {
 
     // Additional submit functions for different scenarios
     const confirmReturn = async (med: any) => {
-        console.log('med in confirmReturn', med)
-        const responseBody = {
-            sharingId: med.responseId,
-            status: "returned",
+        console.log("med.ticketTypeadsd",med.ticketType)
+        if (med.ticketType === "request") {
+            const responseBody = {
+            responseId: med.id,
+            offeredMedicine: med.offeredMedicine,
+            status: 'returned',
         }
-        console.log('confirmReturn', responseBody)
-        setLoading(true)
-        try {
-            const response = await fetch("/api/updateSharingStatus", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(responseBody),
-            })
+            setLoading(true)
+            try {
+                const response = await fetch("/api/updateRequest", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(responseBody),
+                })
 
-            if (!response.ok) {
-                throw new Error("Failed to submit")
+                if (!response.ok) {
+                    throw new Error("Failed to submit")
+                }
+
+                const result = await response.json()
+                fetchMedicineRequests();
+                setLoading(false)
+                return true;
+            } catch (error) {
+                console.error("Error submitting form:", error)
+                setLoading(false)
+                return false;
             }
 
-            const result = await response.json()
-            fetchMedicineSharing();
-            setLoading(false)
-            return true;
-        } catch (error) {
-            console.error("Error submitting form:", error)
-            setLoading(false)
-            return false;
+        } else {
+            console.log('med in confirmReturn', med)
+            const responseBody = {
+                sharingId: med.responseId,
+                status: "returned",
+            }
+            console.log('confirmReturn', responseBody)
+            setLoading(true)
+            try {
+                const response = await fetch("/api/updateSharingStatus", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(responseBody),
+                })
+
+                if (!response.ok) {
+                    throw new Error("Failed to submit")
+                }
+
+                const result = await response.json()
+                fetchMedicineSharing();
+                setLoading(false)
+                return true;
+            } catch (error) {
+                console.error("Error submitting form:", error)
+                setLoading(false)
+                return false;
+            }
         }
     }
 
@@ -397,7 +480,7 @@ export default function TransferDashboard() {
                         </div>
                     ) : (
                         <div className="bg-white shadow rounded">
-                            <DataTable columns={columnsRequestToHospital(handleStatusClick)} data={medicineRequests} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+                            <DataTable columns={columnsRequestToHospital(handleStatusClick, handleconfirmDeliveryFromRequests, handleReturnConfirm)} data={medicineRequests} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
                         </div>
                     )
                 }
@@ -435,7 +518,7 @@ export default function TransferDashboard() {
                 }
             </div>
 
-            { selectedMed && editDialogOpen && (
+            {selectedMed && editDialogOpen && (
                 <EditSharingDialog
                     selectedMed={selectedMed}
                     openDialog={editDialogOpen}

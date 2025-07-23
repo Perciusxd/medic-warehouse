@@ -152,7 +152,7 @@ export default function HistoryDashboard() {
                 {/* <p className="text-gray-600">กรุณาเลือกตัวกรองที่แตกต่างกัน</p> */}
             </div>
         ) :
-        <div className="max-w-full">
+        <div className="max-w-full overflow-auto">
             <div className="flex justify-center">
                 <DoughnutChart data={config.data} options={config.options} query={handleChartClick} />
             </div>

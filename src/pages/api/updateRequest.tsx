@@ -38,7 +38,8 @@ export default async function handler(
                 body: JSON.stringify({
                     responseId,
                     offeredMedicine,
-                    status
+                    status,
+                    updatedAt: updatedAt,
                 })
             }).then(async response => {
                 if (!response.ok) {

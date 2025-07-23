@@ -336,7 +336,7 @@ export default function ConfirmSharingDialog({ data, dialogTitle, status, openDi
                         </div>
                     </div>
 
-                    <DialogFooter className="gap-2 pt-4 border-t">
+                    <DialogFooter className="gap-2 pt-4  sticky bottom-0">
                         <Button 
                             type="submit" 
                             className="min-w-[160px] bg-green-600 hover:bg-green-700"

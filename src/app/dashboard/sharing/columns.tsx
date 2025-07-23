@@ -20,36 +20,21 @@ export const columns = (
 ): ColumnDef<any>[] => {
     return [
         {
-            accessorKey: "createAt",
-            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ประกาศเมื่อ</div>,
-            size: 100,
-            cell: ({ row }) => {
-                const med = row.original
-                const sharingDetails = med.sharingDetails
-                const createdAt = sharingDetails.createdAt
-                const date = Number(createdAt); // convert string to number, then to Date
-                const formattedDate = format(date, 'dd/MM/yyyy'); // format to date only
-                const timeOnly = format(date, 'HH:mm:ss'); // format to time only
-                return <div>
-                    <div className="text-sm font-medium text-gray-600">{formattedDate}</div>
-                    <div className="text-xs text-muted-foreground">{timeOnly}</div>
-                </div>
-            },
-            enableGlobalFilter: false
-        },
-        {
             accessorKey: "sharingDetails.sharingMedicine.name",
-            size: 180,
+            size: 200,
             header: ({ column }) => {
                 return (
-                    <Button
-                        className="font-medium text-muted-foreground text-left cursor-pointer"
-                        variant="ghost"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                    >
-                        Name
-                        <ArrowUpDown className="ml-2 h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center text-muted-foreground">
+                        ชื่อยา/ชื่อการค้า
+                        <Button
+                            className="font-medium text-muted-foreground text-left cursor-pointer"
+                            variant="ghost"
+                            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                        >
+                             
+                            <ArrowUpDown className="h-4 w-4" />
+                        </Button>
+                    </div>
                 )
             },
             cell: ({ row }) => {
@@ -67,16 +52,37 @@ export const columns = (
             enableGlobalFilter: true
         },
         {
-            accessorKey: "status",
-            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Status (Debug)</div>,
-            size: 120,
+            accessorKey: "createAt",
+            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ประกาศเมื่อ</div>,
+            size: 80,
             cell: ({ row }) => {
                 const med = row.original
-                const status = med.status
+                const sharingDetails = med.sharingDetails
+                const createdAt = sharingDetails.createdAt
+                const date = Number(createdAt); // convert string to number, then to Date
+                const formattedDate = format(date, 'dd/MM/yyyy'); // format to date only
+                const timeOnly = format(date, 'HH:mm:ss'); // format to time only
+                return <div>
+                    <div className="text-sm font-medium">{formattedDate}</div>
+                    <div className="text-xs text-muted-foreground">{timeOnly}</div>
+                </div>
+            },
+            enableGlobalFilter: false
+        },
+        
+        {
+            accessorKey: "sharingDetails.amount",
+            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่ให้ยืม</div>,
+            size: 120,
+            cell: ({ row }) => {
+                const med = row.original.sharingDetails
+                const sharingAmount = med.sharingMedicine.sharingAmount
+                const pricePerUnit = med.sharingMedicine.pricePerUnit
+                const totalPrice = sharingAmount * pricePerUnit
                 return (
-                    <div className="flex flex-col">
-                        <StatusIndicator status={status} />
-                        <div className="text-xs text-gray-600 mt-1">{status}</div>
+                    <div className="flex flex-col ">
+                        <div className="text-md">{sharingAmount}</div>
+                        <div className="text-xs text-muted-foreground">รวม {totalPrice} บาท</div>
                     </div>
                 )
             },
@@ -88,20 +94,12 @@ export const columns = (
             header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จากโรงพยาบาล</div>,
             cell: ({ row }) => {
                 const sharingDetails = row.original.sharingDetails
-                console.log("sharingDetails", sharingDetails)
                 const postingHospitalNameTH: string = sharingDetails.postingHospitalNameTH
                 const postingHospitalNameEN: string = sharingDetails.postingHospitalNameEN
                 return (
                     <div className="flex flex-row">
-                        <Avatar>
-                            <AvatarImage src="https://github.com/shadcn.png" />
-                            <AvatarFallback>CN</AvatarFallback>
-                        </Avatar>
-
-                        <div className="flex flex-col ml-2">
-                            <div className="text-md">{postingHospitalNameEN}</div>
-                            
-                         
+                        <div className="flex flex-col">
+                            <div className="text-md">{postingHospitalNameTH}</div>
                         </div>
 
                     </div>
@@ -118,10 +116,9 @@ export const columns = (
                 const med = row.original
                 const sharingDetails = med.sharingDetails
                 return (
-                    <div className="flex flex-col space-x-2">
-                        <span>{sharingDetails.quantity} {sharingDetails.sharingMedicine.unit}</span>
-                        <span className="text-xs text-gray-600">{sharingDetails.sharingMedicine.quantity}</span>
-
+                    <div className="flex flex-col ">
+                        <span className="font-medium">{sharingDetails.sharingMedicine.quantity}</span>
+                        <span className="text-xs text-muted-foreground">{sharingDetails.quantity} {sharingDetails.sharingMedicine.unit}</span>
                         {/* <Button className="cursor-default" variant="link" onClick={() => alert("Edit quantity")}>
                         <Pencil className="h-4 w-4" />
                     </Button> */}
@@ -132,15 +129,17 @@ export const columns = (
         }, 
         {
             accessorKey: "sharingDetails.sharingMedicine.manufacturer",
-            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ผู้ผลิต</div>,
-            size: 150,
+            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ผู้ผลิต/ล็อต</div>,
+            size: 120,
             cell: ({ row }) => {
                 const med = row.original
                 const sharingDetails = med.sharingDetails
                 const manufacturer = sharingDetails.sharingMedicine.manufacturer
+                const batchNumber = sharingDetails.sharingMedicine.batchNumber
                 return (
                     <div className="flex flex-col">
                         <div className="text-md">{manufacturer}</div>
+                        <div className="text-xs text-muted-foreground">{batchNumber}</div>
                     </div>
                 )
             }
@@ -152,6 +151,7 @@ export const columns = (
             cell: ({ row }) => {
                 const med = row.original
                 const sharingDetails = med.sharingDetails
+                console.log("sharingDetailsssss",sharingDetails)
                 const expiryDate = isNaN(Number(sharingDetails.sharingMedicine.expiryDate)) ? "ยังไม่ระบุ" : format(new Date(Number(sharingDetails.sharingMedicine.expiryDate)), 'dd/MM/yyyy');
                 return (
                     <div className="flex flex-col">
@@ -163,7 +163,7 @@ export const columns = (
         {
             accessorKey: "sharingDetails.sharingReturnTerm.receiveConditions",
             header: () => 
-                <div className="font-medium text-muted-foreground text-left cursor-default flex flex-row justify-center">เงื่อนไขการคืน</div>,
+                <div className="font-medium text-muted-foreground text-left cursor-default flex flex-row justify-center">เงื่อนไขการรับคืน</div>,
             size: 350,
             cell: ({ row }) => {
                 const med = row.original.sharingDetails.sharingReturnTerm
@@ -222,7 +222,7 @@ export const columns = (
 
                 if (noReturn === true) {
                     return (
-                        <div className="flex flex-row justify-center">
+                        <div className="flex flex-row justify-center ">
                         {noReturnDiv}
                         </div>
                     )
@@ -230,13 +230,13 @@ export const columns = (
                 }else  {
                     return (
                     <div className="flex flex-col">
-                        <div className="flex flex-row items-center gap-2">
-                            <div className="basis-1/2 text-center">{exactTypeDiv}</div>
-                            <div className="basis-1/2 text-center">{subTypeDiv}</div>
+                        <div className="flex flex-row items-center">
+                            <div className="basis-1/2 text-left">{exactTypeDiv}</div>
+                            <div className="basis-1/2 text-left">{subTypeDiv}</div>
                         </div>
-                         <div className="flex flex-row items-center gap-2">
-                            <div className="basis-1/2 text-center">{supportTypeDiv}</div>
-                            <div className="basis-1/2 text-center">{otherTypeDiv}</div>
+                         <div className="flex flex-row items-center">
+                            <div className="basis-1/2 text-left">{supportTypeDiv}</div>
+                            <div className="basis-1/2 text-left">{otherTypeDiv}</div>
                         </div>
                     </div>
                     )
@@ -253,7 +253,7 @@ export const columns = (
                 const med = row.original
                 const isLoading = loadingRowId === med.id
                 return (
-                    <div className="flex flex-row justify-center items-center gap-2">
+                    <div className="flex flex-row justify-center items-center">
                         <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer hover:border-2">
@@ -268,8 +268,8 @@ export const columns = (
                                 >
                                 
                                     {/* {isLoading
-                                        ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500">ส่งแล้ว</span></div>
-                                        : <div className="flex flex-row items-center gap-2"><Check />ส่งแล้ว</div>
+                                        ? <div className="flex flex-row items-center"><LoadingSpinner /><span className="text-gray-500">ส่งแล้ว</span></div>
+                                        : <div className="flex flex-row items-center"><Check />ส่งแล้ว</div>
                                     } */}
                                     <Check className="text-green-700" />
                                     ยืนยัน

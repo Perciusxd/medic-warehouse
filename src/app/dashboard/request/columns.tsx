@@ -30,17 +30,20 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
     // },
     {
         accessorKey: "requestDetails.name",
-        size: 150,
+        size: 200,
         header: ({ column }) => {
             return (
+                <div className="font-medium text-muted-foreground text-left cursor-default">
+                    ชื่อยา/ชื่อการค้า
                 <Button
                     className="font-medium text-muted-foreground text-left cursor-pointer"
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Name
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                    
+                    <ArrowUpDown className="h-4 w-4" />
                 </Button>
+                </div>
             )
         },
         cell: ({ row }) => {
@@ -60,7 +63,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
     },
     {
         accessorKey: "updatedAt",
-        size: 100,
+        size: 80,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ประกาศเมื่อ</div>,
         cell: ({ row }) => {
             const med = row.original
@@ -70,8 +73,8 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
             const formattedDate = format(date, 'dd/MM/yyyy'); // format to date only
             const timeOnly = format(date, 'HH:mm:ss'); // format to time only
             return <div>
-                <div className="text-sm font-medium text-gray-600">{formattedDate}</div>
-                <div className="text-xs text-muted-foreground">{timeOnly}</div>
+                <div className="text-sm font-medium">{formattedDate}</div>
+                <div className="text-xs text-muted-foreground ">{timeOnly}</div>
             </div>
         },
         enableGlobalFilter: false
@@ -83,19 +86,14 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
     // },
     {
         accessorKey: "postingHospitalNameEN",
-        size: 150,
+        size: 180,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จากโรงพยาบาล</div>,
         cell: ({ row }) => {
             const postingHospitalNameTH: string = row.original.requestDetails.postingHospitalNameTH
             //console.log("Posting Hospital Name:", postingHospitalNameTH)
             return (
                 <div className="flex flex-row">
-                    <Avatar>
-                        <AvatarImage src="https://github.com/shadcn.png" />
-                        <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
-
-                    <div className="flex flex-col ml-2 justify-center">
+                    <div className="flex flex-col justify-start">
                         <div className="text-md  ">{postingHospitalNameTH}</div>
                         {/* <div className="text-xs text-gray-600">คุณ xxx xxx</div>
                         <div className="text-xs text-gray-600">ติดต่อ 080xxxxx</div> */}
@@ -106,17 +104,42 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
         },
         enableGlobalFilter: true
     },
-        {
+    {
+        accessorKey: "requestDetails.requestMedicine.requestAmount",
+        size: 80,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่ขอยืม</div>,
+        cell: ({ row }) => {
+            const med = row.original
+            const requestDetails = med.requestDetails
+            const requestAmount = requestDetails.requestMedicine.requestAmount
+            const pricePerUnit = requestDetails.requestMedicine.pricePerUnit
+            const totalPrice = requestAmount * pricePerUnit
+            return (
+                <div className="text-sm font-medium  flex flex-col">
+                    <div>
+                         {requestDetails.requestMedicine.requestAmount}
+                    </div>
+
+                   <div className="text-xs text-muted-foreground">
+                        รวม {totalPrice} บาท      
+                   </div>
+                              
+                </div>
+            )
+        },
+        enableGlobalFilter: false
+    },
+    {
         accessorKey: "requestDetails.quantity",
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ปริมาณ</div>,
-        size: 100,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ขนาด/หน่วย</div>,
+        size: 120,
         cell: ({ row }) => {
             const med = row.original
             const requestDetails = med.requestDetails
             return (
                 <div className="flex flex-col space-x-2">
-                    <span>{requestDetails.requestMedicine.requestAmount} {requestDetails.requestMedicine.unit}</span>
-                    <span className="text-xs text-gray-600">{requestDetails.requestMedicine.quantity}</span>
+                    <span>{requestDetails.requestMedicine.unit}</span>
+                    <span className="text-xs text-muted-foreground">{requestDetails.requestMedicine.quantity}</span>
 
                     {/* <Button className="cursor-default" variant="link" onClick={() => alert("Edit quantity")}>
                         <Pencil className="h-4 w-4" />
@@ -124,31 +147,25 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
                 </div>
             )
         },
-        enableSorting: true,
-    },
-    {
-        accessorKey: "requestDetails.requestMedicine.requestAmount",
-        size: 100,
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่ขอยืม</div>,
-        enableGlobalFilter: false
+        enableSorting: false,
     },
     {
          accessorKey: "requestDetails.id", 
          size: 280,
          header: () => (
-            <div className="font-medium text-muted-foreground text-center cursor-default">
-               <div>
-                    เงื่อนไขการรับยา
-                </div> 
-                <div className="flex flex-row gap-x-2 text-center font-medium justify-center">
-                    <div className="text-center basis-1/2">
-                        ยืมรายการทดแทนได้
+           <div className="font-medium text-muted-foreground text-center cursor-default">
+                        <div>
+                            เงื่อนไขการรับยา
+                        </div>
+                        <div className="flex flex-row  text-center font-medium justify-center">
+                            <div className="text-center basis-1/2">
+                                ยืมรายการทดแทนได้
+                            </div>
+                            <div className="text-center basis-1/2">
+                                ขอสนับสนุน
+                            </div>
+                        </div>
                     </div>
-                    <div className="text-center basis-1/2">
-                        ขอสนับสนุน
-                    </div>
-                </div>
-            </div>
          ),
          cell: ({ row }) => {
             const med = row.original;
@@ -161,29 +178,29 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
             let conditionDiv;
 
             if (condition === "exactType"){
-                conditionDiv = <div className="flex text-red-600 items-center"> <SquareX/>Exact Type</div>;
+                conditionDiv = <div className="flex text-red-600 items-center"> <SquareX/>ยืมรายการทดแทนไม่ได้</div>;
             }else{
-                conditionDiv = <div className="flex text-green-600 items-center"> <SquareCheck/>Not Exact Type</div>;
+                conditionDiv = <div className="flex text-green-600 items-center"> <SquareCheck/>ยืมรายการทดแทนได้</div>;
             }
 
 
             if (supportType === true) { 
-            supportTypetDiv = <div className="flex text-green-600 items-center"> <SquareCheck/>TRUE </div>;
+            supportTypetDiv = <div className="flex text-green-600 items-center"> <SquareCheck/>ขอสนับสนุน </div>;
             } else {
-            supportTypetDiv = <div className="flex text-red-600 items-center"> <SquareX/> FALSE</div>;
+            supportTypetDiv = <div className="flex text-red-600 items-center"> <SquareX/> ขอสนับสนุน</div>;
             }
             
             return(
                 
-            <div className="flex flex-row gap-x-2 text-center font-medium justify-center">
+            <div className="flex flex-row gap-x-2 text-left font-medium justify-center">
 
-                     <div className="text-center basis-1/2">
+                     <div className="text-left basis-1/2">
                         <div className="flex flex-row justify-center">
                             {conditionDiv} 
                         </div>
                    </div>
                 
-                   <div className="text-center basis-1/2">
+                   <div className="text-left basis-1/2">
                         <div className="flex flex-row justify-center">
                             {supportTypetDiv} 
                         </div>
@@ -199,31 +216,35 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
     },
     {
         accessorKey: "requestDetails.urgent",
-        size: 100,
+        size: 80,
         header: ({ column }) => {
             return (
+                <div className="font-medium text-muted-foreground text-left cursor-pointer items-center">
+                    ความเร่งด่วน
                 <Button
-                    className="font-medium text-muted-foreground text-left cursor-pointer"
+                    className="font-medium text-muted-foreground text-left cursor-pointer "
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    ความเร่งด่วน
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                    
+                    <ArrowUpDown className="h-4 w-4" />
                 </Button>
+                </div>
             )
         },
         cell: ({ row }) => {
             const med = row.original
             const status = med.requestDetails.urgent
             return (
-                <div className="flex items-center space-x-2">
-                    <div>
-                        <StatusIndicator status={status} />
-                    </div>
-
+                <div className="flex items-left space-x-2 items-center">
+                   
                     <div>
                         {status === "urgent" ? "ด่วนที่สุด" : status === "immediate" ? "ด่วน" : "ปกติ"}
                     </div>
+                     <div>
+                        <StatusIndicator status={status} />
+                    </div>
+
                 </div>
             )
         },

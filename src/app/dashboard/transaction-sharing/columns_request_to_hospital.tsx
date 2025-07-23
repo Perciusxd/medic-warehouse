@@ -4,92 +4,197 @@ import { ResponseAsset } from "@/types/responseMed"
 import { ColumnDef } from "@tanstack/react-table"
 // import { formatDate } from "@/lib/utils"
 import { format, differenceInCalendarDays } from "date-fns"
-import { History } from "lucide-react"
+import { History ,SquareX, SquareCheck} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import StatusIndicator from "@/components/ui/status-indicator"
 
-export const columns = (handleStatusClick: (med: ResponseAsset, status: string) => void): ColumnDef<ResponseAsset>[] => [
+export const columns = (
+    handleStatusClick: (med: ResponseAsset, status: string) => void,
+    handleconfirmDeliveryFromRequests : (med: any) => void,
+    handleReturnConfirm : (med: any) => void,
+    ): ColumnDef<ResponseAsset>[] => [
     {
-        accessorKey: "updatedAt",
-        size: 100,
+        accessorKey: "createdAt",
+        size: 80,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">วันที่แจ้ง</div>,
         cell: ({ row }) => {
-            const createdAt = row.getValue("updatedAt")
+            const createdAt = row.original.requestDetails.updatedAt
             const date = new Date(Number(createdAt)); // convert string to number, then to Date
-            return <div className="text-sm font-medium text-gray-600">{format(date, "dd/MM/yyyy")}</div>
+            return(
+            <div>
+                <div className="text-md font-medium">{format(date, "dd/MM/yyyy")}</div>
+                <div className="text-xs text-muted-foreground">{format(date, 'HH:mm:ss')}</div>
+            </div> 
+            )
         }
     },
     {
         id: "medicineName",
         accessorFn: (row) => row.requestDetails.requestMedicine.name,
-        size: 100,
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">รายการ</div>,
+        size: 200,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default"> ชื่อยา/ชื่อการค้า</div>,
         cell: ({ getValue }) => {
-            return <div className="text-sm font-medium text-gray-600">{getValue() as string}</div>
+            const name = getValue() as string
+            const trademark = getValue() as string
+            return (
+            <div>
+                <div className="text-md font-medium">{name}</div>
+                <div className="text-xs text-muted-foreground">{trademark}</div>
+                
+            </div>
+        )
         }
     },
     {
         id: "quantity",
         accessorFn: (row) => row.requestDetails.requestMedicine.quantity,
         size: 100,
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวน</div>,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ขนาด/หน่วย</div>,
         cell: ({ getValue }) => {
-            return <div className="text-sm font-medium text-gray-600">{getValue() as string}</div>
-        }
-    },
-    {
-        id: "unit",
-        accessorFn: (row) => row.requestDetails.requestMedicine.unit,
-        size: 100,
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">หน่วย</div>,
-        cell: ({ getValue }) => {
-            return <div className="text-sm font-medium text-gray-600">{getValue() as string}</div>
+            const quantity = getValue() as number
+            const unit = getValue() as string
+            return (
+            <div>
+                <div className="text-md font-medium">{quantity}</div>
+                <div className="text-xs text-muted-foreground">{unit}</div>
+            </div>
+            )
+            
         }
     },
     {
         id: "requestAmount",
         accessorFn: (row) => row.requestDetails.requestMedicine.requestAmount,
         size: 100,
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่ขอ</div>,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวน(ยืนยัน)</div>,
         cell: ({ getValue }) => {
-            return <div className="text-sm font-medium text-gray-600">{getValue() as string}</div>
+            const requestAmount = getValue() as number
+            const pricePerUnit = getValue() as number
+            const offeringAmount = getValue() as number
+            const totalPrice = requestAmount * pricePerUnit
+           return (
+            <div>
+                <div className="text-md font-medium">{requestAmount.toLocaleString()} ( {offeringAmount.toLocaleString()} )</div>
+                <div className="text-xs text-muted-foreground">รวม {totalPrice.toLocaleString()} บาท</div>
+            </div>
+            )
         }
     },
     {
-        id: "postingHospitalNameEN",
-        accessorFn: (row) => row.requestDetails.postingHospitalNameEN,
+        id: "updatedAt",
+        accessorFn: (row) => row.updatedAt,
         size: 100,
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ผู้ขอรับ</div>,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">วันที่อัพเดต</div>,
         cell: ({ getValue }) => {
-            return <div className="text-sm font-medium text-gray-600">{getValue() as string}</div>
+            const updatedAt = getValue() as string || "0";
+            const date = new Date(Number(updatedAt)); // convert string to number, then to Date
+            return (
+                <div >
+                    <div className="text-md font-medium"> {format(date, "dd/MM/yyyy")}</div>
+                    <div className="text-xs text-muted-foreground"> {format(date, " HH:mm:ss")}</div>
+                    
+                </div>
+            )
         }
     },
+     {
+        accessorKey: "returnConditions",
+        size: 280,
+        header: () => <div className="font-medium text-muted-foreground text-center cursor-default">
+                        <div>
+                            เงื่อนไขการรับยา
+                        </div>
+                        <div className="flex flex-row gap-x-2 text-center font-medium justify-center">
+                            <div className="text-center basis-1/2">
+                                ยืมรายการทดแทนได้
+                            </div>
+                            <div className="text-center basis-1/2">
+                                ขอสนับสนุน
+                            </div>
+                        </div>
+                    </div>,
+        cell: ({ row }) => {
+            const med = row.original.requestDetails.requestTerm.receiveConditions;
+            const exactType = med.condition === "exactType" ? ( <div className="text-md text-red-600 flex flex-row items-center"><SquareX className="w-5 h-5"/>  ยืมรายการทดแทนไม่ได้ </div>): ( <div className="text-md text-green-600 flex flex-row items-center"><SquareX className="w-5 h-5"/>  ยืมรายการทดแทนได้ </div>);
+            const supportType = med.supportType === true ? ( <div className="text-md text-green-600 flex flex-row items-center"><SquareCheck className="w-5 h-5"/>  ขอสนับสนุน </div>): ( <div  className="text-md text-red-600 flex flex-row items-center"><SquareX className="w-5 h-5"/>  ขอสนับสนุน </div>);
+            return(
+            <div className="flex flex-row justify-around items-center">
+                <div className="text-md font-medium flex basic-1/2">
+                     {exactType}
+                </div>
+                 <div className="text-md font-medium flex basic-1/2">
+                     {supportType}
+                </div>
+            </div> 
+            )
+        }
+    },
+    // {
+    //     id: "postingHospitalNameTH",
+    //     accessorFn: (row) => row.requestDetails.postingHospitalNameTH,
+    //     size: 100,
+    //     header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ผู้ขอรับ</div>,
+    //     cell: ({ getValue }) => {
+    //         return <div className="text-md font-medium text-gray-600">{getValue() as string}</div>
+    //     }
+    // },
     {
         id: "status",
         accessorFn: (row) => row.status,
-        size: 100,
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">สถานะ</div>,
+        size: 300 ,
+        header: () => <div className="flex font-medium text-muted-foreground text-left cursor-default">
+                <div className="basis-1/2">ผู้ตอบกลับ</div>
+                <div className="basis-1/2">สถานะ</div>
+            </div>,
         cell: ({ getValue, row }) => {
             const status = getValue() as string
-            return <div className="text-sm font-medium text-gray-600">{
-                status === "offered" ? "รอยืนยัน" : status === "to-transfer" ? (
-                    <Button variant={"link"} className="p-0" onClick={() => handleStatusClick(row.original, "to-return")}>รอส่งมอบ<StatusIndicator status={status} /></Button>
-                ) : status === "to-return" ? (
-                    <Button variant={"link"} className="p-0" disabled>รอรับคืนยา<StatusIndicator status={status} /></Button>
-                ) : status === "confirm-return" ? (
-                    <Button variant={"link"} className="p-0" onClick={() => handleStatusClick(row.original, "returned")} >โปรดยืนยันการคืนยา<StatusIndicator status={status} /></Button>
-                ): status === "in-return" ? "รอยืนยันการได้รับคืน" : status === "returned" ? "ได้รับคืนแล้ว" : status === "cancelled" ? "ยกเลิก" : ""
-            }</div>
+            const postingHospitalNameTH = row.original.requestDetails.postingHospitalNameTH || "ไม่ระบุ"
+            const med = row.original
+            return (
+            <div className="flex flex-row  items-center"> 
+                <div className="basis-1/2">
+                    <span>{postingHospitalNameTH}:</span>
+                </div>
+                <div className="text-md font-medium text-gray-600 basis-1/2">{
+                    
+                        status === "offered" ? <div className="flex gap-x-2">รอยืนยัน<StatusIndicator status={status} /></div>  
+                        : status === "to-transfer" ? (
+                            <Button variant={"link"} className="flex gap-x-2" onClick={() => handleconfirmDeliveryFromRequests({...med,
+                                            displayHospitalName: med.requestDetails.postingHospitalNameTH,
+                                            displayMedicineName: med.requestDetails.requestMedicine.name,
+                                            displayMedicineAmount: med.offeredMedicine.offerAmount,
+                                        })}>รอส่งมอบ<StatusIndicator status={status} /></Button>
+                    )   : status === "to-return" ? (
+                            <div className="flex gap-x-2">รอยืนยันรับยา<StatusIndicator status={status} /></div>
+                    )   : status === "confirm-return" ? (
+                            <Button variant={"link"} className="flex gap-x-2" onClick={() => handleReturnConfirm({...med,
+                                            displayHospitalName: med.requestDetails.postingHospitalNameTH,
+                                            displayMedicineName: med.requestDetails.requestMedicine.name,
+                                            displayMedicineAmount: med.offeredMedicine.offerAmount,})} >โปรดยืนยันการคืนยา<StatusIndicator status={status} /></Button> 
+                            ///ซิ้งยืนยีนดารคืนยาอีกรอบ
+                    )   : status === "in-return" ? <div className="flex gap-x-2">รอรับคืนยา<StatusIndicator status={status} /></div> 
+                        : status === "returned" ? <div className="flex gap-x-2 ">ได้รับคืนแล้ว<StatusIndicator status={status} /></div> 
+                        : status === "cancelled" ? <div className="flex gap-x-2 ">ยกเลิก<StatusIndicator status={status} /></div> 
+                        : ""
+                }</div>
+            </div>
+            )
         }
     },
     {
-        id: "action",
-        size: 10,
+        id: "history",
+        size: 150,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ประวัติ</div>,
         cell: ({ row }) => {
-            const status = row.getValue("status") as string
-            return <div className="text-sm font-medium text-gray-600">
+            const status = row.original.requestDetails.status
+            return <div className="text-md font-medium text-gray-600 flex flex-row items-center gap-x-1">
+                <div className="flex flex-row gap-x-1">
+                    {status === 'pending' ? "กำลังดำเนินการ"
+                            : status === "cancelled" ? "ยกเลิก"
+                            : ""
+                        } <StatusIndicator status={status} />
+                </div>
                 <History className="w-4 h-4" /> 
             </div>
         }

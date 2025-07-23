@@ -28,7 +28,7 @@ import ReturnDialog from "@/components/dialogs/return-dialog";
 import { formatDistanceToNow } from "date-fns";
 import EditRequestDialog from "@/components/dialogs/edit-request-dialog";
 export default function StatusDashboard() {
-    const statusFilterSharing = useMemo(() => ["to-confirm", "in-return","returned","to-transfer","confirm-return", "re-confirm", "offered"], []);
+    const statusFilterSharing = useMemo(() => ["to-confirm", "in-return","returned","to-transfer","confirm-return", "re-confirm", "offered",], []);
     const statusFilterRequest = useMemo(() => ["pending", "cancelled"], []);
     const { loggedInHospital } = useHospital();
     const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequestsStatus(loggedInHospital, statusFilterRequest);
@@ -64,7 +64,11 @@ export default function StatusDashboard() {
         console.log('handleConfirmReceiveDelivery', med);
         openConfirmationDialog(med, 'receive-delivery');
     }
-    const openConfirmationDialog = (med: any, actionType: 'receive-delivery' | 'delivery' | 'return' ) => {
+    const handleconfirReceiveDelivery = async (med: any) => {
+        console.log('handleConfirmReceiveDelivery', med);
+        openConfirmationDialog(med, 'to-return');
+    }
+    const openConfirmationDialog = (med: any, actionType: 'receive-delivery' | 'delivery' | 'return' |'to-return') => {
         setSelectedMed(med);
 
         const configs = {
@@ -93,6 +97,15 @@ export default function StatusDashboard() {
                 successMessage: "ยืนยันการรับคืนเรียบร้อยแล้ว",
                 errorMessage: "เกิดข้อผิดพลาดในการยืนยัน",
                 onConfirm: confirmReturn,
+                refetchFunction: fetchMedicineRequests,
+            },
+            'to-return':{
+                title: "ยืนยันการรับยา",
+                description: "คุณต้องการยืนยันการรับยาจาก {hospitalName} หรือไม่?",
+                confirmButtonText: "ยืนยันการรับยา",
+                successMessage: "ยืนยันการรับยาเรียบร้อยแล้ว",
+                errorMessage: "เกิดข้อผิดพลาดในการยืนยัน",
+                onConfirm: confirReceiveDelivery,
                 refetchFunction: fetchMedicineRequests,
             }
             
@@ -194,6 +207,37 @@ export default function StatusDashboard() {
     }
     
 
+    const confirReceiveDelivery = async (med :any) => {
+        const responseBody = {
+            responseId: med.responseId,
+            offeredMedicine: med.offeredMedicine,
+            status: "in-return"
+        }
+        setLoading(true)
+        try {
+            const response = await fetch("/api/updateRequest", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(responseBody),
+            })
+
+            if (!response.ok) {
+                throw new Error("Failed to submit")
+            }
+
+            const result = await response.json()
+            fetchMedicineRequests();
+            setLoading(false)
+            return true;
+        } catch (error) {
+            console.error("Error submitting form:", error)
+            setLoading(false)
+            return false;
+        }
+    }
+
     const confirmDelivery = async (med :any) => {
         const responseBody = {
             responseId: med.responseId,
@@ -251,7 +295,7 @@ export default function StatusDashboard() {
             </div>
 
             {/* Request Section */}
-            <>ขอยืม</>
+            <>ขอยืม (ขาดแคลน)</>
             {
                 loadingRequest ? (
                     <div className="p-8 flex flex-col items-center justify-center">
@@ -260,16 +304,16 @@ export default function StatusDashboard() {
                     </div>
                 ) : (
                     <DataTable
-                        columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, handleReConfirmClick, handleEditClick, "request")}
+                        columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, handleReConfirmClick, handleEditClick,handleconfirReceiveDelivery, "request")}
                         // data={(medicineRequests as any)?.result?.filter((med: any) => med.ticketType === "request")}
                         data={medicineRequests}
                         globalFilter={globalFilter}
                         setGlobalFilter={setGlobalFilter} />
                 )
             }
-
+            <div className="mt-12">
             {/* Sharing Section */}
-            <>ให้ยืม</>
+            <>ขอยืม (แบ่งปัน)</>
             {
                 loadingReturn ? (
                     <div className="p-8 flex flex-col items-center justify-center">
@@ -284,7 +328,7 @@ export default function StatusDashboard() {
                         setGlobalFilter={setGlobalFilter} />
                 )
             }           
-
+            </div>
             {/* Dialogs */}
             {selectedMed && selectedMed.ticketType === "request" && confirmDialogOpen && (
                 <ConfirmResponseDialog

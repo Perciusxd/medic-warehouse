@@ -184,6 +184,7 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                 expectedReturnDate: data.expectedReturnDate,
             },
             returnTerm: data.returnTerm,
+            updatedAt: Date.now().toString(),
             status: newStatus
         }
         console.log('accept offer responseBody', responseBody)

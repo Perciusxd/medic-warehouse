@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
 function MyDocument({ pdfData }: any) {
     console.log('MyDocument data', pdfData);
     const selectedResponseId = pdfData.responseId;
-
+    
     const selectedResponseDetail = pdfData.responseDetails.find(
         (item: any) => item.id === selectedResponseId
     );
@@ -72,7 +72,11 @@ function MyDocument({ pdfData }: any) {
     const requestedQuantity = isRequestType 
         ? pdfData.requestDetails?.requestAmount || pdfData.requestMedicine?.requestAmount
         : pdfData.sharingDetails?.sharingAmount || pdfData.sharingMedicine?.sharingAmount;
-    
+
+    // const amount = isRequestType
+    //     ? pdfData.requestDetails?.offeredMedicine.offerAmount ||  pdfData.acceptedOffer?.responseAmount:"-"; //กำัลังคิดว่า ข้อมูลที่แสดงใน pdf ถูกไหม
+ 
+
     const lendingHospitalNameTH = pdfData.postingHospitalNameTH;
     const lendingHospitalAddress = "15 ถนนกาญจนวณิชย์ ตำบลหาดใหญ่ อำเภอหาดใหญ่ จังหวัดสงขลา 90110  "
     const borrowingHospitalNameTH = selectedResponseDetail.respondingHospitalNameTH;

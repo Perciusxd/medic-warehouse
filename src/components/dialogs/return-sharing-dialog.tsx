@@ -17,7 +17,7 @@ import { Calendar1, Pill, Package, Building2, Factory, Hash, DollarSign, RotateC
 import { LoadingSpinner } from "../ui/loading-spinner";
 
 function SharingMedicineDetails({ sharingMedicine }: any) {
-    const { name, trademark, unit, size, manufacturer } = sharingMedicine;
+    const { name, trademark, unit, quantity, manufacturer } = sharingMedicine;
     
     return (
         <Card className="w-full">
@@ -61,7 +61,7 @@ function SharingMedicineDetails({ sharingMedicine }: any) {
                             <Hash className="h-4 w-4 text-orange-600" />
                             <div className="flex-1">
                                 <Label className="text-xs font-medium text-orange-800 mb-1 block">ขนาด</Label>
-                                <div className="text-sm font-semibold text-orange-900">{size || 'ไม่ระบุ'}</div>
+                                <div className="text-sm font-semibold text-orange-900">{quantity || 'ไม่ระบุ'}</div>
                             </div>
                         </div>
                     </div>
