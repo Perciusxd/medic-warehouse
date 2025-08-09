@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import StatusIndicator from "@/components/ui/status-indicator"
 import ReturnConditionIndicator from "@/components/ui/return-condition-indicator"
 import { Progress } from "@/components/ui/progress"
+import ImageHoverPreview from "@/components/ui/image-hover-preview"
 
 export const columns = (
     handleApproveClick: (med: any) => void,
@@ -26,6 +27,29 @@ export const columns = (
                 return (
                     <div className="flex justify-center">
                          <Button variant={'link'} className="flex p-0 hover:bg-indigo-300" onClick={() => handleEditClick(row.original)}><Pencil className="cursor-pointer" /></Button>
+                    </div>
+                )
+            }
+        },
+        {
+            id: "image",
+            size: 70,
+            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ภาพ</div>,
+            cell: ({ row }) => {
+                const original: any = row.original as any
+                const imgUrl: string | null = original.sharingMedicineImage || original.sharingMedicine?.imageRef || null
+                if (!imgUrl) {
+                    return <div className="text-xs text-muted-foreground">-</div>
+                }
+                return (
+                    <div className="flex items-center gap-2">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={imgUrl}
+                            alt="thumb"
+                            className="h-10 w-10 object-cover rounded border"
+                        />
+                        <ImageHoverPreview previewUrl={imgUrl} />
                     </div>
                 )
             }
@@ -262,10 +286,7 @@ export const columns = (
                     const status = row.original.status
                     return <div className="text-md font-medium text-gray-600 flex flex-row items-center gap-x-1">
                         <div className="flex flex-row gap-x-1">
-                            {status === 'pending' ? "กำลังดำเนินการ"
-                                    : status === "cancelled" ? "ยกเลิก"
-                                    : ""
-                                } <StatusIndicator status={status} />
+                            {status === "cancelled" ? "ยกเลิก" : "กำลังดำเนินการ"} <StatusIndicator status={status} />
                         </div>
                         <History className="w-4 h-4" /> 
                     </div>

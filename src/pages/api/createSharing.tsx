@@ -71,3 +71,12 @@ export default async function handler(
         res.status(500).json({ error: "Failed to initialize Fabric" });
     }
 }
+
+// Increase Next.js API body size limit to handle Base64 images
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: '10mb',
+        },
+    },
+};
