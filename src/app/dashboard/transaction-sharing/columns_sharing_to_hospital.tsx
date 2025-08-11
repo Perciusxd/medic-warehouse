@@ -178,7 +178,7 @@ export const columns = (
                             const isValid = !isNaN(date.getTime());
                             const formattedDate = isValid ? format(date, 'dd/MM/yyyy') : "-";
                             const timeOnly = isValid ? format(date, 'HH:mm:ss') : "-";
-                            console.log("responseDetailsaaaaaa",date)
+                            // console.log("responseDetailsaaaaaa",date)
                             return (
                                 <div key={index}>
                                     <div className="text-sm font-medium ">{formattedDate}</div>
@@ -215,7 +215,7 @@ export const columns = (
             cell: ({ row }) => {
                 const med = row.original;
                 const responseDetails = row.original.responseDetails;
-                console.log('row==================', row.original)
+                // console.log('row==================', row.original)
                 const maxDisplay = 3;
                 const details = responseDetails.slice(0, maxDisplay);
                 const hasMore = responseDetails.length > maxDisplay;
@@ -248,8 +248,9 @@ export const columns = (
                                         <Button variant={'link'} className="flex gap-x-2 p-0" onClick={() => handleDeliveryClick({
                                             ...med,
                                             responseId: detail.id,
-                                            offeredMedicine: detail.acceptedOffer,
-                                            sharingDetails: med.sharingMedicine,
+                                            // offeredMedicine: detail.acceptedOffer,
+                                            // sharingDetails: med.sharingMedicine,
+                                            responseDetail: detail,
                                             acceptedOffer: detail.acceptedOffer,
                                         })}>ส่งมอบ ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></Button>
                                     ) : detail.status === 'in-return' ? (

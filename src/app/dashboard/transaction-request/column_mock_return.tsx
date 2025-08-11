@@ -9,17 +9,18 @@ import { _maxSize } from "zod/v4/core";
 export const columns = (
     handleReturnSharingClick: (med: any) => void,
     handleConfirmReceiveDelivery: (med: any) => void,
+    handleReconfirmClickSharingTicket: (med: any) => void
 ) => [
         {
             accessorKey: "createdAt",
             size: 100,
-            header: ({column}:{column:any}) => <div className="font-medium text-muted-foreground text-left cursor-default">
+            header: ({ column }: { column: any }) => <div className="font-medium text-muted-foreground text-left cursor-default">
                 วันที่แจ้ง
                 <Button
                     className="font-medium text-muted-foreground text-left cursor-pointer"
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                > 
+                >
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             </div>,
@@ -38,13 +39,13 @@ export const columns = (
         {
             accessorKey: "sharingDetails.sharingMedicine.name",
             size: 200,
-            header: ({column}:{column:any}) => <div className="font-medium text-muted-foreground text-left cursor-default">
+            header: ({ column }: { column: any }) => <div className="font-medium text-muted-foreground text-left cursor-default">
                 ชื่อยา/ชื่อการค้า
                 <Button
                     className="font-medium text-muted-foreground text-left cursor-pointer"
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                > 
+                >
                     <ArrowUpDown className="h-4 w-4" />
                 </Button>
             </div>,
@@ -52,12 +53,12 @@ export const columns = (
                 const med = row.original;
                 const name = med.sharingDetails?.sharingMedicine?.name || "-";
                 const trademark = med.sharingDetails?.sharingMedicine?.trademark || "-";
-                 return(
-                <div className="flex flex-col">
+                return (
+                    <div className="flex flex-col">
                         <div className="text-md font-medium ">{name}</div>
                         <div className="text-xs text-muted-foreground">ขื่อการค้า : {trademark}</div>
                     </div>
-                )        
+                )
             },
             enableGlobalFilter: true
         },
@@ -69,14 +70,14 @@ export const columns = (
                 const med = row.original;
                 const sharingAmount = med.sharingDetails?.sharingMedicine?.sharingAmount || "-";
                 const pricePerUnit = med.sharingDetails?.sharingMedicine?.pricePerUnit || "-";
-                const amount = sharingAmount* pricePerUnit;
+                const amount = sharingAmount * pricePerUnit;
                 const responseAmount = med.acceptedOffer?.responseAmount || "-";
-                return(
-                <div className="flex flex-col">
+                return (
+                    <div className="flex flex-col">
                         <div className="text-md font-medium items-center">{sharingAmount.toLocaleString()} ( {responseAmount.toLocaleString()} )</div>
                         <div className="text-xs text-muted-foreground">รวม : {amount.toLocaleString()} บาท</div>
                     </div>
-                )     
+                )
             },
             enableGlobalFilter: false
         },
@@ -88,12 +89,12 @@ export const columns = (
                 const med = row.original;
                 const quantity = med.sharingDetails?.sharingMedicine?.quantity || "-";
                 const unit = med.sharingDetails?.sharingMedicine?.unit || "-";
-                return(
-                <div className="flex flex-col">
+                return (
+                    <div className="flex flex-col">
                         <div className="text-md font-medium ">{quantity}</div>
                         <div className="text-xs text-muted-foreground">{unit}</div>
                     </div>
-                )        
+                )
             },
             enableGlobalFilter: true
         },
@@ -134,7 +135,7 @@ export const columns = (
                             </div>
                             <div className="basis-1/2 flex flex-col">
                                 {renderCondition("ขอสนับสนุน", receiveConditions.subType)}
-                                {renderCondition("คืนรายการอื่่นได้", receiveConditions.otherType)}
+                                {renderCondition("คืนรายการอื่นได้", receiveConditions.otherType)}
                             </div>
                         </div>
                     );
@@ -167,12 +168,12 @@ export const columns = (
             </div>,
             cell: ({ row }: { row: any }) => {
                 const med = row.original;
-                console.log("med sharing",med)
+                // console.log("med sharing",med)
                 const postingHospitalName = med.sharingDetails?.postingHospitalNameTH || "ไม่ระบุ";
-                
+
                 const responseAmount = med.acceptedOffer?.responseAmount || "-";
                 const status = row.original.status;
-                
+
                 return <div className="flex flex-row  items-center  justify-between">
                     <div className="text-sm font-medium text-gray-600 flex justify-start basis-1/2">
                         {postingHospitalName} :
@@ -204,7 +205,13 @@ export const columns = (
                                 </div>
                             ) : status === 're-confirm' ? (
                                 <div className="flex items-center gap-x-2">
-                                    <div className="flex gap-x-2" >ยืนยันการขอยืม<StatusIndicator status={status} /></div>
+                                    <div className="flex" >
+                                        <Button variant={"link"} className="flex gap-x-2" onClick={() =>
+                                            handleReconfirmClickSharingTicket({ ...med })
+                                        }>
+                                            ยืนยันการขอยืม<StatusIndicator status={status} />
+                                        </Button>
+                                    </div>
                                     {/* <div>( {responseAmount} )</div> */}
                                 </div>
                             )
@@ -236,22 +243,22 @@ export const columns = (
             cell: ({ row }: { row: any }) => {
                 const med = row.original;
                 const status = row.original.sharingDetails.status;
-                console.log('roww req', row.original)
+                // console.log('roww req', row.original)
                 return (
 
-                <div className="flex justify-start items-center gap-x-2 flex-row">
-                    <div className="flex flex-row items-center gap-x-2">
+                    <div className="flex justify-start items-center gap-x-2 flex-row">
+                        <div className="flex flex-row items-center gap-x-2">
 
-                        {status === 'pending' ? "กำลังดำเนินการ"
-                            : status === "cancelled" ? "ยกเลิก"
-                            : ""
-                        }
-                        
-                        <StatusIndicator status={status} />
+                            {status === 'pending' ? "กำลังดำเนินการ"
+                                : status === "cancelled" ? "ยกเลิก"
+                                    : ""
+                            }
 
+                            <StatusIndicator status={status} />
+
+                        </div>
+                        <div><History className="w-4 h-4 text-muted-foreground cursor-pointer" /></div>
                     </div>
-                    <div><History className="w-4 h-4 text-muted-foreground cursor-pointer" /></div>
-                </div>
 
                 )
             },

@@ -55,59 +55,36 @@ const styles = StyleSheet.create({
 });
 
 function MyDocument({ pdfData }: any) {
-    console.log('pdfData', pdfData);
-    const { userData } = pdfData;
+    console.log('selected response detail in sharing pdf', pdfData)
+    const { postingHospitalNameTH, responseDetail, sharingMedicine, userData } = pdfData;
+    const { respondingHospitalNameTH, acceptedOffer } = responseDetail;
+    console.log('sharing medicine in pdf', sharingMedicine)
     const { address, director, contact } = userData;
-    const { offeredMedicine, requestMedicine } = pdfData;
+    // const { offeredMedicine, requestMedicine } = pdfData;
     const selectedResponseId = pdfData.responseId;
-    
+
     const selectedResponseDetail = pdfData.responseDetails.find(
         (item: any) => item.id === selectedResponseId
     );
 
     if (!selectedResponseDetail) return null;
 
-    // Handle both request and sharing data structures
-    const isRequestType = pdfData.ticketType === "request";
-    
-    const requestedMedicineName = isRequestType 
-        ? pdfData.requestDetails?.name || pdfData.requestMedicine?.name
-        : pdfData.sharingDetails?.name || pdfData.sharingMedicine?.name;
-        
-    const requestedQuantity = isRequestType 
-        ? pdfData.requestDetails?.requestAmount || pdfData.requestMedicine?.requestAmount
-        : pdfData.sharingDetails?.sharingAmount || pdfData.sharingMedicine?.sharingAmount;
-
-    // const amount = isRequestType
-    //     ? pdfData.requestDetails?.offeredMedicine.offerAmount ||  pdfData.acceptedOffer?.responseAmount:"-"; //กำัลังคิดว่า ข้อมูลที่แสดงใน pdf ถูกไหม
- 
-
-    const lendingHospitalNameTH = pdfData.postingHospitalNameTH;
-    const lendingHospitalAddress = address;
-    const borrowingHospitalNameTH = selectedResponseDetail.respondingHospitalNameTH;
-    
-    const expectedReturnDate = isRequestType 
-        ? formatDate(pdfData.requestTerm?.expectedReturnDate)
-        : formatDate(selectedResponseDetail.acceptedOffer?.expectedReturnDate || pdfData.sharingReturnTerm?.expectedReturnDate);
-    
-    const documentType = isRequestType ? "ขอยืมเวชภัณฑ์ยา" : "ขอรับแบ่งปันเวชภัณฑ์ยา";
-    const actionText = isRequestType ? "ขอยืมยา" : "ขอรับแบ่งปันยา";
-    const mockNote = "รอการส่งมอบจากตัวแทนจำหน่าย  "
-
     const todayFormat = new Date();
     const today = format(todayFormat, 'dd/MM/yyyy');
+    const mockNote = "รอการส่งมอบจากตัวแทนจำหน่าย  "
+    const expectedReturnDate = formatDate(acceptedOffer.expectedReturnDate);
 
     return (
         <PDFDocGen>
             <Page size="A4" style={styles.body}>
-                <Image style={styles.image} src="/krut_mark.jpg"/>
+                <Image style={styles.image} src="/krut_mark.jpg" />
                 <View style={[styles.table, { marginBottom: 10 }]}>
                     {/* Row 1 */}
                     <View style={styles.tableRow}>
                         <Text style={[styles.tableCell, { flex: 1 }]}>ที่ สข. 80231</Text>
                         <Text style={[styles.tableCell, { flex: 1 }]}></Text>
                         {/* <Text style={[styles.tableCell, { flex: 1 }]}></Text> */}
-                        <Text style={[styles.tableCell, { flex: 1 }]}>{lendingHospitalNameTH} </Text>
+                        {/* <Text style={[styles.tableCell, { flex: 1 }]}>{lendingHospitalNameTH} </Text> */}
                     </View>
 
                     {/* Row 2 */}
@@ -115,15 +92,15 @@ function MyDocument({ pdfData }: any) {
                         <Text style={[styles.tableCell, { flex: 1 }]}></Text>
                         <Text style={[styles.tableCell, { flex: 1 }]}></Text>
                         {/* <Text style={[styles.tableCell, { flex: 1 }]}></Text> */}
-                        <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {lendingHospitalAddress}</Text>
+                        {/* <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {lendingHospitalAddress}</Text> */}
                     </View>
                 </View>
 
                 <Text style={{ textAlign: 'center' }} >{today}</Text>
-                <Text style={styles.text}>เรื่อง    {documentType}</Text>
-                <Text style={styles.text}>เรียน    ผู้อำนวยการ {borrowingHospitalNameTH}</Text>
+                <Text style={styles.text}>เรื่อง    ขอยืมเวชภัณฑ์ยา</Text>
+                <Text style={styles.text}>เรียน    ผู้อำนวยการ {postingHospitalNameTH}</Text>
                 <Text style={{ marginTop: 6, textIndent: 80 }}>
-                    ตามที่{borrowingHospitalNameTH} มีความประสงค์ที่จะ{actionText} ดังรายการต่อไปนี้
+                    เนืื่องด้วย {respondingHospitalNameTH} มีความประสงค์ที่จะขอยืมยา ดังรายการต่อไปนี้
                 </Text>
 
                 <View style={[styles.table, { marginTop: 14 }]}>
@@ -134,23 +111,23 @@ function MyDocument({ pdfData }: any) {
                         <Text style={styles.tableHeader}>หมายเหตุ</Text>
                     </View>
                     <View style={styles.tableRow}>
-                        <Text style={styles.tableCell}>{requestMedicine.name }</Text>
-                        <Text style={styles.tableCell}>{requestMedicine.requestAmount} ({requestMedicine.unit})</Text>
+                        <Text style={styles.tableCell}>{sharingMedicine.name}</Text>
+                        <Text style={styles.tableCell}>{acceptedOffer.responseAmount} ({sharingMedicine.unit})</Text>
                         <Text style={styles.tableCell}>{expectedReturnDate}</Text>
                         <Text style={styles.tableCell}>{mockNote}</Text>
                     </View>
                 </View>
 
                 <Text style={{ marginTop: 30, textIndent: 80 }}>
-                    ทั้งนี้ {lendingHospitalNameTH} จะส่งคืนยาให้แก่{borrowingHospitalNameTH} ภายในวันที่ {expectedReturnDate} และหากมีการเปลี่ยนแปลงจะต้องแจ้งให้ทราบล่วงหน้า
+                    ทั้งนี้{respondingHospitalNameTH}จะส่งคืนเวชภัณฑ์ยาตามรายการข้างต้น ภายในวันที่กำหนด วันที่ {expectedReturnDate}
                 </Text>
                 <Text style={{ marginTop: 30, textIndent: 80 }}>
-                    จึงเรียนมาเพื่อโปรดพิจารณาและ {lendingHospitalNameTH} ขอขอบคุณ {borrowingHospitalNameTH} ณ โอกาสนี้
+                    จึงเรียนมาเพื่อโปรดพิจารณา และโรงพยาบาล{respondingHospitalNameTH} ขอขอบคุณ ณ โอกาสนี้
                 </Text>
 
                 <Text style={{ marginTop: 30, textIndent: 280 }}>ขอแสดงความนับถือ</Text>
                 <Text style={{ marginTop: 100, textIndent: 280 }}>{director} </Text>
-                <Text style={{ textIndent: 280 }}>ผู้อำนวยการ {lendingHospitalNameTH}</Text>
+                <Text style={{ textIndent: 280 }}>ผู้อำนวยการ {respondingHospitalNameTH}</Text>
                 <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
                 <Text>ติดต่อ {contact}</Text>
             </Page>
@@ -159,15 +136,15 @@ function MyDocument({ pdfData }: any) {
 }
 
 
-const PdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => {
-    console.log('user data at pdf preview', userData)
+const SharingPdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => {
+    // console.log('user data at pdf preview', userData)
     const [blob, setBlob] = useState<Blob | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
     useEffect(() => {
         let cancelled = false;
         const generatePdf = async () => {
-            const generatedBlob = await pdf(<MyDocument pdfData={{...pdfData, userData}} />).toBlob();
+            const generatedBlob = await pdf(<MyDocument pdfData={{ ...pdfData, userData }} />).toBlob();
             if (!cancelled) {
                 setBlob(generatedBlob);
                 setPdfUrl(URL.createObjectURL(generatedBlob));
@@ -177,7 +154,7 @@ const PdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => {
         return () => {
             cancelled = true;
         };
-    }, [pdfData]);
+    }, [pdfData, userData]);
 
     useImperativeHandle(ref, () => ({
         savePdf: () => {
@@ -198,5 +175,5 @@ const PdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => {
     );
 });
 
-PdfPreview.displayName = 'PdfPreview';
-export default PdfPreview;
+SharingPdfPreview.displayName = 'SharingPdfPreview';
+export default SharingPdfPreview;

@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Calendar1, Pill, Package, Building2, Factory, Hash, DollarSign, RotateCcw, FileText, AlertCircle, CheckCircle2 } from "lucide-react";
 import { LoadingSpinner } from "../ui/loading-spinner";
+import { useAuth } from "@/components/providers";
 
 function SharingMedicineDetails({ sharingMedicine }: any) {
     const { name, trademark, unit, quantity, manufacturer } = sharingMedicine;
@@ -489,6 +490,9 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange }: any) {
 }
 
 export default function ReturnSharingDialog({ open, onOpenChange, selectedMed }: any) {
+    console.log('return sharing dialog', selectedMed)
+    const { user } = useAuth();
+    console.log('user', user)
     const { sharingDetails, acceptedOffer } = selectedMed;
     const { sharingMedicine } = sharingDetails;
     

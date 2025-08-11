@@ -16,7 +16,8 @@ import { Badge } from "@/components/ui/badge"
 import { CalendarDays, Hospital, Pill, Package, ArrowRight, DollarSign, Clock, CheckCircle2, AlertCircle, FileText } from "lucide-react"
 
 import dynamic from 'next/dynamic';
-const PdfPreview = dynamic(() => import('@/components/ui/pdf_creator/preview_pdf'), { ssr: false });
+const SharingPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/sharing_pdf'), { ssr: false });
+import { useAuth } from "@/components/providers";
 
 function SharingDetailPanel({ data }: any) {
     const { createdAt, postingHospitalNameTH, sharingMedicine, sharingReturnTerm } = data;
@@ -244,6 +245,8 @@ function getConfirmationSchema(sharingData: any) {
 }
 
 export default function ConfirmSharingDialog({ data, dialogTitle, status, openDialog, onOpenChange }: any) {
+    const { user } = useAuth();
+    // console.log('user data at confirm sharing dialog', user)
     const pdfRef = useRef<{ savePdf?: () => void }>(null);
     const [loading, setLoading] = useState(false);
 
@@ -330,7 +333,7 @@ export default function ConfirmSharingDialog({ data, dialogTitle, status, openDi
                                     </h3>
                                 </div>
                                 <div className="p-2">
-                                    <PdfPreview data={data} ref={pdfRef} />
+                                    <SharingPdfPreview data={data} userData={user} ref={pdfRef} />
                                 </div>
                             </div>
                         </div>
