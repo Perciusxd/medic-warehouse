@@ -168,7 +168,7 @@ export const columns = (
             </div>,
             cell: ({ row }: { row: any }) => {
                 const med = row.original;
-                // console.log("med sharing",med)
+                console.log("med sharing",med)
                 const postingHospitalName = med.sharingDetails?.postingHospitalNameTH || "ไม่ระบุ";
 
                 const responseAmount = med.acceptedOffer?.responseAmount || "-";
@@ -207,7 +207,11 @@ export const columns = (
                                 <div className="flex items-center gap-x-2">
                                     <div className="flex" >
                                         <Button variant={"link"} className="flex gap-x-2" onClick={() =>
-                                            handleReconfirmClickSharingTicket({ ...med })
+                                            handleReconfirmClickSharingTicket({ 
+                                                sharingMedicineDetail: med.sharingDetails,
+                                                responseDetail: med,
+                                                ...med
+                                             })
                                         }>
                                             ยืนยันการขอยืม<StatusIndicator status={status} />
                                         </Button>

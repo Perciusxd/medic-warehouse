@@ -55,19 +55,20 @@ const styles = StyleSheet.create({
 });
 
 function MyDocument({ pdfData }: any) {
-    console.log('selected response detail in sharing pdf', pdfData)
-    const { postingHospitalNameTH, responseDetail, sharingMedicine, userData } = pdfData;
+    const { responseDetail, sharingMedicineDetail, userData } = pdfData;
+    console.log("responseDetail", responseDetail)
+    console.log("sharingMed", sharingMedicineDetail)
+    const { postingHospitalNameTH, sharingMedicine } = sharingMedicineDetail;
     const { respondingHospitalNameTH, acceptedOffer } = responseDetail;
-    console.log('sharing medicine in pdf', sharingMedicine)
     const { address, director, contact } = userData;
     // const { offeredMedicine, requestMedicine } = pdfData;
     const selectedResponseId = pdfData.responseId;
 
-    const selectedResponseDetail = pdfData.responseDetails.find(
-        (item: any) => item.id === selectedResponseId
-    );
+    // const selectedResponseDetail = pdfData.responseDetails.find(
+    //     (item: any) => item.id === selectedResponseId
+    // );
 
-    if (!selectedResponseDetail) return null;
+    // if (!selectedResponseDetail) return null;
 
     const todayFormat = new Date();
     const today = format(todayFormat, 'dd/MM/yyyy');
@@ -137,6 +138,7 @@ function MyDocument({ pdfData }: any) {
 
 
 const SharingPdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => {
+    console.log('sharingDatapdf', pdfData)
     // console.log('user data at pdf preview', userData)
     const [blob, setBlob] = useState<Blob | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);

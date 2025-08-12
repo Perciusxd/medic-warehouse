@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button"
-import StatusIndicator from "@/components/ui/status-indicator"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose, DialogDescription } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -104,9 +103,8 @@ function ReturnFormSchema({ selectedMed }: any) {
     })
 }
 
-function ReturnMedicineDetails({ selectedMed, onOpenChange }: any) {
+function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading }: any) {
     console.log('selectedMed in return medicine details', selectedMed)
-    const [loading, setLoading] = useState(false);
     const { id, respondingHospitalNameEN, sharingId, sharingDetails, acceptedOffer } = selectedMed;
     const { postingHospitalId, postingHospitalNameEN, sharingMedicine } = sharingDetails;
     const { responseAmount } = acceptedOffer;
@@ -202,7 +200,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange }: any) {
                 </CardTitle>
             </CardHeader>
             <CardContent>
-                <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6">
+                <form id="return-sharing-form" onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6 pb-6">
                     {/* Medicine Information Section */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 mb-3">
@@ -461,28 +459,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange }: any) {
                         </div>
                     </div>
 
-                    <Separator />
-
-                    {/* Submit Button */}
-                    <div className="pt-4">
-                        <Button 
-                            type="submit" 
-                            disabled={loading}
-                            className="w-full bg-green-600 hover:bg-green-700 min-h-[44px]"
-                        >
-                            {loading ? (
-                                <div className="flex items-center gap-2">
-                                    <LoadingSpinner className="h-4 w-4" />
-                                    <span>กำลังสร้างเอกสาร...</span>
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-2">
-                                    <CheckCircle2 className="h-4 w-4" />
-                                    <span>ตกลง/พิมพ์เอกสาร</span>
-                                </div>
-                            )}
-                        </Button>
-                    </div>
+                    {/* Footer submit moved to DialogFooter */}
                 </form>
             </CardContent>
         </Card>
@@ -495,36 +472,59 @@ export default function ReturnSharingDialog({ open, onOpenChange, selectedMed }:
     console.log('user', user)
     const { sharingDetails, acceptedOffer } = selectedMed;
     const { sharingMedicine } = sharingDetails;
+    const [loading, setLoading] = useState(false);
     
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogTrigger asChild>
-                <Button variant={"link"} className="flex gap-x-2">
-                    <RotateCcw className="h-4 w-4" />
-                    รับคืน
-                    <StatusIndicator status={status} />
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-[1200px] max-h-[90vh] overflow-y-auto">
-                <DialogHeader className="space-y-3">
+            <DialogContent className="max-w-[1200px] max-h-[90vh] flex flex-col">
+                <DialogHeader className="space-y-3 sticky top-0 z-10">
                     <DialogTitle className="flex items-center gap-2 text-xl font-semibold text-gray-800">
                         <RotateCcw className="h-5 w-5 text-green-600" />
                         คืนยา
                     </DialogTitle>
-                    <DialogDescription className="text-base">
+                    {/* <DialogDescription className="text-base">
                         <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
                             <Package className="h-5 w-5 text-blue-600" />
                             <span>
                                 คุณต้องการคืนยา <strong>{sharingMedicine.name}</strong> จาก <strong>{acceptedOffer.responseAmount}</strong> หน่วย หรือไม่?
                             </span>
                         </div>
-                    </DialogDescription>
+                    </DialogDescription> */}
                 </DialogHeader>
-                
-                <div className="grid lg:grid-cols-2 gap-6 mt-6">
-                    <SharingMedicineDetails sharingMedicine={sharingMedicine} />
-                    <ReturnMedicineDetails selectedMed={selectedMed} onOpenChange={onOpenChange} />
+                <div className="flex-1 overflow-y-auto">
+                    <div className="grid lg:grid-cols-2 gap-6">
+                        <SharingMedicineDetails sharingMedicine={sharingMedicine} />
+                        <ReturnMedicineDetails selectedMed={selectedMed} onOpenChange={onOpenChange} loading={loading} setLoading={setLoading} />
+                    </div>
                 </div>
+
+                <DialogFooter className="gap-2 pt-4 border-t">
+                    <Button
+                        type="submit"
+                        form="return-sharing-form"
+                        className="min-w-[180px] bg-green-600 hover:bg-green-700"
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <span className="flex items-center gap-2">
+                                <LoadingSpinner className="h-4 w-4" />
+                                กำลังสร้างเอกสาร...
+                            </span>
+                        ) : (
+                            <span className="flex items-center gap-2">
+                                <CheckCircle2 className="h-4 w-4" />
+                                ตกลง/พิมพ์เอกสาร
+                            </span>
+                        )}
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => onOpenChange(false)}
+                    >
+                        ยกเลิก
+                    </Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     )

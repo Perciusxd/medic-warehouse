@@ -12,13 +12,17 @@ import { Calendar } from "@/components/ui/calendar"
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 // Icons
-import { Calendar1 } from "lucide-react"
+import { Calendar1, FileText } from "lucide-react"
 
 import { format } from "date-fns"
 import { z } from "zod"
 import { useForm, FieldErrors } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
+import { useState, useRef } from "react"
+
+import dynamic from 'next/dynamic';
+const SharingPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/sharing_pdf'), { ssr: false });
+import { useAuth } from "@/components/providers";
 
 function RequestDetails({ sharingMed }: any) {
     console.log('sharingMed RequestDetails', sharingMed)
@@ -127,9 +131,9 @@ function ResponseFormSchema(sharingMedicine: any) {
     })
 }
 
-function ResponseDetails({ sharingMed, onOpenChange }: any) {
-    console.log('sharingMed', sharingMed)
-    console.log('sharingMed.sharingMedicine', sharingMed.sharingDetails.sharingMedicine)
+function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) {
+    // console.log('sharingMed', sharingMed)
+    // console.log('sharingMed.sharingMedicine', sharingMed.sharingDetails.sharingMedicine)
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [dateError, setDateError] = useState(""); // for error message
     const [loading, setLoading] = useState(false);
@@ -138,8 +142,8 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
     const existingOffer = sharingMed.offeredMedicine;
     const existingReturnTerm = sharingMed.returnTerm;
     const isReconfirm = !!existingOffer;
-    console.log('existingOffer', existingOffer)
-    console.log('existingReturnTerm', existingReturnTerm)
+    // console.log('existingOffer', existingOffer)
+    // console.log('existingReturnTerm', existingReturnTerm)
 
     const ResponseShema = ResponseFormSchema(sharingMed.sharingDetails.sharingMedicine)
     
@@ -170,7 +174,7 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
     const returnTerm = watch("returnTerm"); // Get the current values of receiveConditions
     const isAnyChecked = Object.values(returnTerm || {}).some(Boolean);// Check if any checkbox is checked
 
-    console.log('expectedReturn', expectedReturn)
+    // console.log('expectedReturn', expectedReturn)
 
     const onSubmit = async (data: z.infer<typeof ResponseShema>) => {
         const isResponse = sharingMed.id.startsWith('RESP');
@@ -191,6 +195,7 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
 
         try {
             setLoading(true);
+            onSubmittingChange?.(true);
             const response = await fetch("/api/updateSharing", {
                 method: "POST",
                 headers: {
@@ -201,10 +206,12 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
             const result = await response.json();
             console.log('accpet offer result', result)
             setLoading(false);
+            onSubmittingChange?.(false);
             onOpenChange(false);
         } catch (error) {
             console.error("Error in transaction:", error);
             setLoading(false);
+            onSubmittingChange?.(false);
         }
     }
 
@@ -213,7 +220,7 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit, onError)}>
+        <form id="accept-sharing-form" onSubmit={handleSubmit(onSubmit, onError)}>
             <div className="flex flex-col gap-4">
                 <Label>ยืนยันการยืม</Label>
                 <div className="grid grid-cols-2 gap-2">
@@ -312,32 +319,66 @@ function ResponseDetails({ sharingMed, onOpenChange }: any) {
                     
                 </div>
             </div>
-            <div className="flex justify-end mt-4">
-                <Button className="pd-20px " type="submit" disabled={loading}>
-                    {loading
-                        ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500 ">{isReconfirm ? "บันทึก" : "ยืนยัน"}</span></div>
-                        : (isReconfirm ? "บันทึกการแก้ไข" : "ยืนยัน")}
-                </Button>
-            </div>
+            
         </form>
     )
 }
 
 export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChange }: any) {
     // Check if this is a re-confirm scenario
+    const { user } = useAuth();
+    const pdfRef = useRef<{ savePdf?: () => void }>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const isReconfirm = !!sharingMed?.acceptedOffer;
-    const dialogTitle = isReconfirm ? "แก้ไขการยอมรับแบ่งปัน" : "เวชภัณฑ์ยาที่ต้องการแบ่งปัน";
+    const dialogTitle = isReconfirm ? "แก้ไข/ยอมรับแบ่งปัน" : "เวชภัณฑ์ยาที่ต้องการแบ่งปัน";
 
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[700px]">
-                <DialogHeader>
-                    <DialogTitle>{dialogTitle}</DialogTitle>
-                </DialogHeader>
-                <div className="flex flex-col mt-2 gap-4">
-                    <RequestDetails sharingMed={sharingMed} />
-                    <Separator />
-                    <ResponseDetails sharingMed={sharingMed} onOpenChange={onOpenChange} />
+            <DialogContent className="p-0 max-w-[1400px] w-[96vw]">
+                <div className="flex flex-col max-h-[90vh]">
+                    {/* Sticky Header */}
+                    <div className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                        <div className="px-6 py-4">
+                            <DialogTitle className="text-xl font-semibold text-foreground">{dialogTitle}</DialogTitle>
+                        </div>
+                    </div>
+
+                    {/* Scrollable Body */}
+                    <div className="overflow-y-auto px-6 py-5">
+                        <div className={`grid ${isReconfirm ? 'grid-cols-2 gap-6' : 'grid-cols-1 gap-6'}`}>
+                            <div className="flex flex-col mt-2 gap-4">
+                                <RequestDetails sharingMed={sharingMed} />
+                                <Separator />
+                                <ResponseDetails sharingMed={sharingMed} onOpenChange={onOpenChange} onSubmittingChange={setIsSubmitting} />
+                            </div>
+                            {isReconfirm && (
+                                <div className="flex flex-col">
+                                    <div className="border rounded-lg shadow-sm overflow-hidden bg-white">
+                                        <div className="bg-gray-50 px-4 py-2 border-b">
+                                            <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                                                <FileText className="h-4 w-4" />
+                                                ตัวอย่างเอกสาร
+                                            </h3>
+                                        </div>
+                                        <div className="p-2">
+                                            <SharingPdfPreview data={sharingMed} userData={user} ref={pdfRef} />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Sticky Footer */}
+                    <div className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                        <DialogFooter className="px-6 py-4">
+                            <Button className="min-w-[160px]" type="submit" form="accept-sharing-form" disabled={isSubmitting}>
+                                {isSubmitting
+                                    ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500 ">{isReconfirm ? "บันทึก" : "ยืนยัน"}</span></div>
+                                    : (isReconfirm ? "บันทึกการแก้ไข" : "ยืนยัน")}
+                            </Button>
+                        </DialogFooter>
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>

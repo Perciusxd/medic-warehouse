@@ -6,7 +6,7 @@ import { formatDate } from "@/lib/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRef, useState } from "react"
 
-import { Dialog, DialogContent, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 // import PdfPreview from "@/components/ui/preview_pdf"
@@ -287,7 +287,7 @@ export default function ConfirmSharingDialog({ data, dialogTitle, status, openDi
 
     const onSubmit = async (formData: z.infer<typeof ConfirmSchema>) => {
         setLoading(true);
-
+        console.log('onsubmit data', data)
         try {
             const sharingId = data.responseId; // Get the sharing ID from the data
             const response = await fetch("/api/updateSharingStatus", {
@@ -309,39 +309,41 @@ export default function ConfirmSharingDialog({ data, dialogTitle, status, openDi
     };
 
     return (
-        <Dialog open={openDialog} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[1200px] max-h-[90vh] overflow-y-auto">
-                <DialogTitle className="flex items-center gap-2 text-xl font-semibold text-gray-800 pb-2">
-                    <FileText className="h-5 w-5" />
-                    {dialogTitle}
-                </DialogTitle>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="grid lg:grid-cols-2 gap-6">
-                        {/* Left Panel - Details */}
-                        <div className="space-y-4">
-                            <SharingDetailPanel data={data} />
-                            <AcceptanceDetailPanel responseData={data} />
-                        </div>
-
-                        {/* Right Panel - PDF Preview */}
-                        <div className="flex flex-col">
-                            <div className="border rounded-lg shadow-sm overflow-hidden bg-white">
-                                <div className="bg-gray-50 px-4 py-2 border-b">
-                                    <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                                        <FileText className="h-4 w-4" />
-                                        ตัวอย่างเอกสาร
-                                    </h3>
-                                </div>
-                                <div className="p-2">
-                                    <SharingPdfPreview data={data} userData={user} ref={pdfRef} />
-                                </div>
+        <Dialog  open={openDialog} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-[600px] max-h-[90vh] flex flex-col">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2 text-xl font-semibold text-gray-800 pb-2">
+                        <FileText className="h-5 w-5" />
+                        {dialogTitle}
+                    </DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 flex-1 flex flex-col overflow-y-hidden" >
+                    <div className="flex-1 overflow-y-auto pr-6">
+                        <div className="grid gap-6 ">
+                            <div className="space-y-4">
+                                <SharingDetailPanel data={data} />
+                                <AcceptanceDetailPanel responseData={data} />
                             </div>
+
+                            {/* <div className="flex flex-col">
+                                <div className="border rounded-lg shadow-sm overflow-hidden bg-white">
+                                    <div className="bg-gray-50 px-4 py-2 border-b">
+                                        <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                                            <FileText className="h-4 w-4" />
+                                            ตัวอย่างเอกสาร
+                                        </h3>
+                                    </div>
+                                    <div className="p-2">
+                                        <SharingPdfPreview data={data} userData={user} ref={pdfRef} />
+                                    </div>
+                                </div>
+                            </div> */}
                         </div>
                     </div>
 
-                    <DialogFooter className="gap-2 pt-4  sticky bottom-0">
-                        <Button 
-                            type="submit" 
+                    <DialogFooter className="gap-2 pt-4 border-t">
+                        <Button
+                            type="submit"
                             className="min-w-[160px] bg-green-600 hover:bg-green-700"
                             disabled={loading}
                         >
@@ -357,18 +359,18 @@ export default function ConfirmSharingDialog({ data, dialogTitle, status, openDi
                                 </span>
                             )}
                         </Button>
-                        <Button 
+                        <Button
                             type="button"
-                            variant="outline" 
+                            variant="outline"
                             onClick={handleSavePdf}
                             className="min-w-[120px]"
                         >
                             <FileText className="h-4 w-4 mr-2" />
                             บันทึก PDF
                         </Button>
-                        <Button 
+                        <Button
                             type="button"
-                            variant="outline" 
+                            variant="outline"
                             onClick={() => onOpenChange(false)}
                         >
                             ยกเลิก
