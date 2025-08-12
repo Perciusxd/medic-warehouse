@@ -1,13 +1,29 @@
 /* eslint-disable jsx-a11y/alt-text */
 'use client';
-import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import React, { useEffect, useState, forwardRef, useImperativeHandle, useRef } from 'react';
 import { Document as PDFDocGen, Page, Text, View, StyleSheet, pdf, Font, Image } from '@react-pdf/renderer';
 import { Document as PDFViewer, Page as PDFPage } from 'react-pdf';
 import { saveAs } from 'file-saver';
 
 import { pdfjs } from 'react-pdf';
-import { formatDate } from '@/lib/utils';
-import { format } from 'date-fns';
+// Thai date formatting helper (Buddhist calendar)
+const formatThaiDate = (input: string | number | Date | undefined): string => {
+    if (!input) return '';
+    let date: Date;
+    if (input instanceof Date) {
+        date = input;
+    } else if (typeof input === 'string') {
+        date = isNaN(Number(input)) ? new Date(input) : new Date(Number(input));
+    } else {
+        date = new Date(input);
+    }
+    if (isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+    }).format(date);
+};
 
 Font.register({
     family: 'THSarabunNew',
@@ -70,10 +86,9 @@ function MyDocument({ pdfData }: any) {
 
     // if (!selectedResponseDetail) return null;
 
-    const todayFormat = new Date();
-    const today = format(todayFormat, 'dd/MM/yyyy');
+    const today = formatThaiDate(new Date());
     const mockNote = "รอการส่งมอบจากตัวแทนจำหน่าย  "
-    const expectedReturnDate = formatDate(acceptedOffer.expectedReturnDate);
+    const expectedReturnDate = formatThaiDate(acceptedOffer.expectedReturnDate);
 
     return (
         <PDFDocGen>
@@ -123,7 +138,7 @@ function MyDocument({ pdfData }: any) {
                     ทั้งนี้{respondingHospitalNameTH}จะส่งคืนเวชภัณฑ์ยาตามรายการข้างต้น ภายในวันที่กำหนด วันที่ {expectedReturnDate}
                 </Text>
                 <Text style={{ marginTop: 30, textIndent: 80 }}>
-                    จึงเรียนมาเพื่อโปรดพิจารณา และโรงพยาบาล{respondingHospitalNameTH} ขอขอบคุณ ณ โอกาสนี้
+                    จึงเรียนมาเพื่อโปรดพิจารณา และ{respondingHospitalNameTH} ขอขอบคุณ ณ โอกาสนี้
                 </Text>
 
                 <Text style={{ marginTop: 30, textIndent: 280 }}>ขอแสดงความนับถือ</Text>
@@ -166,13 +181,55 @@ const SharingPdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => 
         },
     }));
 
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const [containerWidth, setContainerWidth] = useState<number | null>(null);
+    const [viewportHeight, setViewportHeight] = useState<number>(
+        typeof window !== 'undefined' ? window.innerHeight : 0
+    );
+
+    useEffect(() => {
+        if (!containerRef.current) return;
+
+        const element = containerRef.current;
+        const updateWidth = () => setContainerWidth(element.clientWidth);
+
+        updateWidth();
+        const resizeObserver = new ResizeObserver(updateWidth);
+        resizeObserver.observe(element);
+        return () => resizeObserver.disconnect();
+    }, []);
+
+    useEffect(() => {
+        const handleResize = () => setViewportHeight(window.innerHeight);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Maintain aspect ratio for A4 portrait: height ≈ width * sqrt(2)
+    const A4_HEIGHT_PER_WIDTH = Math.SQRT2; // ~1.4142
+    const maxWidthByHeight = viewportHeight
+        ? Math.floor((viewportHeight * 0.85) / A4_HEIGHT_PER_WIDTH)
+        : undefined;
+
+    const widthCandidates = [containerWidth ?? undefined, maxWidthByHeight].filter(
+        (v): v is number => typeof v === 'number' && isFinite(v) && v > 0
+    );
+    const computedWidth = widthCandidates.length > 0 ? Math.min(...widthCandidates) : undefined;
+
     return (
-        <div>
-            {pdfUrl && (
-                <PDFViewer file={pdfUrl} key={pdfUrl}>
-                    <PDFPage pageNumber={1} width={520} renderAnnotationLayer={false} renderTextLayer={false} />
-                </PDFViewer>
-            )}
+        <div className="w-full">
+            <div ref={containerRef} className="w-full flex justify-center">
+                {pdfUrl && (
+                    <PDFViewer file={pdfUrl} key={pdfUrl}>
+                        <PDFPage
+                            pageNumber={1}
+                            width={computedWidth}
+                            renderAnnotationLayer={false}
+                            renderTextLayer={false}
+                        />
+                    </PDFViewer>
+                )}
+            </div>
         </div>
     );
 });

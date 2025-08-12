@@ -334,10 +334,10 @@ export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChan
 
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
-            <DialogContent className="p-0 max-w-[1400px] w-[96vw]">
+            <DialogContent className="p-0 max-w-[1400px]">
                 <div className="flex flex-col max-h-[90vh]">
                     {/* Sticky Header */}
-                    <div className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                    <div className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-t-xl">
                         <div className="px-6 py-4">
                             <DialogTitle className="text-xl font-semibold text-foreground">{dialogTitle}</DialogTitle>
                         </div>
@@ -354,7 +354,7 @@ export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChan
                             {isReconfirm && (
                                 <div className="flex flex-col">
                                     <div className="border rounded-lg shadow-sm overflow-hidden bg-white">
-                                        <div className="bg-gray-50 px-4 py-2 border-b">
+                                        <div className="bg-gray-50 px-4 py-2 border-b flex items-center justify-between">
                                             <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
                                                 <FileText className="h-4 w-4" />
                                                 ตัวอย่างเอกสาร
@@ -370,12 +370,19 @@ export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChan
                     </div>
 
                     {/* Sticky Footer */}
-                    <div className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                    <div className="bottom-0 z-10 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-b-2xl">
                         <DialogFooter className="px-6 py-4">
                             <Button className="min-w-[160px]" type="submit" form="accept-sharing-form" disabled={isSubmitting}>
                                 {isSubmitting
                                     ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500 ">{isReconfirm ? "บันทึก" : "ยืนยัน"}</span></div>
                                     : (isReconfirm ? "บันทึกการแก้ไข" : "ยืนยัน")}
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => pdfRef.current?.savePdf?.()}
+                            >
+                                ดาวน์โหลด PDF
                             </Button>
                         </DialogFooter>
                     </div>
