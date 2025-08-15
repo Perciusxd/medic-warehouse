@@ -266,6 +266,9 @@ export const columns = (
                                             offeredMedicine: detail.acceptedOffer,
                                             sharingDetails: med.sharingMedicine,
                                             responseStatus: detail.status,
+                                            displayMedicineName: detail.returnMedicine.returnMedicine.name,
+                                            displayMedicineAmount: detail.returnMedicine.returnMedicine.returnAmount,
+                                            displayHospitalName: detail.respondingHospitalNameTH,
                                         })}>โปรดยืนยันการคืนยา ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></Button>
                                     ) : detail.status === 'returned' ? (
                                         <div className="flex gap-x-2">เสร็จสิ้น ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></div>

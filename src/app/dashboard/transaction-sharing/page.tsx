@@ -269,7 +269,7 @@ export default function TransferDashboard() {
             sharingId: med.responseId,
             acceptOffer: med.acceptedOffer,
             status: "to-confirm",
-            returnTerm: med.sharingReturnTerm,
+            returnTerm: med.responseDetail.returnTerm,
         }
         console.log('responseBody', responseBody)
         setLoading(true)

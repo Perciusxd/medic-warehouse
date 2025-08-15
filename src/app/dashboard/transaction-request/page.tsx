@@ -58,7 +58,7 @@ export default function StatusDashboard() {
     } | null>(null);
 
     const handleReturnSharingClick = async (med: any) => {
-        // console.log('handleReturnSharingClick', med);
+        console.log('handleReturnSharingClick', med);
         setSelectedMed(med);
         setReturnSharingDialogOpen(true);
     }
@@ -410,7 +410,7 @@ export default function StatusDashboard() {
                         setOpenAcceptSharingDialog(open);
                         if (!open) {
                             setSelectedMed(null);
-                            fetchMedicineSharing();
+                            fetchMedicineSharingInReturn();
                         }
                     }}
                 />

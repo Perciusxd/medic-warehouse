@@ -53,41 +53,102 @@ const styles = StyleSheet.create({
 });
 
 function MyDocument({ pdfData }: any) {
-    const { offeredMedicine, requestDetails, requestTerm, responseDetail, returnData } = pdfData;
-    const returnMedicine = returnData.returnMedicine;
-    console.log("offeredMedicine", offeredMedicine)
-    console.log('returnData', returnData)
-    const { returnConditions } = offeredMedicine;
-    const { exactType, otherType, supportType, subType } = returnConditions;
-    const returnTerm = exactType ? "ส่งคืนตามประเภท" : otherType ? "คืนรายการอื่น" : supportType ? "แบบสนับสนุน" : "คืนรายการทดแทน";
-    
-    const selectedResponseId = pdfData.responseId;
+    console.log('pdfData', pdfData)
+    // Normalize input for both request and sharing flows
+    const baseMedicine = pdfData?.offeredMedicine
+        ?? pdfData?.sharingDetails?.sharingMedicine
+        ?? pdfData?.sharingMedicine
+        ?? {};
 
-    const selectedResponseDetail = pdfData.responseDetails.find(
-        (item: any) => item.id === selectedResponseId
-    );
+    const returnData = pdfData?.returnData ?? {};
+    const returnMedicine = returnData?.returnMedicine ?? {};
 
-    if (!selectedResponseDetail) return null;
+    // Determine return term text from actual chosen returnType first, then fallbacks
+    const receiveConditions = pdfData?.offeredMedicine?.returnConditions
+        ?? pdfData?.returnTerm
+        ?? pdfData?.sharingDetails?.sharingReturnTerm?.receiveConditions
+        ?? {};
+
+    const selectedReturnType = returnData?.returnType
+        ?? (receiveConditions?.exactType ? 'exactType'
+            : receiveConditions?.otherType ? 'otherType'
+                : receiveConditions?.supportType ? 'supportType'
+                    : receiveConditions?.subType ? 'subType'
+                        : 'exactType');
+
+    const returnTerm = selectedReturnType === 'exactType'
+        ? 'ส่งคืนตามประเภท'
+        : selectedReturnType === 'otherType'
+            ? 'คืนรายการอื่น'
+            : selectedReturnType === 'supportType'
+                ? 'แบบสนับสนุน'
+                : 'คืนรายการทดแทน';
+
+    // Try to resolve borrowing hospital from multiple shapes
+    const selectedResponseId = pdfData?.responseId;
+    const respondingFromArray = (() => {
+        const list = pdfData?.responseDetails;
+        if (selectedResponseId && Array.isArray(list)) {
+            const detail = list.find((item: any) => item.id === selectedResponseId);
+            return detail?.respondingHospitalNameTH ?? detail?.respondingHospitalNameEN;
+        }
+        return undefined;
+    })();
+
+    const lendingHospitalNameTH = pdfData?.postingHospitalNameTH
+        ?? pdfData?.sharingDetails?.postingHospitalNameTH
+        ?? pdfData?.postingHospitalNameEN
+        ?? '';
+    const lendingHospitalAddress = "15 ถนนกาญจนวณิชย์ ตำบลหาดใหญ่ อำเภอหาดใหญ่ จังหวัดสงขลา 90110  ";
+    const borrowingHospitalNameTH = respondingFromArray
+        ?? pdfData?.respondingHospitalNameTH
+        ?? pdfData?.respondingHospitalNameEN
+        ?? pdfData?.sharingDetails?.respondingHospitalNameTH
+        ?? '';
 
     // Handle both request and sharing data structures
-    const isRequestType = pdfData.ticketType === "request";
+    const isRequestType = pdfData?.ticketType === "request" || !!pdfData?.requestDetails || !!pdfData?.requestMedicine;
 
-    const requestedMedicineName = isRequestType
-        ? pdfData.requestDetails?.name || pdfData.requestMedicine?.name
-        : pdfData.sharingDetails?.name || pdfData.sharingMedicine?.name;
+    const requestedMedicineName = pdfData?.requestDetails?.name
+        ?? pdfData?.requestMedicine?.name
+        ?? pdfData?.sharingDetails?.sharingMedicine?.name
+        ?? pdfData?.sharingMedicine?.name
+        ?? baseMedicine?.name
+        ?? '';
 
-    const requestedQuantity = isRequestType
-        ? pdfData.requestDetails?.requestAmount || pdfData.requestMedicine?.requestAmount
-        : pdfData.sharingDetails?.sharingAmount || pdfData.sharingMedicine?.sharingAmount;
+    // const requestedQuantity = pdfData?.requestDetails?.requestAmount
+    //     ?? pdfData?.requestMedicine?.requestAmount
+    //     ?? pdfData?.acceptedOffer?.responseAmount
+    //     ?? pdfData?.sharingDetails?.sharingMedicine?.sharingAmount
+    //     ?? pdfData?.sharingMedicine?.sharingAmount
+    //     ?? 0;
 
-    const lendingHospitalNameTH = pdfData.postingHospitalNameTH;
-    const lendingHospitalAddress = "15 ถนนกาญจนวณิชย์ ตำบลหาดใหญ่ อำเภอหาดใหญ่ จังหวัดสงขลา 90110  "
-    const borrowingHospitalNameTH = selectedResponseDetail.respondingHospitalNameTH;
+    const requestedQuantity = pdfData?.offeredMedicine?.offerAmount
+        ?? pdfData?.acceptedOffer?.responseAmount
+        ?? 0;
 
-    const documentType = isRequestType ? "ขอยืมเวชภัณฑ์ยา" : "ขอรับแบ่งปันเวชภัณฑ์ยา";
+    const unit = baseMedicine?.unit ?? '';
+    const pricePerUnit = baseMedicine?.pricePerUnit ?? 0;
+    const manufacturer = baseMedicine?.manufacturer ?? '';
 
-    const todayFormat = new Date();
-    const today = format(todayFormat, 'dd/MM/yyyy');
+    const expectedReturnDate = pdfData?.requestTerm?.expectedReturnDate
+        ?? pdfData?.acceptedOffer?.expectedReturnDate
+        ?? pdfData?.sharingReturnTerm?.expectedReturnDate
+        ?? undefined;
+
+    const resolveSupport = (v: any): boolean => {
+        if (typeof v === 'string') return v === 'support';
+        if (typeof v === 'boolean') return v;
+        return false;
+    };
+    const isSupport = resolveSupport(pdfData?.returnData?.supportRequest ?? pdfData?.supportRequest);
+    console.log('isSupport', isSupport)
+    const documentType = isSupport
+        ? 'ขอสนับสนุนเวชภัณฑ์ยา'
+        : 'ขอคืนเวชภัณฑ์ยา';
+
+    const todayDate = new Date();
+    const today = `${format(todayDate, 'dd/MM')}/${todayDate.getFullYear() + 543}`;
 
     return (
         <PDFDocGen>
@@ -114,60 +175,85 @@ function MyDocument({ pdfData }: any) {
                 <Text style={{ textAlign: 'center' }} >{today}</Text>
                 <Text style={styles.text}>เรื่อง    {documentType}</Text>
                 <Text style={styles.text}>เรียน    ผู้อำนวยการ {borrowingHospitalNameTH}</Text>
-                <Text style={{ marginTop: 6, textIndent: 80, flexWrap: 'wrap', maxWidth: '100%' }}>
-                    เนื่องด้วย {lendingHospitalNameTH} มีความประสงค์ที่จะขอคืนยา ซึ่งเป็นการคืนยา{returnTerm} ดังรายการต่อไปนี้  
-                </Text>
+
+                {isSupport ?
+                    (
+                        <Text style={{ marginTop: 6, textIndent: 80, flexWrap: 'wrap', maxWidth: '100%' }}>
+                            เนื่องด้วย {lendingHospitalNameTH} มีความประสงค์จะขอสนับสนุนแทนการส่งคืนยาเนื่องจาก{returnMedicine?.reason ?? ''} ดังรายการต่อไปนี้
+                        </Text>
+                    )
+                    :
+                    (
+                        <Text style={{ marginTop: 6, textIndent: 80, flexWrap: 'wrap', maxWidth: '100%' }}>
+                            เนื่องด้วย {lendingHospitalNameTH} มีความประสงค์ที่จะขอคืนยา ซึ่งเป็นการคืนยา{returnTerm} ดังรายการต่อไปนี้
+                        </Text>
+                    )}
+
 
                 <Text style={{ marginTop: 14, textDecoration: 'underline' }}>รายการยาที่ยืม</Text>
 
                 <View style={[styles.table, { marginTop: 6 }]}>
                     <View style={styles.tableRow}>
-                        <Text style={styles.tableHeader}>รายการ</Text>
-                        <Text style={styles.tableHeader}>จำนวน </Text>
-                        <Text style={styles.tableHeader}>ราคา </Text>
-                        <Text style={styles.tableHeader}>มูลค่า</Text>
-                        <Text style={styles.tableHeader}>ผู้ผลิต</Text>
-                        <Text style={styles.tableHeader}>วันที่ขอยืม </Text>
+                        <Text style={[styles.tableHeader, { width: '25%' }]}>รายการ</Text>
+                        <Text style={[styles.tableHeader, { width: '15%' }]}>จำนวน </Text>
+                        <Text style={[styles.tableHeader, { width: '10%' }]}>ราคา </Text>
+                        <Text style={[styles.tableHeader, { width: '15%' }]}>มูลค่า</Text>
+                        <Text style={[styles.tableHeader, { width: '15%' }]}>ผู้ผลิต</Text>
+                        <Text style={[styles.tableHeader, { width: '20%' }]}>วันที่ขอยืม </Text>
                     </View>
                     <View style={styles.tableRow}>
-                        <Text style={styles.tableCell}>{requestedMedicineName}</Text>
-                        <Text style={styles.tableCell}>{requestedQuantity} {offeredMedicine.unit}</Text>
-                        <Text style={styles.tableCell}>{offeredMedicine.pricePerUnit}</Text>
-                        <Text style={styles.tableCell}>{requestedQuantity * offeredMedicine.pricePerUnit}</Text>
-                        <Text style={styles.tableCell}>{offeredMedicine.manufacturer}</Text>
-                        <Text style={styles.tableCell}>{formatDate(pdfData.requestTerm?.expectedReturnDate)}</Text>
+                        <Text style={[styles.tableCell, { width: '25%' }]}>{requestedMedicineName}</Text>
+                        <Text style={[styles.tableCell, { width: '15%' }]}>{requestedQuantity} ({unit})</Text>
+                        <Text style={[styles.tableCell, { width: '10%' }]}>{pricePerUnit}</Text>
+                        <Text style={[styles.tableCell, { width: '15%' }]}>{requestedQuantity * pricePerUnit}</Text>
+                        <Text style={[styles.tableCell, { width: '15%' }]}>{manufacturer}</Text>
+                        <Text style={[styles.tableCell, { width: '20%' }]}>{(() => {
+                            if (!pdfData?.createdAt) return '';
+                            const d = new Date(Number(pdfData?.createdAt));
+                            if (isNaN(d.getTime())) return '';
+                            return `${format(d, 'dd/MM')}/${d.getFullYear() + 543}`;
+                        })()}</Text>
                     </View>
                 </View>
 
-                <Text style={{ marginTop: 14, textDecoration: 'underline' }}>รายการยาที่คืน</Text>
-
-                <View style={[styles.table, { marginTop: 6 }]}>
-                    <View style={styles.tableRow}>
-                        <Text style={styles.tableHeader}>รายการ</Text>
-                        <Text style={styles.tableHeader}>จำนวน </Text>
-                        <Text style={styles.tableHeader}>ราคาต่อหน่วย</Text>
-                        <Text style={styles.tableHeader}>มูลค่า</Text>
-                        <Text style={styles.tableHeader}>ผู้ผลิต</Text>
-                        <Text style={styles.tableHeader}>วันที่คืน </Text>
+                {!isSupport && (
+                    <View style={[styles.table, { marginTop: 6 }]}>
+                        <Text style={{ marginTop: 14, textDecoration: 'underline' }}>รายการยาที่คืน</Text>
+                        <View style={styles.tableRow}>
+                            <Text style={[styles.tableHeader, { width: '25%' }]}>รายการ</Text>
+                            <Text style={[styles.tableHeader, { width: '15%' }]}>จำนวน </Text>
+                            <Text style={[styles.tableHeader, { width: '10%' }]}>ราคา</Text>
+                            <Text style={[styles.tableHeader, { width: '15%' }]}>มูลค่า</Text>
+                            <Text style={[styles.tableHeader, { width: '15%' }]}>ผู้ผลิต</Text>
+                            <Text style={[styles.tableHeader, { width: '20%' }]}>วันหมดอายุ </Text>
+                        </View>
+                        <View style={styles.tableRow}>
+                            {/* <Text style={[styles.tableCell, {width: '20%'}]}>{returnMedicine?.name ?? ''}</Text> */}
+                            <Text style={[styles.tableCell, { width: '25%' }]}>{returnMedicine?.name ?? ''}</Text>
+                            <Text style={[styles.tableCell, { width: '15%' }]}>{(returnMedicine?.returnAmount ?? 0)} ({returnMedicine?.quantity ?? ''})</Text>
+                            <Text style={[styles.tableCell, { width: '10%' }]}>{returnMedicine?.pricePerUnit ?? 0}</Text>
+                            <Text style={[styles.tableCell, { width: '15%' }]}>{(returnMedicine?.returnAmount ?? 0) * (returnMedicine?.pricePerUnit ?? 0)}</Text>
+                            <Text style={[styles.tableCell, { width: '15%' }]}>{returnMedicine?.manufacturer ?? ''}</Text>
+                            <Text style={[styles.tableCell, { width: '20%' }]}>{(() => {
+                                if (!returnMedicine?.returnDate) return '';
+                                const d = new Date(Number(returnMedicine.returnDate));
+                                const lotNumber = returnMedicine?.batchNumber ?? '';
+                                if (isNaN(d.getTime())) return '';
+                                return `${format(d, 'dd/MM')}/${d.getFullYear() + 543} (${lotNumber})`;
+                            })()}</Text>
+                        </View>
                     </View>
-                    <View style={styles.tableRow}>
-                        <Text style={[styles.tableCell, {width: '20%'}]}>{returnMedicine.name}</Text>
-                        <Text style={styles.tableCell}>{returnMedicine.returnAmount} ({returnMedicine.quantity})</Text>
-                        <Text style={styles.tableCell}>{returnMedicine.pricePerUnit}</Text>
-                        <Text style={styles.tableCell}>{returnMedicine.returnAmount * returnMedicine.pricePerUnit}</Text>
-                        <Text style={styles.tableCell}>{returnMedicine.manufacturer}</Text>
-                        <Text style={styles.tableCell}>{formatDate(returnMedicine.returnDate)}</Text>
-                    </View>
-                </View>
+                )}
 
-                <Text style={{
-                    marginTop: 30, textIndent: 80, flexWrap: 'wrap', maxWidth: '100%', }}>
-                    จึงเรียนมาเพื่อโปรดพิจารณาและดำเนินการต่อไป
-                </Text>
+                {isSupport ? (
+                    <Text style={{ marginTop: 14, textIndent: 80, flexWrap: 'wrap', maxWidth: '100%' }}>จึงเรียนมาเพื่อพิจารณาดำเนินการหักจากงบประมาณ{lendingHospitalNameTH} และ{borrowingHospitalNameTH}ขอขอบคุณมา ณ โอกาสนี้</Text>
+                ) : (
+                    <Text style={{ marginTop: 30, textIndent: 80, flexWrap: 'wrap', maxWidth: '100%', }}>จึงเรียนมาเพื่อโปรดพิจารณาและดำเนินการต่อไป <p>hidden</p></Text>
+                )}
 
-                <Text style={{ marginTop: 30, textIndent: 280 }}>ขอแสดงความนับถือ</Text>
-                <Text style={{ marginTop: 100, textIndent: 280 }}>ชื่อผู้อำนวยการ </Text>
-                <Text style={{ textIndent: 280 }}>ผู้อำนวยการ {lendingHospitalNameTH}</Text>
+                <Text style={{ marginTop: 30, textIndent: 350 }}>ขอแสดงความนับถือ</Text>
+                <Text style={{ marginTop: 100, textIndent: 330 }}>ชื่อผู้อำนวยการ </Text>
+                <Text style={{ textIndent: 330 }}>ผู้อำนวยการ{lendingHospitalNameTH}</Text>
                 <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
                 <Text>ติดต่อ</Text>
             </Page>
@@ -182,7 +268,7 @@ const ReturnPdfPreview = forwardRef(({ data: pdfData, returnData }: any, ref) =>
     useEffect(() => {
         let cancelled = false;
         const generatePdf = async () => {
-            const generatedBlob = await pdf(<MyDocument pdfData={{...pdfData, returnData}} />).toBlob();
+            const generatedBlob = await pdf(<MyDocument pdfData={{ ...pdfData, returnData }} />).toBlob();
             if (!cancelled) {
                 setBlob(generatedBlob);
                 setPdfUrl(URL.createObjectURL(generatedBlob));
@@ -196,7 +282,7 @@ const ReturnPdfPreview = forwardRef(({ data: pdfData, returnData }: any, ref) =>
 
     useImperativeHandle(ref, () => ({
         savePdf: () => {
-            const currentDate = new Date(); 
+            const currentDate = new Date();
             const formattedDate = format(currentDate, 'ddMMyyyy');
             if (blob) {
                 saveAs(blob, `return_document_${formattedDate}.pdf`);
