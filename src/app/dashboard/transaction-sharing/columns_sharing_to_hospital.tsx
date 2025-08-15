@@ -273,7 +273,7 @@ export const columns = (
                                     ) : detail.status === 'returned' ? (
                                         <div className="flex gap-x-2">เสร็จสิ้น ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></div>
                                     ) : detail.status === 'cancelled' ? (
-                                        <div className="flex gap-x-2">ยกเลิก ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></div>
+                                        <div className="flex gap-x-2">ยกเลิก<StatusIndicator status={detail.status} /></div>
                                     ) : null}
                                 </div>
                             </div>

@@ -21,7 +21,7 @@ import StatusIndicator from "@/components/ui/status-indicator"
 
 import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2Icon, LoaderIcon, ShieldAlertIcon,BookDown ,BookUp, SquareX ,SquareCheck } from "lucide-react"
 
-export const columns = (handleApproveClick: (med: ResponseAsset) => void): ColumnDef<ResponseAsset>[] => [
+export const columns = (handleApproveClick: (med: ResponseAsset) => void, handleCancelClick: (med: ResponseAsset) => void): ColumnDef<ResponseAsset>[] => [
     // {
     //     accessorKey: "id",
     //     size: 200,
@@ -271,7 +271,8 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void): Colum
                             className="cursor-pointer"
                         ><Check className="text-green-700" />ยืนยัน</DropdownMenuItem>
                         {/* <DropdownMenuItem><Pencil />Edit</DropdownMenuItem> */}
-                        <DropdownMenuItem className="cursor-pointer"><Trash2 className="text-red-600" />ปฎิเสธ</DropdownMenuItem>
+                        <DropdownMenuItem className="cursor-pointer"
+                            onClick={() => handleCancelClick(med)}><Trash2 className="text-red-600" />ยกเลิก</DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             className="cursor-pointer"
