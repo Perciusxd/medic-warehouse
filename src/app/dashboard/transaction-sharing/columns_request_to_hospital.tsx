@@ -170,8 +170,8 @@ export const columns = (
                     )   : status === "confirm-return" ? (
                             <Button variant={"link"} className="flex gap-x-2" onClick={() => handleReturnConfirm({...med,
                                             displayHospitalName: med.requestDetails.postingHospitalNameTH,
-                                            displayMedicineName: med.requestDetails.requestMedicine.name,
-                                            displayMedicineAmount: med.offeredMedicine.offerAmount,})} >โปรดยืนยันการคืนยา<StatusIndicator status={status} /></Button> 
+                                            displayMedicineName: med.returnMedicine?.returnMedicine?.name,
+                                            displayMedicineAmount: med.returnMedicine?.returnMedicine?.returnAmount,})} >โปรดยืนยันการคืนยา<StatusIndicator status={status} /></Button> 
                             ///ซิ้งยืนยีนดารคืนยาอีกรอบ
                     )   : status === "in-return" ? <div className="flex gap-x-2">รอรับคืนยา<StatusIndicator status={status} /></div> 
                         : status === "returned" ? <div className="flex gap-x-2 ">ได้รับคืนแล้ว<StatusIndicator status={status} /></div> 

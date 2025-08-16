@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import StatusIndicator from "@/components/ui/status-indicator"
 import ReturnConditionIndicator from "@/components/ui/return-condition-indicator"
 import { Progress } from "@/components/ui/progress"
+import ImageHoverPreview from "@/components/ui/image-hover-preview"
 
 export const columns = (
     handleApproveClick: (med: any) => void,
@@ -26,6 +27,29 @@ export const columns = (
                 return (
                     <div className="flex justify-center">
                          <Button variant={'link'} className="flex p-0 hover:bg-indigo-300" onClick={() => handleEditClick(row.original)}><Pencil className="cursor-pointer" /></Button>
+                    </div>
+                )
+            }
+        },
+        {
+            id: "image",
+            size: 70,
+            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ภาพ</div>,
+            cell: ({ row }) => {
+                const original: any = row.original as any
+                const imgUrl: string | null = original.sharingMedicineImage || original.sharingMedicine?.imageRef || null
+                if (!imgUrl) {
+                    return <div className="text-xs text-muted-foreground">-</div>
+                }
+                return (
+                    <div className="flex items-center gap-2">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={imgUrl}
+                            alt="thumb"
+                            className="h-10 w-10 object-cover rounded border"
+                        />
+                        <ImageHoverPreview previewUrl={imgUrl} />
                     </div>
                 )
             }
@@ -154,7 +178,7 @@ export const columns = (
                             const isValid = !isNaN(date.getTime());
                             const formattedDate = isValid ? format(date, 'dd/MM/yyyy') : "-";
                             const timeOnly = isValid ? format(date, 'HH:mm:ss') : "-";
-                            console.log("responseDetailsaaaaaa",date)
+                            // console.log("responseDetailsaaaaaa",date)
                             return (
                                 <div key={index}>
                                     <div className="text-sm font-medium ">{formattedDate}</div>
@@ -191,7 +215,7 @@ export const columns = (
             cell: ({ row }) => {
                 const med = row.original;
                 const responseDetails = row.original.responseDetails;
-                console.log('row==================', row.original)
+                // console.log('row==================', row.original)
                 const maxDisplay = 3;
                 const details = responseDetails.slice(0, maxDisplay);
                 const hasMore = responseDetails.length > maxDisplay;
@@ -224,8 +248,9 @@ export const columns = (
                                         <Button variant={'link'} className="flex gap-x-2 p-0" onClick={() => handleDeliveryClick({
                                             ...med,
                                             responseId: detail.id,
-                                            offeredMedicine: detail.acceptedOffer,
-                                            sharingDetails: med.sharingMedicine,
+                                            // offeredMedicine: detail.acceptedOffer,
+                                            // sharingDetails: med.sharingMedicine,
+                                            responseDetail: detail,
                                             acceptedOffer: detail.acceptedOffer,
                                         })}>ส่งมอบ ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></Button>
                                     ) : detail.status === 'in-return' ? (
@@ -241,11 +266,14 @@ export const columns = (
                                             offeredMedicine: detail.acceptedOffer,
                                             sharingDetails: med.sharingMedicine,
                                             responseStatus: detail.status,
+                                            displayMedicineName: detail.returnMedicine.returnMedicine.name,
+                                            displayMedicineAmount: detail.returnMedicine.returnMedicine.returnAmount,
+                                            displayHospitalName: detail.respondingHospitalNameTH,
                                         })}>โปรดยืนยันการคืนยา ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></Button>
                                     ) : detail.status === 'returned' ? (
                                         <div className="flex gap-x-2">เสร็จสิ้น ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></div>
                                     ) : detail.status === 'cancelled' ? (
-                                        <div className="flex gap-x-2">ยกเลิก ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></div>
+                                        <div className="flex gap-x-2">ยกเลิก<StatusIndicator status={detail.status} /></div>
                                     ) : null}
                                 </div>
                             </div>
@@ -262,10 +290,7 @@ export const columns = (
                     const status = row.original.status
                     return <div className="text-md font-medium text-gray-600 flex flex-row items-center gap-x-1">
                         <div className="flex flex-row gap-x-1">
-                            {status === 'pending' ? "กำลังดำเนินการ"
-                                    : status === "cancelled" ? "ยกเลิก"
-                                    : ""
-                                } <StatusIndicator status={status} />
+                            {status === "cancelled" ? "ยกเลิก" : "กำลังดำเนินการ"} <StatusIndicator status={status} />
                         </div>
                         <History className="w-4 h-4" /> 
                     </div>

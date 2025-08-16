@@ -174,6 +174,7 @@ function MyDocument({ pdfData }: any) {
 
 
 const PdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => {
+    console.log('user data at pdf preview', userData)
     const [blob, setBlob] = useState<Blob | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 

@@ -269,7 +269,7 @@ export default function TransferDashboard() {
             sharingId: med.responseId,
             acceptOffer: med.acceptedOffer,
             status: "to-confirm",
-            returnTerm: med.sharingReturnTerm,
+            returnTerm: med.responseDetail.returnTerm,
         }
         console.log('responseBody', responseBody)
         setLoading(true)
@@ -567,11 +567,22 @@ export default function TransferDashboard() {
             )}
 
             {selectedMed && selectedMed.ticketType === "sharing" && deliveryDialogOpen && (
-                <ConfirmSharingDialog
-                    data={selectedMed}
-                    dialogTitle="ยืนยันการจัดส่ง"
-                    status="to-confirm"
-                    openDialog={deliveryDialogOpen}
+                // <ConfirmSharingDialog
+                //     data={selectedMed}
+                //     dialogTitle="ยืนยันการจัดส่ง -- "
+                //     status="to-confirm"
+                //     openDialog={deliveryDialogOpen}
+                //     onOpenChange={(open: boolean) => {
+                //         setDeliveryDialogOpen(open);
+                //         if (!open) {
+                //             fetchMedicineSharing();
+                //             setSelectedMed(null);
+                //         }
+                //     }}
+                //     onConfirm={confirmDelivery}
+                // />
+                <ConfirmationDialog
+                    open={deliveryDialogOpen}
                     onOpenChange={(open: boolean) => {
                         setDeliveryDialogOpen(open);
                         if (!open) {
@@ -579,7 +590,14 @@ export default function TransferDashboard() {
                             setSelectedMed(null);
                         }
                     }}
+                    selectedMed={selectedMed}
+                    title="ยืนยันการจัดส่ง"
+                    description="คุณต้องการยืนยันการจัดส่งของไปยัง {hospitalName} หรือไม่?"
+                    confirmButtonText="ยืนยันการจัดส่ง"
+                    successMessage="ยืนยันการจัดส่งเรียบร้อยแล้ว"
+                    errorMessage="เกิดข้อผิดพลาดในการยืนยัน"
                     onConfirm={confirmDelivery}
+                    loading={loading}
                 />
             )}
 

@@ -55,7 +55,7 @@ export default function HistoryDashboard() {
         const hospitalName = item.postingHospitalNameTH;
         const director = user?.director
         const now = Date.now();
-        const expectedReturnDate = resp.acceptedOffer.expectedReturnDate;
+        const expectedReturnDate = resp.acceptedOffer?.expectedReturnDate;
         const diff = Number(expectedReturnDate) - now;
         let diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
         if (diffDays < 0) {

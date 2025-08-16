@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Textarea } from "@/components/ui/textarea";
 
 // Icons
 import { Calendar1 } from "lucide-react"
@@ -37,15 +38,16 @@ interface ReturnDialogProps {
 }
 
 function OfferDetails({ selectedMed }: any) {
-    const { offeredMedicine, requestDetails, requestTerm, responseDetail } = selectedMed;
+    const { offeredMedicine, requestDetails, requestTerm, responseDetail, requestMedicine } = selectedMed;
     const { name, trademark, offerAmount, pricePerUnit, unit, returnConditions, manufacturer } = offeredMedicine;
+    const { quantity } = requestMedicine;
     const { requestAmount } = requestDetails;
     const { expectedReturnDate } = requestTerm;
     const totalPrice = offerAmount * pricePerUnit;
 
-    const date = new Date(Number(expectedReturnDate)); // convert string to number, then to Date
+    const date = new Date(Number(expectedReturnDate));
     const isValid = !isNaN(date.getTime());
-    const formattedDate = isValid ? format(date, 'dd/MM/yyyy') : "-"; // format to date only
+    const formattedDate = isValid ? `${format(date, 'dd/MM')}/${date.getFullYear() + 543}` : "-";
     console.log(expectedReturnDate);
 
     return (
@@ -70,7 +72,7 @@ function OfferDetails({ selectedMed }: any) {
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>ขนาด</Label>
-                    <Input disabled value={"ต้องแก้ข้อมูลตอน accecpt offer"} />
+                    <Input disabled value={quantity} />
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>ชื่อการค้า</Label>
@@ -117,21 +119,42 @@ function OfferDetails({ selectedMed }: any) {
     )
 }
 
-const ReturnFormSchema = z.object({
-    returnType: z.enum(["exactType", "otherType", "subType"]),
-    returnMedicine: z.object({
-        name: z.string().min(1, "กรุณาระบุชื่อยา"),
-        trademark: z.string().min(1, "กรุณาระบุชื่อการค้า"),
-        description: z.string().optional(),
-        returnAmount: z.number().min(1, "กรุณากรอกจำนวนมากกว่า 0").max(100000, "กรุณากรอกจำนวนน้อยกว่า 100000"),
-        quantity: z.string().min(1, "กรุณาระบุขนาดของยา"),
-        unit: z.string().min(1, "กรุณาระบุรูปแบบ/หน่วยของยา"),
-        manufacturer: z.string().min(1, "กรุณาระบุผู้ผลิตของยา"),
-        pricePerUnit: z.number().min(1, "ราคาต่อหน่วยควรมากกว่า 0").max(100000, "ราคาต่อหน่วยควรน้อยกว่า 100000"),
-        batchNumber: z.string().min(1, "กรุณาระบุหมายเลขล็อตของยา"),
-        returnDate: z.coerce.string({ invalid_type_error: "กรุณาระบุวันที่คืนยา" }),
+const ReturnFormSchema = z.discriminatedUnion('supportRequest', [
+    z.object({
+        supportRequest: z.literal('support'),
+        returnType: z.enum(["exactType", "otherType", "subType"]),
+        returnMedicine: z.object({
+            reason: z.string().min(1, 'กรุณาระบุเหตุผล'),
+            name: z.string().optional(),
+            trademark: z.string().optional(),
+            description: z.string().optional(),
+            returnAmount: z.any().optional(),
+            quantity: z.string().optional(),
+            unit: z.string().optional(),
+            manufacturer: z.string().optional(),
+            pricePerUnit: z.any().optional(),
+            batchNumber: z.string().optional(),
+            returnDate: z.coerce.string().optional(),
+        }),
     }),
-})
+    z.object({
+        supportRequest: z.literal('none'),
+        returnType: z.enum(["exactType", "otherType", "subType"]),
+        returnMedicine: z.object({
+            name: z.string().min(1, "กรุณาระบุชื่อยา"),
+            trademark: z.string().min(1, "กรุณาระบุชื่อการค้า"),
+            description: z.string().optional(),
+            returnAmount: z.number().min(1, "กรุณากรอกจำนวนมากกว่า 0").max(100000, "กรุณากรอกจำนวนน้อยกว่า 100000"),
+            quantity: z.string().min(1, "กรุณาระบุขนาดของยา"),
+            unit: z.string().min(1, "กรุณาระบุรูปแบบ/หน่วยของยา"),
+            manufacturer: z.string().min(1, "กรุณาระบุผู้ผลิตของยา"),
+            pricePerUnit: z.number().min(1, "ราคาต่อหน่วยควรมากกว่า 0").max(100000, "ราคาต่อหน่วยควรน้อยกว่า 100000"),
+            batchNumber: z.string().min(1, "กรุณาระบุหมายเลขล็อตของยา"),
+            returnDate: z.coerce.string({ invalid_type_error: "กรุณาระบุวันที่คืนยา" }),
+            reason: z.string().optional(),
+        }),
+    }),
+])
 
 function ReturnDetails({ selectedMed, onOpenChange }: any) {
     const pdfRef = useRef<{ savePdf?: () => void }>(null);
@@ -156,11 +179,14 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
         setValue,
         getValues,
         resetField,
-        formState: { errors },
+        trigger,
+        formState: { errors, isValid },
     } = useForm<z.infer<typeof ReturnFormSchema>>({
         resolver: zodResolver(ReturnFormSchema),
+        mode: 'onChange',
         defaultValues: {
             returnType: "exactType",
+            supportRequest: "none",
             returnMedicine: {
                 name: "",
                 trademark: "",
@@ -170,6 +196,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                 pricePerUnit: 1,
                 batchNumber: "",
                 returnDate: undefined,
+                reason: "",
             }
         }
     })
@@ -177,6 +204,24 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
     const returnDate = watch("returnMedicine.returnDate");
     const watchReturnType = watch("returnType");
     const watchAllFields = watch();
+    const supportSelection = watch("supportRequest") || "none";
+    const isSupportSelected = supportSelection === "support";
+
+    const allowedReturnTypes = {
+        exactType: returnConditions?.exactType ?? true,
+        otherType: returnConditions?.otherType ?? true,
+        subType: returnConditions?.subType ?? true,
+        supportType: returnConditions?.supportType ?? false,
+    } as const;
+
+    useEffect(() => {
+        if (allowedReturnTypes.supportType) {
+            setValue('supportRequest', 'support', { shouldDirty: true, shouldValidate: true });
+        } else {
+            setValue('supportRequest', 'none', { shouldDirty: true, shouldValidate: true });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [allowedReturnTypes.supportType]);
 
     // set name and manufacturer to requestMedicine if returnType is exactType
     useEffect(() => {
@@ -192,6 +237,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
     };
 
     const onSubmit = async (data: z.infer<typeof ReturnFormSchema>) => {
+        const supportRequest = supportSelection === 'support';
         const returnData = {
             id: `RET-${Date.now()}`,
             requestId: requestId,
@@ -201,7 +247,8 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
             createAt: Date.now().toString(),
             updatedAt: Date.now().toString(),
             returnMedicine: data.returnMedicine,
-            returnType: data.returnType,
+            returnType: supportRequest ? 'supportType' : data.returnType,
+            supportRequest: supportRequest,
         }
         const returnBody = {
             returnData: returnData,
@@ -230,7 +277,12 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
         }
     }
 
-    const handleSavePdf = () => {
+    const handleSavePdf = async () => {
+        const valid = await trigger();
+        if (!valid) {
+            toast.error("กรุณากรอกข้อมูลให้ครบถ้วนก่อนสร้างเอกสาร");
+            return;
+        }
         pdfRef.current?.savePdf?.();
         toast.success("สร้างเอกสารคืนยาแล้ว")
     };
@@ -240,52 +292,71 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
             <h2 className="text-lg font-semibold">รายการคืน</h2>
             <div className="flex flex-col gap-3">
                 <div className="grid grid-cols-4 gap-2">
-                    <div className="flex flex-row gap-2">
-                        <input type="radio" value="exactType" {...register("returnType")} disabled={returnConditions.exactType} />
-                        <Label>คืนรายการที่ยืม</Label>
-                    </div>
-                    <div className="flex flex-row gap-2">
-                        <input type="radio" value="subType" {...register("returnType")} disabled={returnConditions.exactType} />
-                        <Label>คืนรายการทดแทน</Label>
-                    </div>
-                    <div className="flex flex-row gap-2">
-                        <input type="radio" value="otherType" {...register("returnType")} disabled={returnConditions.exactType} />
-                        <Label>คืนรายการอื่น</Label>
-                    </div>
+                    {allowedReturnTypes.supportType ? (
+                        <>
+                            <div className="flex flex-row gap-2">
+                                <input type="radio" checked={false} disabled />
+                                <Label>คืนรายการที่ยืม</Label>
+                            </div>
+                            <div className="flex flex-row gap-2">
+                                <input type="radio" checked={false} disabled />
+                                <Label>คืนรายการทดแทน</Label>
+                            </div>
+                            <div className="flex flex-row gap-2">
+                                <input type="radio" checked={false} disabled />
+                                <Label>คืนรายการอื่น</Label>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="flex flex-row gap-2">
+                                <input type="radio" value="exactType" {...register("returnType")} disabled={returnConditions.exactType || isSupportSelected} />
+                                <Label>คืนรายการที่ยืม</Label>
+                            </div>
+                            <div className="flex flex-row gap-2">
+                                <input type="radio" value="subType" {...register("returnType")} disabled={returnConditions.exactType || isSupportSelected} />
+                                <Label>คืนรายการทดแทน</Label>
+                            </div>
+                            <div className="flex flex-row gap-2">
+                                <input type="radio" value="otherType" {...register("returnType")} disabled={returnConditions.exactType || isSupportSelected} />
+                                <Label>คืนรายการอื่น</Label>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 font-light">
                     <div className="flex flex-col gap-1">
                         <Label>รายการยา</Label>
-                        <Input placeholder="รายการยา" {...register("returnMedicine.name")} disabled={watchReturnType === "exactType"} />
+                        <Input placeholder="รายการยา" {...register("returnMedicine.name")} disabled={isSupportSelected || watchReturnType === "exactType"} />
                         {errors.returnMedicine?.name && <span className="text-red-500 text-xs">{errors.returnMedicine.name.message}</span>}
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                         <div className="flex flex-col gap-1">
                             <Label>ขนาด</Label>
-                            <Input placeholder="1mg" {...register("returnMedicine.quantity")} />
+                            <Input placeholder="1mg" {...register("returnMedicine.quantity")} disabled={isSupportSelected} />
                             {errors.returnMedicine?.quantity && <span className="text-red-500 text-xs">{errors.returnMedicine.quantity.message}</span>}
                         </div>
                         <div className="flex flex-col gap-1">
                             <Label>รูปแบบ/หน่วย</Label>
-                            <Input placeholder="Tablet" {...register("returnMedicine.unit")} />
+                            <Input placeholder="Tablet" {...register("returnMedicine.unit")} disabled={isSupportSelected} />
                             {errors.returnMedicine?.unit && <span className="text-red-500 text-xs">{errors.returnMedicine.unit.message}</span>}
                         </div>
                     </div>
                     <div className="flex flex-col gap-1">
                         <Label>ชื่อการค้า</Label>
-                        <Input placeholder="ชื่อการค้า" {...register("returnMedicine.trademark")} disabled={watchReturnType === "exactType"} />
+                        <Input placeholder="ชื่อการค้า" {...register("returnMedicine.trademark")} disabled={isSupportSelected || watchReturnType === "exactType"} />
                         {errors.returnMedicine?.trademark && <span className="text-red-500 text-xs">{errors.returnMedicine.trademark.message}</span>}
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                         <div className="flex flex-col gap-1">
                             <Label>ผู้ผลิต</Label>
-                            <Input placeholder="ผู้ผลิต" {...register("returnMedicine.manufacturer")} disabled={watchReturnType === "exactType"} />
+                            <Input placeholder="ผู้ผลิต" {...register("returnMedicine.manufacturer")} disabled={isSupportSelected || watchReturnType === "exactType"} />
                             {errors.returnMedicine?.manufacturer && <span className="text-red-500 text-xs">{errors.returnMedicine.manufacturer.message}</span>}
                         </div>
                         <div className="flex flex-col gap-1">
                             <Label>หมายเลขล็อต</Label>
-                            <Input placeholder="B234" {...register("returnMedicine.batchNumber")} />
+                            <Input placeholder="B234" {...register("returnMedicine.batchNumber")} disabled={isSupportSelected} />
                             {errors.returnMedicine?.batchNumber && <span className="text-red-500 text-xs">{errors.returnMedicine.batchNumber.message}</span>}
                         </div>
                     </div>
@@ -296,9 +367,9 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                         <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
                         <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                             <PopoverTrigger asChild>
-                                <Button variant="outline" className="justify-start text-left font-normal">
+                                <Button variant="outline" className="justify-start text-left font-normal" disabled={isSupportSelected}>
                                     {returnDate
-                                        ? format(new Date(Number(returnDate)), "dd/MM/yyyy")
+                                        ? (() => { const d = new Date(Number(returnDate)); return `${format(d, 'dd/MM')}/${d.getFullYear() + 543}` })()
                                         : "เลือกวันที่"}
                                     <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                 </Button>
@@ -337,22 +408,27 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                     </div>
                     <div className="flex flex-col gap-1">
                         <Label>จำนวนที่ให้คืน</Label>
-                        <Input placeholder="500" type="number" {...register("returnMedicine.returnAmount", { valueAsNumber: true })} />
-                        {errors.returnMedicine?.returnAmount && <span className="text-red-500 text-xs">{errors.returnMedicine.returnAmount.message}</span>}
+                        <Input placeholder="500" type="number" {...register("returnMedicine.returnAmount", { valueAsNumber: true })} disabled={isSupportSelected} />
+                        {errors.returnMedicine?.returnAmount?.message && <span className="text-red-500 text-xs">{String(errors.returnMedicine.returnAmount.message)}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
                         <Label>ราคาต่อหน่วย</Label>
-                        <Input placeholder="20" type="number" {...register("returnMedicine.pricePerUnit", { valueAsNumber: true })} />
-                        {errors.returnMedicine?.pricePerUnit && <span className="text-red-500 text-xs">{errors.returnMedicine.pricePerUnit.message}</span>}
+                        <Input placeholder="20" type="number" {...register("returnMedicine.pricePerUnit", { valueAsNumber: true })} disabled={isSupportSelected} />
+                        {errors.returnMedicine?.pricePerUnit?.message && <span className="text-red-500 text-xs">{String(errors.returnMedicine.pricePerUnit.message)}</span>}
                     </div>
                 </div>
 
-                <div className="grid grid-cols gap-1">
-                    <div className="flex flex-row gap-1">
-                        <input type="checkbox" />
+                <Separator className="col-span-3 my-1" />
+                <div className="flex items-center gap-4 mb-2">
+                    <div className="flex items-center gap-2">
+                        <input type="checkbox" value="support" checked={isSupportSelected} {...register("supportRequest")} disabled={allowedReturnTypes.supportType} />
                         <Label>ขอสนับสนุน</Label>
                     </div>
-                    <Input className="col-span-2" type="text" placeholder="เหตุผลที่ขอสนับสนุน" />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>เหตุผล</Label>
+                    <Textarea placeholder="เหตุผล" {...register("returnMedicine.reason")} disabled={!isSupportSelected} />
+                    {errors.returnMedicine?.reason && <span className="text-red-500 text-xs">{errors.returnMedicine.reason.message}</span>}
                 </div>
 
                 <div style={{ display: 'none' }}>
@@ -366,7 +442,18 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                     {loading
                         ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500">สร้าง</span></div>
                         : "ตกลง"}</Button>
-                <Button variant="outline" type="button" onClick={handleSavePdf}>สร้างเอกสาร</Button>
+                <Button
+                    variant="outline"
+                    type="button"
+                    onClick={handleSavePdf}
+                    disabled={
+                        isSupportSelected
+                            ? !(Boolean((watchAllFields?.returnMedicine?.reason || '').trim()))
+                            : !isValid
+                    }
+                >
+                    สร้างเอกสาร
+                </Button>
             </div>
         </form>
     )

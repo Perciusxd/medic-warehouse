@@ -303,6 +303,7 @@ export const columns = (
                                                     responseId: detail.id,
                                                     offeredMedicine: detail.offeredMedicine,
                                                     requestDetails: med.requestMedicine,
+                                                    responseDetail: detail,
                                                 })}>ได้รับการยืนยัน <StatusIndicator status={detail.status} />
                                             </Button>
 
@@ -328,6 +329,7 @@ export const columns = (
                                                                     responseId: detail.id,
                                                                     offeredMedicine: detail.offeredMedicine,
                                                                     requestDetails: med.requestMedicine,
+                                                                    responseDetail: detail,
                                                                 })
                                                             }>ส่งคืนยา<StatusIndicator status={detail.status} /></Button>)
                                                             : detail.status === "confirm-return"

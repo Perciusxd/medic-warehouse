@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import CreateRequestDialog from "@/components/dialogs/create-request-dialog";
 import CreateResponseDialog from "@/components/dialogs/create-response-dialog";
+import CancelDialog from "@/components/dialogs/cancel-dialog";
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/components/providers";
 
@@ -40,12 +41,19 @@ export default function BorrowDashboard() {
     const [tick, setTick] = useState(0);
     const [selectedMed, setSelectedMed] = useState<ResponseAsset | null>(null);
     const [createRespDialogOpen, setCreateRespDialogOpen] = useState(false);
+    const [cancleRespDialogOpen, setCancleRespDialogOpen] = useState(false);
     const [createRequestDialogOpen, setCreateRequestDialogOpen] = useState(false);
     const [globalFilter, setGlobalFilter] = useState("");
 
     const handleApproveClick = (med: ResponseAsset) => {
         setSelectedMed(med);
         setCreateRespDialogOpen(true);
+    }
+
+    const handleCancelClick = (med: ResponseAsset) => {
+        console.log('med', med)
+        setSelectedMed(med);
+        setCancleRespDialogOpen(true);
     }
 
     useEffect(() => {
@@ -100,8 +108,8 @@ export default function BorrowDashboard() {
                     </div>
                 ) :
                     <div>
-                        <DataTable columns={columns(handleApproveClick)} data={medicineRequests} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
-                        {selectedMed && (
+                        <DataTable columns={columns(handleApproveClick, handleCancelClick)} data={medicineRequests} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+                        {selectedMed && createRespDialogOpen && (
                             <CreateResponseDialog
                                 requestData={selectedMed.requestDetails}
                                 responseId={selectedMed.id}
@@ -110,6 +118,27 @@ export default function BorrowDashboard() {
                                 openDialog={createRespDialogOpen}
                                 onOpenChange={(open: boolean) => {
                                     setCreateRespDialogOpen(open);
+                                    if (!open) {
+                                        fetchMedicineRequests();
+                                        setUpdatedLast(new Date());
+                                    }
+                                }}
+                            />
+                        )}
+
+                        {selectedMed && cancleRespDialogOpen && (
+                            <CancelDialog
+                                selectedMed={selectedMed}
+                                title={"ยกเลิกการยืมยา"}
+                                description={"คุณต้องการยกเลิกการยืมยาใช่หรือไม่"}
+                                confirmButtonText={"ยกเลิก"}
+                                successMessage={"ยกเลิกการยืมยาเรียบร้อย"}
+                                errorMessage={"ยกเลิกการยืมยาไม่สำเร็จ"}
+                                loading={false}
+                                onConfirm={() => Promise.resolve(true)}
+                                open={cancleRespDialogOpen}
+                                onOpenChange={(open: boolean) => {
+                                    setCancleRespDialogOpen(open);
                                     if (!open) {
                                         fetchMedicineRequests();
                                         setUpdatedLast(new Date());

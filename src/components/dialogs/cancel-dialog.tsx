@@ -1,5 +1,5 @@
 "use client";
-
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import {
@@ -15,10 +15,10 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Hospital, Pill, Package, AlertTriangle, CheckCircle2, X } from "lucide-react";
+import { Hospital, Pill, Package, XCircle, X } from "lucide-react";
 import { toast } from "sonner";
 
-interface ConfirmationDialogProps {
+interface CancelDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     selectedMed: any;
@@ -34,7 +34,7 @@ interface ConfirmationDialogProps {
     getMedicineAmount?: (med: any) => string | number;
 }
 
-export default function ConfirmationDialog({
+export default function CancelDialog({
     open,
     onOpenChange,
     selectedMed,
@@ -48,59 +48,48 @@ export default function ConfirmationDialog({
     getHospitalName = (med) => med?.displayHospitalName || med?.responseDetails?.respondingHospitalNameTH || med?.respondingHospitalNameTH || '',
     getMedicineName = (med) => med?.displayMedicineName || med?.sharingMedicine?.name || '',
     getMedicineAmount = (med) => med?.displayMedicineAmount || med?.offeredMedicine?.responseAmount || med?.acceptedOffer?.responseAmount || '',
-}: ConfirmationDialogProps) {
+}: CancelDialogProps) {
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
     const handleConfirm = async () => {
-        const result = await onConfirm(selectedMed);
-        if (result) {
+        setIsSubmitting(true);
+        const cancelBody = {
+            id: selectedMed.id,
+            status: 'cancelled',
+            updatedAt: Date.now().toString()
+        }
+        console.log('cancelBody', cancelBody)
+        try {
+            const response = await fetch("/api/updateTicketStatus", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(cancelBody),
+            })
+            if (!response.ok) throw new Error("Failed to cancel")
+            await response.json()
             onOpenChange(false);
             toast.success(successMessage);
-        } else {
+        } catch (error) {
+            console.log("Error canceling:", error)
             toast.error(errorMessage);
+        } finally {
+            setIsSubmitting(false);
         }
     };
-
-    console.log('confirmation dialog', selectedMed)
 
     const hospitalName = getHospitalName(selectedMed);
     const medicineName = getMedicineName(selectedMed);
     const medicineAmount = getMedicineAmount(selectedMed);
 
-    // Determine dialog theme based on action type
-    const isDestructive = confirmButtonText.includes('ลบ') || confirmButtonText.includes('ยกเลิก') || confirmButtonText.includes('ปฏิเสธ');
-    const isSuccess = confirmButtonText.includes('ยืนยัน') || confirmButtonText.includes('อนุมัติ') || confirmButtonText.includes('ยอมรับ');
-
-    const getThemeColors = () => {
-        if (isDestructive) {
-            return {
-                headerBg: 'bg-red-50',
-                headerText: 'text-red-800',
-                icon: <AlertTriangle className="h-6 w-6 text-red-600" />,
-                confirmBg: 'bg-red-600 hover:bg-red-700',
-                cardBg: 'bg-gradient-to-r from-red-50 to-orange-50',
-                borderColor: 'border-red-200'
-            };
-        } else if (isSuccess) {
-            return {
-                headerBg: 'bg-green-50',
-                headerText: 'text-green-800',
-                icon: <CheckCircle2 className="h-6 w-6 text-green-600" />,
-                confirmBg: 'bg-green-600 hover:bg-green-700',
-                cardBg: 'bg-gradient-to-r from-green-50 to-emerald-50',
-                borderColor: 'border-green-200'
-            };
-        } else {
-            return {
-                headerBg: 'bg-blue-50',
-                headerText: 'text-blue-800',
-                icon: <Package className="h-6 w-6 text-blue-600" />,
-                confirmBg: 'bg-blue-600 hover:bg-blue-700',
-                cardBg: 'bg-gradient-to-r from-blue-50 to-indigo-50',
-                borderColor: 'border-blue-200'
-            };
-        }
-    };
-
-    const theme = getThemeColors();
+    // Force a cancel/destructive theme to emphasize cancellation
+    const theme = {
+        headerBg: 'bg-red-50',
+        headerText: 'text-red-800',
+        icon: <XCircle className="h-6 w-6 text-red-600" />,
+        confirmBg: 'bg-red-600 hover:bg-red-700',
+        cardBg: 'bg-gradient-to-r from-red-50 to-orange-50',
+        borderColor: 'border-red-200',
+        cancelBtn: 'border-red-200 text-red-700 hover:bg-red-50'
+    } as const;
 
     return (
         <AlertDialog
@@ -117,13 +106,13 @@ export default function ConfirmationDialog({
                             {title}
                         </AlertDialogTitle>
                     </div>
-                    
+
                     <div className="pt-4">
                         <AlertDialogDescription className="text-base text-gray-700 mb-4">
                             {description.replace('{hospitalName}', hospitalName)}
                         </AlertDialogDescription>
 
-                        {/* Enhanced Information Card */}
+                        {/* Information Card */}
                         <Card className={`border-2 ${theme.borderColor} shadow-sm`}>
                             <CardContent className={`${theme.cardBg} p-4 space-y-4`}>
                                 {/* Hospital Information */}
@@ -166,44 +155,41 @@ export default function ConfirmationDialog({
                             </CardContent>
                         </Card>
 
-                        {/* Warning message for destructive actions */}
-                        {isDestructive && (
-                            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg mt-4">
-                                <AlertTriangle className="h-4 w-4 text-red-600" />
-                                <span className="text-sm text-red-700 font-medium">
-                                    การดำเนินการนี้ไม่สามารถยกเลิกได้
-                                </span>
-                            </div>
-                        )}
+                        {/* Emphasized warning for cancellation */}
+                        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg mt-4">
+                            <XCircle className="h-4 w-4 text-red-600" />
+                            <span className="text-sm text-red-700 font-medium">
+                                การดำเนินการนี้จะยกเลิกรายการที่เลือก และไม่สามารถย้อนกลับได้
+                            </span>
+                        </div>
                     </div>
                 </AlertDialogHeader>
 
                 <AlertDialogFooter className="gap-3 pt-6 border-t border-gray-200">
-                    <AlertDialogCancel 
+                    <AlertDialogCancel
                         onClick={() => onOpenChange(false)}
-                        className="min-w-[100px] flex items-center gap-2"
+                        className={`min-w-[100px] flex items-center gap-2 ${theme.cancelBtn}`}
+                        disabled={loading || isSubmitting}
                     >
                         <X className="h-4 w-4" />
-                        ยกเลิก
+                        กลับ
                     </AlertDialogCancel>
-                    
+
                     <AlertDialogAction asChild>
-                        {loading ? (
-                            <Button 
-                                className={`min-w-[140px] flex items-center gap-2 ${theme.confirmBg}`} 
+                        {loading || isSubmitting ? (
+                            <Button
+                                className={`min-w-[160px] flex items-center gap-2 ${theme.confirmBg}`}
                                 disabled
                             >
                                 <LoadingSpinner className="h-4 w-4" />
-                                กำลังดำเนินการ...
+                                กำลังยกเลิก...
                             </Button>
                         ) : (
-                            <Button 
+                            <Button
                                 onClick={handleConfirm}
-                                className={`min-w-[140px] flex items-center gap-2 ${theme.confirmBg}`}
+                                className={`min-w-[160px] flex items-center gap-2 ${theme.confirmBg}`}
                             >
-                                {isSuccess && <CheckCircle2 className="h-4 w-4" />}
-                                {isDestructive && <AlertTriangle className="h-4 w-4" />}
-                                {!isSuccess && !isDestructive && <Package className="h-4 w-4" />}
+                                <XCircle className="h-4 w-4" />
                                 {confirmButtonText}
                             </Button>
                         )}
@@ -212,4 +198,4 @@ export default function ConfirmationDialog({
             </AlertDialogContent>
         </AlertDialog>
     );
-} 
+}
