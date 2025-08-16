@@ -1,105 +1,91 @@
 'use client'
-import { useForm, Controller } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { formatDate } from "@/lib/utils"
+// Thai date formatting helper (Buddhist calendar)
+const formatThaiDate = (input: string | number | Date | undefined): string => {
+    if (!input) return '';
+    let date: Date;
+    if (input instanceof Date) {
+        date = input;
+    } else if (typeof input === 'string') {
+        date = isNaN(Number(input)) ? new Date(input) : new Date(Number(input));
+    } else {
+        date = new Date(input);
+    }
+    if (isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+    }).format(date);
+}
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRef, useState } from "react"
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"// import PdfPreview from "@/components/ui/preview_pdf"
 import { Separator } from "@/components/ui/separator"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
-import { CalendarDays, Hospital, Pill, Package, ArrowRight, DollarSign, Clock, CheckCircle2, AlertCircle, FileText } from "lucide-react"
+import { FileText } from "lucide-react"
 
 import dynamic from 'next/dynamic';
 const PdfPreview = dynamic(() => import('@/components/ui/pdf_creator/preview_pdf'), { ssr: false });
 import { useAuth } from "@/components/providers";
 
 function RequestDetailPanel({ data }: any) {
-    const { updatedAt, postingHospitalNameTH, requestDetails, requestTerm, manufacturer } = data;
-    const { name, requestAmount, unit, pricePerUnit } = requestDetails || {};
+    console.log('requestdetailpanel', data)
+    const { updatedAt, postingHospitalNameTH, requestDetails, requestTerm } = data;
+    const { name, requestAmount, unit, pricePerUnit, manufacturer } = requestDetails || {};
     const totalPrice = requestAmount * pricePerUnit;
 
     return (
-        <Card className="w-full">
-            <CardHeader className="">
-                <CardTitle className="flex items-center gap-2 text-blue-700">
-                    <Package className="h-5 w-5" />
-                    รายละเอียดการขอยืม
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {/* Date and Hospital */}
-                <div className="grid grid-cols-1 gap-3">
-                    <div className="flex items-center gap-2 p-3 bg-amber-50 rounded-lg">
-                        <CalendarDays className="h-4 w-4 text-amber-600" />
-                        <span className="text-sm font-medium text-amber-800">วันที่:</span>
-                        <span className="text-sm text-amber-700">{formatDate(updatedAt)}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
-                        <Hospital className="h-4 w-4 text-blue-600" />
-                        <span className="text-sm font-medium text-blue-800">โรงพยาบาล:</span>
-                        <span className="text-sm text-blue-700">{postingHospitalNameTH}</span>
+        <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col gap-1">
+                    <Label>วันที่แจ้ง</Label>
+                    <Input disabled value={formatThaiDate(updatedAt)} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>โรงพยาบาลที่แจ้ง</Label>
+                    <Input disabled value={postingHospitalNameTH} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>ชื่อยา</Label>
+                    <Input disabled value={name} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>รูปแบบ/หน่วย</Label>
+                    <Input disabled value={unit} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>ผู้ผลิต</Label>
+                    <Input disabled value={manufacturer || ""} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>จำนวนที่ขอยืม</Label>
+                    <Input disabled value={requestAmount} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>ราคาต่อหน่วย</Label>
+                    <Input disabled value={pricePerUnit} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>ราคารวม</Label>
+                    <Input disabled value={totalPrice.toLocaleString()} />
+                </div>
+            </div>
+            {requestTerm?.expectedReturnDate && (
+                <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-col gap-1">
+                        <Label>คาดว่าจะส่งคืน</Label>
+                        <Input disabled value={formatThaiDate(requestTerm.expectedReturnDate)} />
                     </div>
                 </div>
-
-                {/* Medicine Information */}
-                <div className="border rounded-lg p-4 bg-gradient-to-r from-purple-50 to-pink-50">
-                    <div className="flex items-center gap-2 mb-3">
-                        <Pill className="h-4 w-4 text-purple-600" />
-                        <span className="font-semibold text-purple-800">ข้อมูลยาที่ขอยืม</span>
-                    </div>
-                    
-                    <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">ชื่อยา:</span>
-                            <span className="font-medium text-gray-900">{name}</span>
-                        </div>
-                        {manufacturer && (
-                            <div className="flex justify-between items-center">
-                                <span className="text-sm text-gray-600">ผู้ผลิต:</span>
-                                <span className="text-sm text-gray-700">{manufacturer}</span>
-                            </div>
-                        )}
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">จำนวนที่ขอยืม:</span>
-                            <Badge variant="default" className="bg-purple-100 text-purple-800">
-                                {requestAmount} {unit}
-                            </Badge>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">ราคาต่อหน่วย:</span>
-                            <span className="text-sm text-gray-700">{pricePerUnit} บาท</span>
-                        </div>
-                        <Separator className="my-2" />
-                        <div className="flex justify-between items-center pt-2">
-                            <span className="font-medium text-gray-800 flex items-center gap-1">
-                                <DollarSign className="h-4 w-4" />
-                                ราคารวม:
-                            </span>
-                            <Badge variant="default" className="bg-purple-600 text-white text-base px-3 py-1">
-                                {totalPrice.toLocaleString()} บาท
-                            </Badge>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Expected Return Date */}
-                {requestTerm?.expectedReturnDate && (
-                    <div className="flex items-center gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
-                        <Clock className="h-4 w-4 text-amber-600" />
-                        <span className="text-sm font-medium text-amber-800">คาดว่าจะส่งคืน:</span>
-                        <span className="text-sm text-amber-700 font-medium">
-                            {formatDate(requestTerm.expectedReturnDate)}
-                        </span>
-                    </div>
-                )}
-            </CardContent>
-        </Card>
+            )}
+        </div>
     );
 }
 
@@ -113,106 +99,72 @@ function ResponseDetailPanel({ responseData }: any) {
 
     const totalPrice = offeredMedicine.pricePerUnit * offeredMedicine.offerAmount;
 
-    const responseDetail = responseDetails.find((item:any) => item.id === responseId);
+    const responseDetail = responseDetails.find((item: any) => item.id === responseId);
     const respondingHospitalNameTH = responseDetail?.respondingHospitalNameTH || "-";
 
-    const returnTermLabels: any = {
-        exactType: "ส่งคืนตามประเภท",
-        otherType: "คืนรายการอื่น",
-        supportType: "แบบสนับสนุน",
-        subType: "คืนรายการทดแทน"
-    };
-    
-    const getReturnTermBadges = (returnTerm: any) => {
-        const activeTerms = Object.keys(returnTerm).filter(key => returnTerm[key] === true);
-        return activeTerms.map(term => returnTermLabels[term] || term);
-    };
+    const returnConditions = offeredMedicine.returnConditions || {};
+
+    console.log("responseData", responseData)
 
     return (
-        <Card className="w-full">
-            <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-green-700">
-                    <CheckCircle2 className="h-5 w-5" />
-                    รายละเอียดการตอบรับ
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {/* Response Date and Hospital */}
-                <div className="grid grid-cols-1 gap-3">
-                    <div className="flex items-center gap-2 p-3 bg-amber-50 rounded-lg">
-                        <CalendarDays className="h-4 w-4 text-amber-600" />
-                        <span className="text-sm font-medium text-amber-800">วันที่ตอบรับ:</span>
-                        <span className="text-sm text-amber-700">{formatDate(updatedAt)}</span>
+        <div className="flex flex-col gap-4">
+            <Separator />
+            <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col gap-1">
+                    <Label>วันที่ตอบรับ</Label>
+                    <Input disabled value={formatThaiDate(updatedAt)} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>โรงพยาบาลผู้รับ</Label>
+                    <Input disabled value={respondingHospitalNameTH} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>ยาที่ให้ยืม</Label>
+                    <Input disabled value={offeredMedicine.name} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>รูปแบบ/หน่วย</Label>
+                    <Input disabled value={offeredMedicine.unit} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>ผู้ผลิต</Label>
+                    <Input disabled value={offeredMedicine.manufacturer || ""} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>จำนวนที่ให้</Label>
+                    <Input disabled value={offeredMedicine.offerAmount} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>ราคาต่อหน่วย</Label>
+                    <Input disabled value={offeredMedicine.pricePerUnit} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>มูลค่ารวม</Label>
+                    <Input disabled value={`${totalPrice.toLocaleString()} บาท`} />
+                </div>
+            </div>
+            <div className="flex flex-col gap-2">
+                <Label>เงื่อนไขการส่งคืน</Label>
+                <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-row gap-1">
+                        <input type="checkbox" checked={!!returnConditions.exactType} disabled />
+                        <Label className="font-normal">ส่งคืนตามประเภท</Label>
                     </div>
-                    
-                    <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
-                        <Hospital className="h-4 w-4 text-green-600" />
-                        <span className="text-sm font-medium text-green-800">โรงพยาบาลผู้รับ:</span>
-                        <span className="text-sm text-green-700">{respondingHospitalNameTH}</span>
+                    <div className="flex flex-row gap-1">
+                        <input type="checkbox" checked={!!returnConditions.otherType} disabled />
+                        <Label className="font-normal">คืนรายการอื่น</Label>
+                    </div>
+                    <div className="flex flex-row gap-1">
+                        <input type="checkbox" checked={!!returnConditions.subType} disabled />
+                        <Label className="font-normal">คืนรายการทดแทน</Label>
+                    </div>
+                    <div className="flex flex-row gap-1">
+                        <input type="checkbox" checked={!!returnConditions.supportType} disabled />
+                        <Label className="font-normal">แบบสนับสนุน</Label>
                     </div>
                 </div>
-
-                {/* Requested Medicine Details */}
-                <div className="border rounded-lg p-4 bg-gradient-to-r from-green-50 to-emerald-50">
-                    <div className="flex items-center gap-2 mb-3">
-                        <Pill className="h-4 w-4 text-green-600" />
-                        <span className="font-semibold text-green-800">ยาที่ให้ยืม</span>
-                    </div>
-                    
-                    <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">ชื่อยา:</span>
-                            <span className="font-medium text-gray-900">{offeredMedicine.name}</span>
-                        </div>
-                        {offeredMedicine.manufacturer && (
-                            <div className="flex justify-between items-center">
-                                <span className="text-sm text-gray-600">ผู้ผลิต:</span>
-                                <span className="text-sm text-gray-700">({offeredMedicine.manufacturer})</span>
-                            </div>
-                        )}
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">จำนวนที่ให้:</span>
-                            <Badge variant="secondary" className="bg-green-100 text-green-800">
-                                {offeredMedicine.offerAmount} {offeredMedicine.unit}
-                            </Badge>
-                        </div>
-                        <Separator className="my-2" />
-                        <div className="flex justify-between items-center pt-2">
-                            <span className="font-medium text-gray-800 flex items-center gap-1">
-                                <DollarSign className="h-4 w-4" />
-                                มูลค่ารวม:
-                            </span>
-                            <Badge variant="default" className="bg-green-600 text-white text-base px-3 py-1">
-                                {totalPrice.toLocaleString()} บาท
-                            </Badge>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Return Terms */}
-                <div className="border rounded-lg p-4 bg-gradient-to-r from-orange-50 to-yellow-50">
-                    <div className="flex items-center gap-2 mb-3">
-                        <ArrowRight className="h-4 w-4 text-orange-600" />
-                        <span className="font-semibold text-orange-800">เงื่อนไขการส่งคืน</span>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-2">
-                        {getReturnTermBadges(offeredMedicine.returnConditions).length > 0 ? (
-                            getReturnTermBadges(offeredMedicine.returnConditions).map((term, index) => (
-                                <Badge key={index} variant="outline" className="bg-orange-100 text-orange-800 border-orange-300">
-                                    {term}
-                                </Badge>
-                            ))
-                        ) : (
-                            <Badge variant="outline" className="bg-gray-100 text-gray-600 border-gray-300">
-                                <AlertCircle className="h-3 w-3 mr-1" />
-                                ไม่ระบุเงื่อนไข
-                            </Badge>
-                        )}
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }
 
@@ -298,74 +250,59 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
     };
 
     return (
-        <Dialog  open={openDialog} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[1200px] max-h-[90vh] flex flex-col">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-xl font-semibold text-gray-800 pb-2">
-                        <FileText className="h-5 w-5" />
-                        {dialogTitle}
-                    </DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 flex-1 flex flex-col overflow-y-hidden" >
-                    <div className="flex-1 overflow-y-auto pr-6">
-                        <div className="grid lg:grid-cols-2 gap-6 ">
-                            <div className="space-y-4">
-                                <RequestDetailPanel data={data} />
-                                <ResponseDetailPanel responseData={data} />
-                            </div>
-
-                            <div className="flex flex-col">
-                                <div className="border rounded-lg shadow-sm overflow-hidden bg-white">
-                                    <div className="bg-gray-50 px-4 py-2 border-b">
-                                        <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                                            <FileText className="h-4 w-4" />
-                                            ตัวอย่างเอกสาร
-                                        </h3>
-                                    </div>
-                                    <div className="p-2">
-                                        <PdfPreview data={data} userData={user} ref={pdfRef} />
-                                    </div>
-                                </div>
-                            </div>
+        <Dialog open={openDialog} onOpenChange={onOpenChange}>
+            <DialogContent className="p-0 max-w-[1400px]">
+                <div className="flex flex-col max-h-[90vh]">
+                    <div className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-t-xl">
+                        <div className="px-6 py-4">
+                            <DialogTitle className="text-xl font-semibold text-foreground">{dialogTitle}</DialogTitle>
                         </div>
                     </div>
 
-                    <DialogFooter className="gap-2 pt-4 border-t">
-                        <Button
-                            type="submit"
-                            className="min-w-[160px] bg-green-600 hover:bg-green-700"
-                            disabled={loading}
-                        >
-                            {loading ? (
-                                <span className="flex items-center gap-2">
-                                    <LoadingSpinner className="h-4 w-4" />
-                                    กำลังยืนยัน...
-                                </span>
-                            ) : (
-                                <span className="flex items-center gap-2">
-                                    <CheckCircle2 className="h-4 w-4" />
-                                    ยืนยันการให้ยืม
-                                </span>
-                            )}
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={handleSavePdf}
-                            className="min-w-[120px]"
-                        >
-                            <FileText className="h-4 w-4 mr-2" />
-                            บันทึก PDF
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => onOpenChange(false)}
-                        >
-                            ยกเลิก
-                        </Button>
-                    </DialogFooter>
-                </form>
+                    <div className="overflow-y-auto px-6 py-5">
+                        <form id="confirm-response-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                            <div className="grid lg:grid-cols-2 gap-6 ">
+                                <div className="space-y-4">
+                                    <RequestDetailPanel data={data} />
+                                    <ResponseDetailPanel responseData={data} />
+                                </div>
+
+                                <div className="flex flex-col">
+                                    <div className="border rounded-lg shadow-sm overflow-hidden bg-white">
+                                        <div className="bg-gray-50 px-4 py-2 border-b flex items-center justify-between">
+                                            <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                                                <FileText className="h-4 w-4" />
+                                                ตัวอย่างเอกสาร
+                                            </h3>
+                                        </div>
+                                        <div className="p-2">
+                                            <PdfPreview data={data} userData={user} ref={pdfRef} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div className="bottom-0 z-10 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-b-2xl">
+                        <DialogFooter className="px-6 py-4">
+                            <Button className="min-w-[160px]" type="submit" form="confirm-response-form" disabled={loading}>
+                                {loading ? (
+                                    <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500 ">กำลังยืนยัน...</span></div>
+                                ) : (
+                                    "ยืนยันการให้ยืม"
+                                )}
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleSavePdf}
+                            >
+                                ดาวน์โหลด PDF
+                            </Button>
+                        </DialogFooter>
+                    </div>
+                </div>
             </DialogContent>
         </Dialog>
     );
