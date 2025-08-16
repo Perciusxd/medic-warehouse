@@ -107,7 +107,7 @@ export default function HistoryDashboard() {
     setReportData(mapped);
     // console.log('mapped', mapped);
     
-  }, [loggedInHospital, allData]);
+  }, [loggedInHospital, allData, user]);
 
   
   // const [mockDataV1, setMockDataV1] = useState(mockMedicineTableData);
@@ -172,7 +172,7 @@ export default function HistoryDashboard() {
 
   // console.log('allData', allData);
   // console.log('filteredData', filteredData);
-  let config: any;
+  // let config: any;
   // เสร็จสิ้น
   const statusCompleted = filteredData.filter(item => item.responseDetails[0].status === 'completed' || item.responseDetails[0].status === 'returned').length;
   // รอยืนยันให้ยืม
@@ -193,7 +193,7 @@ export default function HistoryDashboard() {
   const statusConfirmReturn = filteredData.filter(item => item.responseDetails[0].status === 'confirm-return').length;
   // ส่งคืนเสร็จสิ้น
   
-  config = {
+  const config = {
     type: 'doughnut',
     data: {
       labels: ["แจ้งแบ่งปัน", "รอยืนยันให้ยืม", "รอส่งมอบ", "รอรับคืน", "เสร็จสิ้น", "รอยืนยันการส่งคืน", "รอยืนยันการรับคืน", "ต้องส่งคืน", "ยืนยันการส่งคืน"],

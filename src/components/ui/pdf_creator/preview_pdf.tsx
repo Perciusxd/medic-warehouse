@@ -191,7 +191,7 @@ const PdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => {
         return () => {
             cancelled = true;
         };
-    }, [pdfData]);
+    }, [pdfData, userData]);
 
     useImperativeHandle(ref, () => ({
         savePdf: () => {
