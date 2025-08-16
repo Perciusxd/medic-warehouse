@@ -23,22 +23,22 @@ export const HospitalList = [
         nameEN: 'Hatyai Hospital',
         address: '123 Main St, City A',
     },
-    {
-        id: 5,
-        nameTH: 'โรงพยาบาลเทพา',
-        nameEN: 'Thepa Hospital',
-        address: '123 Main St, City A',
-    },
-    {
-        id: 6,
-        nameTH: 'โรงพยาบาลสะบ้าย้อย',
-        nameEN: 'Saba Yoi Hospital',
-        address: '123 Main St, City A',
-    },
+    // {
+    //     id: 5,
+    //     nameTH: 'โรงพยาบาลเทพา',
+    //     nameEN: 'Thepa Hospital',
+    //     address: '123 Main St, City A',
+    // },
+    // {
+    //     id: 6,
+    //     nameTH: 'โรงพยาบาลสะบ้าย้อย',
+    //     nameEN: 'Saba Yoi Hospital',
+    //     address: '123 Main St, City A',
+    // },
     {
         id: 7,
-        nameTH: 'โรงพยาบาลสมเด็จ นาทวี',
-        nameEN: 'Nathawi Hospital',
+        nameTH: 'โรงพยาบาลสมเด็จพระบรมราชินีนาถ ณ อำเภอนาทวี',
+        nameEN: 'Somdejpraboromrachineenart Na Thawi Hospital',
         address: '123 Main St, City A',
     },
     {
@@ -47,24 +47,24 @@ export const HospitalList = [
         nameEN: 'Sadao Hospital',
         address: '123 Main St, City A',
     },
-    {
-        id: 9,
-        nameTH: 'โรงพยาบาลคลองหอยโข่ง',
-        nameEN: 'Klong Hoi Khong Hospital',
-        address: '123 Main St, City A',
-    },
-    {
-        id: 10,
-        nameTH: 'โรงพยาบาลสิงหนคร',
-        nameEN: 'Singhanakorn Hospital',
-        address: '123 Main St, City A',
-    },
-    {
-        id: 11,
-        nameTH: 'โรงพยาบาลสทิงห์พระ',
-        nameEN: 'Sathingphan Hospital',
-        address: '123 Main St, City A',
-    },
+    // {
+    //     id: 9,
+    //     nameTH: 'โรงพยาบาลคลองหอยโข่ง',
+    //     nameEN: 'Klong Hoi Khong Hospital',
+    //     address: '123 Main St, City A',
+    // },
+    // {
+    //     id: 10,
+    //     nameTH: 'โรงพยาบาลสิงหนคร',
+    //     nameEN: 'Singhanakorn Hospital',
+    //     address: '123 Main St, City A',
+    // },
+    // {
+    //     id: 11,
+    //     nameTH: 'โรงพยาบาลสทิงห์พระ',
+    //     nameEN: 'Sathingphan Hospital',
+    //     address: '123 Main St, City A',
+    // },
     {
         id: 12,
         nameTH: 'โรงพยาบาลกระแสสินธุ์',
@@ -74,31 +74,38 @@ export const HospitalList = [
     {
         id: 13,
         nameTH: 'โรงพยาบาลระโนด',
-        nameEN: 'Rajnoet Hospital',
+        nameEN: 'Ranot Hospital',
         address: '123 Main St, City A',
     },
-    {
-        id: 14,
-        nameTH: 'โรงพยาบาลบางกะปิ',
-        nameEN: 'Bang Kapi Hospital',
-        address: '123 Main St, City A',
-    },
+    // {
+    //     id: 14,
+    //     nameTH: 'โรงพยาบาลบางกะปิ',
+    //     nameEN: 'Bang Kapi Hospital',
+    //     address: '123 Main St, City A',
+    // },
     {
         id: 15,
         nameTH: 'โรงพยาบาลควนเนียง',
-        nameEN: 'Kuan Niyang Hospital',
+        nameEN: 'Khuanniang Hospital',
         address: '123 Main St, City A',
     },
+    // {
+    //     id: 16,
+    //     nameTH: 'โรงพยาบาลรัตภูมิ',
+    //     nameEN: 'Ratchaphum Hospital',
+    //     address: '123 Main St, City A',
+    // },
+    // {
+    //     id: 17,
+    //     nameTH: 'โรงพยาบาลปาดังเบซา',
+    //     nameEN: 'Phatthana Besa Hospital',
+    //     address: '123 Main St, City A',
+    // },
     {
-        id: 16,
-        nameTH: 'โรงพยาบาลรัตภูมิ',
-        nameEN: 'Ratchaphum Hospital',
+        id: 18,
+        nameTH: 'โรงพยาบาลบางกล่ำ',
+        nameEN: 'Bang Klam Hospital',
         address: '123 Main St, City A',
     },
-    {
-        id: 17,
-        nameTH: 'โรงพยาบาลปาดังเบซา',
-        nameEN: 'Phatthana Besa Hospital',
-        address: '123 Main St, City A',
-    }
+
 ];
