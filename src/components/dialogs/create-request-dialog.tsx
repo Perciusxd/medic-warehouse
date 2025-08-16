@@ -22,6 +22,7 @@ import RequestDetails from "./request-details"
 import { Calendar1, Hospital } from "lucide-react"
 import { format } from "date-fns"
 import { HospitalList } from "@/context/HospitalList"
+import sendMailHandler from "@/pages/api/sendmail"
 
 const allHospitalList = HospitalList;
 
@@ -127,6 +128,32 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
         setValue("selectedHospitals", updated ,{ shouldValidate: true })
     }
 
+    const sendMailsSequentially = async (filterHospital: any, requestData: any) => {
+        for (const val of filterHospital) {
+            try {
+            // รอ 1 วิ ก่อนยิง request
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+            const mailResponse = await fetch("/api/sendmail", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                requestData: requestData,
+                selectedHospitals: val,
+                }),
+            });
+
+            if (!mailResponse.ok) {
+                console.warn("sendmail failed:", await mailResponse.text());
+            } else {
+                console.log("sendmail success");
+            }
+            } catch (err) {
+                console.error("sendmail error:", err);
+            }
+        }
+    }
+
     const onSubmit = async (data: z.infer<typeof RequestSchema>) => {
         const filterHospital = hospitalList.filter(hospital => data.selectedHospitals.includes(hospital.id))
         const requestData = {
@@ -160,6 +187,12 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
 
             if (!response.ok) {
                 throw new Error("Failed to submit")
+            } else {
+                if (filterHospital.length) {
+                    sendMailsSequentially(filterHospital, requestData).catch((err) => {
+                        console.error("sendMails error:", err);
+                    });
+                }
             }
 
             const result = await response.json()

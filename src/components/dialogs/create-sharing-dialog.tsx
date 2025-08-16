@@ -62,10 +62,10 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
     // const { loggedInHospital } = useHospital();
     const loggedInHospital = user?.hospitalName;
     
-    console.log("loggedInHospital", loggedInHospital);
+    // console.log("loggedInHospital", loggedInHospital);
     
     const postingHospital = allHospitalList.find((hospital) => hospital.nameEN === loggedInHospital);
-    console.log("postingHospital", postingHospital)
+    // console.log("postingHospital", postingHospital)
     const hospitalList = allHospitalList.filter(hospital => hospital.nameEN !== loggedInHospital)
     const [loading, setLoading] = useState(false);
     const { register, handleSubmit, watch, setValue, getValues, resetField, formState: { errors , isSubmitted  } } = useForm<z.infer<typeof SharingFormSchema>>({
@@ -110,6 +110,32 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
 
     }
 
+    const sendMailsSequentially = async (filterHospital: any, shareData: any) => {
+        for (const val of filterHospital) {
+            try {
+            // รอ 1 วิ ก่อนยิง request
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+            const mailResponse = await fetch("/api/sendmail", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                shareData: shareData,
+                selectedHospitals: val,
+                }),
+            });
+
+            if (!mailResponse.ok) {
+                console.warn("sendmail failed:", await mailResponse.text());
+            } else {
+                console.log("sendmail success");
+            }
+            } catch (err) {
+                console.error("sendmail error:", err);
+            }
+        }
+    }
+
     const onSubmit = async (data: z.infer<typeof SharingFormSchema>) => {
         const filterHospital = hospitalList.filter(hospital => data.selectedHospitals.includes(hospital.id))
         const sharingMedicine = {
@@ -140,6 +166,12 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
 
             if (!response.ok) {
                 throw new Error("Failed to submit")
+            } else {
+                if (filterHospital.length) {
+                    sendMailsSequentially(filterHospital, sharingMedicine).catch((err) => {
+                        console.error("sendMails error:", err);
+                    });;
+                }
             }
 
             const result = await response.json()
@@ -271,7 +303,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                                     const today = new Date();
                                                     today.setHours(0, 0, 0, 0); // normalize time
                                                     const stringDate = date.getTime().toString();
-                                                    console.log('stringDate', stringDate)
+                                                    // console.log('stringDate', stringDate)
                                                     if (date > today) {
                                                         setValue("sharingMedicine.expiryDate", stringDate, { shouldValidate: true });
                                                         setDateError(""); // clear error

@@ -428,7 +428,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange }: any) {
 
                                                     if (date > today) {
                                                         setValue("returnMedicine.expiredDate", dateString, { shouldValidate: true, shouldDirty: true });
-                                                        console.log('selected date', dateString)
+                                                        // console.log('selected date', dateString)
                                                         setDateError(""); // clear error
                                                         setIsCalendarOpen(false); // close popover
                                                     } else {
@@ -491,7 +491,6 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange }: any) {
 export default function ReturnSharingDialog({ open, onOpenChange, selectedMed }: any) {
     const { sharingDetails, acceptedOffer } = selectedMed;
     const { sharingMedicine } = sharingDetails;
-    
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>

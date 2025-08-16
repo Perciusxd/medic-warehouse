@@ -8,6 +8,7 @@ import { saveAs } from 'file-saver';
 import { pdfjs } from 'react-pdf';
 import { formatDate } from '@/lib/utils';
 import { format } from 'date-fns';
+import { useAuth } from '@/components/providers';
 
 Font.register({
     family: 'THSarabunNew',
@@ -57,7 +58,14 @@ const styles = StyleSheet.create({
 function MyDocument({ pdfData }: any) {
     console.log('pdfData', pdfData);
     const { userData } = pdfData;
-    const { address, director, contact } = userData;
+    // const { address, director, contact } = userData;
+    // Easy way
+    const { user } = useAuth();
+    const address = user?.address ?? '';
+    const director = user?.director ?? '';
+    const contact = user?.contact ?? '';
+
+    
     const { offeredMedicine, requestMedicine } = pdfData;
     const selectedResponseId = pdfData.responseId;
     
@@ -77,6 +85,10 @@ function MyDocument({ pdfData }: any) {
     const requestedQuantity = isRequestType 
         ? pdfData.requestDetails?.requestAmount || pdfData.requestMedicine?.requestAmount
         : pdfData.sharingDetails?.sharingAmount || pdfData.sharingMedicine?.sharingAmount;
+
+    const requestUnit = isRequestType
+        ? pdfData.requestDetails?.unit || pdfData.requestMedicine?.unit
+        : pdfData.sharingDetails?.unit || pdfData.sharingMedicine?.unit;
 
     // const amount = isRequestType
     //     ? pdfData.requestDetails?.offeredMedicine.offerAmount ||  pdfData.acceptedOffer?.responseAmount:"-"; //กำัลังคิดว่า ข้อมูลที่แสดงใน pdf ถูกไหม
@@ -134,8 +146,10 @@ function MyDocument({ pdfData }: any) {
                         <Text style={styles.tableHeader}>หมายเหตุ</Text>
                     </View>
                     <View style={styles.tableRow}>
-                        <Text style={styles.tableCell}>{requestMedicine.name }</Text>
-                        <Text style={styles.tableCell}>{requestMedicine.requestAmount} ({requestMedicine.unit})</Text>
+                        <Text style={styles.tableCell}>{requestedMedicineName }</Text>
+                        {/* <Text style={styles.tableCell}>{requestMedicine.name }</Text> */}
+                        <Text style={styles.tableCell}>{requestedQuantity} ({requestUnit})</Text>
+                        {/* <Text style={styles.tableCell}>{requestMedicine.requestAmount} ({requestMedicine.unit})</Text> */}
                         <Text style={styles.tableCell}>{expectedReturnDate}</Text>
                         <Text style={styles.tableCell}>{mockNote}</Text>
                     </View>

@@ -43,7 +43,7 @@ const DoughnutChart = ({ data, options, query }: DoughnutChartProps) => {
       chartInstance.current = new Chart(chartRef.current, {
         type: "doughnut",
         data: {
-          labels: xValues,
+          labels: data.labels || xValues,
           datasets: [
             {
               backgroundColor: data.datasets[0].backgroundColor || barColors,

@@ -14,8 +14,9 @@ export const columns: ColumnDef<any>[] = [
     size : 100,
     header: "วันที่ให้ยืม",
     cell: ({ row }) => {
-      const date = new Date(row.original.createdAt);
-      return <span>{date.toLocaleDateString("th-TH")}</span>;
+      const date = new Date(Number(row.original.createdAt));
+
+      return <span>{!isNaN(date.getTime()) ? date.toLocaleDateString("th-TH") : '-'}</span>;
       // const date = new Date(row.original.createdAt);
       // return <span>{date.toLocaleDateString()}</span>;
     },
@@ -224,14 +225,14 @@ export const columns: ColumnDef<any>[] = [
     header: "วันที่คาดว่าจะได้รับคืน",
     cell: ({ row }) => {
       if (row.original.ticketType === 'sharing') {
-        const expectedReturnDate = row.original.sharingReturnTerm.receiveConditions.expectedReturnDate;
+        const expectedReturnDate = Number(row.original.responseDetails[0].acceptedOffer.expectedReturnDate);
         const date = new Date(expectedReturnDate);
-        return <span>{date.toLocaleDateString("th-TH")}</span>;
+        return <span>{!isNaN(date.getTime()) ? date.toLocaleDateString("th-TH") : '-'}</span>;
       }
       else if (row.original.ticketType === 'request') {
-        const expectedReturnDate = row.original.requestTerm.receiveConditions.expectedReturnDate;
+        const expectedReturnDate = Number(row.original.requestTerm.expectedReturnDate);
         const date = new Date(expectedReturnDate);
-        return <span>{date.toLocaleDateString("th-TH")}</span>;
+        return <span>{!isNaN(date.getTime()) ? date.toLocaleDateString("th-TH") : '-'}</span>;
       }
       // const date = new Date(row.original.expectedReturnDate);
       // return <span>{date.toLocaleDateString()}</span>;
@@ -245,12 +246,12 @@ export const columns: ColumnDef<any>[] = [
       if (row.original.ticketType === 'sharing') {
         const deliveryDate = row.original.sharingMedicine.deliveryDate;
         const date = new Date(deliveryDate);
-        return <span>{date.toLocaleDateString("th-TH")}</span>;
+        return <span>{!isNaN(date.getTime()) ? date.toLocaleDateString("th-TH") : '-'}</span>;
       }
       else if (row.original.ticketType === 'request') {
         const deliveryDate = row.original.requestMedicine.deliveryDate;
         const date = new Date(deliveryDate);
-        return <span>{date.toLocaleDateString("th-TH")}</span>;
+        return <span>{!isNaN(date.getTime()) ? date.toLocaleDateString("th-TH") : '-'}</span>;
       }
       // const date = new Date(row.original.deliveryDate);
       // return <span>{date.toLocaleDateString()}</span>;
