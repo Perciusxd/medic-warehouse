@@ -255,7 +255,7 @@ export default function HistoryDashboard() {
             <div className="flex">
               <PDFPreviewButton data={reportData}/>
             </div>
-                <div className="flex gap-2">
+                {/* <div className="flex gap-2">
                   <Button
                     variant={queryFromChart === 'request' ? 'default' : 'outline'}
                     onClick={() => {
@@ -283,7 +283,7 @@ export default function HistoryDashboard() {
                   >
                     ทั้งหมด
                   </Button>
-                </div>
+                </div> */}
               </div>
               <div className="text-center">
                   <DataTable columns={columns} data={filteredData} />

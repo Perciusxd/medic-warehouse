@@ -1,6 +1,6 @@
 "use client"; // ถ้าใช้ใน Next.js 13+ และใช้ app router
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import Chart from "chart.js/auto";
 import { Button } from "@/components/ui/button"
 
@@ -22,21 +22,21 @@ interface DoughnutChartProps {
 const DoughnutChart = ({ data, options, query }: DoughnutChartProps) => {
     const chartRef = useRef<HTMLCanvasElement | null>(null);
     const chartInstance = useRef<Chart | null>(null);
-    
-    const xValues = ["แจ้งแบ่งปัน", "รอยืนยันให้ยืม", "รอส่งมอบ", "รอรับคืน", "เสร็จสิ้น"];
-    const yValues = [1, 1, 2, 7, 1];
-    const summary = data.datasets[0].data.reduce((acc, val) => acc + val, 0);
-    const barColors = [
+
+    const xValues = useMemo(() => ["แจ้งแบ่งปัน", "รอยืนยันให้ยืม", "รอส่งมอบ", "รอรับคืน", "เสร็จสิ้น"], []);
+    const yValues = useMemo(() => [1, 1, 2, 7, 1], []);
+    const summary = useMemo(() => data.datasets[0].data.reduce((acc, val) => acc + val, 0), [data.datasets]);
+    const barColors = useMemo(() => [
       "#b91d47",
       "#00aba9",
       "#2b5797",
       "#e8c3b9",
       "#1e7145",
-    ];
+    ], []);
 
-  const onQuery = (label: string) => {
+  const onQuery = useCallback((label: string) => {
     query(label);
-  }
+  }, [query]);
 
   useEffect(() => {
     if (chartRef.current) {
