@@ -52,7 +52,7 @@ export default function BorrowDashboard() {
     }
 
     const handleCancelClick = (med: ResponseAsset) => {
-        console.log('med', med)
+        //console.log('med', med)
         setSelectedMed(med);
         setCancleRespDialogOpen(true);
     }
@@ -67,11 +67,11 @@ export default function BorrowDashboard() {
 
     // useEffect(() => {
     //     const borrowNumbers = medicineRequests.length;
-    //     console.log('borrrowNumbers', borrowNumbers);
+    //     //console.log('borrrowNumbers', borrowNumbers);
     //     setBorrowNumber(borrowNumbers);
     // }, [medicineRequests, setBorrowNumber]);
 
-    console.log('medicineRequests', medicineRequests);
+    //console.log('medicineRequests', medicineRequests);
 
     return (
         <div>

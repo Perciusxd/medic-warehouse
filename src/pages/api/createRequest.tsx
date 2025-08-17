@@ -32,7 +32,7 @@ export default async function handler(
                     selectedHospitals
                 })
             }).then(async response => {
-                console.log(response);
+                //console.log(response);
                 
                 if (!response.ok) {
                     throw new Error('Failed to create request');
@@ -43,14 +43,14 @@ export default async function handler(
                     result
                 });
             }).catch(error => {
-                console.error('Error creating request:', error);
+                //console.error('Error creating request:', error);
                 return res.status(500).json({
                     message: 'Internal server error',
                     error: error instanceof Error ? error.message : 'Unknown error'
                 });
             });
         } catch (error) {
-            console.error('Error parsing request body:', error);
+            //console.error('Error parsing request body:', error);
             return res.status(400).json({ message: 'Invalid request data', error: error instanceof Error ? error.message : 'Unknown error' });
         }
 
@@ -61,13 +61,13 @@ export default async function handler(
         //         JSON.stringify(requestData),
         //         JSON.stringify(selectedHospitals)
         //     );
-        //     console.log("*** Transaction committed successfully");
+        //     //console.log("*** Transaction committed successfully");
         //     res.status(200).json({
         //         message: "Transaction committed successfully",
         //         requestId: requestData.id,
         //     });
         // } catch (error) {
-        //     console.error("Error in transaction:", error);
+        //     //console.error("Error in transaction:", error);
         //     res.status(500).json({ error: error });
         // }
     } catch (error) {

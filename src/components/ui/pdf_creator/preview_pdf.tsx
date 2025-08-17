@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     // section: { marginBottom: 10 }
 });
 
-function MyDocument({ pdfData }: any) {
+function MyDocument({ pdfData, variant = 'original' }: any) {
     console.log('pdfData', pdfData);
     const { userData } = pdfData;
     const { address, director, contact } = userData;
@@ -125,7 +125,11 @@ function MyDocument({ pdfData }: any) {
     return (
         <PDFDocGen>
             <Page size="A4" style={styles.body}>
-                <Image style={styles.image} src="/krut_mark.jpg"/>
+                {variant === 'original' ? (
+                    <Image style={styles.image} src="/krut_mark.jpg"/>
+                ) : (
+                    <Text style={{ textAlign: 'center' }}>สำเนา</Text>
+                )}
                 <View style={[styles.table, { marginBottom: 10 }]}>
                     {/* Row 1 */}
                     <View style={styles.tableRow}>
@@ -148,7 +152,7 @@ function MyDocument({ pdfData }: any) {
                 <Text style={styles.text}>เรื่อง    {documentType}</Text>
                 <Text style={styles.text}>เรียน    ผู้อำนวยการ {borrowingHospitalNameTH}</Text>
                 <Text style={{ marginTop: 6, textIndent: 80 }}>
-                    ตามที่{borrowingHospitalNameTH} มีความประสงค์ที่จะ{actionText} ดังรายการต่อไปนี้
+                    ตามที่{lendingHospitalNameTH} มีความประสงค์ที่จะ{actionText} ดังรายการต่อไปนี้
                 </Text>
 
                 <View style={[styles.table, { marginTop: 14 }]}>
@@ -171,9 +175,9 @@ function MyDocument({ pdfData }: any) {
                 <Text style={{ marginTop: 30, textIndent: 80 }}>
                     ทั้งนี้ {lendingHospitalNameTH} จะส่งคืนยาให้แก่{borrowingHospitalNameTH} ภายในวันที่ {expectedReturnDate} และหากมีการเปลี่ยนแปลงจะต้องแจ้งให้ทราบล่วงหน้า
                 </Text>
-                <Text style={{ marginTop: 30, textIndent: 80 }}>
+                {/* <Text style={{ marginTop: 30, textIndent: 80 }}>
                     จึงเรียนมาเพื่อโปรดพิจารณาและ {lendingHospitalNameTH} ขอขอบคุณ {borrowingHospitalNameTH} ณ โอกาสนี้
-                </Text>
+                </Text> */}
 
                 <Text style={{ marginTop: 30, textIndent: 310 }}>ขอแสดงความนับถือ</Text>
                 <Text style={{ marginTop: 100, textIndent: 280 }}>{director} </Text>
@@ -187,14 +191,14 @@ function MyDocument({ pdfData }: any) {
 
 
 const PdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => {
-    console.log('user data at pdf preview', userData)
+    //console.log('user data at pdf preview', userData)
     const [blob, setBlob] = useState<Blob | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
     useEffect(() => {
         let cancelled = false;
         const generatePdf = async () => {
-            const generatedBlob = await pdf(<MyDocument pdfData={{...pdfData, userData}} />).toBlob();
+            const generatedBlob = await pdf(<MyDocument pdfData={{...pdfData, userData}} variant="original" />).toBlob();
             if (!cancelled) {
                 setBlob(generatedBlob);
                 setPdfUrl(URL.createObjectURL(generatedBlob));
@@ -208,9 +212,18 @@ const PdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => {
 
     useImperativeHandle(ref, () => ({
         savePdf: () => {
-            if (blob) {
-                saveAs(blob, 'document.pdf');
-            }
+            (async () => {
+                try {
+                    const [originalBlob, copyBlob] = await Promise.all([
+                        pdf(<MyDocument pdfData={{ ...pdfData, userData }} variant="original" />).toBlob(),
+                        pdf(<MyDocument pdfData={{ ...pdfData, userData }} variant="copy" />).toBlob(),
+                    ]);
+                    saveAs(originalBlob, 'document.pdf');
+                    saveAs(copyBlob, 'document_copy.pdf');
+                } catch (error) {
+                    console.error('Failed to generate PDFs:', error);
+                }
+            })();
         },
     }));
 

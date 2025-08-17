@@ -14,9 +14,9 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar"
 import { Badge } from "@/components/ui/badge"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
-
+import { ImageHoverPreview } from "@/components/ui/image-hover-preview"
 import { Calendar1Icon, ShieldAlert } from "lucide-react"
-
+import { Calendar1, Hospital } from "lucide-react"
 import RequestDetails from "./request-details"
 
 export default function CreateResponseDialog({ requestData, responseId, dialogTitle, status, openDialog, onOpenChange }: any) {
@@ -28,6 +28,8 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
             trademark: z.string(),
             pricePerUnit: z.number().gt(0, "Price per unit must be greater than 0").max(100000, "Price per unit must be less than 100000"),
             manufacturer: z.string(),
+            batchNumber: z.string().optional(),
+            expiryDate: z.string().min(1, "กรุณาระบุวันที่หมดอายุ"),
             // manufactureDate: z.string(),
             // expiryDate: z.date(),
             // imageRef: z.string(),
@@ -40,7 +42,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
             })
         })
     })
-    
+    const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const {
@@ -51,7 +53,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
         getValues,
         resetField,
         control,
-        formState: { errors,isSubmitted },
+        formState: { errors, isSubmitted },
     } = useForm<z.infer<typeof ResponseSchema>>({
         resolver: zodResolver(ResponseSchema),
         defaultValues: {
@@ -60,8 +62,10 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                 trademark: requestData.requestMedicine.trademark,
                 pricePerUnit: requestData.requestMedicine.pricePerUnit,
                 manufacturer: requestData.requestMedicine.manufacturer,
+                batchNumber: requestData.requestMedicine.batchNumber,
+                expiryDate: requestData.requestMedicine.expiryDate,
                 // manufactureDate: requestData.requestMedicine.manufactureDate,
-                // expiryDate: requestData.requestMedicine.expiryDate,
+                //expiryDate: requestData.requestMedicine.expiryDate,
                 // imageRef: requestData.requestMedicine.imageRef,
                 returnTerm: "exactType",
                 returnConditions: {
@@ -77,18 +81,22 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
     const offeredAmount = watch("offeredMedicine.offerAmount")
     const offeredPrice = watch("offeredMedicine.pricePerUnit")
     const returnConditions = watch("offeredMedicine.returnConditions")
+    const expiryDate = watch("offeredMedicine.expiryDate")
     const offeredMedicineRef = useRef(requestData.requestMedicine.name);
     const [subTypeName, setSubTypeName] = useState(requestData.requestMedicine.name);
+    const [dateError, setDateError] = useState(""); // for error message
     const subTypeFields = useRef({
         trademark: requestData.requestMedicine.trademark,
         offerAmount: requestData.requestMedicine.offerAmount,
         pricePerUnit: requestData.requestMedicine.pricePerUnit,
         manufacturer: requestData.requestMedicine.manufacturer,
+        batchNumber: requestData.requestMedicine.batchNumber,
+        expiryDate: requestData.requestMedicine.expiryDate,
         // manufactureDate: requestData.requestMedicine.manufactureDate,
         // expiryDate: requestData.requestMedicine.expiryDate,
     })
 
-   
+    const imgUrl: string | null = requestData.requestMedicine.requestMedicineImage || requestData.requestMedicine?.imageRef || null;
     const isAnyChecked = Object.values(returnConditions || {}).some(Boolean);// Check if any checkbox is checked
 
     useEffect(() => {
@@ -100,6 +108,8 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                 offerAmount: currentValues.offerAmount,
                 pricePerUnit: currentValues.pricePerUnit,
                 manufacturer: currentValues.manufacturer,
+                batchNumber: currentValues.batchNumber,
+                expiryDate: currentValues.expiryDate,
                 // manufactureDate: currentValues.manufactureDate,
                 // expiryDate: currentValues.expiryDate,
             }
@@ -130,11 +140,13 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                 name: requestData.requestMedicine.name,
                 quantity: requestData.requestMedicine.quantity,
                 unit: requestData.requestMedicine.unit,
+                batchNumber: data.offeredMedicine.batchNumber,
+                expiryDate: data.offeredMedicine.expiryDate,
             },
             responseId: responseId,
             status: status
         }
-
+        //console.log("responseBody sssss:", responseBody)
         try {
             setLoading(true)
             const response = await fetch("/api/updateRequest", {
@@ -150,11 +162,11 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
             }
 
             const result = await response.json()
-            console.log("Success:", result)
+            //console.log("Success:", result)
             setLoading(false)
             onOpenChange(false)
         } catch (error) {
-            console.error("Error submitting form:", error)
+            //console.error("Error submitting form:", error)
             setLoading(false)
         }
     }
@@ -162,9 +174,24 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[1200px]">
-                <DialogTitle>{dialogTitle}---</DialogTitle>
+                <DialogTitle>
+                    <div className="grid grid-cols-4 gap-4 items-center">
+                        {dialogTitle}
+                        <div className="col-span-2">
+                            <Label className="font-bold">ภาพประกอบ <ImageHoverPreview previewUrl={imgUrl} /></Label>
+                            <div className="flex items-center gap-2">
+                                {/* <img
+                                                src={imgUrl}
+                                                alt="thumb"
+                                                className="h-40 w-40 object-cover rounded border"
+                                            /> */}
+                            </div>
+                        </div>
+                    </div>
+
+                </DialogTitle>
                 <form onSubmit={handleSubmit(onSubmit, (invalidError) => {
-                    console.error(invalidError)
+                    //console.error(invalidError)
                 })} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <RequestDetails requestData={requestData} responseForm={true} />
@@ -189,7 +216,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                     </div>
                                 </Badge>
                             </div>
-                            
+
                             <div className="flex items-center space-x-4">
                                 <Label>
                                     <input type="radio" value="exactType" {...register("offeredMedicine.returnTerm")} disabled={requestTerm.receiveConditions.condition === "exactType"} />
@@ -197,7 +224,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                 </Label>
                                 <Label>
                                     <input type="radio" value="subType" {...register("offeredMedicine.returnTerm")} disabled={requestTerm.receiveConditions.condition === "exactType"} />
-                                    ให้ยืมรายการทดแทนได้
+                                    ให้ยืมรายการที่ต้องการหรือยืมรายการทดแทนได้
                                 </Label>
                             </div>
 
@@ -212,7 +239,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                     />
                                 </Label>
                                 <Label className="flex flex-col items-start">
-                                    ผู้ผลิต
+                                    หมายเลขล๊อต
                                     <Input
                                         type="text"
                                         {...register("offeredMedicine.manufacturer")}
@@ -220,79 +247,176 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                         className="border p-1"
                                     />
                                 </Label>
-                                <Label className="flex flex-col items-start font-bold">
+                                <Label className="flex flex-col items-start">
                                     จำนวนที่ให้ยืม
                                     <Input
-                                        inputMode="numeric"
-                                        placeholder="10" 
+                                        inputMode="decimal"
+                                        placeholder="10"
+                                        className="border p-1 font-light"
+                                        {...register("offeredMedicine.offerAmount", { valueAsNumber: true })}
                                         onKeyDown={(e) => {
-                                            const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
+                                            const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"];
+
+                                            if (e.key === ".") {
+                                                if ((e.currentTarget.value || "").includes(".")) {
+                                                    e.preventDefault();
+                                                }
+                                                return;
+                                            }
+
                                             if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
-                                            e.preventDefault();
+                                                e.preventDefault();
                                             }
                                         }}
-                                        {...register("offeredMedicine.offerAmount", { valueAsNumber: true })}
-                                        // disabled={returnTerm === "exactType"}
-                                        className="border p-1 font-light"
+                                        onBlur={(e) => {
+                                            const raw = e.target.value.replace(/,/g, "");
+                                            if (raw === "" || isNaN(Number(raw))) return;
+                                            e.target.value = Number(raw).toLocaleString("th-TH", {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 2,
+                                            });
+                                        }}
                                     />
+
+
                                     {errors.offeredMedicine?.offerAmount && (
                                         <span className="text-red-500 text-xs -mt-1">{errors.offeredMedicine.offerAmount.message}</span>
                                     )}
                                 </Label>
+                                <div >
+                                    <Label className="flex flex-col items-start">ราคาต่อหน่วย
+                                        <div className="flex">
+                                            <Input
+                                                inputMode="decimal"
+                                                placeholder="10"
+                                                {...register("offeredMedicine.pricePerUnit", { valueAsNumber: true })}
+                                                onKeyDown={(e) => {
+                                                    const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"];
+
+                                                    if (e.key === ".") {
+                                                        if ((e.currentTarget.value || "").includes(".")) {
+                                                            e.preventDefault();
+                                                        }
+                                                        return;
+                                                    }
+
+                                                    if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                                onBlur={(e) => {
+                                                    const raw = e.target.value.replace(/,/g, "");
+                                                    if (raw === "" || isNaN(Number(raw))) return;
+                                                    e.target.value = Number(raw).toLocaleString("th-TH", {
+                                                        minimumFractionDigits: 0,
+                                                        maximumFractionDigits: 2,
+                                                    });
+                                                }}
+                                                className="border p-1 font-light"
+                                            />
+                                            {errors.offeredMedicine?.pricePerUnit && (
+                                                <span className="text-red-500 text-xs -mt-1">{errors.offeredMedicine.pricePerUnit.message}</span>
+                                            )}
+                                            <div className="flex items-center font-bold">
+                                                &nbsp;รวม&nbsp;
+                                                <span className="">
+                                                    {((Number(offeredAmount) || 0) * (Number(offeredPrice) || 0)).toLocaleString("th-TH", {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}
+                                                </span>&nbsp;บาท
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col gap-2">
+                                            <Label className="font-bold">ราคาต่อหน่วย</Label>
+
+                                        </div>
+
+                                    </Label>
+                                </div>
                                 <Label className="flex flex-col items-start">
-                                    ราคาต่อหน่วย
+                                    หมายเลขล๊อต
                                     <Input
-                                        type="number"
-                                        step="0.01"
-                                        inputMode="decimal"
-                                        placeholder="10.50"
-                                        {...register("offeredMedicine.pricePerUnit", { valueAsNumber: true })}
-                                        // disabled={returnTerm === "exactType"}
+                                        type="text"
+                                        {...register("offeredMedicine.batchNumber")}
+
                                         className="border p-1"
                                     />
                                 </Label>
+                                <div className="flex flex-col gap-2">
+                                    <Label className="font-bold">วันหมดอายุ</Label>
+                                    <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
+                                        <PopoverTrigger asChild>
+                                            <Button variant="outline" className="justify-start text-left font-normal">
+                                                {expiryDate
+                                                    ? format(new Date(Number(expiryDate)), 'dd/MM/') + (new Date(Number(expiryDate)).getFullYear() + 543)
+                                                    : "เลือกวันที่"}
+                                                <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0">
+                                            <Calendar
+                                                mode="single"
+                                                selected={expiryDate ? new Date(expiryDate) : undefined}
+                                                onSelect={(date) => {
+                                                    if (date instanceof Date && !isNaN(date.getTime())) {
+                                                        const today = new Date();
+                                                        today.setHours(0, 0, 0, 0); // normalize time
+                                                        const dateString = date.getTime().toString()
 
-                                <div>
-                                    รวม <span className="font-bold text-gray-950">{(() => {
-                                        const total = (Number(offeredAmount) || 0) * (Number(offeredPrice) || 0);
-                                        return Number.isFinite(total)
-                                            ? total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                                            : '0.00';
-                                    })()}</span> บาท
+                                                        if (date > today) {
+                                                            setValue("offeredMedicine.expiryDate", dateString, { shouldValidate: true });
+                                                            setDateError(""); // clear error
+                                                            setIsCalendarOpen(false); // close popover
+                                                        } else {
+                                                            setDateError("กรุณาเลือกวันที่ในอนาคต");
+                                                        }
+                                                    } else {
+                                                        setDateError("Invalid date selected.");
+                                                    }
+                                                }}
+                                                initialFocus
+                                            />
+                                            {dateError && (
+                                                <div className="text-red-500 text-sm px-4 py-2">{dateError}</div>
+                                            )}
+                                        </PopoverContent>
+                                    </Popover>
                                 </div>
-                                
+
                             </div>
-                                <Label className="mt-4 mb-2">เงื่อนไขการคืนที่ยอมรับ</Label>
-                                <div className="grid grid-cols-2 items-start space-x-4 gap-2">
-                                    <Label className="font-normal">
-                                        <input type="checkbox" {...register("offeredMedicine.returnConditions.exactType")} />
-                                        รับคืนเฉพาะรายการนี้
-                                    </Label>
-                                    <Label className="font-normal">
+                            <Label className="mt-4 mb-2">เงื่อนไขการคืนที่ยอมรับ</Label>
+                            <div className="grid grid-cols-2 items-start space-x-4 gap-2">
+                                <Label className="font-normal">
+                                    <input type="checkbox" {...register("offeredMedicine.returnConditions.exactType")} />
+                                    รับคืนเฉพาะรายการนี้
+                                </Label>
+                                <Label className="font-normal">
                                     <input type="checkbox" {...register("offeredMedicine.returnConditions.subType")} />
-                                        รับคืนยาทดแทนได้
-                                    </Label>
-                                    <Label className="font-normal">
+                                    รับคืนยาทดแทนได้
+                                </Label>
+                                <Label className="font-normal">
                                     <input type="checkbox" {...register("offeredMedicine.returnConditions.otherType")} />
-                                        รับคืนยารายการอื่นได้
-                                    </Label>
-                                    <Label className="font-normal">
+                                    รับคืนยารายการอื่นได้
+                                </Label>
+                                <Label className="font-normal">
                                     <input type="checkbox" {...register("offeredMedicine.returnConditions.supportType")} />
-                                        สามารถสนับสนุนได้
-                                    </Label>
-                                    {!isAnyChecked && isSubmitted && (
+                                    สามารถสนับสนุนได้
+                                </Label>
+                                {!isAnyChecked && isSubmitted && (
                                     <p className="text-red-500 text-sm mt-1">
                                         กรุณาเลือกอย่างน้อย 1 เงื่อนไข
                                     </p>
-                                    )}
-                                </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 
 
                     <DialogFooter>
                         <Button type="submit">
-                            {loading ? <div className="flex flex-row items-center gap-2 text-muted-foreground"><LoadingSpinner /> ยืมยันการให้ยืม</div>  : "ยืมยันการให้ยืม"}
+                            {loading ? <div className="flex flex-row items-center gap-2 text-muted-foreground"><LoadingSpinner /> ยืมยันการให้ยืม</div> : "ยืมยันการให้ยืม"}
                         </Button>
 
                     </DialogFooter>

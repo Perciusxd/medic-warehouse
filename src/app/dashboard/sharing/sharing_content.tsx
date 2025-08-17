@@ -26,7 +26,7 @@ export default function SharingContent() {
     const statusFilter = useMemo(() => ['pending', 're-confirm'], []);
 
     const { medicineSharing, loading, error, fetchMedicineSharing } = useMedicineSharing(loggedInHospital, statusFilter);
-    console.log("medicineSharing", medicineSharing)
+    //console.log("medicineSharing", medicineSharing)
     const [updatedLast, setUpdatedLast] = useState<Date | null>(null);
     const [createSharingDialogOpen, setCreateSharingDialogOpen] = useState(false);
     const [loadingRowId, setLoadingRowId] = useState(null);
@@ -39,7 +39,7 @@ export default function SharingContent() {
         setLoadingRowId(med.id);
         setSelectedMed(med);
         setOpenAcceptSharingDialog(true);
-        console.log('selected sharing medicine', med)
+        //console.log('selected sharing medicine', med)
     }
 
     const handleCancelClick = (med: any) => {

@@ -59,16 +59,16 @@ export default function StatusDashboard() {
     } | null>(null);
 
     const handleReturnSharingClick = async (med: any) => {
-        console.log('handleReturnSharingClick', med);
+        //console.log('handleReturnSharingClick', med);
         setSelectedMed(med);
         setReturnSharingDialogOpen(true);
     }
     const handleConfirmReceiveDelivery = async (med: any) => {
-        console.log('handleConfirmReceiveDelivery', med);
+        //console.log('handleConfirmReceiveDelivery', med);
         openConfirmationDialog(med, 'receive-delivery');
     }
     const handleconfirReceiveDelivery = async (med: any) => {
-        console.log('handleConfirmReceiveDelivery', med);
+        //console.log('handleConfirmReceiveDelivery', med);
         openConfirmationDialog(med, 'to-return');
     }
     const openConfirmationDialog = (med: any, actionType: 'receive-delivery' | 'delivery' | 'return' | 'to-return') => {
@@ -119,12 +119,12 @@ export default function StatusDashboard() {
     };
     // Additional submit functions for different scenarios
     const confirmReturn = async (med: any) => {
-        console.log('med in confirmReturn', med)
+        //console.log('med in confirmReturn', med)
         const responseBody = {
             sharingId: med.responseId,
             status: "returned",
         }
-        console.log('confirmReturn', responseBody)
+        //console.log('confirmReturn', responseBody)
         setLoading(true)
         try {
             const response = await fetch("/api/updateSharingStatus", {
@@ -144,7 +144,7 @@ export default function StatusDashboard() {
             setLoading(false)
             return true;
         } catch (error) {
-            console.error("Error submitting form:", error)
+            //console.error("Error submitting form:", error)
             setLoading(false)
             return false;
         }
@@ -170,12 +170,12 @@ export default function StatusDashboard() {
             }
 
             const result = await response.json()
-            console.log('result', result)
+            //console.log('result', result)
             fetchMedicineSharingInReturn();
             setLoading(false)
             return true;
         } catch (error) {
-            console.error("Error submitting form:", error)
+            //console.error("Error submitting form:", error)
             setLoading(false)
             return false;
         }
@@ -187,13 +187,13 @@ export default function StatusDashboard() {
     }
 
     const handleReconfirmClickSharingTicket = (med: any) => {
-        console.log('handleReconfirmClickSharingTicket', med);
+        //console.log('handleReconfirmClickSharingTicket', med);
         setSelectedMed(med);
         setOpenAcceptSharingDialog(true);
     }
 
     const handleReConfirmClick = (med: any) => {
-        console.log('handleReConfirmClick', med);
+        //console.log('handleReConfirmClick', med);
         setSelectedMed(med);
         setAcceptSharingDialogOpen(true);
     }
@@ -204,13 +204,13 @@ export default function StatusDashboard() {
     }
 
     const handleReturnClick = async (med: any) => {
-        console.log('handleReturnClick===', med);
+        //console.log('handleReturnClick===', med);
         setSelectedMed(med);
         setReturnDialogOpen(true);
     }
 
     const handleEditClick = async (med: any) => {
-        console.log('handleEditClick', med);
+        //console.log('handleEditClick', med);
         setSelectedMed(med);
         setEditDialogOpen(true);
     }
@@ -240,7 +240,7 @@ export default function StatusDashboard() {
             setLoading(false)
             return true;
         } catch (error) {
-            console.error("Error submitting form:", error)
+            //console.error("Error submitting form:", error)
             setLoading(false)
             return false;
         }
@@ -271,7 +271,7 @@ export default function StatusDashboard() {
             setLoading(false)
             return true;
         } catch (error) {
-            console.error("Error submitting form:", error)
+            //console.error("Error submitting form:", error)
             setLoading(false)
             return false;
         }
@@ -282,8 +282,8 @@ export default function StatusDashboard() {
         fetchMedicineSharingInReturn();
     }, [fetchMedicineRequests, fetchMedicineSharingInReturn]);
 
-    // console.log('medicineSharing', medicineSharing)
-    // console.log('medicineRequests', medicineRequests);
+    // //console.log('medicineSharing', medicineSharing)
+    // //console.log('medicineRequests', medicineRequests);
 
 
     return (

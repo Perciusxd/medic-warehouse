@@ -26,7 +26,7 @@ export async function verifyAuth(req: NextApiRequest, res: NextApiResponse) {
     const { payload } = await jwtVerify(token, secret);
     return payload as unknown as JWTPayload;
   } catch (error) {
-    console.error('Token verification failed:', error);
+    //console.error('Token verification failed:', error);
     return null;
   }
 }

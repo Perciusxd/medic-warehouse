@@ -59,7 +59,7 @@ export default function ConfirmationDialog({
         }
     };
 
-    console.log('confirmation dialog', selectedMed)
+    //console.log('confirmation dialog', selectedMed)
 
     const hospitalName = getHospitalName(selectedMed);
     const medicineName = getMedicineName(selectedMed);

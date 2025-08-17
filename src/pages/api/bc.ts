@@ -32,14 +32,14 @@ export default async function handler(
           result
         });
       }).catch(error => {
-        console.error('Error fetching data:', error);
+        //console.error('Error fetching data:', error);
         return res.status(500).json({
           message: 'Internal server error',
           error: error instanceof Error ? error.message : 'Unknown error'
         });
       });
     } catch (error) {
-      console.error('Error initializing Fabric:', error);
+      //console.error('Error initializing Fabric:', error);
       return res.status(500).json({ message: 'Failed to initialize Fabric', error: error instanceof Error ? error.message : 'Unknown error' });
     }
   } catch (error) {

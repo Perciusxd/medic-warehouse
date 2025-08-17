@@ -24,7 +24,7 @@ export const fetchAllMedicineRequests = async (loggedInHospital: string, status:
         }
         return result;
     } catch (error) {
-        console.error("Error fetching medicine requests:", error);
+        //console.error("Error fetching medicine requests:", error);
         throw error;
     }
 };
@@ -46,7 +46,7 @@ export const fetchAllMedicineRequestsInProgress = async (loggedInHospital: strin
         const filterData = data.filter((item: any) => item.postingHospitalNameEN === loggedInHospital && item.status === "pending");
         return filterData;
     } catch (error) {
-        console.error("Error fetching medicine requests:", error);
+        //console.error("Error fetching medicine requests:", error);
         throw error;
     }
 }
@@ -72,7 +72,7 @@ export const fetchAssetById = async (assetId: string) => {
 
         return await response.json();
     } catch (error) {
-        console.error("Error fetching asset by ID:", error);
+        //console.error("Error fetching asset by ID:", error);
         throw error;
     }
 };
@@ -99,7 +99,7 @@ export const fetchMedicineRequestsWithAssets = async (loggedInHospital: string) 
 
         return requestsWithAssets;
     } catch (error) {
-        console.error("Error fetching medicine requests with assets:", error);
+        //console.error("Error fetching medicine requests with assets:", error);
         throw error;
     }
 };
@@ -131,7 +131,7 @@ export const deleteMedicine = async (medicineID: string, medicineName: string) =
 
         return response;
     } catch (error) {
-        console.error('Error deleting medicine:', error);
+        //console.error('Error deleting medicine:', error);
         throw error;
     }
 };

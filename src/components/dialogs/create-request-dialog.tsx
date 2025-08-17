@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { useEffect, useRef, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
-
+import ImageHoverPreview from "@/components/ui/image-hover-preview"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,6 +23,73 @@ import { Calendar1, Hospital } from "lucide-react"
 import { format } from "date-fns"
 import { HospitalList } from "@/context/HospitalList"
 import sendMailHandler from "@/pages/api/sendmail"
+
+// Convert a Blob/File to a Base64 data URL
+const blobToDataUrl = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (err) => reject(err);
+        reader.readAsDataURL(blob);
+    });
+};
+
+type CompressOptions = { maxWidth?: number; maxHeight?: number; quality?: number };
+
+// Compress an image file by resizing (keeping aspect ratio) and JPEG encoding
+const compressImageFile = async (
+    file: File,
+    { maxWidth = 1024, maxHeight = 1024, quality = 0.7 }: CompressOptions = {}
+): Promise<Blob> => {
+    const dataUrl = await blobToDataUrl(file);
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = (e) => reject(e);
+        image.src = dataUrl;
+    });
+
+    let targetWidth = img.width;
+    let targetHeight = img.height;
+    const widthRatio = maxWidth / img.width;
+    const heightRatio = maxHeight / img.height;
+    const shouldResize = img.width > maxWidth || img.height > maxHeight;
+    if (shouldResize) {
+        const ratio = Math.min(widthRatio, heightRatio);
+        targetWidth = Math.floor(img.width * ratio);
+        targetHeight = Math.floor(img.height * ratio);
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Unable to get 2D context for image compression');
+    ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+    const blob: Blob = await new Promise((resolve, reject) => {
+        if (canvas.toBlob) {
+            canvas.toBlob((b) => {
+                if (b) resolve(b);
+                else reject(new Error('Image compression failed'));
+            }, 'image/jpeg', quality);
+        } else {
+            // Fallback for environments without toBlob
+            const fallbackDataUrl = canvas.toDataURL('image/jpeg', quality);
+            // Convert data URL to Blob
+            const byteString = atob(fallbackDataUrl.split(',')[1]);
+            const mimeString = fallbackDataUrl.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            resolve(new Blob([ab], { type: mimeString }));
+        }
+    });
+
+    return blob;
+};
 
 const allHospitalList = HospitalList;
 
@@ -59,13 +126,17 @@ const RequestSchema = z.object({
         description: z.string().optional(),
         requestAmount: z.coerce.number({ required_error: "กรุณากรอกจำนวนที่ต้องการยืม" })
             .min(1, "จำนวนที่ต้องการยืมต้องมากกว่า 0")
-            .max(1000, "จำนวนที่ต้องการยืมต้องไม่เกิน 1000"),
+            .max(10000, "จำนวนที่ต้องการยืมต้องไม่เกิน 10000"),
         quantity: z.string().min(1, "กรุณากรอกรูปแบบ/ขนาด"),
         pricePerUnit: z.coerce.number({ required_error: "กรุณากรอกราคาต่อหน่วย" })
             .min(1, "ราคาต่อหน่วยต้องมากกว่า 0")
             .max(100000, "ราคาต่อหน่วยต้องไม่เกิน 100,000"),
         unit: z.string().min(1, "กรุณากรอกรูปแบบ/หน่วย"),
         manufacturer: z.string().min(1, "กรุณากรอกผู้ผลิต"),
+        // เก็บไฟล์ภาพที่อัปโหลดไว้ในฟอร์ม (ไม่บังคับ)
+        image: z.custom<File | undefined>((value) => value === undefined || value instanceof File, {
+            message: "กรุณาอัปโหลดไฟล์ภาพที่ถูกต้อง",
+        }).optional(),
         
     }),
     requestTerm: z.object({
@@ -135,12 +206,29 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
     const allHospitals = hospitalList.map(hospital => hospital.id)
     const allSelected = selectedHospitals.length === allHospitals.length
 
+    const watchedImage = watch("requestMedicine.image")
+    // Image preview state
+    const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
+
+    useEffect(() => {
+        // When form image changes, generate/revoke preview URL
+        if (watchedImage instanceof File) {
+            const url = URL.createObjectURL(watchedImage)
+            setImagePreviewUrl(url)
+            return () => {
+                URL.revokeObjectURL(url)
+            }
+        } else {
+            setImagePreviewUrl(null)
+        }
+    }, [watchedImage])
+
     const toggleAllHospitals = () => {
         if (allSelected) {
-            setValue("selectedHospitals", [],{ shouldValidate: true })
+            setValue("selectedHospitals", [], { shouldValidate: true })
         }
         else {
-            setValue("selectedHospitals", allHospitals,{ shouldValidate: true })
+            setValue("selectedHospitals", allHospitals, { shouldValidate: true })
         }
     }
 
@@ -149,7 +237,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
         const updated = current.includes(hospitalId)
             ? current.filter((id) => id !== hospitalId)
             : [...current, hospitalId]
-        setValue("selectedHospitals", updated ,{ shouldValidate: true })
+        setValue("selectedHospitals", updated, { shouldValidate: true })
     }
 
     const sendMailsSequentially = async (filterHospital: any, requestData: any) => {
@@ -180,6 +268,20 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
 
     const onSubmit = async (data: z.infer<typeof RequestSchema>) => {
         const filterHospital = hospitalList.filter(hospital => data.selectedHospitals.includes(hospital.id))
+        // Compress and prepare Base64 image (data URL) for persistence instead of a blob URL
+        let base64Image: string | null = null
+        if (data.requestMedicine.image instanceof File) {
+            try {
+                const compressed = await compressImageFile(data.requestMedicine.image, {
+                    maxWidth: 800,
+                    maxHeight: 800,
+                    quality: 0.6,
+                })
+                base64Image = await blobToDataUrl(compressed)
+            } catch (e) {
+                //console.error("Failed to compress/convert image to Base64", e)
+            }
+        }
         const requestData = {
             id: `REQ-${Date.now()}`,
             postingHospitalId: postingHospital?.id,
@@ -191,14 +293,17 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
             createAt: Date.now().toString(),
             updatedAt: Date.now().toString(),
             requestMedicine: data.requestMedicine,
-            requestTerm: data.requestTerm
+            requestTerm: data.requestTerm,
+            description: data.requestMedicine.description,
+            // Save Base64 data URL; keep blob URL only for preview
+            requestMedicineImage: base64Image,
         }
 
         const requestBody = {
             requestData: requestData,
             selectedHospitals: filterHospital
         }
-        console.log('requestBody', requestBody)
+        //console.log('requestBody', requestBody)
         try {
             setLoading(true)
             const response = await fetch("/api/createRequest", {
@@ -221,7 +326,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
             }
 
             const result = await response.json()
-    
+
             setLoading(false)
             onOpenChange(false)
             // resetForm()
@@ -230,7 +335,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
             setValue("urgent", "normal")
             setValue("selectedHospitals", [])
         } catch (error) {
-            console.error("Error submitting form:", error)
+            //console.error("Error submitting form:", error)
             setLoading(false)
         }
     }
@@ -279,24 +384,60 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                             </div>
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">จำนวน</Label>
-                                <Input 
+                                <Input
                                     inputMode="numeric"
-                                    placeholder="10" 
+                                    placeholder="10"
                                     onKeyDown={(e) => {
-                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
+                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"];
+
+                                        if (e.key === ".") {
+                                            if ((e.currentTarget.value || "").includes(".")) {
+                                                e.preventDefault();
+                                            }
+                                            return;
+                                        }
+
                                         if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
-                                        e.preventDefault();
+                                            e.preventDefault();
                                         }
                                     }}
-                                    
-                                   {...register("requestMedicine.requestAmount", { valueAsNumber: true })} className={errors.requestMedicine?.requestAmount ? "border-red-500" : ""}
+
+                                    {...register("requestMedicine.requestAmount", {
+                                        valueAsNumber: true,
+                                        onBlur: (e) => {
+                                            const raw = e.target.value.replace(/,/g, "");
+                                            if (raw === "" || isNaN(Number(raw))) return;
+                                            e.target.value = Number(raw).toLocaleString("th-TH", {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 2,
+                                            });
+                                        }
+                                    })} className={errors.requestMedicine?.requestAmount ? "border-red-500" : ""}
                                 />
                                 {errors.requestMedicine?.requestAmount && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.requestAmount.message}</span>
                                 )}
-                            </div><div className="flex flex-col gap-2">
+                            </div>
+                            <div className="flex flex-col gap-2">
                                 <Label className="font-bold">ภาพประกอบ</Label>
-                                <Input type="file" placeholder="เลือกรูปภาพ" />
+                                <div className="flex items-center gap-2">
+                                    <Input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            const file = (e.target as HTMLInputElement).files?.[0];
+                                            if (file) {
+                                                setValue("requestMedicine.image", file, { shouldValidate: true });
+                                            } else {
+                                                setValue("requestMedicine.image", undefined, { shouldValidate: true });
+                                            }
+                                        }}
+                                    />
+                                    <ImageHoverPreview previewUrl={imagePreviewUrl} />
+                                </div>
+                                {errors.requestMedicine?.image && (
+                                    <span className="text-red-500 text-xs -mt-1">{String(errors.requestMedicine.image.message)}</span>
+                                )}
                             </div>
                             <div className="col-span-2 flex flex-col gap-2">
                                 <Label className="font-bold">เหตุผลการยืม</Label>
@@ -304,23 +445,48 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                             </div>
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">ราคาต่อหน่วย</Label>
-                                <Input 
-                                    inputMode="numeric"
-                                    placeholder="10" 
+                                <Input
+                                    inputMode="decimal"
+                                    placeholder="10"
+                                    {...register("requestMedicine.pricePerUnit", { valueAsNumber: true })}
                                     onKeyDown={(e) => {
-                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
+                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"];
+
+                                        if (e.key === ".") {
+                                            if ((e.currentTarget.value || "").includes(".")) {
+                                                e.preventDefault();
+                                            }
+                                            return;
+                                        }
+
                                         if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
-                                        e.preventDefault();
+                                            e.preventDefault();
                                         }
                                     }}
-                                {...register("requestMedicine.pricePerUnit", { valueAsNumber: true })} />
+                                    onBlur={(e) => {
+                                        const raw = e.target.value.replace(/,/g, "");
+                                        if (raw === "" || isNaN(Number(raw))) return;
+                                        e.target.value = Number(raw).toLocaleString("th-TH", {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 2,
+                                        });
+                                    }}
+                                />
+
+
                                 {errors.requestMedicine?.pricePerUnit && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.pricePerUnit.message}</span>
                                 )}
                             </div>
                             <div className="items-end flex flex-row">
                                 <div className="font-extralight">
-                                    รวม <span className="font-bold text-gray-950"> {(Number(quantity) || 0) * (Number(pricePerUnit) || 0)} </span> บาท
+                                    รวม&nbsp;
+                                    <span className="font-bold text-gray-950">
+                                        {((Number(quantity) || 0) * (Number(pricePerUnit) || 0)).toLocaleString("th-TH", {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                        })}
+                                    </span> บาท
                                 </div>
                             </div>
 
@@ -331,7 +497,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" className="justify-start text-left font-normal">
                                             {expectedReturnDate
-                                                ? formatThaiDate(expectedReturnDate)
+                                                ? format(new Date(Number(expectedReturnDate)), 'dd/MM/') + (new Date(Number(expectedReturnDate)).getFullYear() + 543)
                                                 : "เลือกวันที่"}
                                             <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                         </Button>
@@ -421,9 +587,9 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                 </div>
                             </ScrollArea>
                             {errors.selectedHospitals && (
-                            <p className="text-red-500 text-sm">{errors.selectedHospitals.message}</p>
+                                <p className="text-red-500 text-sm">{errors.selectedHospitals.message}</p>
                             )}
-                            
+
                             <Label className="mb-2 mt-4">เงื่อนไขการรับยา</Label>
                             <div className="flex flex-col items-start space-y-2">
                                 <div className="flex items-start gap-4">
@@ -434,7 +600,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                         </Label>
                                         <Label className="font-normal">
                                             <input type="radio" value="subType" {...register("requestTerm.receiveConditions.condition")} />
-                                            ยืมรายการทดแทนได้
+                                            ยืมรายการที่ต้องการหรือรายการทดแทนได้
                                         </Label>
                                     </div>
                                     <div className="flex items-center gap-2 ml-8">

@@ -1,5 +1,10 @@
 "use client"
-// Thai date formatting helper (Buddhist calendar)
+import { formatDate } from "@/lib/utils"
+import { useState, useEffect } from "react"
+import { format } from "date-fns"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import ImageHoverPreview from "@/components/ui/image-hover-preview"
 const formatThaiDate = (input: string | number | Date | undefined): string => {
     if (!input) return '';
     let date: Date;
@@ -13,16 +18,15 @@ const formatThaiDate = (input: string | number | Date | undefined): string => {
     if (isNaN(date.getTime())) return '';
     return new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
         day: '2-digit',
-        month: '2-digit',
-        year: '2-digit',
+        month: 'long',
+        year: 'numeric',
     }).format(date);
 }
-import { useState } from "react"
-
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-
 export default function RequestDetails({ requestData, responseForm }: any) {
+    // Image preview state
+    const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
+
+
     const requestDetails = requestData ? {
         id: requestData.id,
         postingHospitalId: requestData.postingHospitalId,
@@ -42,7 +46,9 @@ export default function RequestDetails({ requestData, responseForm }: any) {
             requestAmount: requestData.requestMedicine.requestAmount,
             manufacturer: requestData.requestMedicine.manufacturer,
             manufactureDate: requestData.requestMedicine.manufactureDate,
-            imageRef: requestData.requestMedicine.imageRef
+            imageRef: requestData.requestMedicine.imageRef,
+            description: requestData.requestMedicine.description,
+            requestMedicineImage: requestData.requestMedicine.requestMedicineImage
         },
         requestTerm: {
             expectedReturnDate: requestData.requestTerm.expectedReturnDate,
@@ -72,7 +78,9 @@ export default function RequestDetails({ requestData, responseForm }: any) {
             batchNumber: "",
             manufacturer: "",
             manufactureDate: "",
-            imageRef: ""
+            imageRef: "",
+            description: "",
+            requestMedicineImage: "",
         },
         requestTerm: {
             expectedReturnDate: "",
@@ -84,10 +92,10 @@ export default function RequestDetails({ requestData, responseForm }: any) {
             }
         }
     };
-
-
+    const total = (requestDetails.requestMedicine.pricePerUnit || 0)  * (requestDetails.requestMedicine.requestAmount || 0) ;
+    const imgUrl: string | null = requestDetails.requestMedicine.requestMedicineImage || requestDetails.requestMedicine?.imageRef || null;
     const [details, setDetails] = useState([
-        { label: "วันที่ขอยืม", value: formatThaiDate(requestDetails.updatedAt) },
+        { label: "วันที่ขอยืม", value: format(new Date(Number(requestDetails.updatedAt)), 'dd/MM/') + (new Date(Number(requestDetails.updatedAt)).getFullYear() + 543) },
         // { label: "ID ขอยืม", value: requestDetails.id },
         // { label: "Posting Hospital ID", value: requestDetails.postingHospitalId },
         // { label: "Posting Hospital Name (EN)", value: requestDetails.postingHospitalNameEN },
@@ -120,22 +128,35 @@ export default function RequestDetails({ requestData, responseForm }: any) {
                 <div>
                     <Label className="font-bold">ราคาต่อหน่วย</Label>
                     <div className="flex flex-row gap-2 items-center">
-                    <Input type="text" className="w-14" value={requestDetails.requestMedicine.pricePerUnit} disabled />
+                        <Input type="text" className="max-w-[50%]" value={requestDetails.requestMedicine.pricePerUnit?.toLocaleString("th-TH")} disabled />
                         <div className="font-extralight">
-                            รวม <span className="font-bold text-gray-950"> {(Number(requestDetails.requestMedicine.pricePerUnit) || 0) * (Number(requestDetails.requestMedicine.requestAmount) || 0)} </span> บาท
+                            รวม <span className="font-bold text-sm text-gray-950"> {total?.toLocaleString("th-TH")} </span> บาท
                         </div>
                     </div>
                 </div>
                 <div>
                     <Label className="font-bold">จำนวนที่ขอยืม</Label>
-                    <Input type="text" value={requestDetails.requestMedicine.requestAmount} disabled />
+                    <Input type="text" value={requestDetails.requestMedicine.requestAmount?.toLocaleString("th-TH")} disabled />
                 </div>
                 <div>
                     <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
-                    <Input type="text" value={formatThaiDate(requestDetails.requestTerm.expectedReturnDate)} disabled />
+                    <Input type="text" value={format(new Date(Number(requestDetails.requestTerm.expectedReturnDate)), 'dd/MM/') + (new Date(Number(requestDetails.requestTerm.expectedReturnDate)).getFullYear() + 543)} disabled />
                 </div>
+                <div className="col-span-2">
+                    <Label className="font-bold">เหตุผลการยืม</Label>
+                    <Input type="text" value={requestDetails.requestMedicine.description} disabled />
+                </div>
+                {/* <div className="col-span-2">
+                    <Label className="font-bold">ภาพประกอบ <ImageHoverPreview previewUrl={imgUrl} /></Label>
+                    <div className="flex items-center gap-2">
+                        <img
+                            src={imgUrl}
+                            alt="thumb"
+                            className="h-40 w-40 object-cover rounded border"
+                        />
+                    </div>
+                </div> */}
             </div>
         </div>
-
-    );
+            );
 }

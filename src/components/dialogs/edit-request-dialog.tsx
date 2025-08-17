@@ -101,7 +101,7 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
 
     const onSubmit = async (data: z.infer<typeof RequestSchema>) => {
         const filterPendingResponse = responseDetails.filter((item: any) => item.status === 'pending')
-        console.log('filterPendingResponse', filterPendingResponse)
+        //console.log('filterPendingResponse', filterPendingResponse)
         const filterHospital = hospitalList.filter(hospital => data.selectedHospitals.includes(hospital.id))
         const requestData = {
             id: `REQ-${Date.now()}`,
@@ -136,7 +136,7 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
             }
 
             const result = await response.json()
-            console.log('result', result)
+            //console.log('result', result)
             const selectedMedBody = {
                 id: selectedMed.id,
                 status: 'cancelled'
@@ -167,7 +167,7 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
             onOpenChange(false)
             toast.success("แก้ไขข้อมูลยาเรียบร้อย")
         } catch (error) {
-            console.error("Error submitting form:", error)
+            //console.error("Error submitting form:", error)
             setLoading(false)
             toast.error("เกิดข้อผิดพลาดในการแก้ไขข้อมูลยา")
         }

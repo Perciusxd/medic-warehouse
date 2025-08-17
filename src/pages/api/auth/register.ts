@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
         // Log the request body for debugging
-        console.log('Request body:', req.body);
+        //console.log('Request body:', req.body);
 
         const { email, username, address, contact, director, password, name, role, hospitalName } = req.body;
 
@@ -79,7 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
         });
     } catch (error) {
-        console.error('Registration error:', error);
+        //console.error('Registration error:', error);
         return res.status(500).json({ 
             message: 'Internal server error', 
             error: error instanceof Error ? error.message : 'Unknown error'

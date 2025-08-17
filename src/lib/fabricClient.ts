@@ -158,15 +158,15 @@ function envOrDefault(key: string, defaultValue: string): string {
 }
 
 function displayInputParameters(): void {
-  console.log(`channelName:       ${channelName}`);
-  console.log(`chaincodeName:     ${chaincodeName}`);
-  console.log(`mspId:             ${mspId}`);
-  console.log(`cryptoPath:        ${cryptoPath}`);
-  console.log(`keyDirectoryPath:  ${keyDirectoryPath}`);
-  console.log(`certDirectoryPath: ${certDirectoryPath}`);
-  console.log(`tlsCertPath:       ${tlsCertPath}`);
-  console.log(`peerEndpoint:      ${peerEndpoint}`);
-  console.log(`peerHostAlias:     ${peerHostAlias}`);
+  //console.log(`channelName:       ${channelName}`);
+  //console.log(`chaincodeName:     ${chaincodeName}`);
+  //console.log(`mspId:             ${mspId}`);
+  //console.log(`cryptoPath:        ${cryptoPath}`);
+  //console.log(`keyDirectoryPath:  ${keyDirectoryPath}`);
+  //console.log(`certDirectoryPath: ${certDirectoryPath}`);
+  //console.log(`tlsCertPath:       ${tlsCertPath}`);
+  //console.log(`peerEndpoint:      ${peerEndpoint}`);
+  //console.log(`peerHostAlias:     ${peerHostAlias}`);
 }
 
 

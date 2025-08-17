@@ -121,7 +121,7 @@ export function useMedicineResponsesInTransfer(loggedInHospital: string) {
 
 export function useMedicineRequestsStatus(loggedInHospital: string, status: string[]) {
     const [medicineRequests, setMedicineRequests] = useState([]);
-    console.log("useMedicineRequestsStatus == medicineRequests");
+    //console.log("useMedicineRequestsStatus == medicineRequests");
     const [loading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 

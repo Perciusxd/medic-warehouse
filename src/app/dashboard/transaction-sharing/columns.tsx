@@ -33,9 +33,9 @@ export const columns = (
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">วันที่ขอยืม</div>,
         cell: ({ row }) => {
             const createdAt = row.getValue("updatedAt")
-            // console.log('createdAt', createdAt)
+            // //console.log('createdAt', createdAt)
             const date = new Date(Number(createdAt)); // convert string to number, then to Date
-            // console.log('date', date)
+            // //console.log('date', date)
             const formattedDate = format(date, 'dd/MM/yyyy'); // format to date only
             const timeOnly = format(date, 'HH:mm:ss'); // format to time only
             return <div>
@@ -110,7 +110,7 @@ export const columns = (
             const price = offeredPricePerUnit * offeredAmount
             const manufacturer = row.original.offeredMedicine?.manufacturer
             const returnTermData = row.original.offeredMedicine?.returnTerm
-            console.log("returnTermData.==",returnTermData)
+            //console.log("returnTermData.==",returnTermData)
             let returnTerm;
 
             if (returnTermData === "exactType"){
@@ -121,7 +121,7 @@ export const columns = (
                 
             }
             //const expiryDate = 
-            console.log("status===",row.original)
+            //console.log("status===",row.original)
 
             return (
                 <div className="flex flex-col">
@@ -141,7 +141,7 @@ export const columns = (
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">รายละเอียดการคืน</div>,
         cell: ({ row }) => {
             const createdAt = row.original.requestDetails?.requestTerm.expectedReturnDate
-            console.log("med_ticket_type=====",row.original.ticketType)
+            //console.log("med_ticket_type=====",row.original.ticketType)
             const date = new Date(Number(createdAt));
             const daysUntilReturn = differenceInCalendarDays(date, new Date())
             const formattedDate = format(date, 'dd/MM/yyyy');

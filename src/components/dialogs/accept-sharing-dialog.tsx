@@ -15,7 +15,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 // Icons
 import { Calendar1, FileText } from "lucide-react"
 
-// import { format } from "date-fns"
+import { format } from "date-fns"
 import { z } from "zod"
 import { useForm, FieldErrors } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -26,7 +26,7 @@ const SharingPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/shar
 import { useAuth } from "@/components/providers";
 
 function RequestDetails({ sharingMed }: any) {
-    console.log('sharingMed RequestDetails', sharingMed)
+    //console.log('sharingMed RequestDetails', sharingMed)
     const { createdAt } = sharingMed
     const date = new Date(Number(createdAt)); // convert string to number, then to Date
     // Thai date formatting helper (Buddhist calendar)
@@ -39,7 +39,7 @@ function RequestDetails({ sharingMed }: any) {
     const sharingMedicine = sharingMed.offeredMedicine ? sharingMed.sharingMedicine : sharingDetails.sharingMedicine
     const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber, sharingAmount } = sharingMedicine
     const sharingReturnTerm = sharingMed.offeredMedicine ? sharingMed.sharingReturnTerm.receiveConditions : sharingMed.sharingDetails.sharingReturnTerm.receiveConditions
-    //console.log('sharingReturnTermsชชชชชชชชชชชชชชชชชชช', sharingDetails.sharingMedicine)
+    ////console.log('sharingReturnTermsชชชชชชชชชชชชชชชชชชช', sharingDetails.sharingMedicine)
     /* const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy'); */
     // const formattedExpiryDate = format(sharingDetails.sharingMedicine.expiryDate, 'dd/MM/yyyy'); //ดึงมาก่อนนะอิงจากที่มี ดึงไว้ใน columns.tsx
     const formattedExpiryDate = isNaN(Number(expiryDate))
@@ -146,8 +146,8 @@ function ResponseFormSchema(sharingMedicine: any) {
 }
 
 function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) {
-    // console.log('sharingMed', sharingMed)
-    // console.log('sharingMed.sharingMedicine', sharingMed.sharingDetails.sharingMedicine)
+    // //console.log('sharingMed', sharingMed)
+    // //console.log('sharingMed.sharingMedicine', sharingMed.sharingDetails.sharingMedicine)
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [dateError, setDateError] = useState(""); // for error message
     const [loading, setLoading] = useState(false);
@@ -156,8 +156,8 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
     const existingOffer = sharingMed.offeredMedicine;
     const existingReturnTerm = sharingMed.returnTerm;
     const isReconfirm = !!existingOffer;
-    // console.log('existingOffer', existingOffer)
-    // console.log('existingReturnTerm', existingReturnTerm)
+    // //console.log('existingOffer', existingOffer)
+    // //console.log('existingReturnTerm', existingReturnTerm)
 
     const ResponseShema = ResponseFormSchema(sharingMed.sharingDetails.sharingMedicine)
     
@@ -192,7 +192,7 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
     const returnTerm = watch("returnTerm"); // Get the current values of receiveConditions
     const isAnyChecked = Object.values(returnTerm || {}).some(Boolean);// Check if any checkbox is checked
 
-    // console.log('expectedReturn', expectedReturn)
+    // //console.log('expectedReturn', expectedReturn)
 
     const onSubmit = async (data: z.infer<typeof ResponseShema>) => {
         const isResponse = sharingMed.id.startsWith('RESP');
@@ -209,7 +209,7 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
             updatedAt: Date.now().toString(),
             status: newStatus
         }
-        console.log('accept offer responseBody', responseBody)
+        //console.log('accept offer responseBody', responseBody)
 
         try {
             setLoading(true);
@@ -222,19 +222,19 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                 body: JSON.stringify(responseBody),
             })
             const result = await response.json();
-            console.log('accpet offer result', result)
+            //console.log('accpet offer result', result)
             setLoading(false);
             onSubmittingChange?.(false);
             onOpenChange(false);
         } catch (error) {
-            console.error("Error in transaction:", error);
+            //console.error("Error in transaction:", error);
             setLoading(false);
             onSubmittingChange?.(false);
         }
     }
 
     const onError = (errors: FieldErrors<z.infer<typeof ResponseShema>>) => {
-        console.error("❌ Form validation errors:", errors);
+        //console.error("❌ Form validation errors:", errors);
     }
 
     return (
@@ -264,11 +264,8 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className="justify-start text-left font-normal" disabled={sharingMed.status === 're-confirm'} >
                                     {expectedReturn
-                                        ? new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
-                                            day: '2-digit',
-                                            month: '2-digit',
-                                            year: '2-digit',
-                                        }).format(new Date(Number(expectedReturn)))
+                                        ? 
+                                        format(new Date(Number(expectedReturn)), 'dd/MM/') + (new Date(Number(expectedReturn)).getFullYear() + 543)
                                         : "เลือกวันที่"}
                                     <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                 </Button>
@@ -282,7 +279,7 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                                             const today = new Date();
                                             today.setHours(0, 0, 0, 0); // normalize time
                                             const stringDate = date.getTime().toString();
-                                            console.log('stringDate', stringDate)
+                                            //console.log('stringDate', stringDate)
 
                                             if (date > today) {
                                                 setValue("expectedReturnDate", stringDate, { shouldValidate: true, shouldDirty: true });

@@ -70,10 +70,10 @@ const styles = StyleSheet.create({
     // section: { marginBottom: 10 }
 });
 
-function MyDocument({ pdfData }: any) {
+function MyDocument({ pdfData, variant = 'original' }: any) {
     const { responseDetail, sharingMedicineDetail, userData } = pdfData;
-    console.log("responseDetail", responseDetail)
-    console.log("sharingMed", sharingMedicineDetail)
+    //console.log("responseDetail", responseDetail)
+    //console.log("sharingMed", sharingMedicineDetail)
     const { postingHospitalNameTH, sharingMedicine } = sharingMedicineDetail;
     const { respondingHospitalNameTH, acceptedOffer } = responseDetail;
     const { address, director, contact } = userData;
@@ -93,14 +93,18 @@ function MyDocument({ pdfData }: any) {
     return (
         <PDFDocGen>
             <Page size="A4" style={styles.body}>
-                <Image style={styles.image} src="/krut_mark.jpg" />
+                {variant === 'original' ? (
+                    <Image style={styles.image} src="/krut_mark.jpg" />
+                ) : (
+                    <Text style={{ textAlign: 'center', fontSize: 28, fontWeight: 'bold', marginBottom: 40 }}>สำเนา </Text>
+                )}
                 <View style={[styles.table, { marginBottom: 10 }]}>
                     {/* Row 1 */}
                     <View style={styles.tableRow}>
                         <Text style={[styles.tableCell, { flex: 1 }]}>ที่ สข. 80231</Text>
                         <Text style={[styles.tableCell, { flex: 1 }]}></Text>
                         {/* <Text style={[styles.tableCell, { flex: 1 }]}></Text> */}
-                        {/* <Text style={[styles.tableCell, { flex: 1 }]}>{lendingHospitalNameTH} </Text> */}
+                        <Text style={[styles.tableCell, { flex: 1 }]}>{respondingHospitalNameTH} </Text>
                     </View>
 
                     {/* Row 2 */}
@@ -108,7 +112,7 @@ function MyDocument({ pdfData }: any) {
                         <Text style={[styles.tableCell, { flex: 1 }]}></Text>
                         <Text style={[styles.tableCell, { flex: 1 }]}></Text>
                         {/* <Text style={[styles.tableCell, { flex: 1 }]}></Text> */}
-                        {/* <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {lendingHospitalAddress}</Text> */}
+                        <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {address}   </Text>
                     </View>
                 </View>
 
@@ -127,7 +131,7 @@ function MyDocument({ pdfData }: any) {
                         <Text style={styles.tableHeader}>หมายเหตุ</Text>
                     </View>
                     <View style={styles.tableRow}>
-                        <Text style={styles.tableCell}>{sharingMedicine.name}</Text>
+                        <Text style={styles.tableCell}>{sharingMedicine.name} ({sharingMedicine.quantity})</Text>
                         <Text style={styles.tableCell}>{acceptedOffer.responseAmount} ({sharingMedicine.unit})</Text>
                         <Text style={styles.tableCell}>{expectedReturnDate}</Text>
                         <Text style={styles.tableCell}>{mockNote}</Text>
@@ -141,9 +145,9 @@ function MyDocument({ pdfData }: any) {
                     จึงเรียนมาเพื่อโปรดพิจารณา และ{respondingHospitalNameTH} ขอขอบคุณ ณ โอกาสนี้
                 </Text>
 
-                <Text style={{ marginTop: 30, textIndent: 280 }}>ขอแสดงความนับถือ</Text>
+                <Text style={{ marginTop: 30, textIndent: 310 }}>ขอแสดงความนับถือ</Text>
                 <Text style={{ marginTop: 100, textIndent: 280 }}>{director} </Text>
-                <Text style={{ textIndent: 280 }}>ผู้อำนวยการ {respondingHospitalNameTH}</Text>
+                <Text style={{ textIndent: 280 }}>ผู้อำนวยการ {respondingHospitalNameTH}  </Text>
                 <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
                 <Text>ติดต่อ {contact}</Text>
             </Page>
@@ -153,15 +157,15 @@ function MyDocument({ pdfData }: any) {
 
 
 const SharingPdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => {
-    console.log('sharingDatapdf', pdfData)
-    // console.log('user data at pdf preview', userData)
+    //console.log('sharingDatapdf', pdfData)
+    // //console.log('user data at pdf preview', userData)
     const [blob, setBlob] = useState<Blob | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
     useEffect(() => {
         let cancelled = false;
         const generatePdf = async () => {
-            const generatedBlob = await pdf(<MyDocument pdfData={{ ...pdfData, userData }} />).toBlob();
+            const generatedBlob = await pdf(<MyDocument pdfData={{ ...pdfData, userData }} variant="original" />).toBlob();
             if (!cancelled) {
                 setBlob(generatedBlob);
                 setPdfUrl(URL.createObjectURL(generatedBlob));
@@ -175,9 +179,18 @@ const SharingPdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => 
 
     useImperativeHandle(ref, () => ({
         savePdf: () => {
-            if (blob) {
-                saveAs(blob, 'document.pdf');
-            }
+            (async () => {
+                try {
+                    const [originalBlob, copyBlob] = await Promise.all([
+                        pdf(<MyDocument pdfData={{ ...pdfData, userData }} variant="original" />).toBlob(),
+                        pdf(<MyDocument pdfData={{ ...pdfData, userData }} variant="copy" />).toBlob(),
+                    ]);
+                    saveAs(originalBlob, 'document.pdf');
+                    saveAs(copyBlob, 'document_copy.pdf');
+                } catch (error) {
+                    console.error('Failed to generate PDFs:', error);
+                }
+            })();
         },
     }));
 

@@ -249,7 +249,7 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
             await response.json();
             onOpenChange(false);
         } catch (error) {
-            console.error("Error submitting form:", error);
+            //console.error("Error submitting form:", error);
         } finally {
             setLoading(false);
         }

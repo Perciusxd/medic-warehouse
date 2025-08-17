@@ -43,7 +43,7 @@ export const fetchAllStatusByTicketType = async (loggedInHospital: string, statu
             return result;
         }
     } catch (error) {
-        console.error("Error fetching medicine requests:", error);
+        //console.error("Error fetching medicine requests:", error);
         throw error;
     }
 };
@@ -88,7 +88,7 @@ export const fetchConfirmStatusByTicketType = async (loggedInHospital: string, s
             return result;
         }
     } catch (error) {
-        console.error("Error fetching medicine requests:", error);
+        //console.error("Error fetching medicine requests:", error);
         throw error;
     }
 }

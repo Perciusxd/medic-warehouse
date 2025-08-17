@@ -37,6 +37,7 @@ export const columns = (
             header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ภาพ</div>,
             cell: ({ row }) => {
                 const original: any = row.original as any
+                //console.log("original", original)
                 const imgUrl: string | null = original.sharingMedicineImage || original.sharingMedicine?.imageRef || null
                 if (!imgUrl) {
                     return <div className="text-xs text-muted-foreground">-</div>
@@ -62,7 +63,7 @@ export const columns = (
                 const createdAt = row.getValue("createdAt")
                 const date = new Date(Number(createdAt)); // convert string to number, then to Date
                 const isValid = !isNaN(date.getTime());
-                const formattedDate = isValid ? format(date, 'dd/MM/yyyy') : "-"; // format to date only
+                const formattedDate = isValid ? format(new Date(Number(date)), 'dd/MM/') + (new Date(Number(date)).getFullYear() + 543): "-"; // format to date only
                 const timeOnly = isValid ? format(date, 'HH:mm:ss') : "-"; // format to time only
                 return (<div>
                     <div className="text-sm font-medium text-gray-600">{formattedDate}</div>
@@ -178,7 +179,7 @@ export const columns = (
                             const isValid = !isNaN(date.getTime());
                             const formattedDate = isValid ? format(date, 'dd/MM/yyyy') : "-";
                             const timeOnly = isValid ? format(date, 'HH:mm:ss') : "-";
-                            // console.log("responseDetailsaaaaaa",item)
+                            // //console.log("responseDetailsaaaaaa",date)
                             return (
                                 <div key={index}>
                                     <div className="text-sm font-medium ">{formattedDate}</div>
@@ -215,7 +216,7 @@ export const columns = (
             cell: ({ row }) => {
                 const med = row.original;
                 const responseDetails = row.original.responseDetails;
-                // console.log('row==================', row.original)
+                // //console.log('row==================', row.original)
                 const maxDisplay = 3;
                 const details = responseDetails.slice(0, maxDisplay);
                 const hasMore = responseDetails.length > maxDisplay;
