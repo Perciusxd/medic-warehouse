@@ -130,7 +130,7 @@ export default function RequestDetails({ requestData, responseForm }: any) {
                     <div className="flex flex-row gap-2 items-center">
                         <Input type="text" className="max-w-[50%]" value={requestDetails.requestMedicine.pricePerUnit?.toLocaleString("th-TH")} disabled />
                         <div className="font-extralight">
-                            รวม <span className="font-bold text-sm text-gray-950"> {total?.toLocaleString("th-TH")} </span> บาท
+                            รวม <span className="font-bold text text-gray-950"> {total?.toLocaleString("th-TH")} </span> บาท
                         </div>
                     </div>
                 </div>
@@ -142,9 +142,14 @@ export default function RequestDetails({ requestData, responseForm }: any) {
                     <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
                     <Input type="text" value={format(new Date(Number(requestDetails.requestTerm.expectedReturnDate)), 'dd/MM/') + (new Date(Number(requestDetails.requestTerm.expectedReturnDate)).getFullYear() + 543)} disabled />
                 </div>
-                <div className="col-span-2">
-                    <Label className="font-bold">เหตุผลการยืม</Label>
-                    <Input type="text" value={requestDetails.requestMedicine.description} disabled />
+                <div className="grid grid-cols-3 col-span-2 gap-2 items-center">
+                    <div className="col-span-2">
+                        <Label className="font-bold">เหตุผลการยืม</Label>
+                        <Input type="text" value={requestDetails.requestMedicine.description} disabled />
+                    </div>
+                   <div className="col-span-1">
+                        <Label className="font-bold">ภาพประกอบ <ImageHoverPreview previewUrl={imgUrl} /></Label>
+                   </div> 
                 </div>
                 {/* <div className="col-span-2">
                     <Label className="font-bold">ภาพประกอบ <ImageHoverPreview previewUrl={imgUrl} /></Label>

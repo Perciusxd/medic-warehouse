@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-
+import { ImageHoverPreview } from "@/components/ui/image-hover-preview"
 // Icons
 import { Calendar1, FileText } from "lucide-react"
 
@@ -35,6 +35,8 @@ function RequestDetails({ sharingMed }: any) {
     const sharingMedicine = sharingMed.offeredMedicine ? sharingMed.sharingMedicine : sharingDetails.sharingMedicine
     const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber, sharingAmount } = sharingMedicine
     const sharingReturnTerm = sharingMed.offeredMedicine ? sharingMed.sharingReturnTerm.receiveConditions : sharingMed.sharingDetails.sharingReturnTerm.receiveConditions
+    const imgUrl: string | null = sharingMed.sharingDetails.sharingMedicineImage || sharingMed?.sharingDetails.sharingMedicine.imageRef || null;
+    console.log('imgUrl', sharingMed)
     ////console.log('sharingReturnTermsชชชชชชชชชชชชชชชชชชช', sharingDetails.sharingMedicine)
     /* const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy'); */
     // const formattedExpiryDate = format(sharingDetails.sharingMedicine.expiryDate, 'dd/MM/yyyy'); //ดึงมาก่อนนะอิงจากที่มี ดึงไว้ใน columns.tsx
@@ -62,20 +64,25 @@ function RequestDetails({ sharingMed }: any) {
                     <Label>ชื่อการค้า</Label>
                     <Input disabled value={trademark} />
                 </div>
-                <div className="flex flex-col gap-1">
-                    <Label>ผู้ผลิต</Label>
-                    <Input disabled value={manufacturer} />
+                <div className="grid grid-cols-3 gap-1 items-center">
+                    <div className="flex flex-col col-span-2 gap-1">
+                        <Label>ผู้ผลิต</Label>
+                        <Input disabled value={manufacturer} />
+                    </div>
+                    <div className="flex flex-col col-span-1 gap-1">
+                        <Label className="font-bold">ภาพประกอบ <ImageHoverPreview previewUrl={imgUrl} /></Label>
+                    </div>
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>จำนวน</Label>
                     <Input disabled value={sharingAmount} />
                 </div>
-                <div className="grid grid-cols-2 gap-1">
-                    <div className="flex flex-col gap-1">
+                <div className="grid grid-cols-3 gap-1">
+                    <div className="flex flex-col col-span-2 gap-1">
                         <Label>หมายเลขล็อต</Label>
                         <Input disabled value={batchNumber} />
                     </div>
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col col-span-1 gap-1">
                         <Label>วันหมดอายุ</Label>
                         <Input disabled value={formattedExpiryDate} />
                     </div>
@@ -150,7 +157,7 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
     // //console.log('existingReturnTerm', existingReturnTerm)
 
     const ResponseShema = ResponseFormSchema(sharingMed.sharingDetails.sharingMedicine)
-    
+
 
     const {
         register,
@@ -230,7 +237,6 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
     return (
         <form id="accept-sharing-form" onSubmit={handleSubmit(onSubmit, onError)}>
             <div className="flex flex-col gap-4">
-                <Label>ยืนยันการยืม</Label>
                 <div className="grid grid-cols-2 gap-2">
                     <div className="flex flex-col gap-1">
                         <Label>จำนวนที่ยืม</Label>
@@ -245,7 +251,7 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                             }}
                             {...register("responseAmount", { valueAsNumber: true })}
                             disabled={sharingMed.status === 're-confirm'}
-                             />
+                        />
                         {errors.responseAmount?.message && <span className="text-red-500 text-sm">{errors.responseAmount.message}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
@@ -254,7 +260,7 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className="justify-start text-left font-normal" disabled={sharingMed.status === 're-confirm'} >
                                     {expectedReturn
-                                        ? 
+                                        ?
                                         format(new Date(Number(expectedReturn)), 'dd/MM/') + (new Date(Number(expectedReturn)).getFullYear() + 543)
                                         : "เลือกวันที่"}
                                     <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
@@ -291,7 +297,7 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                         </Popover>
                         {errors.expectedReturnDate?.message && <span className="text-red-500 text-sm">{errors.expectedReturnDate.message}</span>}
                     </div>
-                    
+
                     <div className="flex flex-col gap-1">
                         <Label>แผนการคืน</Label>
                         <div className="grid grid-cols-2 gap-2">
@@ -325,10 +331,10 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                             </div>
                         </div>
                     </div>
-                    
+
                 </div>
             </div>
-            
+
         </form>
     )
 }
@@ -397,13 +403,13 @@ export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChan
                                 ยกเลิก
                             </Button>
                             {isReconfirm && (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => pdfRef.current?.savePdf?.()}
-                            >
-                                ดาวน์โหลด PDF
-                            </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => pdfRef.current?.savePdf?.()}
+                                >
+                                    ดาวน์โหลด PDF
+                                </Button>
                             )}
                         </DialogFooter>
                     </div>
