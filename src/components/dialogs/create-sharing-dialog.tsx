@@ -410,8 +410,8 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                             {expiryDate
                                                 ? new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
                                                     day: '2-digit',
-                                                    month: 'long',
-                                                    year: 'numeric',
+                                                    month: '2-digit',
+                                                    year: '2-digit',
                                                 }).format(new Date(Number(expiryDate)))
                                                 : "เลือกวันที่"
                                             }

@@ -151,7 +151,7 @@ export default function Dashboard() {
             {!isLoading && (user?.hospitalName || loggedInHospital) && (
                 <div className="mt-4 mb-6">
                     <h1 className="text-xl md:text-2xl font-bold tracking-tight">
-                        {user?.hospitalName || loggedInHospital}
+                        โรงพยาบาล{user?.name || loggedInHospital}
                     </h1>
                     {user?.address && (
                         <p className="text-sm md:text-base text-gray-600 mt-1">
@@ -168,7 +168,8 @@ export default function Dashboard() {
                         borrowNumber > 0 ? <NotificationNumber number={borrowNumber} /> : null
                         }</TabsTrigger>
                     <TabsTrigger value="return">เวชภัณฑ์ยาที่ต้องการแบ่งปัน</TabsTrigger>
-                    <TabsTrigger value="status">รายการยาที่ขอยืม <NotificationNumber number={2} /></TabsTrigger>
+                    {/* <TabsTrigger value="status">รายการยาที่ขอยืม <NotificationNumber number={2} /></TabsTrigger> */}
+                    <TabsTrigger value="status">รายการยาที่ขอยืม</TabsTrigger>
                     <TabsTrigger value="transfer">รายการยาที่ให้ยืม</TabsTrigger>
                 </TabsList>
 

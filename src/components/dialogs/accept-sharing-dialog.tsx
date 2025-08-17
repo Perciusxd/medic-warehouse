@@ -90,7 +90,7 @@ function RequestDetails({ sharingMed }: any) {
                     </div>
                 </div>
             </div>
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
                 <Label>เงื่อนไขการคืนยาที่ยอมรับ</Label>
                 <div className="grid grid-cols-2 gap-2">
                     <div className="flex flex-row gap-1">
@@ -265,8 +265,8 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                                     {expectedReturn
                                         ? new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
                                             day: '2-digit',
-                                            month: 'long',
-                                            year: 'numeric',
+                                            month: '2-digit',
+                                            year: '2-digit',
                                         }).format(new Date(Number(expectedReturn)))
                                         : "เลือกวันที่"}
                                     <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
@@ -304,7 +304,7 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                         {errors.expectedReturnDate?.message && <span className="text-red-500 text-sm">{errors.expectedReturnDate.message}</span>}
                     </div>
                     
-                    <div className="flex flex-col gap-1 mt-4">
+                    <div className="flex flex-col gap-1">
                         <Label>แผนการคืน</Label>
                         <div className="grid grid-cols-2 gap-2">
                             <div className="flex flex-row gap-1">
@@ -398,6 +398,7 @@ export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChan
                                     ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500 ">{isReconfirm ? "บันทึก" : "ยืนยัน"}</span></div>
                                     : (isReconfirm ? "บันทึกการแก้ไข" : "ยืนยัน")}
                             </Button>
+                            {isReconfirm && (
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -405,6 +406,7 @@ export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChan
                             >
                                 ดาวน์โหลด PDF
                             </Button>
+                            )}
                         </DialogFooter>
                     </div>
                 </div>

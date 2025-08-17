@@ -210,7 +210,7 @@ export const columns = (
             size: 350,
             header: () => <div className="flex font-medium text-muted-foreground text-left cursor-default">
                 <div className="basis-1/2">ผู้ตอบกลับ</div>
-                <div className="basis-1/2">สถานะ</div>
+                <div className="basis-1/2">สถานะ--</div>
             </div>,
             cell: ({ row }) => {
                 const med = row.original;
@@ -224,11 +224,11 @@ export const columns = (
 
 
                 return (
-                    <div className="flex flex-col">
+                    <div className="flex flex-col gap-1">
                         {med.responseDetails.map((detail, index) => (
                             <div key={index} className="flex items-center gap-x-2 gap-y-2 h-4">
-                                <div className="basis-1/2">
-                                    <span>{detail.respondingHospitalNameTH}:</span>
+                                <div className="basis-1/2 text-wrap w-[120px] truncate overflow-hidden text-ellipsis whitespace-nowrap" title={detail.respondingHospitalNameTH}>
+                                    <span>{detail.respondingHospitalNameTH}</span>
                                 </div>
                                 <div className="basis-1/2">
                                     {detail.status === 'pending' ? (

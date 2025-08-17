@@ -13,16 +13,17 @@ import AcceptSharingDialog from "@/components/dialogs/accept-sharing-dialog";
 import CreateSharingDialog from "@/components/dialogs/create-sharing-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import CancelDialog from "@/components/dialogs/cancel-dialog";
 
 import { RefreshCcwIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 export default function SharingContent() {
     const { loggedInHospital } = useHospital()
-    
+
     // Stabilize the status array reference to prevent infinite re-fetching
     const statusFilter = useMemo(() => ['pending', 're-confirm'], []);
-    
+
     const { medicineSharing, loading, error, fetchMedicineSharing } = useMedicineSharing(loggedInHospital, statusFilter);
     console.log("medicineSharing", medicineSharing)
     const [updatedLast, setUpdatedLast] = useState<Date | null>(null);
@@ -30,13 +31,19 @@ export default function SharingContent() {
     const [loadingRowId, setLoadingRowId] = useState(null);
     const [selectedMed, setSelectedMed] = useState(null);
     const [openAcceptSharingDialog, setOpenAcceptSharingDialog] = useState(false);
+    const [cancleRespDialogOpen, setCancleRespDialogOpen] = useState(false);
     const [globalFilter, setGlobalFilter] = useState("");
-    
+
     const handleApproveClick = (med: any) => {
         setLoadingRowId(med.id);
         setSelectedMed(med);
         setOpenAcceptSharingDialog(true);
         console.log('selected sharing medicine', med)
+    }
+
+    const handleCancelClick = (med: any) => {
+        setSelectedMed(med);
+        setCancleRespDialogOpen(true);
     }
 
     return (
@@ -64,32 +71,53 @@ export default function SharingContent() {
                         }
                     }} />
 
-            </div> 
-        <div className="bg-white shadow rounded">
-            {loading ? (
-                <div className="p-8 flex flex-col items-center justify-center">
-                    <LoadingSpinner width="48" height="48" />
-                    <p className="mt-4 text-gray-500">Loading medicines...</p>
-                </div>
-            ) :
-                <div>
-                    <DataTable columns={columns(handleApproveClick, loadingRowId)} data={medicineSharing} />
-                    { selectedMed && (
-                        <AcceptSharingDialog
-                            sharingMed={selectedMed}
-                            openDialog={openAcceptSharingDialog}
-                            onOpenChange={(open: boolean) => {
-                                setOpenAcceptSharingDialog(open);
-                                if (!open) {
-                                    setSelectedMed(null);
-                                    fetchMedicineSharing();
-                                }
-                            }}
-                        />
-                    )}
-                </div>
-            }
-        </div>
+            </div>
+            <div className="bg-white shadow rounded">
+                {loading ? (
+                    <div className="p-8 flex flex-col items-center justify-center">
+                        <LoadingSpinner width="48" height="48" />
+                        <p className="mt-4 text-gray-500">Loading medicines...</p>
+                    </div>
+                ) :
+                    <div>
+                        <DataTable columns={columns(handleApproveClick, handleCancelClick, loadingRowId)} data={medicineSharing} />
+                        {selectedMed && openAcceptSharingDialog && (
+                            <AcceptSharingDialog
+                                sharingMed={selectedMed}
+                                openDialog={openAcceptSharingDialog}
+                                onOpenChange={(open: boolean) => {
+                                    setOpenAcceptSharingDialog(open);
+                                    if (!open) {
+                                        setSelectedMed(null);
+                                        fetchMedicineSharing();
+                                    }
+                                }}
+                            />
+                        )}
+
+                        {selectedMed && cancleRespDialogOpen && (
+                            <CancelDialog
+                                selectedMed={selectedMed}
+                                title={"ยกเลิกการแบ่งปันยา"}
+                                description={"คุณต้องการยกเลิกการแบ่งปันยาใช่หรือไม่"}
+                                confirmButtonText={"ยกเลิก"}
+                                successMessage={"ยกเลิกการแบ่งปันยาเรียบร้อย"}
+                                errorMessage={"ยกเลิกการแบ่งปันยาไม่สำเร็จ"}
+                                loading={false}
+                                onConfirm={() => Promise.resolve(true)}
+                                open={cancleRespDialogOpen}
+                                onOpenChange={(open: boolean) => {
+                                    setCancleRespDialogOpen(open);
+                                    if (!open) {
+                                        fetchMedicineSharing();
+                                        setUpdatedLast(new Date());
+                                    }
+                                }}
+                            />
+                        )}
+                    </div>
+                }
+            </div>
         </div>
     )
 }

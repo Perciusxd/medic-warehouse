@@ -67,7 +67,7 @@ export const columns = (
         id: "requestAmount",
         accessorFn: (row) => row.requestDetails.requestMedicine.requestAmount,
         size: 100,
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวน(ยืนยัน)</div>,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวน(คงเหลือ)</div>,
         cell: ({ getValue }) => {
             const requestAmount = getValue() as number
             const pricePerUnit = getValue() as number

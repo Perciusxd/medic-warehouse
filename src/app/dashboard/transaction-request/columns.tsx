@@ -119,7 +119,8 @@ export const columns = (
             cell: ({ row }) => {
                 const med = row.original;
                 const requestAmount = med.requestMedicine.requestAmount;
-                const remainingAmount = med.remainingAmount;
+                const offeredAmount = med.remainingAmount;
+                const remainingAmount = requestAmount - offeredAmount
                 const pricePerUnit = med.requestMedicine.pricePerUnit;
                 const totalPrice = requestAmount * pricePerUnit;
                 console.log('medasdasdasd', med)
@@ -272,7 +273,7 @@ export const columns = (
                 const maxDisplay = 3;
                 const details = med.responseDetails.slice(0, maxDisplay);
                 const hasMore = med.responseDetails.length > maxDisplay;
-                console.log("med ssds" ,)
+                console.log("med ssds", med)
                 // const [dialogOpen, setDialogOpen] = useState(false);
                 // const handleConfirm = () => {
                 //     setDialogOpen(false);
@@ -289,8 +290,8 @@ export const columns = (
                                             : "-"}
                                         </span>
                                 </div>
-                                <div className="text-md font-medium  flex justify-start min-w-[150px] ">
-                                    <span>{detail.respondingHospitalNameTH}:</span>
+                                <div className="basis-1/2 text-wrap w-[120px] truncate overflow-hidden text-ellipsis whitespace-nowrap">
+                                    <span>{detail.respondingHospitalNameTH}</span>
                                 </div>
                                 <div className="text-sm font-medium text-gray-600 flex    items-center text-left  justify-start min-w-[180px]">
                                     <div className="flex items-center gap-x-1 basis-1/2">
@@ -309,11 +310,11 @@ export const columns = (
 
                                         )
                                             : detail.status === 'pending'
-                                                ? (<Button variant={'link'} disabled className="flex gap-x-1  ">รอการยืนยันให้ยืม<StatusIndicator status={detail.status} /></Button>)
+                                                ? (<Button variant={'link'} disabled className="flex gap-x-1 p-0">รอการยืนยันให้ยืม<StatusIndicator status={detail.status} /></Button>)
                                                 : detail.status === 'to-transfer'
-                                                    ? (<Button variant={'link'} className="flex gap-x-1  " disabled>รอส่งมอบ<StatusIndicator status={detail.status} /></Button>)
+                                                    ? (<Button variant={'link'} className="flex gap-x-1 p-0" disabled>รอส่งมอบ<StatusIndicator status={detail.status} /></Button>)
                                                     : detail.status === 'to-return'
-                                                        ? (<Button variant={'link'} className="flex gap-x-1  " onClick={() => handleconfirReceiveDelivery({
+                                                        ? (<Button variant={'link'} className="flex gap-x-1 p-0" onClick={() => handleconfirReceiveDelivery({
                                                             ...med,
                                                             displayHospitalName: detail.respondingHospitalNameTH,
                                                             displayMedicineName: detail.offeredMedicine.name,
@@ -323,7 +324,7 @@ export const columns = (
                                                             requestDetails: med.requestMedicine,
                                                         })}>ยืนยันการรับยา<StatusIndicator status={detail.status} /></Button>)
                                                         : detail.status === 'in-return'
-                                                            ? (<Button variant={'link'} className="flex gap-x-1  " onClick={() => handleReturnClick(
+                                                            ? (<Button variant={'link'} className="flex gap-x-1 p-0" onClick={() => handleReturnClick(
                                                                 {
                                                                     ...med,
                                                                     responseId: detail.id,
@@ -333,11 +334,11 @@ export const columns = (
                                                                 })
                                                             }>ส่งคืนยา<StatusIndicator status={detail.status} /></Button>)
                                                             : detail.status === "confirm-return"
-                                                                ? (<span className="flex gap-x-1  ">รอยืนยันการได้รับคืน< StatusIndicator status={detail.status} /></span>)
+                                                                ? (<span className="flex gap-x-1 p-0">รอยืนยันการได้รับคืน< StatusIndicator status={detail.status} /></span>)
                                                                 : detail.status === 'returned'
                                                                     ? (<span className="flex gap-x-1   ">ได้คืนยาแล้ว<StatusIndicator status={detail.status} /></span>)
                                                                     : detail.status === 'cancelled'
-                                                                        ? (<span className="flex gap-x-1  ">ยกเลิก<StatusIndicator status={detail.status} /></span>)
+                                                                        ? (<span className="flex gap-x-1 p-0">ยกเลิก<StatusIndicator status={detail.status} /></span>)
                                                                         : null
                                         }
                                     </div>

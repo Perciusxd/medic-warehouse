@@ -271,8 +271,8 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
                                             {expectedReturnDate
                                                 ? new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
                                                     day: '2-digit',
-                                                    month: 'long',
-                                                    year: 'numeric',
+                                                    month: '2-digit',
+                                                    year: '2-digit',
                                                 }).format(new Date(Number(expectedReturnDate)))
                                                 : "เลือกวันที่"}
                                             <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
