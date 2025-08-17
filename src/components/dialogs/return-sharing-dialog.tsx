@@ -20,7 +20,8 @@ const ReturnPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/retur
 
 function SharingMedicineDetails({ sharingMedicine, receiveConditions ,selectedMed}: any) {
     const { name, trademark, unit, quantity, manufacturer } = sharingMedicine;
-    console.log('selectedMedss', selectedMed)
+    const { createdAt, postingHospitalNameTH ,sharingDetails } = selectedMed;
+    const formattedDate = format(new Date(Number(createdAt)), 'dd/MM/') + (new Date(Number(createdAt)).getFullYear() + 543); // Format to dd/MM/yyyy in Thai Buddhist calendar
     return (
         <div className="flex flex-col gap-4 border p-4 rounded-lg">
             <h2 className="text-lg font-semibold flex items-center gap-2 text-blue-700">
@@ -30,11 +31,11 @@ function SharingMedicineDetails({ sharingMedicine, receiveConditions ,selectedMe
             <div className="grid grid-cols-2 gap-2 font-light">
                 <div className="flex flex-col gap-1">
                     <Label>วันที่แจ้งขอยืม</Label>
-                    {/* <Input disabled value={createdAt || ''} /> */}
+                    <Input disabled value={formattedDate || ''} />
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>โรงพยาบาลที่ให้ยืม</Label>
-                    {/* <Input disabled value={postingHospitalNameTH || ''} /> */}
+                    <Input disabled value={sharingDetails.postingHospitalNameTH || ''} />
                 </div>
                 <div className="flex flex-col gap-1 col-span-2">
                     <Label>รายการยา</Label>
@@ -493,7 +494,7 @@ export default function ReturnSharingDialog({ open, onOpenChange, selectedMed }:
 
                     <div className="overflow-y-auto px-6 py-5">
                         <div className="grid grid-cols-3 gap-2">
-                            <SharingMedicineDetails sharingMedicine={sharingMedicine} receiveConditions={receiveConditions} />
+                            <SharingMedicineDetails sharingMedicine={sharingMedicine} receiveConditions={receiveConditions} selectedMed={selectedMed}/>
                             <ReturnMedicineDetails selectedMed={selectedMed} onOpenChange={onOpenChange} loading={loading} setLoading={setLoading} formId={formId} onFormChange={setReturnFormValues} onSavePdf={handleSavePdf} />
                         </div>
                     </div>
