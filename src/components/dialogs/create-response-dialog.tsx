@@ -239,7 +239,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                     />
                                 </Label>
                                 <Label className="flex flex-col items-start">
-                                    หมายเลขล๊อต
+                                    ผู้ผลิต
                                     <Input
                                         type="text"
                                         {...register("offeredMedicine.manufacturer")}
@@ -327,12 +327,6 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                                 </span>&nbsp;บาท
                                             </div>
                                         </div>
-
-                                        <div className="flex flex-col gap-2">
-                                            <Label className="font-bold">ราคาต่อหน่วย</Label>
-
-                                        </div>
-
                                     </Label>
                                 </div>
                                 <Label className="flex flex-col items-start">

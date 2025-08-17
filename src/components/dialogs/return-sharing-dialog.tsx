@@ -18,9 +18,9 @@ import { toast } from "sonner";
 
 const ReturnPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/return_pdf'), { ssr: false });
 
-function SharingMedicineDetails({ sharingMedicine, receiveConditions }: any) {
+function SharingMedicineDetails({ sharingMedicine, receiveConditions ,selectedMed}: any) {
     const { name, trademark, unit, quantity, manufacturer } = sharingMedicine;
-
+    console.log('selectedMedss', selectedMed)
     return (
         <div className="flex flex-col gap-4 border p-4 rounded-lg">
             <h2 className="text-lg font-semibold flex items-center gap-2 text-blue-700">
@@ -28,6 +28,14 @@ function SharingMedicineDetails({ sharingMedicine, receiveConditions }: any) {
                 รายละเอียดรายการยืม
             </h2>
             <div className="grid grid-cols-2 gap-2 font-light">
+                <div className="flex flex-col gap-1">
+                    <Label>วันที่แจ้งขอยืม</Label>
+                    {/* <Input disabled value={createdAt || ''} /> */}
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>โรงพยาบาลที่ให้ยืม</Label>
+                    {/* <Input disabled value={postingHospitalNameTH || ''} /> */}
+                </div>
                 <div className="flex flex-col gap-1 col-span-2">
                     <Label>รายการยา</Label>
                     <Input disabled value={name || ''} />

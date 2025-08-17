@@ -163,7 +163,7 @@ function MyDocument({ pdfData, variant = 'original' }: any) {
                         <Text style={styles.tableHeader}>หมายเหตุ</Text>
                     </View>
                     <View style={styles.tableRow}>
-                        <Text style={styles.tableCell}>{requestedMedicineName }</Text>
+                        <Text style={styles.tableCell}>{requestedMedicineName } ({requestedQuantity})</Text>
                         {/* <Text style={styles.tableCell}>{requestMedicine.name }</Text> */}
                         <Text style={styles.tableCell}>{offeredMedicine.offerAmount} ({requestUnit})</Text>
                         {/* <Text style={styles.tableCell}>{requestMedicine.requestAmount} ({requestMedicine.unit})</Text> */}
@@ -173,7 +173,8 @@ function MyDocument({ pdfData, variant = 'original' }: any) {
                 </View>
 
                 <Text style={{ marginTop: 30, textIndent: 80 }}>
-                    ทั้งนี้ {lendingHospitalNameTH} จะส่งคืนยาให้แก่{borrowingHospitalNameTH} ภายในวันที่ {expectedReturnDate} และหากมีการเปลี่ยนแปลงจะต้องแจ้งให้ทราบล่วงหน้า
+                    ทั้งนี้ {lendingHospitalNameTH} จะส่งคืนยาให้แก่{borrowingHospitalNameTH} ภายในวันที่ {expectedReturnDate} 
+                    {/* และหากมีการเปลี่ยนแปลงจะต้องแจ้งให้ทราบล่วงหน้า */}
                 </Text>
                 {/* <Text style={{ marginTop: 30, textIndent: 80 }}>
                     จึงเรียนมาเพื่อโปรดพิจารณาและ {lendingHospitalNameTH} ขอขอบคุณ {borrowingHospitalNameTH} ณ โอกาสนี้
