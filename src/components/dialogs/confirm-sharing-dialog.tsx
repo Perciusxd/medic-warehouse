@@ -1,7 +1,24 @@
 'use client'
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { formatDate } from "@/lib/utils"
+// Thai date formatting helper (Buddhist calendar)
+const formatThaiDate = (input: string | number | Date | undefined): string => {
+    if (!input) return '';
+    let date: Date;
+    if (input instanceof Date) {
+        date = input;
+    } else if (typeof input === 'string') {
+        date = isNaN(Number(input)) ? new Date(input) : new Date(Number(input));
+    } else {
+        date = new Date(input);
+    }
+    if (isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+    }).format(date);
+}
 // import { format, formatDate, sub } from "date-fns"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRef, useState } from "react"
@@ -38,7 +55,7 @@ function SharingDetailPanel({ data }: any) {
                     <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
                         <CalendarDays className="h-4 w-4 text-blue-600" />
                         <span className="text-sm font-medium text-blue-800">วันที่:</span>
-                        <span className="text-sm text-blue-700">{formatDate(createdAt)}</span>
+                        <span className="text-sm text-blue-700">{formatThaiDate(createdAt)}</span>
                     </div>
                     
                     <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
@@ -95,7 +112,7 @@ function SharingDetailPanel({ data }: any) {
                         <Clock className="h-4 w-4 text-amber-600" />
                         <span className="text-sm font-medium text-amber-800">คาดว่าจะได้รับคืน:</span>
                         <span className="text-sm text-amber-700 font-medium">
-                            {formatDate(sharingReturnTerm.expectedReturnDate)}
+                            {formatThaiDate(sharingReturnTerm.expectedReturnDate)}
                         </span>
                     </div>
                 )}
@@ -151,7 +168,7 @@ function AcceptanceDetailPanel({ responseData }: any) {
                     <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
                         <CalendarDays className="h-4 w-4 text-green-600" />
                         <span className="text-sm font-medium text-green-800">วันที่ตอบรับ:</span>
-                        <span className="text-sm text-green-700">{formatDate(responseDetail?.createdAt)}</span>
+                        <span className="text-sm text-green-700">{formatThaiDate(responseDetail?.createdAt)}</span>
                     </div>
                     
                     <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">

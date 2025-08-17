@@ -13,6 +13,13 @@ import { MoveLeft, MoveRight, Plus, HandCoins, Ban, CalendarCheck2, X, Copy } fr
 
 export function EditPopover(props: any) {
     const currentDate = new Date();
+    const thaiDateString = new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    }).format(currentDate);
     const [requestQty, setRequestQty] = useState(props.quantity);
     const [loading, setLoading] = useState(false);
 
@@ -69,7 +76,7 @@ export function EditPopover(props: any) {
                         <Label className="font-light">วันที่ยืม</Label>
                         <Input
                             id="width"
-                            defaultValue={new Date(Number(currentDate)).toLocaleString()}
+                            defaultValue={thaiDateString}
                             className="col-span-2 h-8"
                             disabled
                         />

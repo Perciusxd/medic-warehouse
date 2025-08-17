@@ -14,7 +14,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 // Icons
 import { Calendar1, FileText } from "lucide-react"
 
-import { format } from "date-fns"
+// import { format } from "date-fns"
 import { z } from "zod"
 import { useForm, FieldErrors } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -28,7 +28,12 @@ function RequestDetails({ sharingMed }: any) {
     console.log('sharingMed RequestDetails', sharingMed)
     const { createdAt } = sharingMed
     const date = new Date(Number(createdAt)); // convert string to number, then to Date
-    const formattedDate = format(date, 'dd/MM/yyyy');
+    // Thai date formatting helper (Buddhist calendar)
+    const formattedDate = new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+    }).format(date);
     const sharingDetails = sharingMed.sharingDetails
     const sharingMedicine = sharingMed.offeredMedicine ? sharingMed.sharingMedicine : sharingDetails.sharingMedicine
     const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber, sharingAmount } = sharingMedicine
@@ -36,7 +41,13 @@ function RequestDetails({ sharingMed }: any) {
     //console.log('sharingReturnTermsชชชชชชชชชชชชชชชชชชช', sharingDetails.sharingMedicine)
     /* const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy'); */
     // const formattedExpiryDate = format(sharingDetails.sharingMedicine.expiryDate, 'dd/MM/yyyy'); //ดึงมาก่อนนะอิงจากที่มี ดึงไว้ใน columns.tsx
-    const formattedExpiryDate = isNaN(Number(expiryDate)) ? "ยังไม่ระบุ" : format(new Date(Number(expiryDate)), 'dd/MM/yyyy');
+    const formattedExpiryDate = isNaN(Number(expiryDate))
+        ? "ยังไม่ระบุ"
+        : new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+        }).format(new Date(Number(expiryDate)));
     return (
         <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-2">
@@ -112,7 +123,9 @@ function RequestDetails({ sharingMed }: any) {
 function ResponseFormSchema(sharingMedicine: any) {
     const maxAmount = sharingMedicine?.sharingAmount ?? Infinity;
     return z.object({
-        responseAmount: z.number().min(1, { message: "จำนวนที่ยืมต้องมีค่ามากกว่า 0" }).max(maxAmount, { message: `จำนวนที่ยืมต้องไม่เกิน ${maxAmount}` }),
+        responseAmount: z.coerce.number({ required_error: "กรุณากรอกจำนวนที่ต้องการรับ" })
+            .min(1, { message: "จำนวนที่ยืมต้องมีค่ามากกว่า 0" })
+            .max(maxAmount, { message: `จำนวนที่ยืมต้องไม่เกิน ${maxAmount}` }),
         expectedReturnDate: z.string().min(1, { message: "วันที่ยืมต้องเป็นวันที่ในอนาคต" }),
         returnTerm: z.object({
             exactType: z.boolean(),
@@ -159,14 +172,18 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
     } = useForm<z.infer<typeof ResponseShema>>({
         resolver: zodResolver(ResponseShema),
         defaultValues: {
-            responseAmount: existingOffer?.responseAmount || sharingMed.acceptedOffer?.responseAmount || 0,
-            expectedReturnDate: existingOffer?.expectedReturnDate ? existingOffer.expectedReturnDate : sharingMed.acceptedOffer?.expectedReturnDate ? sharingMed.acceptedOffer.expectedReturnDate : undefined,
+            responseAmount: Number(existingOffer?.responseAmount ?? sharingMed.acceptedOffer?.responseAmount ?? 0),
+            expectedReturnDate: existingOffer?.expectedReturnDate
+                ? String(existingOffer.expectedReturnDate)
+                : (sharingMed.acceptedOffer?.expectedReturnDate
+                    ? String(sharingMed.acceptedOffer.expectedReturnDate)
+                    : undefined),
             returnTerm: {
-                exactType: existingReturnTerm?.exactType || false,
-                otherType: existingReturnTerm?.otherType || false,
-                subType: existingReturnTerm?.subType || false,
-                supportType: existingReturnTerm?.supportType || false,
-                noReturn: existingReturnTerm?.noReturn || false,
+                exactType: Boolean(existingReturnTerm?.exactType),
+                otherType: Boolean(existingReturnTerm?.otherType),
+                subType: Boolean(existingReturnTerm?.subType),
+                supportType: Boolean(existingReturnTerm?.supportType),
+                noReturn: Boolean(existingReturnTerm?.noReturn),
             }
         }
     })
@@ -246,7 +263,11 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className="justify-start text-left font-normal" disabled={sharingMed.status === 're-confirm'} >
                                     {expectedReturn
-                                        ? format(new Date(Number(expectedReturn)), "dd/MM/yyyy")
+                                        ? new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+                                            day: '2-digit',
+                                            month: 'long',
+                                            year: 'numeric',
+                                        }).format(new Date(Number(expectedReturn)))
                                         : "เลือกวันที่"}
                                     <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                 </Button>
@@ -270,7 +291,7 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                                                 setDateError("กรุณาเลือกวันที่ในอนาคต");
                                             }
                                         } else {
-                                            setDateError("Invalid date selected.");
+                                            setDateError("วันที่ไม่ถูกต้อง");
                                         }
                                     }}
                                     initialFocus

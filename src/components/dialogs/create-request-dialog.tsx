@@ -27,6 +27,25 @@ import sendMailHandler from "@/pages/api/sendmail"
 const allHospitalList = HospitalList;
 
 
+// Thai date formatting helper (Buddhist calendar)
+const formatThaiDate = (input: string | number | Date | undefined): string => {
+    if (!input) return '';
+    let date: Date;
+    if (input instanceof Date) {
+        date = input;
+    } else if (typeof input === 'string') {
+        date = isNaN(Number(input)) ? new Date(input) : new Date(Number(input));
+    } else {
+        date = new Date(input);
+    }
+    if (isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+    }).format(date);
+}
+
 const FormSchema = z.object({
     mode: z.enum(["auto", "manual", "advanced"]),
     customInput: z.string().optional(),
@@ -35,18 +54,22 @@ const FormSchema = z.object({
 const RequestSchema = z.object({
     urgent: z.enum(["urgent", "immediate", "normal"]),
     requestMedicine: z.object({
-        name: z.string().min(1, "Name is required"),
-        trademark: z.string().min(1, "Trademark is required"),
+        name: z.string().min(1, "กรุณากรอกชื่อยา"),
+        trademark: z.string().min(1, "กรุณากรอกชื่อการค้า"),
         description: z.string().optional(),
-        requestAmount: z.number().min(1, "Request amount must be greater than 0").max(1000, "Request amount must be less than 1000"),
-        quantity: z.string().min(1, "Quantity is required"),
-        pricePerUnit: z.number().min(1, "Price per unit must be greater than 0").max(100000, "Price per unit must be less than 100000"),
-        unit: z.string().min(1, "Unit is required"),
-        manufacturer: z.string().min(1, "Manufacturer is required"),
+        requestAmount: z.coerce.number({ required_error: "กรุณากรอกจำนวนที่ต้องการยืม" })
+            .min(1, "จำนวนที่ต้องการยืมต้องมากกว่า 0")
+            .max(1000, "จำนวนที่ต้องการยืมต้องไม่เกิน 1000"),
+        quantity: z.string().min(1, "กรุณากรอกรูปแบบ/ขนาด"),
+        pricePerUnit: z.coerce.number({ required_error: "กรุณากรอกราคาต่อหน่วย" })
+            .min(1, "ราคาต่อหน่วยต้องมากกว่า 0")
+            .max(100000, "ราคาต่อหน่วยต้องไม่เกิน 100,000"),
+        unit: z.string().min(1, "กรุณากรอกรูปแบบ/หน่วย"),
+        manufacturer: z.string().min(1, "กรุณากรอกผู้ผลิต"),
         
     }),
     requestTerm: z.object({
-        expectedReturnDate: z.coerce.string({ invalid_type_error: "Expected return date must be a valid date" }),
+        expectedReturnDate: z.coerce.string({ invalid_type_error: "วันที่คาดว่าจะคืนต้องเป็นวันที่ถูกต้อง" }),
         receiveConditions: z.object({
             condition: z.enum(["exactType", "subType"]),
             supportType: z.boolean().optional(),
@@ -85,7 +108,8 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                 trademark: "",
                 description: "",
                 quantity: "",
-              
+                requestAmount: 0,
+                pricePerUnit: 0,
                 unit: "",
                 manufacturer: "",
             },
@@ -271,7 +295,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                 )}
                             </div><div className="flex flex-col gap-2">
                                 <Label className="font-bold">ภาพประกอบ</Label>
-                                <Input type="file" placeholder="Image" />
+                                <Input type="file" placeholder="เลือกรูปภาพ" />
                             </div>
                             <div className="col-span-2 flex flex-col gap-2">
                                 <Label className="font-bold">เหตุผลการยืม</Label>
@@ -306,7 +330,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" className="justify-start text-left font-normal">
                                             {expectedReturnDate
-                                                ? format(new Date(Number(expectedReturnDate)), 'dd-MM-yyyy')
+                                                ? formatThaiDate(expectedReturnDate)
                                                 : "เลือกวันที่"}
                                             <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                         </Button>
@@ -329,7 +353,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                                         setDateError("กรุณาเลือกวันที่ในอนาคต");
                                                     }
                                                 } else {
-                                                    setDateError("Invalid date selected.");
+                                                    setDateError("วันที่ไม่ถูกต้อง");
                                                 }
                                             }}
                                             initialFocus

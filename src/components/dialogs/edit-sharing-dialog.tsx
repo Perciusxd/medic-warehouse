@@ -20,7 +20,7 @@ import { toast } from "sonner"
 import { useAuth } from "../providers"
 import { HospitalList } from "@/context/HospitalList"
 
-import { format } from "date-fns"
+// import { format } from "date-fns"
 import { Calendar1 } from "lucide-react"
 
 
@@ -293,7 +293,11 @@ export default function EditSharingDialog({ selectedMed, openDialog, onOpenChang
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" className="justify-start text-left font-normal">
                                             {expiryDate
-                                                ? format(new Date(Number(expiryDate)), 'dd-MM-yyyy')
+                                                ? new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+                                                    day: '2-digit',
+                                                    month: 'long',
+                                                    year: 'numeric',
+                                                }).format(new Date(Number(expiryDate)))
                                                 : "เลือกวันที่"
                                             }
                                             <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />

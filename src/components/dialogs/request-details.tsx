@@ -1,5 +1,22 @@
 "use client"
-import { formatDate } from "@/lib/utils"
+// Thai date formatting helper (Buddhist calendar)
+const formatThaiDate = (input: string | number | Date | undefined): string => {
+    if (!input) return '';
+    let date: Date;
+    if (input instanceof Date) {
+        date = input;
+    } else if (typeof input === 'string') {
+        date = isNaN(Number(input)) ? new Date(input) : new Date(Number(input));
+    } else {
+        date = new Date(input);
+    }
+    if (isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+    }).format(date);
+}
 import { useState } from "react"
 
 import { Label } from "@/components/ui/label"
@@ -70,7 +87,7 @@ export default function RequestDetails({ requestData, responseForm }: any) {
 
 
     const [details, setDetails] = useState([
-        { label: "วันที่ขอยืม", value: formatDate(requestDetails.updatedAt) },
+        { label: "วันที่ขอยืม", value: formatThaiDate(requestDetails.updatedAt) },
         // { label: "ID ขอยืม", value: requestDetails.id },
         // { label: "Posting Hospital ID", value: requestDetails.postingHospitalId },
         // { label: "Posting Hospital Name (EN)", value: requestDetails.postingHospitalNameEN },
@@ -115,7 +132,7 @@ export default function RequestDetails({ requestData, responseForm }: any) {
                 </div>
                 <div>
                     <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
-                    <Input type="text" value={formatDate(requestDetails.requestTerm.expectedReturnDate)} disabled />
+                    <Input type="text" value={formatThaiDate(requestDetails.requestTerm.expectedReturnDate)} disabled />
                 </div>
             </div>
         </div>

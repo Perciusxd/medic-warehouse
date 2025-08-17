@@ -120,7 +120,7 @@ function MyDocument({ pdfData }: any) {
     
     const documentType = isRequestType ? "ขอยืมเวชภัณฑ์ยา" : "ขอรับแบ่งปันเวชภัณฑ์ยา";
     const actionText = isRequestType ? "ขอยืมยา" : "ขอรับแบ่งปันยา";
-    const mockNote = "รอการส่งมอบจากตัวแทนจำหน่าย  "
+    const mockNote = "รอการส่งมอบจากตัวแทนจำหน่าย"
 
     const today = formatThaiDate(new Date());
 

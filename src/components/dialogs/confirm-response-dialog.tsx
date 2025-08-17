@@ -175,13 +175,13 @@ function getConfirmationSchema(requestData: any) {
             name: z.string(),
             unit: z.string(),
             // quantity: z.string(),
-            offerAmount: z.number()
+            offerAmount: z.coerce.number({ required_error: "กรุณากรอกจำนวนที่ให้ยืม" })
                 .min(1, "กรุณากรอกมากว่า 0")
                 .max(requestData.requestAmount, `กรุณากรอกน้อยกว่า ${requestData.requestAmount}`),
             trademark: z.string(),
-            pricePerUnit: z.number()
-                .min(1, "Price per unit must be greater than 0")
-                .max(100000, "Price per unit must be less than 100000"),
+            pricePerUnit: z.coerce.number({ required_error: "กรุณากรอกราคาต่อหน่วย" })
+                .min(1, "ราคาต่อหน่วยต้องมากกว่า 0")
+                .max(100000, "ราคาต่อหน่วยต้องไม่เกิน 100,000"),
             manufacturer: z.string(),
             returnTerm: z.enum(["exactType", "subType"]),
             returnConditions: z.object({
@@ -210,16 +210,16 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
     } = useForm<z.infer<typeof ConfirmSchema>>({
         resolver: zodResolver(ConfirmSchema),
         defaultValues: {
-            responseId: data.responseId,
+            responseId: String(data.responseId ?? ""),
             offeredMedicine: {
-                name: data.offeredMedicine.name,
-                unit: data.offeredMedicine.unit,
-                offerAmount: data.offeredMedicine.offerAmount,
-                trademark: data.offeredMedicine.trademark,
-                pricePerUnit: data.offeredMedicine.pricePerUnit,
-                manufacturer: data.offeredMedicine.manufacturer,
-                returnTerm: data.offeredMedicine.returnTerm,
-                returnConditions: { ...data.offeredMedicine.returnConditions },
+                name: String(data.offeredMedicine?.name ?? ""),
+                unit: String(data.offeredMedicine?.unit ?? ""),
+                offerAmount: Number(data.offeredMedicine?.offerAmount ?? 0),
+                trademark: String(data.offeredMedicine?.trademark ?? ""),
+                pricePerUnit: Number(data.offeredMedicine?.pricePerUnit ?? 0),
+                manufacturer: String(data.offeredMedicine?.manufacturer ?? ""),
+                returnTerm: data.offeredMedicine?.returnTerm ?? "exactType",
+                returnConditions: { ...(data.offeredMedicine?.returnConditions ?? { exactType: false, subType: false, otherType: false, supportType: false }) },
             },
         }
     });

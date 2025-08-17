@@ -344,7 +344,11 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className="justify-start text-left font-normal" disabled={isSupportSelected}>
                                     {expiredDate
-                                        ? (() => { const d = new Date(Number(expiredDate)); return `${format(d, 'dd/MM')}/${d.getFullYear() + 543}` })()
+                                        ? new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+                                            day: '2-digit',
+                                            month: 'long',
+                                            year: 'numeric',
+                                        }).format(new Date(Number(expiredDate)))
                                         : "เลือกวันที่"}
                                     <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                 </Button>

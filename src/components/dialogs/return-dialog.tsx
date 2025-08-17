@@ -47,7 +47,13 @@ function OfferDetails({ selectedMed }: any) {
 
     const date = new Date(Number(expectedReturnDate));
     const isValid = !isNaN(date.getTime());
-    const formattedDate = isValid ? `${format(date, 'dd/MM')}/${date.getFullYear() + 543}` : "-";
+    const formattedDate = isValid
+        ? new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+        }).format(date)
+        : "-";
     console.log(expectedReturnDate);
 
     return (
@@ -369,7 +375,11 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className="justify-start text-left font-normal" disabled={isSupportSelected}>
                                     {returnDate
-                                        ? (() => { const d = new Date(Number(returnDate)); return `${format(d, 'dd/MM')}/${d.getFullYear() + 543}` })()
+                                        ? new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+                                            day: '2-digit',
+                                            month: 'long',
+                                            year: 'numeric',
+                                        }).format(new Date(Number(returnDate)))
                                         : "เลือกวันที่"}
                                     <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                 </Button>

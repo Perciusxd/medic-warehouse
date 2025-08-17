@@ -26,6 +26,7 @@ import ConfirmSharingDialog from "@/components/dialogs/confirm-sharing-dialog";
 import AcceptSharingDialog from "@/components/dialogs/accept-sharing-dialog";
 import ReturnDialog from "@/components/dialogs/return-dialog";
 import { formatDistanceToNow } from "date-fns";
+import { th } from "date-fns/locale";
 import EditRequestDialog from "@/components/dialogs/edit-request-dialog";
 
 export default function StatusDashboard() {
@@ -296,7 +297,7 @@ export default function StatusDashboard() {
                         setUpdatedLast(new Date());
                     }}>
                         <RefreshCcwIcon />
-                        {updatedLast ? `Updated ${formatDistanceToNow(updatedLast, { addSuffix: true })}` : ""}
+                        {updatedLast ? `อัปเดต ${formatDistanceToNow(updatedLast, { addSuffix: true, locale: th })}` : ""}
                     </Button>
                 </div>
             </div>
@@ -307,7 +308,7 @@ export default function StatusDashboard() {
                 loadingRequest ? (
                     <div className="p-8 flex flex-col items-center justify-center">
                         <LoadingSpinner width="48" height="48" />
-                        <p className="mt-4 text-gray-500">Loading medicines...</p>
+                        <p className="mt-4 text-gray-500">กำลังโหลดข้อมูลยา...</p>
                     </div>
                 ) : (
                     <DataTable
@@ -325,7 +326,7 @@ export default function StatusDashboard() {
                     loadingReturn ? (
                         <div className="p-8 flex flex-col items-center justify-center">
                             <LoadingSpinner width="48" height="48" />
-                            <p className="mt-4 text-gray-500">Loading medicines...</p>
+                            <p className="mt-4 text-gray-500">กำลังโหลดข้อมูลยา...</p>
                         </div>
                     ) : (
                         <DataTable
@@ -450,7 +451,7 @@ export default function StatusDashboard() {
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
                         <AlertDialogAction asChild>
                             {
                                 loading ? (

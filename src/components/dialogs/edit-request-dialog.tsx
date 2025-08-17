@@ -2,7 +2,7 @@ import { useState } from "react"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { format } from "date-fns"
+// import { format } from "date-fns"
 import { useAuth } from "../providers"
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
@@ -269,7 +269,11 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" className="justify-start text-left font-normal">
                                             {expectedReturnDate
-                                                ? format(new Date(Number(expectedReturnDate)), 'dd-MM-yyyy')
+                                                ? new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+                                                    day: '2-digit',
+                                                    month: 'long',
+                                                    year: 'numeric',
+                                                }).format(new Date(Number(expectedReturnDate)))
                                                 : "เลือกวันที่"}
                                             <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                         </Button>
