@@ -15,6 +15,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Textarea } from "@/components/ui/textarea";
 import dynamic from 'next/dynamic';
 import { toast } from "sonner";
+import { useAuth } from "../providers";
 
 const ReturnPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/return_pdf'), { ssr: false });
 
@@ -136,7 +137,6 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
     const { postingHospitalNameEN } = sharingDetails;
     // const receiveConditions = sharingDetails?.sharingReturnTerm?.receiveConditions || {};
     const receiveConditions = returnTerm || {};
-    console.log('returnTerm', returnTerm)
     const returnFormSchema = ReturnFormSchema({ selectedMed });
 
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -189,13 +189,11 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
             returnMedicine: data.returnMedicine,    // should be empty if supportRequest is true??
             returnType: supportRequest ? "supportType" : data.returnType,
         }
-        //console.log('returnData', returnData)
         const returnBody = {
             returnData: returnData,
             selectedHospital: respondingHospitalNameEN,
             responseId: id,
         }
-        //console.log('returnBody', returnBody)
         try {
             const response = await fetch("/api/createReturn", {
                 method: "POST",
@@ -447,6 +445,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
 }
 
 export default function ReturnSharingDialog({ open, onOpenChange, selectedMed }: any) {
+    const { user } = useAuth();
     const { sharingDetails } = selectedMed;
     const { sharingMedicine } = sharingDetails;
     const receiveConditions = sharingDetails?.sharingReturnTerm?.receiveConditions || {};
@@ -500,7 +499,7 @@ export default function ReturnSharingDialog({ open, onOpenChange, selectedMed }:
                     </div>
 
                     <div style={{ display: 'none' }}>
-                        <ReturnPdfPreview data={selectedMed} returnData={returnFormValues} ref={pdfRef} />
+                        <ReturnPdfPreview data={selectedMed} returnData={returnFormValues} userData={user} ref={pdfRef} />
                     </div>
 
                     {/* Footer removed to match return-dialog; actions moved into the form */}

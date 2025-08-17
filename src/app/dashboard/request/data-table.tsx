@@ -101,7 +101,7 @@ export function DataTable<TData, TValue>({
                                 <TableCell colSpan={columns.length} className="h-24 text-center">
                                     <div className="flex items-center justify-center">
                                         <LoadingSpinner width="48" height="48" />
-                                        <p className="mt-4 text-gray-500">Loading medicines...</p>
+                                        <p className="mt-4 text-gray-500">กำลังโหลดข้อมูลยา...</p>
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -121,7 +121,7 @@ export function DataTable<TData, TValue>({
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    No results.
+                                    ไม่พบข้อมูล
                                 </TableCell>
                             </TableRow>
                         )}

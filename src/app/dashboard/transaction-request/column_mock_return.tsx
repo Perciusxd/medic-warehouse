@@ -165,7 +165,7 @@ export const columns = (
             size: 350,
             header: () => <div className="font-medium text-muted-foreground  text-left cursor-default flex flex-row  justify-between">
                 <div className="flex justify-start basis-1/2">โรงพยาบาลที่ให้ยืม</div>
-                <div className="flex justify-start basis-1/2">สถานะ(จำนวนยาที่ได้ยืม)--</div>
+                <div className="flex justify-start basis-1/2">สถานะ(จำนวนยาที่ได้ยืม)</div>
             </div>,
             cell: ({ row }: { row: any }) => {
                 const med = row.original;

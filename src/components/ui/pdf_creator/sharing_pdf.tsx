@@ -70,86 +70,93 @@ const styles = StyleSheet.create({
     // section: { marginBottom: 10 }
 });
 
-function MyDocument({ pdfData, variant = 'original' }: any) {
+function ContentPage({ pdfData, variant = 'original' }: any) {
     const { responseDetail, sharingMedicineDetail, userData } = pdfData;
-    //console.log("responseDetail", responseDetail)
-    //console.log("sharingMed", sharingMedicineDetail)
     const { postingHospitalNameTH, sharingMedicine } = sharingMedicineDetail;
     const { respondingHospitalNameTH, acceptedOffer } = responseDetail;
     const { address, director, contact } = userData;
-    // const { offeredMedicine, requestMedicine } = pdfData;
-    const selectedResponseId = pdfData.responseId;
-
-    // const selectedResponseDetail = pdfData.responseDetails.find(
-    //     (item: any) => item.id === selectedResponseId
-    // );
-
-    // if (!selectedResponseDetail) return null;
 
     const today = formatThaiDate(new Date());
-    const mockNote = "รอการส่งมอบจากตัวแทนจำหน่าย  "
+    const mockNote = "รอการส่งมอบจากตัวแทนจำหน่าย  ";
     const expectedReturnDate = formatThaiDate(acceptedOffer.expectedReturnDate);
 
     return (
+        <>
+            {variant === 'original' ? (
+                <Image style={styles.image} src="/krut_mark.jpg" />
+            ) : (
+                <Text style={{ textAlign: 'center', fontSize: 28, fontWeight: 'bold', marginBottom: 40 }}>สำเนา </Text>
+            )}
+            <View style={[styles.table, { marginBottom: 10 }]}>
+                <View style={styles.tableRow}>
+                    <Text style={[styles.tableCell, { flex: 1 }]}>ที่ สข. 80231</Text>
+                    <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+                    <Text style={[styles.tableCell, { flex: 1 }]}>{respondingHospitalNameTH} </Text>
+                </View>
+
+                <View style={styles.tableRow}>
+                    <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+                    <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+                    <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {address}   </Text>
+                </View>
+            </View>
+
+            <Text style={{ textAlign: 'center' }} >{today}</Text>
+            <Text style={styles.text}>เรื่อง    ขอยืมเวชภัณฑ์ยา</Text>
+            <Text style={styles.text}>เรียน    ผู้อำนวยการ {postingHospitalNameTH}</Text>
+            <Text style={{ marginTop: 6, textIndent: 80 }}>
+                เนืื่องด้วย {respondingHospitalNameTH} มีความประสงค์ที่จะขอยืมยา ดังรายการต่อไปนี้
+            </Text>
+
+            <View style={[styles.table, { marginTop: 14 }]}>
+                <View style={styles.tableRow}>
+                    <Text style={styles.tableHeader}>รายการ</Text>
+                    <Text style={styles.tableHeader}>จำนวน </Text>
+                    <Text style={styles.tableHeader}>วันกำหนดคืน </Text>
+                    <Text style={styles.tableHeader}>หมายเหตุ</Text>
+                </View>
+                <View style={styles.tableRow}>
+                    <Text style={styles.tableCell}>{sharingMedicine.name} ({sharingMedicine.quantity})</Text>
+                    <Text style={styles.tableCell}>{acceptedOffer.responseAmount} ({sharingMedicine.unit})</Text>
+                    <Text style={styles.tableCell}>{expectedReturnDate}</Text>
+                    <Text style={styles.tableCell}>{mockNote}</Text>
+                </View>
+            </View>
+
+            <Text style={{ marginTop: 30, textIndent: 80 }}>
+                ทั้งนี้{respondingHospitalNameTH}จะส่งคืนเวชภัณฑ์ยาตามรายการข้างต้น ภายในวันที่กำหนด วันที่ {expectedReturnDate}
+            </Text>
+            <Text style={{ marginTop: 30, textIndent: 80 }}>
+                จึงเรียนมาเพื่อโปรดพิจารณา และ{respondingHospitalNameTH} ขอขอบคุณ ณ โอกาสนี้
+            </Text>
+
+            <Text style={{ marginTop: 30, textIndent: 310 }}>ขอแสดงความนับถือ</Text>
+            <Text style={{ marginTop: 100, textIndent: 280 }}>{director} </Text>
+            <Text style={{ textIndent: 280 }}>ผู้อำนวยการ {respondingHospitalNameTH}  </Text>
+            <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
+            <Text>ติดต่อ {contact}</Text>
+        </>
+    );
+}
+
+function MyDocument({ pdfData, variant = 'original' }: any) {
+    return (
         <PDFDocGen>
             <Page size="A4" style={styles.body}>
-                {variant === 'original' ? (
-                    <Image style={styles.image} src="/krut_mark.jpg" />
-                ) : (
-                    <Text style={{ textAlign: 'center', fontSize: 28, fontWeight: 'bold', marginBottom: 40 }}>สำเนา </Text>
-                )}
-                <View style={[styles.table, { marginBottom: 10 }]}>
-                    {/* Row 1 */}
-                    <View style={styles.tableRow}>
-                        <Text style={[styles.tableCell, { flex: 1 }]}>ที่ สข. 80231</Text>
-                        <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-                        {/* <Text style={[styles.tableCell, { flex: 1 }]}></Text> */}
-                        <Text style={[styles.tableCell, { flex: 1 }]}>{respondingHospitalNameTH} </Text>
-                    </View>
+                <ContentPage pdfData={pdfData} variant={variant} />
+            </Page>
+        </PDFDocGen>
+    );
+}
 
-                    {/* Row 2 */}
-                    <View style={styles.tableRow}>
-                        <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-                        <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-                        {/* <Text style={[styles.tableCell, { flex: 1 }]}></Text> */}
-                        <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {address}   </Text>
-                    </View>
-                </View>
-
-                <Text style={{ textAlign: 'center' }} >{today}</Text>
-                <Text style={styles.text}>เรื่อง    ขอยืมเวชภัณฑ์ยา</Text>
-                <Text style={styles.text}>เรียน    ผู้อำนวยการ {postingHospitalNameTH}</Text>
-                <Text style={{ marginTop: 6, textIndent: 80 }}>
-                    เนืื่องด้วย {respondingHospitalNameTH} มีความประสงค์ที่จะขอยืมยา ดังรายการต่อไปนี้
-                </Text>
-
-                <View style={[styles.table, { marginTop: 14 }]}>
-                    <View style={styles.tableRow}>
-                        <Text style={styles.tableHeader}>รายการ</Text>
-                        <Text style={styles.tableHeader}>จำนวน </Text>
-                        <Text style={styles.tableHeader}>วันกำหนดคืน </Text>
-                        <Text style={styles.tableHeader}>หมายเหตุ</Text>
-                    </View>
-                    <View style={styles.tableRow}>
-                        <Text style={styles.tableCell}>{sharingMedicine.name} ({sharingMedicine.quantity})</Text>
-                        <Text style={styles.tableCell}>{acceptedOffer.responseAmount} ({sharingMedicine.unit})</Text>
-                        <Text style={styles.tableCell}>{expectedReturnDate}</Text>
-                        <Text style={styles.tableCell}>{mockNote}</Text>
-                    </View>
-                </View>
-
-                <Text style={{ marginTop: 30, textIndent: 80 }}>
-                    ทั้งนี้{respondingHospitalNameTH}จะส่งคืนเวชภัณฑ์ยาตามรายการข้างต้น ภายในวันที่กำหนด วันที่ {expectedReturnDate}
-                </Text>
-                <Text style={{ marginTop: 30, textIndent: 80 }}>
-                    จึงเรียนมาเพื่อโปรดพิจารณา และ{respondingHospitalNameTH} ขอขอบคุณ ณ โอกาสนี้
-                </Text>
-
-                <Text style={{ marginTop: 30, textIndent: 310 }}>ขอแสดงความนับถือ</Text>
-                <Text style={{ marginTop: 100, textIndent: 280 }}>{director} </Text>
-                <Text style={{ textIndent: 280 }}>ผู้อำนวยการ {respondingHospitalNameTH}  </Text>
-                <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
-                <Text>ติดต่อ {contact}</Text>
+function DualDocument({ pdfData }: any) {
+    return (
+        <PDFDocGen>
+            <Page size="A4" style={styles.body}>
+                <ContentPage pdfData={pdfData} variant="original" />
+            </Page>
+            <Page size="A4" style={styles.body}>
+                <ContentPage pdfData={pdfData} variant="copy" />
             </Page>
         </PDFDocGen>
     );
@@ -181,12 +188,8 @@ const SharingPdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => 
         savePdf: () => {
             (async () => {
                 try {
-                    const [originalBlob, copyBlob] = await Promise.all([
-                        pdf(<MyDocument pdfData={{ ...pdfData, userData }} variant="original" />).toBlob(),
-                        pdf(<MyDocument pdfData={{ ...pdfData, userData }} variant="copy" />).toBlob(),
-                    ]);
-                    saveAs(originalBlob, 'document.pdf');
-                    saveAs(copyBlob, 'document_copy.pdf');
+                    const combinedBlob = await pdf(<DualDocument pdfData={{ ...pdfData, userData }} />).toBlob();
+                    saveAs(combinedBlob, 'document.pdf');
                 } catch (error) {
                     console.error('Failed to generate PDFs:', error);
                 }
