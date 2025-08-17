@@ -219,7 +219,14 @@ export default function HistoryDashboard() {
   }
 
   // loading state: true while hospital or API data not yet available
-  const isLoading = !loggedInHospital || medicineRequests === undefined || medicineSharing === undefined || medicineRequests.length === 0 || medicineSharing.length === 0;
+  let isLoading = !loggedInHospital || medicineRequests === undefined || medicineSharing === undefined || medicineRequests.length === 0 || medicineSharing.length === 0;
+
+  setTimeout(() => {
+    if (isLoading && (medicineRequests.length === 0 || medicineSharing.length === 0)) {
+      isLoading = false; // stop loading after 5 seconds
+    }
+  }, 5000);
+
 
   if (isLoading) {
     return (
