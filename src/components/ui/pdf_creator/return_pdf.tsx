@@ -52,8 +52,9 @@ const styles = StyleSheet.create({
     // section: { marginBottom: 10 }
 });
 
-function MyDocument({ pdfData }: any) {
-    //console.log('pdfData', pdfData)
+function MyDocument({ pdfData, variant = 'original' }: any) {
+    console.log('pdfData', pdfData)
+    const { address, director, contact } = pdfData?.userData ?? {};
     // Normalize input for both request and sharing flows
     const baseMedicine = pdfData?.offeredMedicine
         ?? pdfData?.sharingDetails?.sharingMedicine
@@ -153,7 +154,11 @@ function MyDocument({ pdfData }: any) {
     return (
         <PDFDocGen>
             <Page size="A4" style={styles.body}>
-                <Image style={styles.image} src="/krut_mark.jpg" />
+                {variant === 'original' ? (
+                    <Image style={styles.image} src="/krut_mark.jpg" />
+                ) : (
+                    <Text style={{ textAlign: 'center' }}>สำเนา</Text>
+                )}
                 <View style={[styles.table, { marginBottom: 10 }]}>
                     {/* Row 1 */}
                     <View style={styles.tableRow}>
@@ -252,10 +257,10 @@ function MyDocument({ pdfData }: any) {
                 )}
 
                 <Text style={{ marginTop: 30, textIndent: 350 }}>ขอแสดงความนับถือ</Text>
-                <Text style={{ marginTop: 100, textIndent: 330 }}>ชื่อผู้อำนวยการ </Text>
-                <Text style={{ textIndent: 330 }}>ผู้อำนวยการ{lendingHospitalNameTH}</Text>
+                <Text style={{ marginTop: 100, textIndent: 310 }}>ผู้อำนวยการ{director} </Text>
+                <Text style={{ textIndent: 310 }}>ผู้อำนวยการ {lendingHospitalNameTH}   </Text>
                 <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
-                <Text>ติดต่อ</Text>
+                <Text>ติดต่อ {contact}   </Text>
             </Page>
         </PDFDocGen>
     );
@@ -282,11 +287,20 @@ const ReturnPdfPreview = forwardRef(({ data: pdfData, returnData }: any, ref) =>
 
     useImperativeHandle(ref, () => ({
         savePdf: () => {
-            const currentDate = new Date();
-            const formattedDate = format(currentDate, 'ddMMyyyy');
-            if (blob) {
-                saveAs(blob, `return_document_${formattedDate}.pdf`);
-            }
+            (async () => {
+                try {
+                    const currentDate = new Date();
+                    const formattedDate = format(currentDate, 'ddMMyyyy');
+                    const [originalBlob, copyBlob] = await Promise.all([
+                        pdf(<MyDocument pdfData={{ ...pdfData, returnData }} variant="original" />).toBlob(),
+                        pdf(<MyDocument pdfData={{ ...pdfData, returnData }} variant="copy" />).toBlob(),
+                    ]);
+                    saveAs(originalBlob, `return_document_${formattedDate}.pdf`);
+                    saveAs(copyBlob, `return_document_${formattedDate}_copy.pdf`);
+                } catch (error) {
+                    console.error('Failed to generate return PDFs:', error);
+                }
+            })();
         },
     }));
 

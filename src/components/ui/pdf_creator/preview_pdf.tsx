@@ -71,8 +71,8 @@ const styles = StyleSheet.create({
     // section: { marginBottom: 10 }
 });
 
-function MyDocument({ pdfData }: any) {
-    //console.log('pdfData', pdfData);
+function MyDocument({ pdfData, variant = 'original' }: any) {
+    console.log('pdfData', pdfData);
     const { userData } = pdfData;
     const { address, director, contact } = userData;
     // const address = user?.address ?? '';
@@ -125,7 +125,11 @@ function MyDocument({ pdfData }: any) {
     return (
         <PDFDocGen>
             <Page size="A4" style={styles.body}>
-                <Image style={styles.image} src="/krut_mark.jpg"/>
+                {variant === 'original' ? (
+                    <Image style={styles.image} src="/krut_mark.jpg"/>
+                ) : (
+                    <Text style={{ textAlign: 'center' }}>สำเนา</Text>
+                )}
                 <View style={[styles.table, { marginBottom: 10 }]}>
                     {/* Row 1 */}
                     <View style={styles.tableRow}>
@@ -194,7 +198,7 @@ const PdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => {
     useEffect(() => {
         let cancelled = false;
         const generatePdf = async () => {
-            const generatedBlob = await pdf(<MyDocument pdfData={{...pdfData, userData}} />).toBlob();
+            const generatedBlob = await pdf(<MyDocument pdfData={{...pdfData, userData}} variant="original" />).toBlob();
             if (!cancelled) {
                 setBlob(generatedBlob);
                 setPdfUrl(URL.createObjectURL(generatedBlob));
@@ -208,9 +212,18 @@ const PdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => {
 
     useImperativeHandle(ref, () => ({
         savePdf: () => {
-            if (blob) {
-                saveAs(blob, 'document.pdf');
-            }
+            (async () => {
+                try {
+                    const [originalBlob, copyBlob] = await Promise.all([
+                        pdf(<MyDocument pdfData={{ ...pdfData, userData }} variant="original" />).toBlob(),
+                        pdf(<MyDocument pdfData={{ ...pdfData, userData }} variant="copy" />).toBlob(),
+                    ]);
+                    saveAs(originalBlob, 'document.pdf');
+                    saveAs(copyBlob, 'document_copy.pdf');
+                } catch (error) {
+                    console.error('Failed to generate PDFs:', error);
+                }
+            })();
         },
     }));
 
