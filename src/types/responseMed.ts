@@ -1,4 +1,5 @@
 export type ResponseAsset = {
+  returnMedicine?: any;
   id: string;
   requestId: string;
   respondingHospitalId: string;
@@ -9,6 +10,7 @@ export type ResponseAsset = {
   createdAt: string;
   updatedAt: string;
   offeredMedicine: {
+    offerAmount?: any;
     name: string;
     trademark: string;
     quantity: number;

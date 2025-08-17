@@ -10,6 +10,7 @@ export type SharingAsset = {
   responseIds: string[];
   responseDetails: [
     {
+      returnMedicine?: any;
       acceptedOffer: any;
       acceptedAt: object;
       createdAt: string;

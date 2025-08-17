@@ -213,9 +213,10 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                 throw new Error("Failed to submit")
             } else {
                 if (filterHospital.length) {
-                    sendMailsSequentially(filterHospital, requestData).catch((err) => {
-                        console.error("sendMails error:", err);
-                    });
+                    // sendmail
+                    // sendMailsSequentially(filterHospital, requestData).catch((err) => {
+                    //     console.error("sendMails error:", err);
+                    // });
                 }
             }
 
