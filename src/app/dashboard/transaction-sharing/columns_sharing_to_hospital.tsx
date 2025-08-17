@@ -44,7 +44,6 @@ export const columns = (
                 }
                 return (
                     <div className="flex items-center gap-2">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src={imgUrl}
                             alt="thumb"
@@ -211,7 +210,7 @@ export const columns = (
             size: 350,
             header: () => <div className="flex font-medium text-muted-foreground text-left cursor-default">
                 <div className="basis-1/2">ผู้ตอบกลับ</div>
-                <div className="basis-1/2">สถานะ--</div>
+                <div className="basis-1/2">สถานะ</div>
             </div>,
             cell: ({ row }) => {
                 const med = row.original;

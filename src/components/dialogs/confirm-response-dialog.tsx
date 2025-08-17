@@ -296,7 +296,7 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
                                 {loading ? (
                                     <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500 ">กำลังยืนยัน...</span></div>
                                 ) : (
-                                    "ยืนยันการให้ยืม"
+                                    "ยืนยันการขอยืม"
                                 )}
                             </Button>
                             <Button

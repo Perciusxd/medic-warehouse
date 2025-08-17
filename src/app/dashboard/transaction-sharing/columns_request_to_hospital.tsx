@@ -73,13 +73,13 @@ export const columns = (
             const requestAmount = row.original.requestDetails.requestMedicine.requestAmount as number
             const pricePerUnit = row.original.requestDetails.requestMedicine.pricePerUnit as number
             const offerAmount = row.original.offeredMedicine.offerAmount as number
-            console.log("offerAmount", row)
             const totalAmount = pricePerUnit - offerAmount
+            console.log("totalAmount", totalAmount)
             const totalPrice = requestAmount * pricePerUnit
             
            return (
             <div>
-                <div className="text-md font-medium">{requestAmount.toLocaleString()} ({totalAmount.toLocaleString()}) </div>
+                <div className="text-md font-medium">{requestAmount.toLocaleString()} ({offerAmount.toLocaleString()}) </div>
                 <div className="text-xs text-muted-foreground">รวม {totalPrice.toLocaleString()} บาท</div>
             </div>
             )

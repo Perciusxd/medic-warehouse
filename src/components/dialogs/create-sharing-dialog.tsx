@@ -199,23 +199,23 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
     const sendMailsSequentially = async (filterHospital: any, shareData: any) => {
         for (const val of filterHospital) {
             try {
-            // รอ 1 วิ ก่อนยิง request
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+                // รอ 1 วิ ก่อนยิง request
+                await new Promise((resolve) => setTimeout(resolve, 1000));
 
-            const mailResponse = await fetch("/api/sendmail", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                shareData: shareData,
-                selectedHospitals: val,
-                }),
-            });
+                const mailResponse = await fetch("/api/sendmail", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        shareData: shareData,
+                        selectedHospitals: val,
+                    }),
+                });
 
-            if (!mailResponse.ok) {
-                console.warn("sendmail failed:", await mailResponse.text());
-            } else {
-                console.log("sendmail success");
-            }
+                if (!mailResponse.ok) {
+                    console.warn("sendmail failed:", await mailResponse.text());
+                } else {
+                    console.log("sendmail success");
+                }
             } catch (err) {
                 console.error("sendmail error:", err);
             }
@@ -384,22 +384,42 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">ราคาต่อหน่วย</Label>
                                 <Input
-                                    inputMode="numeric"
+                                    inputMode="decimal"
                                     placeholder="10"
-                                    onKeyDown={(e) => {
-                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
-                                        if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
+                                    {...register("sharingMedicine.pricePerUnit", { valueAsNumber: true })}
+                                onKeyDown={(e) => {
+                                    const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"];
+
+                                    if (e.key === ".") {
+                                        if ((e.currentTarget.value || "").includes(".")) {
                                             e.preventDefault();
                                         }
-                                    }}
-                                    {...register("sharingMedicine.pricePerUnit", { valueAsNumber: true })} />
+                                        return;
+                                    }
+
+                                    if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
+                                        e.preventDefault();
+                                    }
+                                }}
+                                onBlur={(e) => {
+                                    const raw = e.target.value.replace(/,/g, "");
+                                    if (raw === "" || isNaN(Number(raw))) return;
+                                    e.target.value = Number(raw).toLocaleString("th-TH", {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 2,
+                                    });
+                                }}
+                                                                />
                                 {errors.sharingMedicine?.pricePerUnit && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.pricePerUnit.message}</span>
                                 )}
                             </div>
                             <div className="items-end flex flex-row">
                                 <div className="font-extralight">
-                                    รวม <span className="font-bold text-gray-950"> {(Number(quantity) || 0) * (Number(pricePerUnit) || 0)} </span> บาท
+                                    รวม <span className="font-bold text-gray-950"> {((Number(quantity) || 0) * (Number(pricePerUnit) || 0))?.toLocaleString("th-TH", {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                        })} </span> บาท
                                 </div>
                             </div>
 
@@ -409,6 +429,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                 <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" className="justify-start text-left font-normal">
+
                                             {expiryDate
                                                 ? format(new Date(Number(expiryDate)), 'dd/MM/') + (new Date(Number(expiryDate)).getFullYear() + 543)
                                                 : "เลือกวันที่"}

@@ -4,6 +4,7 @@ import { ArrowUpDown, Check, X ,SquareX ,SquareCheck,MoreHorizontal,Trash2} from
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import StatusIndicator from "@/components/ui/status-indicator"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
+import { format } from "date-fns"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -61,17 +62,8 @@ export const columns = (
                 const createdAt = sharingDetails.createdAt
                 const date = Number(createdAt);
                 const dateObj = new Date(date);
-                const formattedDate = new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: '2-digit',
-                }).format(dateObj);
-                const timeOnly = new Intl.DateTimeFormat('th-TH', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: false,
-                }).format(dateObj);
+                const formattedDate = format(new Date(Number(date)), 'dd/MM/') + (new Date(Number(date)).getFullYear() + 543) // Format to dd/MM/yyyy in Thai Buddhist calendar
+                const timeOnly = format(date, 'HH:mm:ss'); // format to time only
                 return <div>
                     <div className="text-sm font-medium">{formattedDate}</div>
                     <div className="text-xs text-muted-foreground">{timeOnly}</div>
@@ -162,13 +154,8 @@ export const columns = (
                 const med = row.original
                 const sharingDetails = med.sharingDetails
                 console.log("sharingDetailsssss",sharingDetails)
-                const expiryDate = isNaN(Number(sharingDetails.sharingMedicine.expiryDate))
-                    ? "ยังไม่ระบุ"
-                    : new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: '2-digit',
-                    }).format(new Date(Number(sharingDetails.sharingMedicine.expiryDate)));
+                const expiryDate = format(new Date(Number(sharingDetails.sharingMedicine.expiryDate)), 'dd/MM/') + (new Date(Number(sharingDetails.sharingMedicine.expiryDate)).getFullYear() + 543) // Format to dd/MM/yyyy in Thai Buddhist calendar
+                    
                 return (
                     <div className="flex flex-col">
                         <div className="text-md">{expiryDate}</div>

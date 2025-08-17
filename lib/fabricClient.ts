@@ -35,9 +35,9 @@ const cryptoPath =
   // Boss ENV
   //"/Users/kb/Developer/2025/test_network_lending_med/organizations/peerOrganizations/hospitala.example.com";
   // Pup ENV
-  '/Users/siwakorn.pup/project-hospital/backend/test_network_lending_med/organizations/peerOrganizations/hospitala.example.com';
+  //'/Users/siwakorn.pup/project-hospital/backend/test_network_lending_med/organizations/peerOrganizations/hospitala.example.com';
   //Bank ENV
-  //  'C:\\coding\\Hyperledger\\test_network_lending_med\\organizations\\peerOrganizations\\hospitala.example.com';
+    'C:\\coding\\Hyperledger\\test_network_lending_med\\organizations\\peerOrganizations\\hospitala.example.com';
 
 // Path to user private key directory.
 const keyDirectoryPath = envOrDefault(

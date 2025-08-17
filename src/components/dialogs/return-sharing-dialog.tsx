@@ -15,12 +15,14 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Textarea } from "@/components/ui/textarea";
 import dynamic from 'next/dynamic';
 import { toast } from "sonner";
+import { useAuth } from "../providers";
 
 const ReturnPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/return_pdf'), { ssr: false });
 
-function SharingMedicineDetails({ sharingMedicine, receiveConditions }: any) {
+function SharingMedicineDetails({ sharingMedicine, receiveConditions ,selectedMed}: any) {
     const { name, trademark, unit, quantity, manufacturer } = sharingMedicine;
-
+    const { createdAt, postingHospitalNameTH ,sharingDetails } = selectedMed;
+    const formattedDate = format(new Date(Number(createdAt)), 'dd/MM/') + (new Date(Number(createdAt)).getFullYear() + 543); // Format to dd/MM/yyyy in Thai Buddhist calendar
     return (
         <div className="flex flex-col gap-4 border p-4 rounded-lg">
             <h2 className="text-lg font-semibold flex items-center gap-2 text-blue-700">
@@ -28,6 +30,14 @@ function SharingMedicineDetails({ sharingMedicine, receiveConditions }: any) {
                 รายละเอียดรายการยืม
             </h2>
             <div className="grid grid-cols-2 gap-2 font-light">
+                <div className="flex flex-col gap-1">
+                    <Label>วันที่แจ้งขอยืม</Label>
+                    <Input disabled value={formattedDate || ''} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>โรงพยาบาลที่ให้ยืม</Label>
+                    <Input disabled value={sharingDetails.postingHospitalNameTH || ''} />
+                </div>
                 <div className="flex flex-col gap-1 col-span-2">
                     <Label>รายการยา</Label>
                     <Input disabled value={name || ''} />
@@ -127,7 +137,6 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
     const { postingHospitalNameEN } = sharingDetails;
     // const receiveConditions = sharingDetails?.sharingReturnTerm?.receiveConditions || {};
     const receiveConditions = returnTerm || {};
-    console.log('returnTerm', returnTerm)
     const returnFormSchema = ReturnFormSchema({ selectedMed });
 
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -180,13 +189,11 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
             returnMedicine: data.returnMedicine,    // should be empty if supportRequest is true??
             returnType: supportRequest ? "supportType" : data.returnType,
         }
-        //console.log('returnData', returnData)
         const returnBody = {
             returnData: returnData,
             selectedHospital: respondingHospitalNameEN,
             responseId: id,
         }
-        //console.log('returnBody', returnBody)
         try {
             const response = await fetch("/api/createReturn", {
                 method: "POST",
@@ -438,6 +445,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
 }
 
 export default function ReturnSharingDialog({ open, onOpenChange, selectedMed }: any) {
+    const { user } = useAuth();
     const { sharingDetails } = selectedMed;
     const { sharingMedicine } = sharingDetails;
     const receiveConditions = sharingDetails?.sharingReturnTerm?.receiveConditions || {};
@@ -485,13 +493,13 @@ export default function ReturnSharingDialog({ open, onOpenChange, selectedMed }:
 
                     <div className="overflow-y-auto px-6 py-5">
                         <div className="grid grid-cols-3 gap-2">
-                            <SharingMedicineDetails sharingMedicine={sharingMedicine} receiveConditions={receiveConditions} />
+                            <SharingMedicineDetails sharingMedicine={sharingMedicine} receiveConditions={receiveConditions} selectedMed={selectedMed}/>
                             <ReturnMedicineDetails selectedMed={selectedMed} onOpenChange={onOpenChange} loading={loading} setLoading={setLoading} formId={formId} onFormChange={setReturnFormValues} onSavePdf={handleSavePdf} />
                         </div>
                     </div>
 
                     <div style={{ display: 'none' }}>
-                        <ReturnPdfPreview data={selectedMed} returnData={returnFormValues} ref={pdfRef} />
+                        <ReturnPdfPreview data={selectedMed} returnData={returnFormValues} userData={user} ref={pdfRef} />
                     </div>
 
                     {/* Footer removed to match return-dialog; actions moved into the form */}

@@ -36,7 +36,6 @@ export function ImageHoverPreview({
         </PopoverTrigger>
         {!isDisabled && (
           <PopoverContent className="w-auto p-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={previewUrl ?? ""} alt="preview" className="max-h-64 max-w-64 object-contain" />
           </PopoverContent>
         )}
