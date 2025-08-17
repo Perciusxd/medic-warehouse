@@ -23,9 +23,10 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
     const { requestTerm } = requestData;
     const ResponseSchema = z.object({
         offeredMedicine: z.object({
-            offerAmount: z.number().min(1, "กรุณากรอกมากว่า 0").max(requestData.requestMedicine.requestAmount, `กรุณากรอกน้อยกว่า ${requestData.requestMedicine.requestAmount}`),
+            // offerAmount: z.number().min(1, "กรุณากรอกมากว่า 0").max(requestData.requestMedicine.requestAmount, `กรุณากรอกน้อยกว่า ${requestData.requestMedicine.requestAmount}`),
+            offerAmount: z.number().min(1, "กรุณากรอกมากว่า 0"),
             trademark: z.string(),
-            pricePerUnit: z.number().min(1, "Price per unit must be greater than 0").max(100000, "Price per unit must be less than 100000"),
+            pricePerUnit: z.number().gt(0, "Price per unit must be greater than 0").max(100000, "Price per unit must be less than 100000"),
             manufacturer: z.string(),
             // manufactureDate: z.string(),
             // expiryDate: z.date(),
@@ -161,7 +162,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[1200px]">
-                <DialogTitle>{dialogTitle}</DialogTitle>
+                <DialogTitle>{dialogTitle}---</DialogTitle>
                 <form onSubmit={handleSubmit(onSubmit, (invalidError) => {
                     console.error(invalidError)
                 })} className="space-y-4">
@@ -231,7 +232,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                             }
                                         }}
                                         {...register("offeredMedicine.offerAmount", { valueAsNumber: true })}
-                                        disabled={returnTerm === "exactType"}
+                                        // disabled={returnTerm === "exactType"}
                                         className="border p-1 font-light"
                                     />
                                     {errors.offeredMedicine?.offerAmount && (
@@ -241,22 +242,23 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                 <Label className="flex flex-col items-start">
                                     ราคาต่อหน่วย
                                     <Input
-                                        inputMode="numeric"
-                                        placeholder="10" 
-                                        onKeyDown={(e) => {
-                                            const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
-                                            if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
-                                            e.preventDefault();
-                                            }
-                                        }}
+                                        type="number"
+                                        step="0.01"
+                                        inputMode="decimal"
+                                        placeholder="10.50"
                                         {...register("offeredMedicine.pricePerUnit", { valueAsNumber: true })}
-                                        disabled={returnTerm === "exactType"}
+                                        // disabled={returnTerm === "exactType"}
                                         className="border p-1"
                                     />
                                 </Label>
 
                                 <div>
-                                    รวม <span className="font-bold text-gray-950"> {(Number(offeredAmount) || 0) * (Number(offeredPrice) || 0)} </span> บาท
+                                    รวม <span className="font-bold text-gray-950">{(() => {
+                                        const total = (Number(offeredAmount) || 0) * (Number(offeredPrice) || 0);
+                                        return Number.isFinite(total)
+                                            ? total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                            : '0.00';
+                                    })()}</span> บาท
                                 </div>
                                 
                             </div>

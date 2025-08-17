@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import CancelDialog from "@/components/dialogs/cancel-dialog";
 import {
     Popover,
     PopoverContent,
@@ -31,8 +32,8 @@ function RequestDetails({ sharingMed }: any) {
     // Thai date formatting helper (Buddhist calendar)
     const formattedDate = new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
         day: '2-digit',
-        month: 'long',
-        year: 'numeric',
+        month: '2-digit',
+        year: '2-digit',
     }).format(date);
     const sharingDetails = sharingMed.sharingDetails
     const sharingMedicine = sharingMed.offeredMedicine ? sharingMed.sharingMedicine : sharingDetails.sharingMedicine
@@ -45,8 +46,8 @@ function RequestDetails({ sharingMed }: any) {
         ? "ยังไม่ระบุ"
         : new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
             day: '2-digit',
-            month: 'long',
-            year: 'numeric',
+            month: '2-digit',
+            year: '2-digit',
         }).format(new Date(Number(expiryDate)));
     return (
         <div className="flex flex-col gap-4">
@@ -350,8 +351,15 @@ export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChan
     const { user } = useAuth();
     const pdfRef = useRef<{ savePdf?: () => void }>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
     const isReconfirm = !!sharingMed?.acceptedOffer;
     const dialogTitle = isReconfirm ? "แก้ไข/ยอมรับแบ่งปัน" : "เวชภัณฑ์ยาที่ต้องการแบ่งปัน";
+
+    const handleCancel = () => {
+        // onOpenChange(false);
+        setCancelDialogOpen(true);
+        console.log('sharingMed', sharingMed)
+    }
 
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
@@ -398,6 +406,9 @@ export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChan
                                     ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500 ">{isReconfirm ? "บันทึก" : "ยืนยัน"}</span></div>
                                     : (isReconfirm ? "บันทึกการแก้ไข" : "ยืนยัน")}
                             </Button>
+                            <Button variant="outline" size="sm" onClick={() => handleCancel()}>
+                                ยกเลิก
+                            </Button>
                             {isReconfirm && (
                             <Button
                                 variant="outline"
@@ -409,6 +420,27 @@ export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChan
                             )}
                         </DialogFooter>
                     </div>
+
+                    {cancelDialogOpen && (
+                        <CancelDialog
+                            selectedMed={sharingMed}
+                            title={"ยกเลิกการแบ่งปันยา"}
+                            cancelID={sharingMed.responseId}
+                            description={"คุณต้องการยกเลิกการแบ่งปันยาใช่หรือไม่"}
+                            confirmButtonText={"ยกเลิก"}
+                            successMessage={"ยกเลิกการแบ่งปันยาเรียบร้อย"}
+                            errorMessage={"ยกเลิกการแบ่งปันยาไม่สำเร็จ"}
+                            loading={false}
+                            onConfirm={() => Promise.resolve(true)}
+                            open={cancelDialogOpen}
+                            onOpenChange={(open: boolean) => {
+                                setCancelDialogOpen(open);
+                                if (!open) {
+                                    onOpenChange(false);
+                                }
+                            }}
+                        />
+                    )}
                 </div>
             </DialogContent>
         </Dialog>

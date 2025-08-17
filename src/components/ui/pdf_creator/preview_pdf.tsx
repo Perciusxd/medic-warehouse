@@ -74,12 +74,10 @@ const styles = StyleSheet.create({
 function MyDocument({ pdfData }: any) {
     console.log('pdfData', pdfData);
     const { userData } = pdfData;
-    // const { address, director, contact } = userData;
-    // Easy way
-    const { user } = useAuth();
-    const address = user?.address ?? '';
-    const director = user?.director ?? '';
-    const contact = user?.contact ?? '';
+    const { address, director, contact } = userData;
+    // const address = user?.address ?? '';
+    // const director = user?.director ?? '';
+    // const contact = user?.contact ?? '';
 
     
     const { offeredMedicine, requestMedicine } = pdfData;
@@ -163,7 +161,7 @@ function MyDocument({ pdfData }: any) {
                     <View style={styles.tableRow}>
                         <Text style={styles.tableCell}>{requestedMedicineName }</Text>
                         {/* <Text style={styles.tableCell}>{requestMedicine.name }</Text> */}
-                        <Text style={styles.tableCell}>{requestedQuantity} ({requestUnit})</Text>
+                        <Text style={styles.tableCell}>{offeredMedicine.offerAmount} ({requestUnit})</Text>
                         {/* <Text style={styles.tableCell}>{requestMedicine.requestAmount} ({requestMedicine.unit})</Text> */}
                         <Text style={styles.tableCell}>{expectedReturnDate}</Text>
                         <Text style={styles.tableCell}>{mockNote}</Text>
@@ -177,7 +175,7 @@ function MyDocument({ pdfData }: any) {
                     จึงเรียนมาเพื่อโปรดพิจารณาและ {lendingHospitalNameTH} ขอขอบคุณ {borrowingHospitalNameTH} ณ โอกาสนี้
                 </Text>
 
-                <Text style={{ marginTop: 30, textIndent: 280 }}>ขอแสดงความนับถือ</Text>
+                <Text style={{ marginTop: 30, textIndent: 310 }}>ขอแสดงความนับถือ</Text>
                 <Text style={{ marginTop: 100, textIndent: 280 }}>{director} </Text>
                 <Text style={{ textIndent: 280 }}>ผู้อำนวยการ {lendingHospitalNameTH}</Text>
                 <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>

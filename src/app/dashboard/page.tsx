@@ -110,8 +110,8 @@ export default function Dashboard() {
     //         })
     //         .catch((error) => console.error("Error fetching data:", error));
     // }, [loggedInHospital]);
-    console.log('user', user)
-    console.log('address', user?.address)
+    // console.log('user', user)
+    // console.log('address', user?.address)
     
     
 

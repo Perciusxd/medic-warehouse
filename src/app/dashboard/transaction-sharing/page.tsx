@@ -22,6 +22,7 @@ import ConfirmationDialog from '@/components/dialogs/confirmation-dialog';
 import ReturnSharingDialog from '@/components/dialogs/return-sharing-dialog';
 import EditSharingDialog from '@/components/dialogs/edit-sharing-dialog';
 import { MultiSelect } from "@/components/ui/multi-select";
+import { th } from 'date-fns/locale';
 
 const sharingStatusOptions = [
     { value: "all", label: "All Statuses" },
@@ -453,7 +454,7 @@ export default function TransferDashboard() {
                         setUpdatedLast(new Date());
                     }}>
                         <RefreshCcwIcon />
-                        {updatedLast ? `Updated ${formatDistanceToNow(updatedLast, { addSuffix: true })}` : ""}
+                        {updatedLast ? `อัปเดต ${formatDistanceToNow(updatedLast, { addSuffix: true, locale: th })}` : ""}
                     </Button>
                 </div>
             </div>

@@ -23,6 +23,7 @@ interface CancelDialogProps {
     onOpenChange: (open: boolean) => void;
     selectedMed: any;
     title: string;
+    cancelID: string;
     description: string;
     confirmButtonText: string;
     successMessage: string;
@@ -39,21 +40,23 @@ export default function CancelDialog({
     onOpenChange,
     selectedMed,
     title,
+    cancelID,
     description,
     confirmButtonText,
     successMessage,
     errorMessage,
     loading,
     onConfirm,
-    getHospitalName = (med) => med?.displayHospitalName || med?.responseDetails?.respondingHospitalNameTH || med?.respondingHospitalNameTH || '',
-    getMedicineName = (med) => med?.displayMedicineName || med?.sharingMedicine?.name || '',
-    getMedicineAmount = (med) => med?.displayMedicineAmount || med?.offeredMedicine?.responseAmount || med?.acceptedOffer?.responseAmount || '',
+    getHospitalName = (med) => med?.displayHospitalName || med?.responseDetail?.respondingHospitalNameTH || med?.respondingHospitalNameTH || '',
+    getMedicineName = (med) => med?.displayMedicineName || med?.sharingMedicine?.name || med?.offeredMedicine?.name || med?.returnMedicine?.returnMedicine?.name || '',
+    getMedicineAmount = (med) => med?.displayMedicineAmount || med?.offeredMedicine?.responseAmount || med?.offeredMedicine?.offerAmount || med?.acceptedOffer?.responseAmount || '',
 }: CancelDialogProps) {
+    console.log('selectedMed cancel dialog', selectedMed)
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const handleConfirm = async () => {
         setIsSubmitting(true);
         const cancelBody = {
-            id: selectedMed.id,
+            id: cancelID || selectedMed.id,
             status: 'cancelled',
             updatedAt: Date.now().toString()
         }

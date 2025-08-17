@@ -65,17 +65,17 @@ export const columns = (
         {
             accessorKey: "sharingDetails.sharingMedicine.sharingAmount",
             size: 100,
-            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่ให้ยืม(ยืนยัน)</div>,
+            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนขอแบ่งปัน</div>,
             cell: ({ row }: { row: any }) => {
                 const med = row.original;
                 const sharingAmount = med.sharingDetails?.sharingMedicine?.sharingAmount || "-";
                 const pricePerUnit = med.sharingDetails?.sharingMedicine?.pricePerUnit || "-";
-                const amount = sharingAmount * pricePerUnit;
                 const responseAmount = med.acceptedOffer?.responseAmount || "-";
+                const amount = responseAmount * pricePerUnit;
                 return (
                     <div className="flex flex-col">
-                        <div className="text-md font-medium items-center">{sharingAmount.toLocaleString()} ( {responseAmount.toLocaleString()} )</div>
-                        <div className="text-xs text-muted-foreground">รวม : {amount.toLocaleString()} บาท</div>
+                        <div className="text-md font-medium items-center">{responseAmount.toLocaleString()}</div>
+                        <div className="text-xs text-muted-foreground">มูลค่า: {amount.toLocaleString()} บาท</div>
                     </div>
                 )
             },
@@ -143,28 +143,29 @@ export const columns = (
             },
             enableGlobalFilter: false
         },
-        {
-            accessorKey: "updatedAt",
-            size: 100,
-            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">วันอัพเดทล่าสุด</div>,
-            cell: ({ row }: { row: any }) => {
-                const raw = row.original.updatedAt
-                const date = new Date(String(raw)); // convert string to number, then to Date
-                const isValid = !isNaN(date.getTime());
-                const formattedDate = isValid ? format(date, 'dd/MM/yyyy') : "-"; // format to date only
-                const timeOnly = isValid ? format(date, 'HH:mm:ss') : "-"; // format to time only
-                return (<div>
-                    <div className="text-md font-medium ">{formattedDate}</div>
-                    <div className="text-xs text-muted-foreground">{timeOnly}</div>
-                </div>);
-            }
-        },
+        // {
+        //     accessorKey: "updatedAt",
+        //     size: 100,
+        //     header: () => <div className="font-medium text-muted-foreground text-left cursor-default">วันอัพเดทล่าสุด</div>,
+        //     cell: ({ row }: { row: any }) => {
+        //         const raw = row.original.updatedAt
+        //         console.log("roww",row.original)
+        //         const date = new Date(String(raw)); // convert string to number, then to Date
+        //         const isValid = !isNaN(date.getTime());
+        //         const formattedDate = isValid ? format(date, 'dd/MM/yyyy') : "-"; // format to date only
+        //         const timeOnly = isValid ? format(date, 'HH:mm:ss') : "-"; // format to time only
+        //         return (<div>
+        //             <div className="text-md font-medium ">{formattedDate}</div>
+        //             <div className="text-xs text-muted-foreground">{timeOnly}</div>
+        //         </div>);
+        //     }
+        // },
         {
             accessorKey: "status",
             size: 350,
             header: () => <div className="font-medium text-muted-foreground  text-left cursor-default flex flex-row  justify-between">
                 <div className="flex justify-start basis-1/2">โรงพยาบาลที่ให้ยืม</div>
-                <div className="flex justify-start basis-1/2">สถานะ(จำนวนยาที่ได้ยืม)</div>
+                <div className="flex justify-start basis-1/2">สถานะ(จำนวนยาที่ได้ยืม)--</div>
             </div>,
             cell: ({ row }: { row: any }) => {
                 const med = row.original;
@@ -187,7 +188,7 @@ export const columns = (
                                     {/* <div>( {responseAmount} )</div> */}
                                 </div>
                             ) : status === 'to-confirm' ? (
-                                <div className="flex items-center gap-x-2">
+                                <div className="flex flex-col items-center gap-x-2">
                                     <Button variant={"link"} className="flex gap-x-2" onClick={() =>
                                         handleConfirmReceiveDelivery({
                                             ...med,
@@ -196,11 +197,13 @@ export const columns = (
                                             displayMedicineAmount: med.acceptedOffer.responseAmount,
                                             // displayHospi
                                         })}>ยืนยันการรับของ<StatusIndicator status={status} /></Button>
+                                        <span>(กดได้เมื่อได้รับการยืนยัน)</span>
                                     {/* <div>( {responseAmount} )</div> */}
                                 </div>
                             ) : status === 'offered' ? (
-                                <div className="flex items-center gap-x-2">
-                                    <div className="flex gap-x-2" >แจ้งขอยืม<StatusIndicator status={status} /></div>
+                                <div className="flex flex-col items-start gap-x-2 cursor-not-allowed">
+                                    <div className="flex gap-x-2 text-muted-foreground" >แจ้งขอยืม<StatusIndicator status={status} /></div>
+                                    <span className="text-xs font-extralight text-muted-foreground">(กดได้เมื่อได้รับการยืนยัน)</span>
                                     {/* <div>( {responseAmount} )</div> */}
                                 </div>
                             ) : status === 're-confirm' ? (
@@ -230,8 +233,9 @@ export const columns = (
                                         {/* <div>( {responseAmount} )</div> */}
                                     </div>
                                 ) : status === 'confirm-return' ? (
-                                    <div className="flex items-center gap-x-2">
-                                        <Button variant={"link"} className="flex gap-x-2" >รอยืนยันการคืน<StatusIndicator status={status} /></Button>
+                                    <div className="flex flex-col items-start gap-x-2 cursor-not-allowed">
+                                        <div className="flex gap-x-2" >รอยืนยันการคืน<StatusIndicator status={status} /></div>
+                                        <div className="text-xs font-extralight text-muted-foreground">(กดได้เมื่อได้รับการยืนยัน)</div>
                                         {/* <div>( {responseAmount} )</div> */}
                                     </div>
                                 ) : null
@@ -240,32 +244,32 @@ export const columns = (
                 </div>
             }
         },
-        {
-            accessorKey: "history",
-            size: 150,
-            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">สถานะ</div>,
-            cell: ({ row }: { row: any }) => {
-                const med = row.original;
-                const status = row.original.sharingDetails.status;
-                // console.log('roww req', row.original)
-                return (
+        // {
+        //     accessorKey: "history",
+        //     size: 150,
+        //     header: () => <div className="font-medium text-muted-foreground text-left cursor-default">สถานะ</div>,
+        //     cell: ({ row }: { row: any }) => {
+        //         const med = row.original;
+        //         const status = row.original.sharingDetails.status;
+        //         // console.log('roww req', row.original)
+        //         return (
 
-                    <div className="flex justify-start items-center gap-x-2 flex-row">
-                        <div className="flex flex-row items-center gap-x-2">
+        //             <div className="flex justify-start items-center gap-x-2 flex-row">
+        //                 <div className="flex flex-row items-center gap-x-2">
 
-                            {status === 'pending' ? "กำลังดำเนินการ"
-                                : status === "cancelled" ? "ยกเลิก"
-                                    : ""
-                            }
+        //                     {status === 'pending' ? "กำลังดำเนินการ"
+        //                         : status === "cancelled" ? "ยกเลิก"
+        //                             : ""
+        //                     }
 
-                            <StatusIndicator status={status} />
+        //                     <StatusIndicator status={status} />
 
-                        </div>
-                        <div><History className="w-4 h-4 text-muted-foreground cursor-pointer" /></div>
-                    </div>
+        //                 </div>
+        //                 <div><History className="w-4 h-4 text-muted-foreground cursor-pointer" /></div>
+        //             </div>
 
-                )
-            },
-            enableGlobalFilter: false
-        },
+        //         )
+        //     },
+        //     enableGlobalFilter: false
+        // },
     ]

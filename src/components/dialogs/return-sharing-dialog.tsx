@@ -127,6 +127,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
     const { postingHospitalNameEN } = sharingDetails;
     // const receiveConditions = sharingDetails?.sharingReturnTerm?.receiveConditions || {};
     const receiveConditions = returnTerm || {};
+    console.log('returnTerm', returnTerm)
     const returnFormSchema = ReturnFormSchema({ selectedMed });
 
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -231,6 +232,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
         subType: receiveConditions?.subType ?? true,
         supportType: receiveConditions?.supportType ?? false,
     } as const;
+    console.log('allowedReturnTypes', allowedReturnTypes)
 
     // Ensure selected returnType is allowed
     useEffect(() => {
@@ -400,7 +402,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                             <Label>ไม่ขอสนับสนุน</Label>
                         </div> */}
                         <div className="flex items-center gap-2">
-                            <input type="checkbox" value="support" checked={isSupportSelected} {...register("supportRequest")} disabled={allowedReturnTypes.supportType} />
+                            <input type="checkbox" value="support" checked={isSupportSelected} {...register("supportRequest")} disabled={!allowedReturnTypes.supportType} />
                             <Label>ขอสนับสนุน</Label>
                         </div>
                     </div>

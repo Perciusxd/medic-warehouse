@@ -17,6 +17,7 @@ import CancelDialog from "@/components/dialogs/cancel-dialog";
 
 import { RefreshCcwIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { th } from "date-fns/locale";
 
 export default function SharingContent() {
     const { loggedInHospital } = useHospital()
@@ -56,7 +57,7 @@ export default function SharingContent() {
                         setUpdatedLast(new Date());
                     }}>
                         <RefreshCcwIcon />
-                        {updatedLast ? `Updated ${formatDistanceToNow(updatedLast, { addSuffix: true })}` : ""}
+                        {updatedLast ? `อัปเดต ${formatDistanceToNow(updatedLast, { addSuffix: true, locale: th })}` : ""}
                     </Button>
 
                     <Button onClick={() => (setCreateSharingDialogOpen(true))}>แบ่งปันยา</Button>
@@ -99,6 +100,7 @@ export default function SharingContent() {
                             <CancelDialog
                                 selectedMed={selectedMed}
                                 title={"ยกเลิกการแบ่งปันยา"}
+                                cancelID={selectedMed.id}
                                 description={"คุณต้องการยกเลิกการแบ่งปันยาใช่หรือไม่"}
                                 confirmButtonText={"ยกเลิก"}
                                 successMessage={"ยกเลิกการแบ่งปันยาเรียบร้อย"}

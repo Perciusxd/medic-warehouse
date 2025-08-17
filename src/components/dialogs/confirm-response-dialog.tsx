@@ -34,6 +34,7 @@ import { FileText } from "lucide-react"
 import dynamic from 'next/dynamic';
 const PdfPreview = dynamic(() => import('@/components/ui/pdf_creator/preview_pdf'), { ssr: false });
 import { useAuth } from "@/components/providers";
+import CancelDialog from "./cancel-dialog";
 
 function RequestDetailPanel({ data }: any) {
     console.log('requestdetailpanel', data)
@@ -70,11 +71,11 @@ function RequestDetailPanel({ data }: any) {
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>ราคาต่อหน่วย</Label>
-                    <Input disabled value={pricePerUnit} />
+                    <Input disabled value={typeof pricePerUnit === 'number' ? pricePerUnit.toFixed(2) : pricePerUnit} />
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>ราคารวม</Label>
-                    <Input disabled value={totalPrice.toLocaleString()} />
+                    <Input disabled value={new Intl.NumberFormat(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalPrice)} />
                 </div>
             </div>
             {requestTerm?.expectedReturnDate && (
@@ -136,11 +137,11 @@ function ResponseDetailPanel({ responseData }: any) {
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>ราคาต่อหน่วย</Label>
-                    <Input disabled value={offeredMedicine.pricePerUnit} />
+                    <Input disabled value={typeof offeredMedicine.pricePerUnit === 'number' ? offeredMedicine.pricePerUnit.toFixed(2) : offeredMedicine.pricePerUnit} />
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>มูลค่ารวม</Label>
-                    <Input disabled value={`${totalPrice.toLocaleString()} บาท`} />
+                    <Input disabled value={`${new Intl.NumberFormat(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(totalPrice)} บาท`} />
                 </div>
             </div>
             <div className="flex flex-col gap-2">
@@ -176,11 +177,11 @@ function getConfirmationSchema(requestData: any) {
             unit: z.string(),
             // quantity: z.string(),
             offerAmount: z.coerce.number({ required_error: "กรุณากรอกจำนวนที่ให้ยืม" })
-                .min(1, "กรุณากรอกมากว่า 0")
+                .gt(0, "กรุณากรอกมากว่า 0")
                 .max(requestData.requestAmount, `กรุณากรอกน้อยกว่า ${requestData.requestAmount}`),
             trademark: z.string(),
             pricePerUnit: z.coerce.number({ required_error: "กรุณากรอกราคาต่อหน่วย" })
-                .min(1, "ราคาต่อหน่วยต้องมากกว่า 0")
+                .gt(0, "ราคาต่อหน่วยต้องมากกว่า 0")
                 .max(100000, "ราคาต่อหน่วยต้องไม่เกิน 100,000"),
             manufacturer: z.string(),
             returnTerm: z.enum(["exactType", "subType"]),
@@ -197,6 +198,7 @@ function getConfirmationSchema(requestData: any) {
 export default function ConfirmResponseDialog({ data, dialogTitle, status, openDialog, onOpenChange }: any) {
     const { user } = useAuth();
     const pdfRef = useRef<{ savePdf?: () => void }>(null);
+    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const requestData = data.requestDetails;
@@ -227,6 +229,10 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
     const handleSavePdf = () => {
         pdfRef.current?.savePdf?.();
     };
+
+    const handleCancel = () => {
+        setCancelDialogOpen(true);
+    }
 
     const onSubmit = async (formData: z.infer<typeof ConfirmSchema>) => {
         setLoading(true);
@@ -300,6 +306,33 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
                             >
                                 ดาวน์โหลด PDF
                             </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleCancel}
+                            >
+                                ยกเลิก
+                            </Button>
+                            {cancelDialogOpen && (
+                                <CancelDialog
+                                    selectedMed={data}
+                                    title={"ยกเลิกการให้ยืมยา"}
+                                    cancelID={data.responseId}
+                                    description={"คุณต้องการยกเลิกการให้ยืมยาใช่หรือไม่"}
+                                    confirmButtonText={"ยกเลิก"}
+                                    successMessage={"ยกเลิกการให้ยืมยาเรียบร้อย"}
+                                    errorMessage={"ยกเลิกการให้ยืมยาไม่สำเร็จ"}
+                                    loading={false}
+                                    onConfirm={() => Promise.resolve(true)}
+                                    open={cancelDialogOpen}
+                                    onOpenChange={(open: boolean) => {
+                                        setCancelDialogOpen(open);
+                                        if (!open) {
+                                            onOpenChange(false);
+                                        }
+                                    }}
+                                />
+                            )}
                         </DialogFooter>
                     </div>
                 </div>

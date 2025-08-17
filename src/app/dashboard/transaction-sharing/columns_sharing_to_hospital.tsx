@@ -26,7 +26,7 @@ export const columns = (
             cell: ({ row }) => {
                 return (
                     <div className="flex justify-center">
-                         <Button variant={'link'} className="flex p-0 hover:bg-indigo-300" onClick={() => handleEditClick(row.original)}><Pencil className="cursor-pointer" /></Button>
+                        <Button variant={'link'} className="flex p-0 hover:bg-indigo-300" onClick={() => handleEditClick(row.original)}><Pencil className="cursor-pointer" /></Button>
                     </div>
                 )
             }
@@ -91,11 +91,11 @@ export const columns = (
             id: "sharingMedicineRemainingAmount",
             accessorFn: (row) => row.remainingAmount,
             size: 80,
-            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่แจ้งแบ่งปัน</div>,
+            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่แจ้งแบ่งปัน (คงเหลือ)</div>,
             cell: ({ row }) => {
                 const sharingAmount = row.original.sharingMedicine.sharingAmount;
                 const pricePerUnit = row.original.sharingMedicine.pricePerUnit;
-                
+
                 const totalPrice = sharingAmount * pricePerUnit;
                 const remainingAmount = row.original.remainingAmount;
                 const remainingAmountPercentage = ((sharingAmount - remainingAmount) / sharingAmount) * 100;
@@ -118,10 +118,10 @@ export const columns = (
                 // )
                 return (
                     <div>
-                <div className="">{sharingAmount.toLocaleString()} ({remainingAmount.toLocaleString()})</div>
-                <div className="text-xs text-muted-foreground">รวม {totalPrice.toLocaleString()} บาท</div>
-                    
-                </div>
+                        <div className="">{sharingAmount.toLocaleString()} ({remainingAmount.toLocaleString()})</div>
+                        <div className="text-xs text-muted-foreground">รวม {totalPrice.toLocaleString()} บาท</div>
+
+                    </div>
                 )
             }
         },
@@ -133,18 +133,18 @@ export const columns = (
             cell: ({ row }) => {
                 const quantity = row.original.sharingMedicine.quantity;
                 const unit = row.original.sharingMedicine.unit;
-                
+
                 return (
-                    
+
                     <div className="flex flex-col">
                         <div className="text-sm font-medium text-gray-600">{quantity}</div>
                         <div className="text-xs text-muted-foreground">{unit}</div>
                     </div>
-                    
+
                 )
             }
         },
-        
+
         // {
         //     id: "sharingMedicinePricePerUnit",
         //     accessorFn: (row) => row.sharingMedicine.pricePerUnit,
@@ -165,12 +165,12 @@ export const columns = (
         //     }
         // },
         {
-           accessorKey: "updatedAt",
+            accessorKey: "updatedAt",
             size: 80,
             header: () => <div className="font-medium text-muted-foreground text-left cursor-default">อัพเดทล่าสุด</div>,
             cell: ({ row }) => {
                 const responseDetails = row.original.responseDetails
-                
+                // console.log("responseDetails", responseDetails)
                 return (
                     <div className="flex flex-col ">
                         {responseDetails.map((item: any, index: number) => {
@@ -178,7 +178,7 @@ export const columns = (
                             const isValid = !isNaN(date.getTime());
                             const formattedDate = isValid ? format(date, 'dd/MM/yyyy') : "-";
                             const timeOnly = isValid ? format(date, 'HH:mm:ss') : "-";
-                            // console.log("responseDetailsaaaaaa",date)
+                            // console.log("responseDetailsaaaaaa",item)
                             return (
                                 <div key={index}>
                                     <div className="text-sm font-medium ">{formattedDate}</div>
@@ -243,7 +243,7 @@ export const columns = (
                                             returnTerm: detail.returnTerm,
                                         })}>แจ้งขอยืม ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></Button>
                                     ) : detail.status === 're-confirm' ? (
-                                        <Button variant={'link'} className="flex gap-x-2 p-0" disabled>รอยืนยันการขอยืม ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status}  /> </Button>
+                                        <Button variant={'link'} className="flex gap-x-2 p-0" disabled>รอยืนยันการขอยืม ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /> </Button>
                                     ) : detail.status === 'to-transfer' ? (
                                         <Button variant={'link'} className="flex gap-x-2 p-0" onClick={() => handleDeliveryClick({
                                             ...med,
@@ -282,20 +282,20 @@ export const columns = (
                 )
             }
         },
-        {
-                id: "history",
-                size: 150,
-                header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ประวัติ</div>,
-                cell: ({ row }) => {
-                    const status = row.original.status
-                    return <div className="text-md font-medium text-gray-600 flex flex-row items-center gap-x-1">
-                        <div className="flex flex-row gap-x-1">
-                            {status === "cancelled" ? "ยกเลิก" : "กำลังดำเนินการ"} <StatusIndicator status={status} />
-                        </div>
-                        <History className="w-4 h-4" /> 
-                    </div>
-                }
-            }
+        // {
+        //     id: "history",
+        //     size: 150,
+        //     header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ประวัติ</div>,
+        //     cell: ({ row }) => {
+        //         const status = row.original.status
+        //         return <div className="text-md font-medium text-gray-600 flex flex-row items-center gap-x-1">
+        //             <div className="flex flex-row gap-x-1">
+        //                 {status === "cancelled" ? "ยกเลิก" : "กำลังดำเนินการ"} <StatusIndicator status={status} />
+        //             </div>
+        //             <History className="w-4 h-4" />
+        //         </div>
+        //     }
+        // }
         // {
         //     id: "responseIds",
         //     accessorFn: (row) => row.responseIds,
