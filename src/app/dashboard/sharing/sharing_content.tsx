@@ -30,7 +30,7 @@ export default function SharingContent() {
     const [updatedLast, setUpdatedLast] = useState<Date | null>(null);
     const [createSharingDialogOpen, setCreateSharingDialogOpen] = useState(false);
     const [loadingRowId, setLoadingRowId] = useState(null);
-    const [selectedMed, setSelectedMed] = useState(null);
+    const [selectedMed, setSelectedMed] = useState<any>(null);
     const [openAcceptSharingDialog, setOpenAcceptSharingDialog] = useState(false);
     const [cancleRespDialogOpen, setCancleRespDialogOpen] = useState(false);
     const [globalFilter, setGlobalFilter] = useState("");
