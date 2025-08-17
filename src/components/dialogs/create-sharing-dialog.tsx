@@ -270,9 +270,10 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                 throw new Error("Failed to submit")
             } else {
                 if (filterHospital.length) {
-                    sendMailsSequentially(filterHospital, sharingMedicine).catch((err) => {
-                        console.error("sendMails error:", err);
-                    });;
+                    // sendmail
+                    // sendMailsSequentially(filterHospital, sharingMedicine).catch((err) => {
+                    //     console.error("sendMails error:", err);
+                    // });;
                 }
             }
 
