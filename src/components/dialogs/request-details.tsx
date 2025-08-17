@@ -92,7 +92,7 @@ export default function RequestDetails({ requestData, responseForm }: any) {
             }
         }
     };
-
+    const total = (requestDetails.requestMedicine.pricePerUnit || 0)  * (requestDetails.requestMedicine.requestAmount || 0) ;
     const imgUrl: string | null = requestDetails.requestMedicine.requestMedicineImage || requestDetails.requestMedicine?.imageRef || null;
     const [details, setDetails] = useState([
         { label: "วันที่ขอยืม", value: format(new Date(Number(requestDetails.updatedAt)), 'dd/MM/') + (new Date(Number(requestDetails.updatedAt)).getFullYear() + 543) },
@@ -128,15 +128,15 @@ export default function RequestDetails({ requestData, responseForm }: any) {
                 <div>
                     <Label className="font-bold">ราคาต่อหน่วย</Label>
                     <div className="flex flex-row gap-2 items-center">
-                        <Input type="text" className="w-14" value={requestDetails.requestMedicine.pricePerUnit} disabled />
+                        <Input type="text" className="max-w-[50%]" value={requestDetails.requestMedicine.pricePerUnit?.toLocaleString("th-TH")} disabled />
                         <div className="font-extralight">
-                            รวม <span className="font-bold text-gray-950"> {(Number(requestDetails.requestMedicine.pricePerUnit) || 0) * (Number(requestDetails.requestMedicine.requestAmount) || 0)} </span> บาท
+                            รวม <span className="font-bold text-sm text-gray-950"> {total?.toLocaleString("th-TH")} </span> บาท
                         </div>
                     </div>
                 </div>
                 <div>
                     <Label className="font-bold">จำนวนที่ขอยืม</Label>
-                    <Input type="text" value={requestDetails.requestMedicine.requestAmount} disabled />
+                    <Input type="text" value={requestDetails.requestMedicine.requestAmount?.toLocaleString("th-TH")} disabled />
                 </div>
                 <div>
                     <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
