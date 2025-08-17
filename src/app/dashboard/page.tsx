@@ -110,6 +110,8 @@ export default function Dashboard() {
     //         })
     //         .catch((error) => console.error("Error fetching data:", error));
     // }, [loggedInHospital]);
+    console.log('user', user)
+    console.log('address', user?.address)
     
     
 
@@ -131,7 +133,7 @@ export default function Dashboard() {
             )}
                         
 
-            { !isLoading && (
+            {/* { !isLoading && (
                 <div className="mb-6 w-full md:w-1/3">
                     <Select value={user?.hospitalName || loggedInHospital} onValueChange={(value) => setLoggedInHospital(value)}>
                         <SelectTrigger>
@@ -144,6 +146,18 @@ export default function Dashboard() {
                             <SelectItem value="Jana Hospital">Jana Hospital</SelectItem>
                         </SelectContent>
                     </Select>
+                </div>
+            )} */}
+            {!isLoading && (user?.hospitalName || loggedInHospital) && (
+                <div className="mt-4 mb-6">
+                    <h1 className="text-xl md:text-2xl font-bold tracking-tight">
+                        {user?.hospitalName || loggedInHospital}
+                    </h1>
+                    {user?.address && (
+                        <p className="text-sm md:text-base text-gray-600 mt-1">
+                            {user.address}
+                        </p>
+                    )}
                 </div>
             )}
 
