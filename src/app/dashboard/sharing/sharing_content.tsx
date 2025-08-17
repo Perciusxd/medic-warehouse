@@ -77,7 +77,7 @@ export default function SharingContent() {
                 {loading ? (
                     <div className="p-8 flex flex-col items-center justify-center">
                         <LoadingSpinner width="48" height="48" />
-                        <p className="mt-4 text-gray-500">Loading medicines...</p>
+                        <p className="mt-4 text-gray-500">กำลังโหลดข้อมูลยา...</p>
                     </div>
                 ) :
                     <div>

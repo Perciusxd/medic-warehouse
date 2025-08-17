@@ -52,10 +52,8 @@ const styles = StyleSheet.create({
     // section: { marginBottom: 10 }
 });
 
-function MyDocument({ pdfData, variant = 'original' }: any) {
-    console.log('pdfData', pdfData)
-    const { address, director, contact } = pdfData?.userData ?? {};
-    // Normalize input for both request and sharing flows
+function ContentPage({ pdfData, variant = 'original' }: any) {
+    const { userData } = pdfData;
     const baseMedicine = pdfData?.offeredMedicine
         ?? pdfData?.sharingDetails?.sharingMedicine
         ?? pdfData?.sharingMedicine
@@ -64,7 +62,6 @@ function MyDocument({ pdfData, variant = 'original' }: any) {
     const returnData = pdfData?.returnData ?? {};
     const returnMedicine = returnData?.returnMedicine ?? {};
 
-    // Determine return term text from actual chosen returnType first, then fallbacks
     const receiveConditions = pdfData?.offeredMedicine?.returnConditions
         ?? pdfData?.returnTerm
         ?? pdfData?.sharingDetails?.sharingReturnTerm?.receiveConditions
@@ -85,7 +82,6 @@ function MyDocument({ pdfData, variant = 'original' }: any) {
                 ? 'แบบสนับสนุน'
                 : 'คืนรายการทดแทน';
 
-    // Try to resolve borrowing hospital from multiple shapes
     const selectedResponseId = pdfData?.responseId;
     const respondingFromArray = (() => {
         const list = pdfData?.responseDetails;
@@ -107,7 +103,6 @@ function MyDocument({ pdfData, variant = 'original' }: any) {
         ?? pdfData?.sharingDetails?.respondingHospitalNameTH
         ?? '';
 
-    // Handle both request and sharing data structures
     const isRequestType = pdfData?.ticketType === "request" || !!pdfData?.requestDetails || !!pdfData?.requestMedicine;
 
     const requestedMedicineName = pdfData?.requestDetails?.name
@@ -116,13 +111,6 @@ function MyDocument({ pdfData, variant = 'original' }: any) {
         ?? pdfData?.sharingMedicine?.name
         ?? baseMedicine?.name
         ?? '';
-
-    // const requestedQuantity = pdfData?.requestDetails?.requestAmount
-    //     ?? pdfData?.requestMedicine?.requestAmount
-    //     ?? pdfData?.acceptedOffer?.responseAmount
-    //     ?? pdfData?.sharingDetails?.sharingMedicine?.sharingAmount
-    //     ?? pdfData?.sharingMedicine?.sharingAmount
-    //     ?? 0;
 
     const requestedQuantity = pdfData?.offeredMedicine?.offerAmount
         ?? pdfData?.acceptedOffer?.responseAmount
@@ -143,7 +131,6 @@ function MyDocument({ pdfData, variant = 'original' }: any) {
         return false;
     };
     const isSupport = resolveSupport(pdfData?.returnData?.supportRequest ?? pdfData?.supportRequest);
-    //console.log('isSupport', isSupport)
     const documentType = isSupport
         ? 'ขอสนับสนุนเวชภัณฑ์ยา'
         : 'ขอคืนเวชภัณฑ์ยา';
@@ -152,128 +139,140 @@ function MyDocument({ pdfData, variant = 'original' }: any) {
     const today = `${format(todayDate, 'dd/MM')}/${todayDate.getFullYear() + 543}`;
 
     return (
-        <PDFDocGen>
-            <Page size="A4" style={styles.body}>
-                {variant === 'original' ? (
-                    <Image style={styles.image} src="/krut_mark.jpg" />
-                ) : (
-                    <Text style={{ textAlign: 'center' }}>สำเนา</Text>
-                )}
-                <View style={[styles.table, { marginBottom: 10 }]}>
-                    {/* Row 1 */}
-                    <View style={styles.tableRow}>
-                        <Text style={[styles.tableCell, { flex: 1 }]}>ที่ สข. 80231</Text>
-                        <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-                        {/* <Text style={[styles.tableCell, { flex: 1 }]}></Text> */}
-                        <Text style={[styles.tableCell, { flex: 1 }]}>{lendingHospitalNameTH} </Text>
-                    </View>
-
-                    {/* Row 2 */}
-                    <View style={styles.tableRow}>
-                        <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-                        <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-                        {/* <Text style={[styles.tableCell, { flex: 1 }]}></Text> */}
-                        <Text style={[styles.tableCell, { flex: 1 }]}>ที่อยู่ {lendingHospitalAddress}</Text>
-                    </View>
+        <>
+            {variant === 'original' ? (
+                <Image style={styles.image} src="/krut_mark.jpg" />
+            ) : (
+                <Text style={{ textAlign: 'center', fontSize: 28, fontWeight: 'bold', marginBottom: 40 }}>สำเนา </Text>
+            )}
+            <View style={[styles.table, { marginBottom: 10 }]}>
+                <View style={styles.tableRow}>
+                    <Text style={[styles.tableCell, { flex: 1 }]}>ที่ สข. 80231</Text>
+                    <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+                    <Text style={[styles.tableCell, { flex: 1 }]}>{lendingHospitalNameTH} </Text>
                 </View>
 
-                <Text style={{ textAlign: 'center' }} >{today}</Text>
-                <Text style={styles.text}>เรื่อง    {documentType}</Text>
-                <Text style={styles.text}>เรียน    ผู้อำนวยการ {borrowingHospitalNameTH}</Text>
+                <View style={styles.tableRow}>
+                    <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+                    <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+                    <Text style={[styles.tableCell, { flex: 1 }]}>ที่อยู่ {userData.address}</Text>
+                </View>
+            </View>
 
-                {isSupport ?
-                    (
-                        <Text style={{ marginTop: 6, textIndent: 80, flexWrap: 'wrap', maxWidth: '100%' }}>
-                            เนื่องด้วย {lendingHospitalNameTH} มีความประสงค์จะขอสนับสนุนแทนการส่งคืนยาเนื่องจาก{returnMedicine?.reason ?? ''} ดังรายการต่อไปนี้
-                        </Text>
-                    )
-                    :
-                    (
-                        <Text style={{ marginTop: 6, textIndent: 80, flexWrap: 'wrap', maxWidth: '100%' }}>
-                            เนื่องด้วย {lendingHospitalNameTH} มีความประสงค์ที่จะขอคืนยา ซึ่งเป็นการคืนยา{returnTerm} ดังรายการต่อไปนี้
-                        </Text>
-                    )}
+            <Text style={{ textAlign: 'center' }} >{today}</Text>
+            <Text style={styles.text}>เรื่อง    {documentType}</Text>
+            <Text style={styles.text}>เรียน    ผู้อำนวยการ {borrowingHospitalNameTH}</Text>
 
+            {isSupport ? (
+                <Text style={{ marginTop: 6, textIndent: 80, flexWrap: 'wrap', maxWidth: '100%' }}>
+                    เนื่องด้วย {lendingHospitalNameTH} มีความประสงค์จะขอสนับสนุนแทนการส่งคืนยาเนื่องจาก{returnMedicine?.reason ?? ''} ดังรายการต่อไปนี้
+                </Text>
+            ) : (
+                <Text style={{ marginTop: 6, textIndent: 80, flexWrap: 'wrap', maxWidth: '100%' }}>
+                    เนื่องด้วย {lendingHospitalNameTH} มีความประสงค์ที่จะขอคืนยา ซึ่งเป็นการคืนยา{returnTerm} ดังรายการต่อไปนี้
+                </Text>
+            )}
 
-                <Text style={{ marginTop: 14, textDecoration: 'underline' }}>รายการยาที่ยืม</Text>
+            <Text style={{ marginTop: 14, textDecoration: 'underline' }}>รายการยาที่ยืม</Text>
 
+            <View style={[styles.table, { marginTop: 6 }]}>
+                <View style={styles.tableRow}>
+                    <Text style={[styles.tableHeader, { width: '25%' }]}>รายการ</Text>
+                    <Text style={[styles.tableHeader, { width: '15%' }]}>จำนวน </Text>
+                    <Text style={[styles.tableHeader, { width: '10%' }]}>ราคา </Text>
+                    <Text style={[styles.tableHeader, { width: '15%' }]}>มูลค่า</Text>
+                    <Text style={[styles.tableHeader, { width: '15%' }]}>ผู้ผลิต</Text>
+                    <Text style={[styles.tableHeader, { width: '20%' }]}>วันที่ขอยืม </Text>
+                </View>
+                <View style={styles.tableRow}>
+                    <Text style={[styles.tableCell, { width: '25%' }]}>{requestedMedicineName}</Text>
+                    <Text style={[styles.tableCell, { width: '15%' }]}>{requestedQuantity} ({unit})</Text>
+                    <Text style={[styles.tableCell, { width: '10%' }]}>{Number(pricePerUnit).toFixed(2)}</Text>
+                    <Text style={[styles.tableCell, { width: '15%' }]}>{Number(requestedQuantity * pricePerUnit).toFixed(2)}</Text>
+                    <Text style={[styles.tableCell, { width: '15%' }]}>{manufacturer}</Text>
+                    <Text style={[styles.tableCell, { width: '20%' }]}>{(() => {
+                        if (!pdfData?.createdAt) return '';
+                        const d = new Date(Number(pdfData?.createdAt));
+                        if (isNaN(d.getTime())) return '';
+                        return `${format(d, 'dd/MM')}/${d.getFullYear() + 543}`;
+                    })()}</Text>
+                </View>
+            </View>
+
+            {!isSupport && (
                 <View style={[styles.table, { marginTop: 6 }]}>
+                    <Text style={{ marginTop: 14, textDecoration: 'underline' }}>รายการยาที่คืน</Text>
                     <View style={styles.tableRow}>
                         <Text style={[styles.tableHeader, { width: '25%' }]}>รายการ</Text>
                         <Text style={[styles.tableHeader, { width: '15%' }]}>จำนวน </Text>
-                        <Text style={[styles.tableHeader, { width: '10%' }]}>ราคา </Text>
+                        <Text style={[styles.tableHeader, { width: '10%' }]}>ราคา</Text>
                         <Text style={[styles.tableHeader, { width: '15%' }]}>มูลค่า</Text>
                         <Text style={[styles.tableHeader, { width: '15%' }]}>ผู้ผลิต</Text>
-                        <Text style={[styles.tableHeader, { width: '20%' }]}>วันที่ขอยืม </Text>
+                        <Text style={[styles.tableHeader, { width: '20%' }]}>วันหมดอายุ </Text>
                     </View>
                     <View style={styles.tableRow}>
-                        <Text style={[styles.tableCell, { width: '25%' }]}>{requestedMedicineName}</Text>
-                        <Text style={[styles.tableCell, { width: '15%' }]}>{requestedQuantity} ({unit})</Text>
-                        <Text style={[styles.tableCell, { width: '10%' }]}>{Number(pricePerUnit).toFixed(2)}</Text>
-                        <Text style={[styles.tableCell, { width: '15%' }]}>{Number(requestedQuantity * pricePerUnit).toFixed(2)}</Text>
-                        <Text style={[styles.tableCell, { width: '15%' }]}>{manufacturer}</Text>
+                        <Text style={[styles.tableCell, { width: '25%' }]}>{returnMedicine?.name ?? ''}</Text>
+                        <Text style={[styles.tableCell, { width: '15%' }]}>{(returnMedicine?.returnAmount ?? 0)} ({returnMedicine?.quantity ?? ''})</Text>
+                        <Text style={[styles.tableCell, { width: '10%' }]}>{Number(returnMedicine?.pricePerUnit ?? 0).toFixed(2)}</Text>
+                        <Text style={[styles.tableCell, { width: '15%' }]}>{Number((returnMedicine?.returnAmount ?? 0) * (returnMedicine?.pricePerUnit ?? 0)).toFixed(2)}</Text>
+                        <Text style={[styles.tableCell, { width: '15%' }]}>{returnMedicine?.manufacturer ?? ''}</Text>
                         <Text style={[styles.tableCell, { width: '20%' }]}>{(() => {
-                            if (!pdfData?.createdAt) return '';
-                            const d = new Date(Number(pdfData?.createdAt));
+                            if (!returnMedicine?.returnDate) return '';
+                            const d = new Date(Number(returnMedicine.returnDate));
+                            const lotNumber = returnMedicine?.batchNumber ?? '';
                             if (isNaN(d.getTime())) return '';
-                            return `${format(d, 'dd/MM')}/${d.getFullYear() + 543}`;
+                            return `${format(d, 'dd/MM')}/${d.getFullYear() + 543} (${lotNumber})`;
                         })()}</Text>
                     </View>
                 </View>
+            )}
 
-                {!isSupport && (
-                    <View style={[styles.table, { marginTop: 6 }]}>
-                        <Text style={{ marginTop: 14, textDecoration: 'underline' }}>รายการยาที่คืน</Text>
-                        <View style={styles.tableRow}>
-                            <Text style={[styles.tableHeader, { width: '25%' }]}>รายการ</Text>
-                            <Text style={[styles.tableHeader, { width: '15%' }]}>จำนวน </Text>
-                            <Text style={[styles.tableHeader, { width: '10%' }]}>ราคา</Text>
-                            <Text style={[styles.tableHeader, { width: '15%' }]}>มูลค่า</Text>
-                            <Text style={[styles.tableHeader, { width: '15%' }]}>ผู้ผลิต</Text>
-                            <Text style={[styles.tableHeader, { width: '20%' }]}>วันหมดอายุ </Text>
-                        </View>
-                        <View style={styles.tableRow}>
-                            {/* <Text style={[styles.tableCell, {width: '20%'}]}>{returnMedicine?.name ?? ''}</Text> */}
-                            <Text style={[styles.tableCell, { width: '25%' }]}>{returnMedicine?.name ?? ''}</Text>
-                            <Text style={[styles.tableCell, { width: '15%' }]}>{(returnMedicine?.returnAmount ?? 0)} ({returnMedicine?.quantity ?? ''})</Text>
-                            <Text style={[styles.tableCell, { width: '10%' }]}>{Number(returnMedicine?.pricePerUnit ?? 0).toFixed(2)}</Text>
-                            <Text style={[styles.tableCell, { width: '15%' }]}>{Number((returnMedicine?.returnAmount ?? 0) * (returnMedicine?.pricePerUnit ?? 0)).toFixed(2)}</Text>
-                            <Text style={[styles.tableCell, { width: '15%' }]}>{returnMedicine?.manufacturer ?? ''}</Text>
-                            <Text style={[styles.tableCell, { width: '20%' }]}>{(() => {
-                                if (!returnMedicine?.returnDate) return '';
-                                const d = new Date(Number(returnMedicine.returnDate));
-                                const lotNumber = returnMedicine?.batchNumber ?? '';
-                                if (isNaN(d.getTime())) return '';
-                                return `${format(d, 'dd/MM')}/${d.getFullYear() + 543} (${lotNumber})`;
-                            })()}</Text>
-                        </View>
-                    </View>
-                )}
+            {isSupport ? (
+                <Text style={{ marginTop: 14, textIndent: 80, flexWrap: 'wrap', maxWidth: '100%' }}>จึงเรียนมาเพื่อพิจารณาดำเนินการหักจากงบประมาณ{lendingHospitalNameTH} และ{borrowingHospitalNameTH}ขอขอบคุณมา ณ โอกาสนี้</Text>
+            ) : (
+                <Text style={{ marginTop: 30, textIndent: 80, flexWrap: 'wrap', maxWidth: '100%', }}>จึงเรียนมาเพื่อโปรดพิจารณาและดำเนินการต่อไป <p>hidden</p></Text>
+            )}
 
-                {isSupport ? (
-                    <Text style={{ marginTop: 14, textIndent: 80, flexWrap: 'wrap', maxWidth: '100%' }}>จึงเรียนมาเพื่อพิจารณาดำเนินการหักจากงบประมาณ{lendingHospitalNameTH} และ{borrowingHospitalNameTH}ขอขอบคุณมา ณ โอกาสนี้</Text>
-                ) : (
-                    <Text style={{ marginTop: 30, textIndent: 80, flexWrap: 'wrap', maxWidth: '100%', }}>จึงเรียนมาเพื่อโปรดพิจารณาและดำเนินการต่อไป <p>hidden</p></Text>
-                )}
+            <Text style={{ marginTop: 30, textIndent: 350 }}>ขอแสดงความนับถือ</Text>
+            <Text style={{ marginTop: 100, textIndent: 310 }}>ผู้อำนวยการ{userData.director} </Text>
+            <Text style={{ textIndent: 310 }}>ผู้อำนวยการ{lendingHospitalNameTH}   </Text>
+            <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
+            <Text>ติดต่อ {userData.contact}   </Text>
+        </>
+    );
+}
 
-                <Text style={{ marginTop: 30, textIndent: 350 }}>ขอแสดงความนับถือ</Text>
-                <Text style={{ marginTop: 100, textIndent: 310 }}>ผู้อำนวยการ{director} </Text>
-                <Text style={{ textIndent: 310 }}>ผู้อำนวยการ {lendingHospitalNameTH}   </Text>
-                <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
-                <Text>ติดต่อ {contact}   </Text>
+function MyDocument({ pdfData, variant = 'original' }: any) {
+    return (
+        <PDFDocGen>
+            <Page size="A4" style={styles.body}>
+                <ContentPage pdfData={pdfData} variant={variant} />
+            </Page>
+        </PDFDocGen>
+    );
+}
+
+function DualDocument({ pdfData }: any) {
+    return (
+        <PDFDocGen>
+            <Page size="A4" style={styles.body}>
+                <ContentPage pdfData={pdfData} variant="original" />
+            </Page>
+            <Page size="A4" style={styles.body}>
+                <ContentPage pdfData={pdfData} variant="copy" />
             </Page>
         </PDFDocGen>
     );
 }
 
 
-const ReturnPdfPreview = forwardRef(({ data: pdfData, returnData }: any, ref) => {
+const ReturnPdfPreview = forwardRef(({ data: pdfData, returnData, userData }: any, ref) => {
     const [blob, setBlob] = useState<Blob | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
     useEffect(() => {
         let cancelled = false;
         const generatePdf = async () => {
-            const generatedBlob = await pdf(<MyDocument pdfData={{ ...pdfData, returnData }} />).toBlob();
+            const generatedBlob = await pdf(<MyDocument pdfData={{ ...pdfData, returnData, userData }} />).toBlob();
             if (!cancelled) {
                 setBlob(generatedBlob);
                 setPdfUrl(URL.createObjectURL(generatedBlob));
@@ -283,7 +282,7 @@ const ReturnPdfPreview = forwardRef(({ data: pdfData, returnData }: any, ref) =>
         return () => {
             cancelled = true;
         };
-    }, [pdfData, returnData]);
+    }, [pdfData, returnData, userData]);
 
     useImperativeHandle(ref, () => ({
         savePdf: () => {
@@ -291,12 +290,8 @@ const ReturnPdfPreview = forwardRef(({ data: pdfData, returnData }: any, ref) =>
                 try {
                     const currentDate = new Date();
                     const formattedDate = format(currentDate, 'ddMMyyyy');
-                    const [originalBlob, copyBlob] = await Promise.all([
-                        pdf(<MyDocument pdfData={{ ...pdfData, returnData }} variant="original" />).toBlob(),
-                        pdf(<MyDocument pdfData={{ ...pdfData, returnData }} variant="copy" />).toBlob(),
-                    ]);
-                    saveAs(originalBlob, `return_document_${formattedDate}.pdf`);
-                    saveAs(copyBlob, `return_document_${formattedDate}_copy.pdf`);
+                    const combinedBlob = await pdf(<DualDocument pdfData={{ ...pdfData, userData, returnData }} />).toBlob();
+                    saveAs(combinedBlob, `return_document_${formattedDate}.pdf`);
                 } catch (error) {
                     console.error('Failed to generate return PDFs:', error);
                 }
