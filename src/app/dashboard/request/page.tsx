@@ -25,6 +25,7 @@ import { RequestAsset } from "@/types/requestMed";
 
 import { DataTable } from "./data-table";
 import { columns } from "./columns";
+import { th } from "date-fns/locale";
 
 type BorrowDashboardProps = {
     loggedInHospital: string;
@@ -82,7 +83,7 @@ export default function BorrowDashboard() {
                         setUpdatedLast(new Date());
                     }}>
                         <RefreshCcwIcon />
-                        {updatedLast ? `Updated ${formatDistanceToNow(updatedLast, { addSuffix: true })}` : ""}
+                        {updatedLast ? `อัปเดต ${formatDistanceToNow(updatedLast, { addSuffix: true, locale: th })}` : ""}
                     </Button>
 
                     <Button onClick={() => (setCreateRequestDialogOpen(true))}>ขอยืมยา</Button>
@@ -130,6 +131,7 @@ export default function BorrowDashboard() {
                             <CancelDialog
                                 selectedMed={selectedMed}
                                 title={"ยกเลิกการยืมยา"}
+                                cancelID={selectedMed.id}
                                 description={"คุณต้องการยกเลิกการยืมยาใช่หรือไม่"}
                                 confirmButtonText={"ยกเลิก"}
                                 successMessage={"ยกเลิกการยืมยาเรียบร้อย"}

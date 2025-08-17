@@ -204,8 +204,8 @@ function MyDocument({ pdfData }: any) {
                     <View style={styles.tableRow}>
                         <Text style={[styles.tableCell, { width: '25%' }]}>{requestedMedicineName}</Text>
                         <Text style={[styles.tableCell, { width: '15%' }]}>{requestedQuantity} ({unit})</Text>
-                        <Text style={[styles.tableCell, { width: '10%' }]}>{pricePerUnit}</Text>
-                        <Text style={[styles.tableCell, { width: '15%' }]}>{requestedQuantity * pricePerUnit}</Text>
+                        <Text style={[styles.tableCell, { width: '10%' }]}>{Number(pricePerUnit).toFixed(2)}</Text>
+                        <Text style={[styles.tableCell, { width: '15%' }]}>{Number(requestedQuantity * pricePerUnit).toFixed(2)}</Text>
                         <Text style={[styles.tableCell, { width: '15%' }]}>{manufacturer}</Text>
                         <Text style={[styles.tableCell, { width: '20%' }]}>{(() => {
                             if (!pdfData?.createdAt) return '';
@@ -231,8 +231,8 @@ function MyDocument({ pdfData }: any) {
                             {/* <Text style={[styles.tableCell, {width: '20%'}]}>{returnMedicine?.name ?? ''}</Text> */}
                             <Text style={[styles.tableCell, { width: '25%' }]}>{returnMedicine?.name ?? ''}</Text>
                             <Text style={[styles.tableCell, { width: '15%' }]}>{(returnMedicine?.returnAmount ?? 0)} ({returnMedicine?.quantity ?? ''})</Text>
-                            <Text style={[styles.tableCell, { width: '10%' }]}>{returnMedicine?.pricePerUnit ?? 0}</Text>
-                            <Text style={[styles.tableCell, { width: '15%' }]}>{(returnMedicine?.returnAmount ?? 0) * (returnMedicine?.pricePerUnit ?? 0)}</Text>
+                            <Text style={[styles.tableCell, { width: '10%' }]}>{Number(returnMedicine?.pricePerUnit ?? 0).toFixed(2)}</Text>
+                            <Text style={[styles.tableCell, { width: '15%' }]}>{Number((returnMedicine?.returnAmount ?? 0) * (returnMedicine?.pricePerUnit ?? 0)).toFixed(2)}</Text>
                             <Text style={[styles.tableCell, { width: '15%' }]}>{returnMedicine?.manufacturer ?? ''}</Text>
                             <Text style={[styles.tableCell, { width: '20%' }]}>{(() => {
                                 if (!returnMedicine?.returnDate) return '';

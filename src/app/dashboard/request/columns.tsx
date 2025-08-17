@@ -70,7 +70,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
             const requestDetails = med.requestDetails
             const createdAt = requestDetails.updatedAt
             const date = Number(createdAt); // convert string to number, then to Date
-            const formattedDate = format(new Date(Number(date)), 'dd-MM-') + (new Date(Number(date)).getFullYear() + 543)
+            const formattedDate = format(new Date(Number(date)), 'dd/MM/') + (new Date(Number(date)).getFullYear() + 543)
             const timeOnly = format(date, 'HH:mm:ss'); // format to time only
             return <div>
                 <div className="text-sm font-medium">{formattedDate}</div>

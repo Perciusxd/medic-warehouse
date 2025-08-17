@@ -127,6 +127,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
     const { postingHospitalNameEN } = sharingDetails;
     // const receiveConditions = sharingDetails?.sharingReturnTerm?.receiveConditions || {};
     const receiveConditions = returnTerm || {};
+    console.log('returnTerm', returnTerm)
     const returnFormSchema = ReturnFormSchema({ selectedMed });
 
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -231,6 +232,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
         subType: receiveConditions?.subType ?? true,
         supportType: receiveConditions?.supportType ?? false,
     } as const;
+    console.log('allowedReturnTypes', allowedReturnTypes)
 
     // Ensure selected returnType is allowed
     useEffect(() => {
@@ -344,7 +346,11 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className="justify-start text-left font-normal" disabled={isSupportSelected}>
                                     {expiredDate
-                                        ? (() => { const d = new Date(Number(expiredDate)); return `${format(d, 'dd/MM')}/${d.getFullYear() + 543}` })()
+                                        ? new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+                                            day: '2-digit',
+                                            month: 'long',
+                                            year: 'numeric',
+                                        }).format(new Date(Number(expiredDate)))
                                         : "เลือกวันที่"}
                                     <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                 </Button>
@@ -396,7 +402,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                             <Label>ไม่ขอสนับสนุน</Label>
                         </div> */}
                         <div className="flex items-center gap-2">
-                            <input type="checkbox" value="support" checked={isSupportSelected} {...register("supportRequest")} disabled={allowedReturnTypes.supportType} />
+                            <input type="checkbox" value="support" checked={isSupportSelected} {...register("supportRequest")} disabled={!allowedReturnTypes.supportType} />
                             <Label>ขอสนับสนุน</Label>
                         </div>
                     </div>

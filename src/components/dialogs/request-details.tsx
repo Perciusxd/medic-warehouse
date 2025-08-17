@@ -1,10 +1,27 @@
 "use client"
 import { formatDate } from "@/lib/utils"
 import { useState, useEffect } from "react"
-
+import { format } from "date-fns"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import ImageHoverPreview from "@/components/ui/image-hover-preview"
+const formatThaiDate = (input: string | number | Date | undefined): string => {
+    if (!input) return '';
+    let date: Date;
+    if (input instanceof Date) {
+        date = input;
+    } else if (typeof input === 'string') {
+        date = isNaN(Number(input)) ? new Date(input) : new Date(Number(input));
+    } else {
+        date = new Date(input);
+    }
+    if (isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+    }).format(date);
+}
 export default function RequestDetails({ requestData, responseForm }: any) {
     // Image preview state
     const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
@@ -78,7 +95,7 @@ export default function RequestDetails({ requestData, responseForm }: any) {
 
     const imgUrl: string | null = requestDetails.requestMedicine.requestMedicineImage || requestDetails.requestMedicine?.imageRef || null;
     const [details, setDetails] = useState([
-        { label: "วันที่ขอยืม", value: formatDate(requestDetails.updatedAt) },
+        { label: "วันที่ขอยืม", value: format(new Date(Number(requestDetails.updatedAt)), 'dd/MM/') + (new Date(Number(requestDetails.updatedAt)).getFullYear() + 543) },
         // { label: "ID ขอยืม", value: requestDetails.id },
         // { label: "Posting Hospital ID", value: requestDetails.postingHospitalId },
         // { label: "Posting Hospital Name (EN)", value: requestDetails.postingHospitalNameEN },
@@ -123,7 +140,7 @@ export default function RequestDetails({ requestData, responseForm }: any) {
                 </div>
                 <div>
                     <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
-                    <Input type="text" value={formatDate(requestDetails.requestTerm.expectedReturnDate)} disabled />
+                    <Input type="text" value={format(new Date(Number(requestDetails.requestTerm.expectedReturnDate)), 'dd/MM/') + (new Date(Number(requestDetails.requestTerm.expectedReturnDate)).getFullYear() + 543)} disabled />
                 </div>
                 <div className="col-span-2">
                     <Label className="font-bold">เหตุผลการยืม</Label>

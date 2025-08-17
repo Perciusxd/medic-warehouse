@@ -14,7 +14,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar"
 import { Badge } from "@/components/ui/badge"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
-import {ImageHoverPreview } from "@/components/ui/image-hover-preview"
+import { ImageHoverPreview } from "@/components/ui/image-hover-preview"
 import { Calendar1Icon, ShieldAlert } from "lucide-react"
 import { Calendar1, Hospital } from "lucide-react"
 import RequestDetails from "./request-details"
@@ -23,9 +23,10 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
     const { requestTerm } = requestData;
     const ResponseSchema = z.object({
         offeredMedicine: z.object({
-            offerAmount: z.number().min(1, "กรุณากรอกมากว่า 0").max(requestData.requestMedicine.requestAmount, `กรุณากรอกน้อยกว่า ${requestData.requestMedicine.requestAmount}`),
+            // offerAmount: z.number().min(1, "กรุณากรอกมากว่า 0").max(requestData.requestMedicine.requestAmount, `กรุณากรอกน้อยกว่า ${requestData.requestMedicine.requestAmount}`),
+            offerAmount: z.number().min(1, "กรุณากรอกมากว่า 0"),
             trademark: z.string(),
-            pricePerUnit: z.number().min(1, "Price per unit must be greater than 0").max(100000, "Price per unit must be less than 100000"),
+            pricePerUnit: z.number().gt(0, "Price per unit must be greater than 0").max(100000, "Price per unit must be less than 100000"),
             manufacturer: z.string(),
             batchNumber: z.string().optional(),
             expiryDate: z.string().min(1, "กรุณาระบุวันที่หมดอายุ"),
@@ -64,7 +65,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                 batchNumber: requestData.requestMedicine.batchNumber,
                 expiryDate: requestData.requestMedicine.expiryDate,
                 // manufactureDate: requestData.requestMedicine.manufactureDate,
-                 //expiryDate: requestData.requestMedicine.expiryDate,
+                //expiryDate: requestData.requestMedicine.expiryDate,
                 // imageRef: requestData.requestMedicine.imageRef,
                 returnTerm: "exactType",
                 returnConditions: {
@@ -238,8 +239,8 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                     />
                                 </Label>
                                 <Label className="flex flex-col items-start">
-                                   หมายเลขล๊อต
-                                   <Input
+                                    หมายเลขล๊อต
+                                    <Input
                                         type="text"
                                         {...register("offeredMedicine.manufacturer")}
                                         disabled={returnTerm === "exactType"}
@@ -249,17 +250,35 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                 <Label className="flex flex-col items-start">
                                     จำนวนที่ให้ยืม
                                     <Input
-                                        inputMode="numeric"
+                                        inputMode="decimal"
                                         placeholder="10"
+                                        className="border p-1 font-light"
+                                        {...register("offeredMedicine.offerAmount", { valueAsNumber: true })}
                                         onKeyDown={(e) => {
-                                            const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
+                                            const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"];
+
+                                            if (e.key === ".") {
+                                                if ((e.currentTarget.value || "").includes(".")) {
+                                                    e.preventDefault();
+                                                }
+                                                return;
+                                            }
+
                                             if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
                                                 e.preventDefault();
                                             }
                                         }}
-                                        {...register("offeredMedicine.offerAmount", { valueAsNumber: true })}
-                                        className="border p-1 font-light"
+                                        onBlur={(e) => {
+                                            const raw = e.target.value.replace(/,/g, "");
+                                            if (raw === "" || isNaN(Number(raw))) return;
+                                            e.target.value = Number(raw).toLocaleString("th-TH", {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 2,
+                                            });
+                                        }}
                                     />
+
+
                                     {errors.offeredMedicine?.offerAmount && (
                                         <span className="text-red-500 text-xs -mt-1">{errors.offeredMedicine.offerAmount.message}</span>
                                     )}
@@ -268,14 +287,15 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                     <Label className="flex flex-col items-start">ราคาต่อหน่วย
                                         <div className="flex">
                                             <Input
-                                                inputMode="numeric"
+                                                inputMode="decimal"
                                                 placeholder="10"
+                                                {...register("offeredMedicine.pricePerUnit", { valueAsNumber: true })}
                                                 onKeyDown={(e) => {
                                                     const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"];
 
                                                     if (e.key === ".") {
                                                         if ((e.currentTarget.value || "").includes(".")) {
-                                                            e.preventDefault(); // กันการพิมพ์จุดซ้ำ
+                                                            e.preventDefault();
                                                         }
                                                         return;
                                                     }
@@ -284,16 +304,20 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                                         e.preventDefault();
                                                     }
                                                 }}
-                                                {...register("offeredMedicine.pricePerUnit", { valueAsNumber: true })}
+                                                onBlur={(e) => {
+                                                    const raw = e.target.value.replace(/,/g, "");
+                                                    if (raw === "" || isNaN(Number(raw))) return;
+                                                    e.target.value = Number(raw).toLocaleString("th-TH", {
+                                                        minimumFractionDigits: 0,
+                                                        maximumFractionDigits: 2,
+                                                    });
+                                                }}
                                                 className="border p-1 font-light"
                                             />
                                             {errors.offeredMedicine?.pricePerUnit && (
                                                 <span className="text-red-500 text-xs -mt-1">{errors.offeredMedicine.pricePerUnit.message}</span>
                                             )}
-
                                             <div className="flex items-center font-bold">
-
-                                                
                                                 &nbsp;รวม&nbsp;
                                                 <span className="">
                                                     {((Number(offeredAmount) || 0) * (Number(offeredPrice) || 0)).toLocaleString("th-TH", {
@@ -301,60 +325,65 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                                         maximumFractionDigits: 2,
                                                     })}
                                                 </span>&nbsp;บาท
-
                                             </div>
                                         </div>
+
+                                        <div className="flex flex-col gap-2">
+                                            <Label className="font-bold">ราคาต่อหน่วย</Label>
+
+                                        </div>
+
                                     </Label>
                                 </div>
-                                 <Label className="flex flex-col items-start">
+                                <Label className="flex flex-col items-start">
                                     หมายเลขล๊อต
-                                   <Input
+                                    <Input
                                         type="text"
                                         {...register("offeredMedicine.batchNumber")}
-                                       
+
                                         className="border p-1"
                                     />
                                 </Label>
-                            <div className="flex flex-col gap-2">
-                                <Label className="font-bold">วันหมดอายุ</Label>
-                                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
-                                    <PopoverTrigger asChild>
-                                        <Button variant="outline" className="justify-start text-left font-normal">
-                                            {expiryDate
-                                                ? format(new Date(Number(expiryDate)), 'dd-MM-') + (new Date(Number(expiryDate)).getFullYear() + 543)
-                                                : "เลือกวันที่"}
-                                            <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0">
-                                        <Calendar
-                                            mode="single"
-                                            selected={expiryDate ? new Date(expiryDate) : undefined}
-                                            onSelect={(date) => {
-                                                if (date instanceof Date && !isNaN(date.getTime())) {
-                                                    const today = new Date();
-                                                    today.setHours(0, 0, 0, 0); // normalize time
-                                                    const dateString = date.getTime().toString()
+                                <div className="flex flex-col gap-2">
+                                    <Label className="font-bold">วันหมดอายุ</Label>
+                                    <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
+                                        <PopoverTrigger asChild>
+                                            <Button variant="outline" className="justify-start text-left font-normal">
+                                                {expiryDate
+                                                    ? format(new Date(Number(expiryDate)), 'dd/MM/') + (new Date(Number(expiryDate)).getFullYear() + 543)
+                                                    : "เลือกวันที่"}
+                                                <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0">
+                                            <Calendar
+                                                mode="single"
+                                                selected={expiryDate ? new Date(expiryDate) : undefined}
+                                                onSelect={(date) => {
+                                                    if (date instanceof Date && !isNaN(date.getTime())) {
+                                                        const today = new Date();
+                                                        today.setHours(0, 0, 0, 0); // normalize time
+                                                        const dateString = date.getTime().toString()
 
-                                                    if (date > today) {
-                                                        setValue("offeredMedicine.expiryDate", dateString, { shouldValidate: true });
-                                                        setDateError(""); // clear error
-                                                        setIsCalendarOpen(false); // close popover
+                                                        if (date > today) {
+                                                            setValue("offeredMedicine.expiryDate", dateString, { shouldValidate: true });
+                                                            setDateError(""); // clear error
+                                                            setIsCalendarOpen(false); // close popover
+                                                        } else {
+                                                            setDateError("กรุณาเลือกวันที่ในอนาคต");
+                                                        }
                                                     } else {
-                                                        setDateError("กรุณาเลือกวันที่ในอนาคต");
+                                                        setDateError("Invalid date selected.");
                                                     }
-                                                } else {
-                                                    setDateError("Invalid date selected.");
-                                                }
-                                            }}
-                                            initialFocus
-                                        />
-                                        {dateError && (
-                                            <div className="text-red-500 text-sm px-4 py-2">{dateError}</div>
-                                        )}
-                                    </PopoverContent>
-                                </Popover>
-                            </div>
+                                                }}
+                                                initialFocus
+                                            />
+                                            {dateError && (
+                                                <div className="text-red-500 text-sm px-4 py-2">{dateError}</div>
+                                            )}
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
 
                             </div>
                             <Label className="mt-4 mb-2">เงื่อนไขการคืนที่ยอมรับ</Label>

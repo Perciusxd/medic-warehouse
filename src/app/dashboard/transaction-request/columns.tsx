@@ -94,7 +94,7 @@ export const columns = (
                 const raw = row.original.updatedAt
                 const date = new Date(Number(raw)); // convert string to number, then to Date
                 const isValid = !isNaN(date.getTime());
-                const formattedDate = isValid ? format(new Date(Number(date)), 'dd-MM-') + (new Date(Number(date)).getFullYear() + 543) : "-"; // format to date only
+                const formattedDate = isValid ? format(new Date(Number(date)), 'dd/MM/') + (new Date(Number(date)).getFullYear() + 543) : "-"; // format to date only
                 const timeOnly = isValid ? format(date, 'HH:mm:ss') : "-"; // format to time only
 
                 return (<div>
@@ -143,7 +143,8 @@ export const columns = (
             cell: ({ row }) => {
                 const med = row.original;
                 const requestAmount = med.requestMedicine.requestAmount;
-                const remainingAmount = med.remainingAmount;
+                const offeredAmount = med.remainingAmount;
+                const remainingAmount = requestAmount - offeredAmount
                 const pricePerUnit = med.requestMedicine.pricePerUnit;
                 const totalPrice = requestAmount * pricePerUnit;
                 //console.log('medasdasdasd', med)
@@ -309,12 +310,12 @@ export const columns = (
                                  <div className="text-md font-medium  flex justify-start min-w-[120px]">
                                    <span>
                                         {detail.updatedAt && !isNaN(Number(detail.updatedAt))
-                                            ? format(new Date(Number(detail.updatedAt)), 'dd-MM-') + (new Date(Number(detail.updatedAt)).getFullYear() + 543)
+                                            ? format(new Date(Number(detail.updatedAt)), 'dd/MM/') + (new Date(Number(detail.updatedAt)).getFullYear() + 543)
                                             : "-"}
                                         </span>
                                 </div>
-                                <div className="text-md font-medium  flex justify-start min-w-[150px] ">
-                                    <span>{detail.respondingHospitalNameTH}:</span>
+                                <div className="basis-1/2 text-wrap w-[120px] truncate overflow-hidden text-ellipsis whitespace-nowrap">
+                                    <span>{detail.respondingHospitalNameTH}</span>
                                 </div>
                                 <div className="text-sm font-medium text-gray-600 flex    items-center text-left  justify-start min-w-[180px]">
                                     <div className="flex items-center gap-x-1 basis-1/2">
@@ -333,11 +334,11 @@ export const columns = (
 
                                         )
                                             : detail.status === 'pending'
-                                                ? (<Button variant={'link'} disabled className="flex gap-x-1  ">รอการยืนยันให้ยืม<StatusIndicator status={detail.status} /></Button>)
+                                                ? (<Button variant={'link'} disabled className="flex gap-x-1 p-0">รอการยืนยันให้ยืม<StatusIndicator status={detail.status} /></Button>)
                                                 : detail.status === 'to-transfer'
                                                     ? (<Button variant={'link'} className="flex gap-x-1  " disabled>รอรับมอบ<StatusIndicator status={detail.status} /></Button>)
                                                     : detail.status === 'to-return'
-                                                        ? (<Button variant={'link'} className="flex gap-x-1  " onClick={() => handleconfirReceiveDelivery({
+                                                        ? (<Button variant={'link'} className="flex gap-x-1 p-0" onClick={() => handleconfirReceiveDelivery({
                                                             ...med,
                                                             displayHospitalName: detail.respondingHospitalNameTH,
                                                             displayMedicineName: detail.offeredMedicine.name,
@@ -347,7 +348,7 @@ export const columns = (
                                                             requestDetails: med.requestMedicine,
                                                         })}>ยืนยันการรับยา<StatusIndicator status={detail.status} /></Button>)
                                                         : detail.status === 'in-return'
-                                                            ? (<Button variant={'link'} className="flex gap-x-1  " onClick={() => handleReturnClick(
+                                                            ? (<Button variant={'link'} className="flex gap-x-1 p-0" onClick={() => handleReturnClick(
                                                                 {
                                                                     ...med,
                                                                     responseId: detail.id,
@@ -357,15 +358,15 @@ export const columns = (
                                                                 })
                                                             }>ส่งคืนยา<StatusIndicator status={detail.status} /></Button>)
                                                             : detail.status === "confirm-return"
-                                                                ? (<span className="flex gap-x-1  ">รอยืนยันการได้รับคืน< StatusIndicator status={detail.status} /></span>)
+                                                                ? (<span className="flex gap-x-1 p-0">รอยืนยันการได้รับคืน< StatusIndicator status={detail.status} /></span>)
                                                                 : detail.status === 'returned'
                                                                     ? (<span className="flex gap-x-1   ">เสร็จสิ้น<StatusIndicator status={detail.status} /></span>)
                                                                     : detail.status === 'cancelled'
-                                                                        ? (<span className="flex gap-x-1  ">ยกเลิก<StatusIndicator status={detail.status} /></span>)
+                                                                        ? (<span className="flex gap-x-1 p-0">ยกเลิก<StatusIndicator status={detail.status} /></span>)
                                                                         : null
                                         }
                                     </div>
-                                    <div className="flex ">({detail.offerAmount})</div>
+                                    {/* <div className="flex ">({detail.offerAmount})</div> */}
                                 </div>
                             </div>
                         ))}

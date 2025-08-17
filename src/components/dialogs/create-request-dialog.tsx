@@ -22,6 +22,7 @@ import RequestDetails from "./request-details"
 import { Calendar1, Hospital } from "lucide-react"
 import { format } from "date-fns"
 import { HospitalList } from "@/context/HospitalList"
+import sendMailHandler from "@/pages/api/sendmail"
 
 // Convert a Blob/File to a Base64 data URL
 const blobToDataUrl = (blob: Blob): Promise<string> => {
@@ -93,6 +94,25 @@ const compressImageFile = async (
 const allHospitalList = HospitalList;
 
 
+// Thai date formatting helper (Buddhist calendar)
+const formatThaiDate = (input: string | number | Date | undefined): string => {
+    if (!input) return '';
+    let date: Date;
+    if (input instanceof Date) {
+        date = input;
+    } else if (typeof input === 'string') {
+        date = isNaN(Number(input)) ? new Date(input) : new Date(Number(input));
+    } else {
+        date = new Date(input);
+    }
+    if (isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+    }).format(date);
+}
+
 const FormSchema = z.object({
     mode: z.enum(["auto", "manual", "advanced"]),
     customInput: z.string().optional(),
@@ -101,22 +121,26 @@ const FormSchema = z.object({
 const RequestSchema = z.object({
     urgent: z.enum(["urgent", "immediate", "normal"]),
     requestMedicine: z.object({
-        name: z.string().min(1, "Name is required"),
-        trademark: z.string().min(1, "Trademark is required"),
+        name: z.string().min(1, "กรุณากรอกชื่อยา"),
+        trademark: z.string().min(1, "กรุณากรอกชื่อการค้า"),
         description: z.string().optional(),
-        requestAmount: z.number().min(1, "Request amount must be greater than 0").max(1000, "Request amount must be less than 1000"),
-        quantity: z.string().min(1, "Quantity is required"),
-        pricePerUnit: z.number().min(1, "Price per unit must be greater than 0").max(100000, "Price per unit must be less than 100000"),
-        unit: z.string().min(1, "Unit is required"),
-        manufacturer: z.string().min(1, "Manufacturer is required"),
+        requestAmount: z.coerce.number({ required_error: "กรุณากรอกจำนวนที่ต้องการยืม" })
+            .min(1, "จำนวนที่ต้องการยืมต้องมากกว่า 0")
+            .max(10000, "จำนวนที่ต้องการยืมต้องไม่เกิน 10000"),
+        quantity: z.string().min(1, "กรุณากรอกรูปแบบ/ขนาด"),
+        pricePerUnit: z.coerce.number({ required_error: "กรุณากรอกราคาต่อหน่วย" })
+            .min(1, "ราคาต่อหน่วยต้องมากกว่า 0")
+            .max(100000, "ราคาต่อหน่วยต้องไม่เกิน 100,000"),
+        unit: z.string().min(1, "กรุณากรอกรูปแบบ/หน่วย"),
+        manufacturer: z.string().min(1, "กรุณากรอกผู้ผลิต"),
         // เก็บไฟล์ภาพที่อัปโหลดไว้ในฟอร์ม (ไม่บังคับ)
         image: z.custom<File | undefined>((value) => value === undefined || value instanceof File, {
             message: "กรุณาอัปโหลดไฟล์ภาพที่ถูกต้อง",
         }).optional(),
-
+        
     }),
     requestTerm: z.object({
-        expectedReturnDate: z.coerce.string({ invalid_type_error: "Expected return date must be a valid date" }),
+        expectedReturnDate: z.coerce.string({ invalid_type_error: "วันที่คาดว่าจะคืนต้องเป็นวันที่ถูกต้อง" }),
         receiveConditions: z.object({
             condition: z.enum(["exactType", "subType"]),
             supportType: z.boolean().optional(),
@@ -155,7 +179,8 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                 trademark: "",
                 description: "",
                 quantity: "",
-
+                requestAmount: 0,
+                pricePerUnit: 0,
                 unit: "",
                 manufacturer: "",
             },
@@ -215,6 +240,32 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
         setValue("selectedHospitals", updated, { shouldValidate: true })
     }
 
+    const sendMailsSequentially = async (filterHospital: any, requestData: any) => {
+        for (const val of filterHospital) {
+            try {
+            // รอ 1 วิ ก่อนยิง request
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+            const mailResponse = await fetch("/api/sendmail", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                requestData: requestData,
+                selectedHospitals: val,
+                }),
+            });
+
+            if (!mailResponse.ok) {
+                console.warn("sendmail failed:", await mailResponse.text());
+            } else {
+                console.log("sendmail success");
+            }
+            } catch (err) {
+                console.error("sendmail error:", err);
+            }
+        }
+    }
+
     const onSubmit = async (data: z.infer<typeof RequestSchema>) => {
         const filterHospital = hospitalList.filter(hospital => data.selectedHospitals.includes(hospital.id))
         // Compress and prepare Base64 image (data URL) for persistence instead of a blob URL
@@ -265,6 +316,13 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
 
             if (!response.ok) {
                 throw new Error("Failed to submit")
+            } else {
+                if (filterHospital.length) {
+                    // sendmail
+                    // sendMailsSequentially(filterHospital, requestData).catch((err) => {
+                    //     console.error("sendMails error:", err);
+                    // });
+                }
             }
 
             const result = await response.json()
@@ -439,7 +497,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" className="justify-start text-left font-normal">
                                             {expectedReturnDate
-                                                ? format(new Date(Number(expectedReturnDate)), 'dd-MM-') + (new Date(Number(expectedReturnDate)).getFullYear() + 543)
+                                                ? format(new Date(Number(expectedReturnDate)), 'dd/MM/') + (new Date(Number(expectedReturnDate)).getFullYear() + 543)
                                                 : "เลือกวันที่"}
                                             <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                         </Button>
@@ -462,7 +520,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                                         setDateError("กรุณาเลือกวันที่ในอนาคต");
                                                     }
                                                 } else {
-                                                    setDateError("Invalid date selected.");
+                                                    setDateError("วันที่ไม่ถูกต้อง");
                                                 }
                                             }}
                                             initialFocus

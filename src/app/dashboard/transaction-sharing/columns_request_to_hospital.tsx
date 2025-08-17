@@ -20,11 +20,11 @@ export const columns = (
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">วันที่แจ้ง</div>,
         cell: ({ row }) => {
             const createdAt = row.original.requestDetails.updatedAt
-            //console.log("row response", row.original)
+            console.log("row response", row.original)
             const date = new Date(Number(createdAt)); // convert string to number, then to Date
             return(
             <div>
-                <div className="text-md font-medium">{format(date, "dd/MM/yyyy")}</div>
+                <div className="text-md font-medium">{format(new Date(Number(date)), 'dd/MM/') + (new Date(Number(date)).getFullYear() + 543)}</div>
                 <div className="text-xs text-muted-foreground">{format(date, 'HH:mm:ss')}</div>
             </div> 
             )
@@ -68,15 +68,18 @@ export const columns = (
         id: "requestAmount",
         accessorFn: (row) => row.requestDetails.requestMedicine.requestAmount,
         size: 100,
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวน(ยืนยัน)</div>,
-        cell: ({ getValue }) => {
-            const requestAmount = getValue() as number
-            const pricePerUnit = getValue() as number
-            const offeringAmount = getValue() as number
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวน(คงเหลือ)</div>,
+        cell: ({ row }) => {
+            const requestAmount = row.original.requestDetails.requestMedicine.requestAmount as number
+            const pricePerUnit = row.original.requestDetails.requestMedicine.pricePerUnit as number
+            const offerAmount = row.original.offeredMedicine.offerAmount as number
+            console.log("offerAmount", row)
+            const totalAmount = pricePerUnit - offerAmount
             const totalPrice = requestAmount * pricePerUnit
+            
            return (
             <div>
-                <div className="text-md font-medium">{requestAmount.toLocaleString()} ( {offeringAmount.toLocaleString()} )</div>
+                <div className="text-md font-medium">{requestAmount.toLocaleString()} ({totalAmount.toLocaleString()}) </div>
                 <div className="text-xs text-muted-foreground">รวม {totalPrice.toLocaleString()} บาท</div>
             </div>
             )
@@ -92,7 +95,7 @@ export const columns = (
             const date = new Date(Number(updatedAt)); // convert string to number, then to Date
             return (
                 <div >
-                    <div className="text-md font-medium"> {format(date, "dd/MM/yyyy")}</div>
+                    <div className="text-md font-medium"> {format(new Date(Number(date)), 'dd/MM/') + (new Date(Number(date)).getFullYear() + 543)}</div>
                     <div className="text-xs text-muted-foreground"> {format(date, " HH:mm:ss")}</div>
                     
                 </div>

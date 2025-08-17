@@ -24,7 +24,7 @@ import RequestDetails from "./request-details"
 import { Calendar1 } from "lucide-react"
 import { HospitalList } from "@/context/HospitalList"
 import { useAuth } from "../providers"
-import { format } from "date-fns"
+// import { format } from "date-fns"
 const allHospitalList = HospitalList
 
 // Convert a Blob/File to a Base64 data URL
@@ -137,7 +137,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
     //console.log("loggedInHospital", loggedInHospital);
 
     const postingHospital = allHospitalList.find((hospital) => hospital.nameEN === loggedInHospital);
-    //console.log("postingHospital", postingHospital)
+    // console.log("postingHospital", postingHospital)
     const hospitalList = allHospitalList.filter(hospital => hospital.nameEN !== loggedInHospital)
     const [loading, setLoading] = useState(false);
     const { register, handleSubmit, watch, setValue, getValues, resetField, formState: { errors, isSubmitted } } = useForm<z.infer<typeof SharingFormSchema>>({
@@ -196,6 +196,32 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
 
     }
 
+    const sendMailsSequentially = async (filterHospital: any, shareData: any) => {
+        for (const val of filterHospital) {
+            try {
+            // รอ 1 วิ ก่อนยิง request
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+            const mailResponse = await fetch("/api/sendmail", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                shareData: shareData,
+                selectedHospitals: val,
+                }),
+            });
+
+            if (!mailResponse.ok) {
+                console.warn("sendmail failed:", await mailResponse.text());
+            } else {
+                console.log("sendmail success");
+            }
+            } catch (err) {
+                console.error("sendmail error:", err);
+            }
+        }
+    }
+
     const onSubmit = async (data: z.infer<typeof SharingFormSchema>) => {
         const filterHospital = hospitalList.filter(hospital => data.selectedHospitals.includes(hospital.id))
         // Compress and prepare Base64 image (data URL) for persistence instead of a blob URL
@@ -243,6 +269,13 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
 
             if (!response.ok) {
                 throw new Error("Failed to submit")
+            } else {
+                if (filterHospital.length) {
+                    // sendmail
+                    // sendMailsSequentially(filterHospital, sharingMedicine).catch((err) => {
+                    //     console.error("sendMails error:", err);
+                    // });;
+                }
             }
 
             const result = await response.json()
@@ -377,7 +410,11 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" className="justify-start text-left font-normal">
                                             {expiryDate
-                                                ? format(new Date(Number(expiryDate)), 'dd-MM-') + (new Date(Number(expiryDate)).getFullYear() + 543)
+                                                ? new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+                                                    day: '2-digit',
+                                                    month: '2-digit',
+                                                    year: '2-digit',
+                                                }).format(new Date(Number(expiryDate)))
                                                 : "เลือกวันที่"
                                             }
                                             <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
@@ -392,7 +429,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                                     const today = new Date();
                                                     today.setHours(0, 0, 0, 0); // normalize time
                                                     const stringDate = date.getTime().toString();
-                                                    //console.log('stringDate', stringDate)
+                                                    // console.log('stringDate', stringDate)
                                                     if (date > today) {
                                                         setValue("sharingMedicine.expiryDate", stringDate, { shouldValidate: true });
                                                         setDateError(""); // clear error

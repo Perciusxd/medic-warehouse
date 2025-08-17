@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import CancelDialog from "@/components/dialogs/cancel-dialog";
 import {
     Popover,
     PopoverContent,
@@ -28,7 +29,12 @@ function RequestDetails({ sharingMed }: any) {
     //console.log('sharingMed RequestDetails', sharingMed)
     const { createdAt } = sharingMed
     const date = new Date(Number(createdAt)); // convert string to number, then to Date
-    const formattedDate = format(date, 'dd/MM/yyyy');
+    // Thai date formatting helper (Buddhist calendar)
+    const formattedDate = new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+        day: '2-digit',
+        month: '2-digit',
+        year: '2-digit',
+    }).format(date);
     const sharingDetails = sharingMed.sharingDetails
     const sharingMedicine = sharingMed.offeredMedicine ? sharingMed.sharingMedicine : sharingDetails.sharingMedicine
     const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber, sharingAmount } = sharingMedicine
@@ -36,7 +42,13 @@ function RequestDetails({ sharingMed }: any) {
     ////console.log('sharingReturnTermsชชชชชชชชชชชชชชชชชชช', sharingDetails.sharingMedicine)
     /* const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy'); */
     // const formattedExpiryDate = format(sharingDetails.sharingMedicine.expiryDate, 'dd/MM/yyyy'); //ดึงมาก่อนนะอิงจากที่มี ดึงไว้ใน columns.tsx
-    const formattedExpiryDate = isNaN(Number(expiryDate)) ? "ยังไม่ระบุ" : format(new Date(Number(expiryDate)), 'dd-MM-') + (new Date(Number(expiryDate)).getFullYear() + 543)
+    const formattedExpiryDate = isNaN(Number(expiryDate))
+        ? "ยังไม่ระบุ"
+        : new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+            day: '2-digit',
+            month: '2-digit',
+            year: '2-digit',
+        }).format(new Date(Number(expiryDate)));
     return (
         <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-2">
@@ -79,7 +91,7 @@ function RequestDetails({ sharingMed }: any) {
                     </div>
                 </div>
             </div>
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
                 <Label>เงื่อนไขการคืนยาที่ยอมรับ</Label>
                 <div className="grid grid-cols-2 gap-2">
                     <div className="flex flex-row gap-1">
@@ -112,7 +124,9 @@ function RequestDetails({ sharingMed }: any) {
 function ResponseFormSchema(sharingMedicine: any) {
     const maxAmount = sharingMedicine?.sharingAmount ?? Infinity;
     return z.object({
-        responseAmount: z.number().min(1, { message: "จำนวนที่ยืมต้องมีค่ามากกว่า 0" }).max(maxAmount, { message: `จำนวนที่ยืมต้องไม่เกิน ${maxAmount}` }),
+        responseAmount: z.coerce.number({ required_error: "กรุณากรอกจำนวนที่ต้องการรับ" })
+            .min(1, { message: "จำนวนที่ยืมต้องมีค่ามากกว่า 0" })
+            .max(maxAmount, { message: `จำนวนที่ยืมต้องไม่เกิน ${maxAmount}` }),
         expectedReturnDate: z.string().min(1, { message: "วันที่ยืมต้องเป็นวันที่ในอนาคต" }),
         returnTerm: z.object({
             exactType: z.boolean(),
@@ -159,14 +173,18 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
     } = useForm<z.infer<typeof ResponseShema>>({
         resolver: zodResolver(ResponseShema),
         defaultValues: {
-            responseAmount: existingOffer?.responseAmount || sharingMed.acceptedOffer?.responseAmount || 0,
-            expectedReturnDate: existingOffer?.expectedReturnDate ? existingOffer.expectedReturnDate : sharingMed.acceptedOffer?.expectedReturnDate ? sharingMed.acceptedOffer.expectedReturnDate : undefined,
+            responseAmount: Number(existingOffer?.responseAmount ?? sharingMed.acceptedOffer?.responseAmount ?? 0),
+            expectedReturnDate: existingOffer?.expectedReturnDate
+                ? String(existingOffer.expectedReturnDate)
+                : (sharingMed.acceptedOffer?.expectedReturnDate
+                    ? String(sharingMed.acceptedOffer.expectedReturnDate)
+                    : undefined),
             returnTerm: {
-                exactType: existingReturnTerm?.exactType || false,
-                otherType: existingReturnTerm?.otherType || false,
-                subType: existingReturnTerm?.subType || false,
-                supportType: existingReturnTerm?.supportType || false,
-                noReturn: existingReturnTerm?.noReturn || false,
+                exactType: Boolean(existingReturnTerm?.exactType),
+                otherType: Boolean(existingReturnTerm?.otherType),
+                subType: Boolean(existingReturnTerm?.subType),
+                supportType: Boolean(existingReturnTerm?.supportType),
+                noReturn: Boolean(existingReturnTerm?.noReturn),
             }
         }
     })
@@ -246,7 +264,8 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className="justify-start text-left font-normal" disabled={sharingMed.status === 're-confirm'} >
                                     {expectedReturn
-                                        ? format(new Date(Number(expectedReturn)), 'dd-MM-') + (new Date(Number(expectedReturn)).getFullYear() + 543)
+                                        ? 
+                                        format(new Date(Number(expectedReturn)), 'dd/MM/') + (new Date(Number(expectedReturn)).getFullYear() + 543)
                                         : "เลือกวันที่"}
                                     <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                 </Button>
@@ -270,7 +289,7 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                                                 setDateError("กรุณาเลือกวันที่ในอนาคต");
                                             }
                                         } else {
-                                            setDateError("Invalid date selected.");
+                                            setDateError("วันที่ไม่ถูกต้อง");
                                         }
                                     }}
                                     initialFocus
@@ -283,7 +302,7 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                         {errors.expectedReturnDate?.message && <span className="text-red-500 text-sm">{errors.expectedReturnDate.message}</span>}
                     </div>
                     
-                    <div className="flex flex-col gap-1 mt-4">
+                    <div className="flex flex-col gap-1">
                         <Label>แผนการคืน</Label>
                         <div className="grid grid-cols-2 gap-2">
                             <div className="flex flex-row gap-1">
@@ -329,8 +348,15 @@ export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChan
     const { user } = useAuth();
     const pdfRef = useRef<{ savePdf?: () => void }>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
     const isReconfirm = !!sharingMed?.acceptedOffer;
     const dialogTitle = isReconfirm ? "แก้ไข/ยอมรับแบ่งปัน" : "เวชภัณฑ์ยาที่ต้องการแบ่งปัน";
+
+    const handleCancel = () => {
+        // onOpenChange(false);
+        setCancelDialogOpen(true);
+        console.log('sharingMed', sharingMed)
+    }
 
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
@@ -377,6 +403,10 @@ export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChan
                                     ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500 ">{isReconfirm ? "บันทึก" : "ยืนยัน"}</span></div>
                                     : (isReconfirm ? "บันทึกการแก้ไข" : "ยืนยัน")}
                             </Button>
+                            <Button variant="outline" size="sm" onClick={() => handleCancel()}>
+                                ยกเลิก
+                            </Button>
+                            {isReconfirm && (
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -384,8 +414,30 @@ export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChan
                             >
                                 ดาวน์โหลด PDF
                             </Button>
+                            )}
                         </DialogFooter>
                     </div>
+
+                    {cancelDialogOpen && (
+                        <CancelDialog
+                            selectedMed={sharingMed}
+                            title={"ยกเลิกการแบ่งปันยา"}
+                            cancelID={sharingMed.responseId}
+                            description={"คุณต้องการยกเลิกการแบ่งปันยาใช่หรือไม่"}
+                            confirmButtonText={"ยกเลิก"}
+                            successMessage={"ยกเลิกการแบ่งปันยาเรียบร้อย"}
+                            errorMessage={"ยกเลิกการแบ่งปันยาไม่สำเร็จ"}
+                            loading={false}
+                            onConfirm={() => Promise.resolve(true)}
+                            open={cancelDialogOpen}
+                            onOpenChange={(open: boolean) => {
+                                setCancelDialogOpen(open);
+                                if (!open) {
+                                    onOpenChange(false);
+                                }
+                            }}
+                        />
+                    )}
                 </div>
             </DialogContent>
         </Dialog>

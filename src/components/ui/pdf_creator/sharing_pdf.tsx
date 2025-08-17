@@ -107,8 +107,8 @@ function MyDocument({ pdfData }: any) {
                     <View style={styles.tableRow}>
                         <Text style={[styles.tableCell, { flex: 1 }]}></Text>
                         <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-                        {/* <Text style={[styles.tableCell, { flex: 1 }]}></Text> */}
-                        {/* <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {lendingHospitalAddress}</Text> */}
+                        <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+                        <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {address}</Text>
                     </View>
                 </View>
 
@@ -127,7 +127,7 @@ function MyDocument({ pdfData }: any) {
                         <Text style={styles.tableHeader}>หมายเหตุ</Text>
                     </View>
                     <View style={styles.tableRow}>
-                        <Text style={styles.tableCell}>{sharingMedicine.name}</Text>
+                        <Text style={styles.tableCell}>{sharingMedicine.name} ({sharingMedicine.quantity})</Text>
                         <Text style={styles.tableCell}>{acceptedOffer.responseAmount} ({sharingMedicine.unit})</Text>
                         <Text style={styles.tableCell}>{expectedReturnDate}</Text>
                         <Text style={styles.tableCell}>{mockNote}</Text>
