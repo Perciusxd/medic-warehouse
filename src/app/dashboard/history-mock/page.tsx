@@ -16,6 +16,8 @@ const PDFPreviewButton = dynamic(() => import('./historyPDF'), { ssr: false });
 
 export default function HistoryDashboard() {
   const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+
   const loggedInHospital = useMemo(() => user?.hospitalName, [user]);
 
   const statusFilter = useMemo(() => ['to-transfer',
@@ -108,6 +110,23 @@ export default function HistoryDashboard() {
     // console.log('mapped', mapped);
     
   }, [loggedInHospital, allData, user]);
+
+  useEffect(() => {
+    // เงื่อนไขเริ่มต้น
+    if (!loggedInHospital || !medicineRequests || medicineRequests.length === 0 || !medicineSharing || medicineSharing.length === 0) {
+      setIsLoading(true);
+
+      // ตั้งเวลา fallback 5 วินาที
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    } else {
+      // มีข้อมูลแล้ว => ไม่ต้องโหลด
+      setIsLoading(false);
+    }
+  }, [loggedInHospital, medicineRequests, medicineSharing]);
 
   
   // const [mockDataV1, setMockDataV1] = useState(mockMedicineTableData);
@@ -217,16 +236,6 @@ export default function HistoryDashboard() {
       },
     },
   }
-
-  // loading state: true while hospital or API data not yet available
-  let isLoading = !loggedInHospital || medicineRequests === undefined || medicineSharing === undefined || medicineRequests.length === 0 || medicineSharing.length === 0;
-
-  setTimeout(() => {
-    if (isLoading && (medicineRequests.length === 0 || medicineSharing.length === 0)) {
-      isLoading = false; // stop loading after 5 seconds
-    }
-  }, 5000);
-
 
   if (isLoading) {
     return (
