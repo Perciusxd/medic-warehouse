@@ -30,11 +30,7 @@ function RequestDetails({ sharingMed }: any) {
     const { createdAt } = sharingMed
     const date = new Date(Number(createdAt)); // convert string to number, then to Date
     // Thai date formatting helper (Buddhist calendar)
-    const formattedDate = new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
-        day: '2-digit',
-        month: '2-digit',
-        year: '2-digit',
-    }).format(date);
+    const formattedDate = format(new Date(Number(date)), 'dd/MM/') + (new Date(Number(date)).getFullYear() + 543)
     const sharingDetails = sharingMed.sharingDetails
     const sharingMedicine = sharingMed.offeredMedicine ? sharingMed.sharingMedicine : sharingDetails.sharingMedicine
     const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber, sharingAmount } = sharingMedicine
@@ -42,13 +38,7 @@ function RequestDetails({ sharingMed }: any) {
     ////console.log('sharingReturnTermsชชชชชชชชชชชชชชชชชชช', sharingDetails.sharingMedicine)
     /* const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy'); */
     // const formattedExpiryDate = format(sharingDetails.sharingMedicine.expiryDate, 'dd/MM/yyyy'); //ดึงมาก่อนนะอิงจากที่มี ดึงไว้ใน columns.tsx
-    const formattedExpiryDate = isNaN(Number(expiryDate))
-        ? "ยังไม่ระบุ"
-        : new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
-            day: '2-digit',
-            month: '2-digit',
-            year: '2-digit',
-        }).format(new Date(Number(expiryDate)));
+    const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/') + (new Date(Number(expiryDate)).getFullYear() + 543)
     return (
         <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-2">
