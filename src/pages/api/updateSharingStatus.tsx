@@ -26,7 +26,7 @@ export default async function handler(
             //     status,
             //     updatedAt
             // );
-            // console.log("*** Transaction committed successfully");
+            // //console.log("*** Transaction committed successfully");
             // res.status(200).json({
             //     message: "Transaction committed successfully",
             //     assetId: sharingId,
@@ -52,14 +52,14 @@ export default async function handler(
                     result
                 });
             }).catch(error => {
-                console.error('Error update sharing', error);
+                //console.error('Error update sharing', error);
                 return res.status(500).json({
                     message: 'Internal server error',
                     error: error instanceof Error ? error.message : 'Unknown error'
                 })
             })
         } catch (error) {
-            console.error("Error in transaction:", error);
+            //console.error("Error in transaction:", error);
             res.status(500).json({ error: error });
         }
     } catch (error) {

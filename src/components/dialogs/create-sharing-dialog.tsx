@@ -134,10 +134,10 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
     // const { loggedInHospital } = useHospital();
     const loggedInHospital = user?.hospitalName;
 
-    console.log("loggedInHospital", loggedInHospital);
+    //console.log("loggedInHospital", loggedInHospital);
 
     const postingHospital = allHospitalList.find((hospital) => hospital.nameEN === loggedInHospital);
-    console.log("postingHospital", postingHospital)
+    //console.log("postingHospital", postingHospital)
     const hospitalList = allHospitalList.filter(hospital => hospital.nameEN !== loggedInHospital)
     const [loading, setLoading] = useState(false);
     const { register, handleSubmit, watch, setValue, getValues, resetField, formState: { errors, isSubmitted } } = useForm<z.infer<typeof SharingFormSchema>>({
@@ -209,7 +209,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                 })
                 base64Image = await blobToDataUrl(compressed)
             } catch (e) {
-                console.error("Failed to compress/convert image to Base64", e)
+                //console.error("Failed to compress/convert image to Base64", e)
             }
         }
         const sharingMedicine = {
@@ -230,6 +230,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
             sharingMedicine: sharingMedicine,
             selectedHospitals: filterHospital
         }
+        //console.log('sharingBody', sharingBody)
         try {
             setLoading(true)
             const response = await fetch("/api/createSharing", {
@@ -251,13 +252,13 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
             resetField("sharingReturnTerm")
             setValue("selectedHospitals", [])
         } catch (error) {
-            console.error("Error submitting form:", error)
+            //console.error("Error submitting form:", error)
             setLoading(false)
         }
     }
 
     const onError = (errors: FieldErrors<z.infer<typeof SharingFormSchema>>) => {
-        console.error("❌ Form validation errors:", errors);
+        //console.error("❌ Form validation errors:", errors);
     }
 
     return (
@@ -376,7 +377,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" className="justify-start text-left font-normal">
                                             {expiryDate
-                                                ? format(new Date(Number(expiryDate)), 'dd-MM-yyyy')
+                                                ? format(new Date(Number(expiryDate)), 'dd-MM-') + (new Date(Number(expiryDate)).getFullYear() + 543)
                                                 : "เลือกวันที่"
                                             }
                                             <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
@@ -391,7 +392,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                                     const today = new Date();
                                                     today.setHours(0, 0, 0, 0); // normalize time
                                                     const stringDate = date.getTime().toString();
-                                                    console.log('stringDate', stringDate)
+                                                    //console.log('stringDate', stringDate)
                                                     if (date > today) {
                                                         setValue("sharingMedicine.expiryDate", stringDate, { shouldValidate: true });
                                                         setDateError(""); // clear error

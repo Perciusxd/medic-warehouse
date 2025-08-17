@@ -55,7 +55,7 @@ export function useMedicineSharing(loggedInHospital: string, status: string[]) {
         try {
             // Fixed: Pass the array directly, not the joined string
             const data = await fetchAllMedicineSharing(loggedInHospital, status);
-            console.log("status", status)
+            //console.log("status", status)
             setMedicineSharing(data);
             return data;
         } catch (error: any) {
@@ -119,7 +119,7 @@ export function useMedicineResponsesInTransfer(loggedInHospital: string) {
 
 export function useMedicineRequestsStatus(loggedInHospital: string, status: string[]) {
     const [medicineRequests, setMedicineRequests] = useState([]);
-    console.log("useMedicineRequestsStatus == medicineRequests");
+    //console.log("useMedicineRequestsStatus == medicineRequests");
     const [loading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 

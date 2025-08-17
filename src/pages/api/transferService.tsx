@@ -22,7 +22,7 @@ export const fetchAllMedicineReponsesInTransfer = async (loggedInHospital: strin
         const result = await response.json();
         return result;
     } catch (error) {
-        console.error("error fetching medicine responses:", error);
+        //console.error("error fetching medicine responses:", error);
         throw error;
     }
 }

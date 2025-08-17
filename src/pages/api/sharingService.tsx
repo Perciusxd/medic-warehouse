@@ -23,7 +23,7 @@ export const fetchAllMedicineSharing = async (loggedInHospital: string, status: 
         const result = await response.json();
         return result;
     } catch (error) {
-        console.error("error fetching medicine responses:", error);
+        //console.error("error fetching medicine responses:", error);
         throw error;
     }
 }

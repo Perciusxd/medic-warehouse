@@ -16,7 +16,7 @@ export default async function handler(
   }
 
   try {
-    console.log("*** Deleting medicine", req.body);
+    //console.log("*** Deleting medicine", req.body);
     const { medicineID, medicineName } = req.body;
 
     try {
@@ -40,28 +40,28 @@ export default async function handler(
           result,
         });
       }).catch((error) => {
-        console.error("Error deleting medicine:", error);
+        //console.error("Error deleting medicine:", error);
         return res.status(500).json({
           message: "Internal server error",
           error: error instanceof Error ? error.message : "Unknown error",
         });
       });
     } catch (error) {
-      console.error("Error parsing request body:", error);
+      //console.error("Error parsing request body:", error);
       return res.status(400).json({ message: "Invalid request data", error: error instanceof Error ? error.message : "Unknown error" });
     }
 
     // const contract = await initializeFabric();
-    // console.log("*** Contract initialized", medicineID, medicineName);
+    // //console.log("*** Contract initialized", medicineID, medicineName);
     // try {
     //     const result = await contract.submitTransaction("DeleteMedicine", medicineID);
     //     res.status(200).json({ message: "Medicine deleted successfully" });
     // } catch (error) {
-    //   console.error("Error deleting medicine:", error);
+    //   //console.error("Error deleting medicine:", error);
     //   res.status(500).json({ message: "Error deleting medicine" });
     // }
   } catch (error) {
-    console.error("Error initializing fabric:", error);
+    //console.error("Error initializing fabric:", error);
     res.status(500).json({ message: "Error initializing fabric" });
   }
 }

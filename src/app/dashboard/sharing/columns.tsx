@@ -60,7 +60,7 @@ export const columns = (
                 const sharingDetails = med.sharingDetails
                 const createdAt = sharingDetails.createdAt
                 const date = Number(createdAt); // convert string to number, then to Date
-                const formattedDate = format(date, 'dd/MM/yyyy'); // format to date only
+                const formattedDate = format(new Date(Number(date)), 'dd-MM-') + (new Date(Number(date)).getFullYear() + 543) // format to date only
                 const timeOnly = format(date, 'HH:mm:ss'); // format to time only
                 return <div>
                     <div className="text-sm font-medium">{formattedDate}</div>
@@ -151,8 +151,8 @@ export const columns = (
             cell: ({ row }) => {
                 const med = row.original
                 const sharingDetails = med.sharingDetails
-                console.log("sharingDetailsssss",sharingDetails)
-                const expiryDate = isNaN(Number(sharingDetails.sharingMedicine.expiryDate)) ? "ยังไม่ระบุ" : format(new Date(Number(sharingDetails.sharingMedicine.expiryDate)), 'dd/MM/yyyy');
+                //console.log("sharingDetailsssss",sharingDetails)
+                const expiryDate = isNaN(Number(sharingDetails.sharingMedicine.expiryDate)) ? "ยังไม่ระบุ" : format(new Date(Number(sharingDetails.sharingMedicine.expiryDate)), 'dd-MM-') + (new Date(Number(sharingDetails.sharingMedicine.expiryDate)).getFullYear() + 543)
                 return (
                     <div className="flex flex-col">
                         <div className="text-md">{expiryDate}</div>

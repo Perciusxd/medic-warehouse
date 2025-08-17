@@ -19,8 +19,8 @@ export const columns = (
         cell: ({ row }: { row: any }) => {
             const med = row.original;
             const status = row.original.status;
-            // console.log('status', status)
-            // console.log('mock data med', med)
+            // //console.log('status', status)
+            // //console.log('mock data med', med)
             return <div>
                 {
                     status === 'to-confirm' ? (

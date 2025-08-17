@@ -41,14 +41,14 @@ export default async function handler(
                     result
                 });
             }).catch(error => {
-                console.error('Error creating sharing:', error);
+                //console.error('Error creating sharing:', error);
                 return res.status(500).json({
                     message: 'Internal server error',
                     error: error instanceof Error ? error.message : 'Unknown error'
                 });
             });
         } catch (error) {
-            console.error('Error parsing request body:', error);
+            //console.error('Error parsing request body:', error);
             return res.status(400).json({ message: 'Invalid request data', error: error instanceof Error ? error.message : 'Unknown error' });
         }
         // const contract = await initializeFabric();
@@ -58,13 +58,13 @@ export default async function handler(
         //         JSON.stringify(sharingMedicine),
         //         JSON.stringify(selectedHospitals)
         //     );
-        //     console.log("*** Transaction committed successfully");
+        //     //console.log("*** Transaction committed successfully");
         //     res.status(200).json({
         //         message: "Transaction committed successfully",
         //         requestId: sharingMedicine.id,
         //     });
         // } catch (error) {
-        //     console.error("Error in transaction:", error);
+        //     //console.error("Error in transaction:", error);
         //     res.status(500).json({ error: error });
         // }
     } catch (error) {

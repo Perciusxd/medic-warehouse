@@ -28,7 +28,7 @@ export const columns = (
                 const raw = row.original.createdAt
                 const date = new Date(Number(raw)); // convert string to number, then to Date
                 const isValid = !isNaN(date.getTime());
-                const formattedDate = isValid ? format(date, 'dd/MM/yyyy') : "-"; // format to date only
+                const formattedDate = isValid ? format(new Date(Number(date)), 'dd-MM-') + (new Date(Number(date)).getFullYear() + 543) : "-"; // format to date only
                 const timeOnly = isValid ? format(date, 'HH:mm:ss') : "-"; // format to time only
                 return (<div>
                     <div className="text-md font-medium">{formattedDate}</div>
@@ -168,7 +168,7 @@ export const columns = (
             </div>,
             cell: ({ row }: { row: any }) => {
                 const med = row.original;
-                console.log("med sharing",med)
+                //console.log("med sharing",med)
                 const postingHospitalName = med.sharingDetails?.postingHospitalNameTH || "ไม่ระบุ";
 
                 const responseAmount = med.acceptedOffer?.responseAmount || "-";
@@ -247,7 +247,7 @@ export const columns = (
             cell: ({ row }: { row: any }) => {
                 const med = row.original;
                 const status = row.original.sharingDetails.status;
-                // console.log('roww req', row.original)
+                // //console.log('roww req', row.original)
                 return (
 
                     <div className="flex justify-start items-center gap-x-2 flex-row">

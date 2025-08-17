@@ -48,14 +48,14 @@ function OfferDetails({ selectedMed }: any) {
     const date = new Date(Number(expectedReturnDate));
     const isValid = !isNaN(date.getTime());
     const formattedDate = isValid ? `${format(date, 'dd/MM')}/${date.getFullYear() + 543}` : "-";
-    console.log(expectedReturnDate);
+    //console.log(expectedReturnDate);
 
     return (
         <div className="flex flex-col gap-6 border p-4 rounded-lg">
-            <h2 className="text-lg font-semibold">รายละเอียดการตอบรับ</h2>
+            <h2 className="text-lg font-semibold">รายละเอียดรายการยืม</h2>
             <div className="grid grid-cols-2 gap-2 font-light">
                 <div className="flex flex-col gap-1">
-                    <Label>วันที่คืน</Label>
+                    <Label>วันที่ยืม</Label>
                     <Input disabled value={formattedDate} />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -124,7 +124,7 @@ const ReturnFormSchema = z.discriminatedUnion('supportRequest', [
         supportRequest: z.literal('support'),
         returnType: z.enum(["exactType", "otherType", "subType"]),
         returnMedicine: z.object({
-            reason: z.string().min(1, 'กรุณาระบุเหตุผล'),
+            reason: z.string().optional(),
             name: z.string().optional(),
             trademark: z.string().optional(),
             description: z.string().optional(),
@@ -158,7 +158,7 @@ const ReturnFormSchema = z.discriminatedUnion('supportRequest', [
 
 function ReturnDetails({ selectedMed, onOpenChange }: any) {
     const pdfRef = useRef<{ savePdf?: () => void }>(null);
-    console.log('selectedMed', selectedMed)
+    //console.log('selectedMed', selectedMed)
     const { loggedInHospital } = useHospital();
     const { requestId, responseId, postingHospitalNameEN } = selectedMed;
     const { name, trademark, offerAmount, pricePerUnit, unit, returnConditions, manufacturer } = selectedMed.offeredMedicine;
@@ -268,11 +268,11 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                 throw new Error("Failed to submit")
             }
             const result = await response.json()
-            console.log("Success:", result)
+            //console.log("Success:", result)
             setLoading(false);
             onOpenChange?.(false);
         } catch (error) {
-            console.log("Error submitting form:", error)
+            //console.log("Error submitting form:", error)
             setLoading(false);
         }
     }
@@ -364,7 +364,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                     <div className="flex flex-col gap-1">
-                        <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
+                        <Label className="font-bold">วันที่หมดอายุ</Label>
                         <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className="justify-start text-left font-normal" disabled={isSupportSelected}>
@@ -390,11 +390,11 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                                                 setIsCalendarOpen(false); // close popover
                                             } else {
                                                 setDateError("กรุณาเลือกวันที่ในอนาคต");
-                                                // console.log('setDateError')
+                                                // //console.log('setDateError')
                                             }
                                         } else {
                                             setDateError("Invalid date selected.");
-                                            // console.log('setDateError')
+                                            // //console.log('setDateError')
                                         }
                                     }}
                                     initialFocus
@@ -472,7 +472,7 @@ export default function ReturnDialog({ open, onOpenChange, selectedMed }: Return
             </Dialog>
         );
     }
-    console.log('selectedMed', selectedMed)
+    //console.log('selectedMed', selectedMed)
     const handleClose = () => {
         onOpenChange(false);
     }

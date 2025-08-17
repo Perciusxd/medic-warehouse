@@ -40,19 +40,19 @@ export default async function handler(
         //   result,
         // });
       }).catch((error) => {
-        console.error("Error querying requests by status:", error);
+        //console.error("Error querying requests by status:", error);
         return res.status(500).json({
           message: "Internal server error",
           error: error instanceof Error ? error.message : "Unknown error",
         });
       });
     } catch (error) {
-      console.error('Error parsing request body:', error);
+      //console.error('Error parsing request body:', error);
       return res.status(400).json({ message: 'Invalid request data', error: error instanceof Error ? error.message : 'Unknown error' });
     }
 
     // try {
-    //   console.log('loggedInHospital ================', loggedInHospital);
+    //   //console.log('loggedInHospital ================', loggedInHospital);
       
     //     const resultBytes = await contract.evaluateTransaction(
     //         "QueryRequestStatus",
@@ -61,10 +61,10 @@ export default async function handler(
     //     );
     //     const resultJson = utf8Decoder.decode(resultBytes);
     //     const result = JSON.parse(resultJson);
-    //     console.log("*** QueryRequestStatus Transaction committed successfully");
+    //     //console.log("*** QueryRequestStatus Transaction committed successfully");
     //     res.status(200).json(result);
     // } catch (error) {
-    //     console.log("error", error);
+    //     //console.log("error", error);
     //     res.status(500).json({ error: error });
     // }
   } catch (error) {

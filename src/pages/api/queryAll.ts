@@ -22,8 +22,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // const resultBytes = await contract.evaluateTransaction("GetAllMedicines");
     // const resultJson = utf8Decoder.decode(resultBytes);
     // const result = JSON.parse(resultJson);
-    // console.log(`*** Query All Assets committed successfully at ${now.toLocaleString()}`);
-    console.log('Querying all medicines...',process.env.ENDPOINT_URL);
+    // //console.log(`*** Query All Assets committed successfully at ${now.toLocaleString()}`);
+    //console.log('Querying all medicines...',process.env.ENDPOINT_URL);
 
     try {
       await fetch(`${process.env.ENDPOINT_URL}/api/medicines/all`, {
@@ -48,14 +48,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           result
         });
       }).catch(error => {
-        console.error('Error fetching data:', error);
+        //console.error('Error fetching data:', error);
         return res.status(500).json({
           message: 'Internal server error',
           error: error instanceof Error ? error.message : 'Unknown error'
         });
       });
     } catch (error) {
-      console.error('Error initializing Fabric:', error);
+      //console.error('Error initializing Fabric:', error);
       return res.status(500).json({ message: 'Failed to initialize Fabric', error: error instanceof Error ? error.message : 'Unknown error' });
     }
     
@@ -70,7 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     //   result
     // });
   } catch (error) {
-    console.error('Query error:', error);
+    //console.error('Query error:', error);
     return res.status(500).json({ 
       message: 'Internal server error',
       error: error instanceof Error ? error.message : 'Unknown error'

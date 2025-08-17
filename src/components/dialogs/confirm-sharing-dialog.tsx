@@ -246,7 +246,7 @@ function getConfirmationSchema(sharingData: any) {
 
 export default function ConfirmSharingDialog({ data, dialogTitle, status, openDialog, onOpenChange }: any) {
     const { user } = useAuth();
-    // console.log('user data at confirm sharing dialog', user)
+    // //console.log('user data at confirm sharing dialog', user)
     const pdfRef = useRef<{ savePdf?: () => void }>(null);
     const [loading, setLoading] = useState(false);
 
@@ -287,7 +287,7 @@ export default function ConfirmSharingDialog({ data, dialogTitle, status, openDi
 
     const onSubmit = async (formData: z.infer<typeof ConfirmSchema>) => {
         setLoading(true);
-        console.log('onsubmit data', data)
+        //console.log('onsubmit data', data)
         try {
             const sharingId = data.responseId; // Get the sharing ID from the data
             const response = await fetch("/api/updateSharingStatus", {
@@ -295,14 +295,14 @@ export default function ConfirmSharingDialog({ data, dialogTitle, status, openDi
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ sharingId, status }),
             });
-            console.log('formData', JSON.stringify({ sharingId, status }))
+            //console.log('formData', JSON.stringify({ sharingId, status }))
 
             if (!response.ok) throw new Error("Failed to submit");
 
             await response.json();
             onOpenChange(false);
         } catch (error) {
-            console.error("Error submitting form:", error);
+            //console.error("Error submitting form:", error);
         } finally {
             setLoading(false);
         }

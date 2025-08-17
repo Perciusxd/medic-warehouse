@@ -23,7 +23,7 @@ import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2I
 import CreateResponseDialog from "@/components/dialogs/create-response-dialog"
 import StatusIndicator from "@/components/ui/status-indicator"
 import ReturnConditionIndicator from "@/components/ui/return-condition-indicator"
-
+import ImageHoverPreview from "@/components/ui/image-hover-preview"
 export const columns = (
     handleApproveClick: (med: any) => void,
     handleDeliveryClick: (med: any) => void,
@@ -44,6 +44,30 @@ export const columns = (
                 )
             }
         },
+        {
+                    id: "image",
+                    size: 70,
+                    header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ภาพ</div>,
+                    cell: ({ row }) => {
+                        const original: any = row.original as any
+                        //console.log("original", original)
+                        const imgUrl: string | null = original.requestMedicine.requestMedicineImage || original.requestMedicineImage?.imageRef || null
+                        if (!imgUrl) {
+                            return <div className="text-xs text-muted-foreground">-</div>
+                        }
+                        return (
+                            <div className="flex items-center gap-2">
+                                {/* eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                    src={imgUrl}
+                                    alt="thumb"
+                                    className="h-10 w-10 object-cover rounded border"
+                                /> */}
+                                <ImageHoverPreview previewUrl={imgUrl} />
+                            </div>
+                        )
+                    }
+                },
         {
             accessorKey: "createdAt",
             size: 80,
@@ -70,7 +94,7 @@ export const columns = (
                 const raw = row.original.updatedAt
                 const date = new Date(Number(raw)); // convert string to number, then to Date
                 const isValid = !isNaN(date.getTime());
-                const formattedDate = isValid ? format(date, 'dd/MM/yyyy') : "-"; // format to date only
+                const formattedDate = isValid ? format(new Date(Number(date)), 'dd-MM-') + (new Date(Number(date)).getFullYear() + 543) : "-"; // format to date only
                 const timeOnly = isValid ? format(date, 'HH:mm:ss') : "-"; // format to time only
 
                 return (<div>
@@ -122,7 +146,7 @@ export const columns = (
                 const remainingAmount = med.remainingAmount;
                 const pricePerUnit = med.requestMedicine.pricePerUnit;
                 const totalPrice = requestAmount * pricePerUnit;
-                console.log('medasdasdasd', med)
+                //console.log('medasdasdasd', med)
                 return (
                     <div  className="flex flex-col">
                         <div className="text-md font-medium ">{requestAmount.toLocaleString()} ( {remainingAmount.toLocaleString()} )</div>
@@ -272,7 +296,7 @@ export const columns = (
                 const maxDisplay = 3;
                 const details = med.responseDetails.slice(0, maxDisplay);
                 const hasMore = med.responseDetails.length > maxDisplay;
-                console.log("med ssds" ,)
+                //console.log("med ssds" ,)
                 // const [dialogOpen, setDialogOpen] = useState(false);
                 // const handleConfirm = () => {
                 //     setDialogOpen(false);
@@ -285,7 +309,7 @@ export const columns = (
                                  <div className="text-md font-medium  flex justify-start min-w-[120px]">
                                    <span>
                                         {detail.updatedAt && !isNaN(Number(detail.updatedAt))
-                                            ? format(new Date(Number(detail.updatedAt)), "dd/MM/yyyy")
+                                            ? format(new Date(Number(detail.updatedAt)), 'dd-MM-') + (new Date(Number(detail.updatedAt)).getFullYear() + 543)
                                             : "-"}
                                         </span>
                                 </div>
@@ -311,7 +335,7 @@ export const columns = (
                                             : detail.status === 'pending'
                                                 ? (<Button variant={'link'} disabled className="flex gap-x-1  ">รอการยืนยันให้ยืม<StatusIndicator status={detail.status} /></Button>)
                                                 : detail.status === 'to-transfer'
-                                                    ? (<Button variant={'link'} className="flex gap-x-1  " disabled>รอส่งมอบ<StatusIndicator status={detail.status} /></Button>)
+                                                    ? (<Button variant={'link'} className="flex gap-x-1  " disabled>รอรับมอบ<StatusIndicator status={detail.status} /></Button>)
                                                     : detail.status === 'to-return'
                                                         ? (<Button variant={'link'} className="flex gap-x-1  " onClick={() => handleconfirReceiveDelivery({
                                                             ...med,
@@ -335,13 +359,13 @@ export const columns = (
                                                             : detail.status === "confirm-return"
                                                                 ? (<span className="flex gap-x-1  ">รอยืนยันการได้รับคืน< StatusIndicator status={detail.status} /></span>)
                                                                 : detail.status === 'returned'
-                                                                    ? (<span className="flex gap-x-1   ">ได้คืนยาแล้ว<StatusIndicator status={detail.status} /></span>)
+                                                                    ? (<span className="flex gap-x-1   ">เสร็จสิ้น<StatusIndicator status={detail.status} /></span>)
                                                                     : detail.status === 'cancelled'
                                                                         ? (<span className="flex gap-x-1  ">ยกเลิก<StatusIndicator status={detail.status} /></span>)
                                                                         : null
                                         }
                                     </div>
-                                    {/* <div className="flex ">({detail.offeredMedicine.offerAmount})</div> */}
+                                    <div className="flex ">({detail.offerAmount})</div>
                                 </div>
                             </div>
                         ))}

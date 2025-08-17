@@ -61,7 +61,7 @@ export default function LoginPage() {
             setIsLoading(false);
         }
     } catch (e) {
-        // console.error("Login error:", e);
+        // //console.error("Login error:", e);
         setError("An error occurred during login");
         setIsLoading(false);
     } finally {

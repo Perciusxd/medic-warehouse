@@ -1,11 +1,15 @@
 "use client"
 import { formatDate } from "@/lib/utils"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-
+import ImageHoverPreview from "@/components/ui/image-hover-preview"
 export default function RequestDetails({ requestData, responseForm }: any) {
+    // Image preview state
+    const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
+
+
     const requestDetails = requestData ? {
         id: requestData.id,
         postingHospitalId: requestData.postingHospitalId,
@@ -25,7 +29,9 @@ export default function RequestDetails({ requestData, responseForm }: any) {
             requestAmount: requestData.requestMedicine.requestAmount,
             manufacturer: requestData.requestMedicine.manufacturer,
             manufactureDate: requestData.requestMedicine.manufactureDate,
-            imageRef: requestData.requestMedicine.imageRef
+            imageRef: requestData.requestMedicine.imageRef,
+            description: requestData.requestMedicine.description,
+            requestMedicineImage: requestData.requestMedicine.requestMedicineImage
         },
         requestTerm: {
             expectedReturnDate: requestData.requestTerm.expectedReturnDate,
@@ -55,7 +61,9 @@ export default function RequestDetails({ requestData, responseForm }: any) {
             batchNumber: "",
             manufacturer: "",
             manufactureDate: "",
-            imageRef: ""
+            imageRef: "",
+            description: "",
+            requestMedicineImage: "",
         },
         requestTerm: {
             expectedReturnDate: "",
@@ -68,7 +76,7 @@ export default function RequestDetails({ requestData, responseForm }: any) {
         }
     };
 
-
+    const imgUrl: string | null = requestDetails.requestMedicine.requestMedicineImage || requestDetails.requestMedicine?.imageRef || null;
     const [details, setDetails] = useState([
         { label: "วันที่ขอยืม", value: formatDate(requestDetails.updatedAt) },
         // { label: "ID ขอยืม", value: requestDetails.id },
@@ -103,7 +111,7 @@ export default function RequestDetails({ requestData, responseForm }: any) {
                 <div>
                     <Label className="font-bold">ราคาต่อหน่วย</Label>
                     <div className="flex flex-row gap-2 items-center">
-                    <Input type="text" className="w-14" value={requestDetails.requestMedicine.pricePerUnit} disabled />
+                        <Input type="text" className="w-14" value={requestDetails.requestMedicine.pricePerUnit} disabled />
                         <div className="font-extralight">
                             รวม <span className="font-bold text-gray-950"> {(Number(requestDetails.requestMedicine.pricePerUnit) || 0) * (Number(requestDetails.requestMedicine.requestAmount) || 0)} </span> บาท
                         </div>
@@ -117,8 +125,21 @@ export default function RequestDetails({ requestData, responseForm }: any) {
                     <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
                     <Input type="text" value={formatDate(requestDetails.requestTerm.expectedReturnDate)} disabled />
                 </div>
+                <div className="col-span-2">
+                    <Label className="font-bold">เหตุผลการยืม</Label>
+                    <Input type="text" value={requestDetails.requestMedicine.description} disabled />
+                </div>
+                {/* <div className="col-span-2">
+                    <Label className="font-bold">ภาพประกอบ <ImageHoverPreview previewUrl={imgUrl} /></Label>
+                    <div className="flex items-center gap-2">
+                        <img
+                            src={imgUrl}
+                            alt="thumb"
+                            className="h-40 w-40 object-cover rounded border"
+                        />
+                    </div>
+                </div> */}
             </div>
         </div>
-
-    );
+            );
 }

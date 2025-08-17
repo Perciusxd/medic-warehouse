@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
 });
 
 function MyDocument({ pdfData }: any) {
-    console.log('pdfData', pdfData);
+    //console.log('pdfData', pdfData);
     const { userData } = pdfData;
     const { address, director, contact } = userData;
     const { offeredMedicine, requestMedicine } = pdfData;
@@ -123,7 +123,7 @@ function MyDocument({ pdfData }: any) {
                 <Text style={styles.text}>เรื่อง    {documentType}</Text>
                 <Text style={styles.text}>เรียน    ผู้อำนวยการ {borrowingHospitalNameTH}</Text>
                 <Text style={{ marginTop: 6, textIndent: 80 }}>
-                    ตามที่{borrowingHospitalNameTH} มีความประสงค์ที่จะ{actionText} ดังรายการต่อไปนี้
+                    ตามที่{lendingHospitalNameTH} มีความประสงค์ที่จะ{actionText} ดังรายการต่อไปนี้
                 </Text>
 
                 <View style={[styles.table, { marginTop: 14 }]}>
@@ -134,7 +134,7 @@ function MyDocument({ pdfData }: any) {
                         <Text style={styles.tableHeader}>หมายเหตุ</Text>
                     </View>
                     <View style={styles.tableRow}>
-                        <Text style={styles.tableCell}>{requestMedicine.name }</Text>
+                        <Text style={styles.tableCell}>{requestMedicine.name } ({requestMedicine.quantity})</Text>
                         <Text style={styles.tableCell}>{requestMedicine.requestAmount} ({requestMedicine.unit})</Text>
                         <Text style={styles.tableCell}>{expectedReturnDate}</Text>
                         <Text style={styles.tableCell}>{mockNote}</Text>
@@ -144,9 +144,9 @@ function MyDocument({ pdfData }: any) {
                 <Text style={{ marginTop: 30, textIndent: 80 }}>
                     ทั้งนี้ {lendingHospitalNameTH} จะส่งคืนยาให้แก่{borrowingHospitalNameTH} ภายในวันที่ {expectedReturnDate} และหากมีการเปลี่ยนแปลงจะต้องแจ้งให้ทราบล่วงหน้า
                 </Text>
-                <Text style={{ marginTop: 30, textIndent: 80 }}>
+                {/* <Text style={{ marginTop: 30, textIndent: 80 }}>
                     จึงเรียนมาเพื่อโปรดพิจารณาและ {lendingHospitalNameTH} ขอขอบคุณ {borrowingHospitalNameTH} ณ โอกาสนี้
-                </Text>
+                </Text> */}
 
                 <Text style={{ marginTop: 30, textIndent: 280 }}>ขอแสดงความนับถือ</Text>
                 <Text style={{ marginTop: 100, textIndent: 280 }}>{director} </Text>
@@ -160,7 +160,7 @@ function MyDocument({ pdfData }: any) {
 
 
 const PdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => {
-    console.log('user data at pdf preview', userData)
+    //console.log('user data at pdf preview', userData)
     const [blob, setBlob] = useState<Blob | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 

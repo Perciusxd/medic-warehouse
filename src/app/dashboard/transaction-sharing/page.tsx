@@ -92,26 +92,26 @@ export default function TransferDashboard() {
     }, [sharingStatusFilter]);
 
     const { medicineSharing, loading: loadingShare, error: errorShare, fetchMedicineSharing } = useMedicineSharingStatus(loggedInHospital, selectedStatuses);
-
+    //console.log("medicineSharingsssss", medicineSharing)
     const handleApproveClick = (med: any) => {
         setSelectedMed(med);
         setConfirmDialogOpen(true);
     }
 
     const handleReConfirmClick = (med: any) => {
-        console.log('handleReConfirmClick', med);
+        //console.log('handleReConfirmClick', med);
         setSelectedMed(med);
         setAcceptSharingDialogOpen(true);
     }
 
     const handleDeliveryClick = async (med: any) => {
-        console.log('handleDeliveryClick', med);
+        //console.log('handleDeliveryClick', med);
         setSelectedMed(med);
         setDeliveryDialogOpen(true);
     }
 
     const handleReturnClick = async (med: any) => {
-        console.log('handleReturnClick', med);
+        //console.log('handleReturnClick', med);
         setSelectedMed(med);
         setReturnDialogOpen(true);
     }
@@ -139,14 +139,14 @@ export default function TransferDashboard() {
             }
 
             const result = await response.json()
-            console.log(result)
+            //console.log(result)
             toast.success(status === "to-transfer" ? "ยืนยันการส่งมอบเรียบร้อยแล้ว" : "ยืนยันการรับคืนเรียบร้อยแล้ว", {
                 description: result.message,
             })
             fetchMedicineRequests();
             setLoading(false)
         } catch (error) {
-            console.error("Error submitting form:", error)
+            //console.error("Error submitting form:", error)
             toast.error("เกิดข้อผิดพลาดในการยืนยัน", {
                 description: error instanceof Error ? error.message : "เกิดข้อผิดพลาดในการยืนยัน",
             })
@@ -202,22 +202,22 @@ export default function TransferDashboard() {
     };
 
     const handleConfirmReceiveDelivery = async (med: any) => {
-        console.log('handleConfirmReceiveDelivery', med);
+        //console.log('handleConfirmReceiveDelivery', med);
         openConfirmationDialog(med, 'receive-delivery');
     }
 
     const handleDeliveryConfirm = async (med: any) => {
-        console.log('handleDeliveryConfirm', med);
+        //console.log('handleDeliveryConfirm', med);
         openConfirmationDialog(med, 'delivery');
     }
 
     const handleReturnConfirm = async (med: any) => {
-        console.log('handleReturnConfirm', med);
+        //console.log('handleReturnConfirm', med);
         openConfirmationDialog(med, 'confirm-return');
     }
 
     const handleEditClick = async (med: any) => {
-        console.log('handleEditClick', med);
+        //console.log('handleEditClick', med);
         setSelectedMed(med);
         setEditDialogOpen(true);
     }
@@ -225,18 +225,18 @@ export default function TransferDashboard() {
 
 
     const handleconfirmDeliveryFromRequests = async (med: any) => {
-        console.log('handleconfirmDeliveryFromRequests', med);
+        //console.log('handleconfirmDeliveryFromRequests', med);
         openConfirmationDialog(med, 'to-transfer');
     }
 
     const confirmDeliveryFromRequests = async (med: any) => {
-        console.log(med)
+        //console.log(med)
         const responseBody = {
             responseId: med.id,
             offeredMedicine: med.offeredMedicine,
             status: 'to-return',
         }
-        console.log('responseBody', responseBody)
+        //console.log('responseBody', responseBody)
         setLoading(true)
         try {
             const response = await fetch("/api/updateRequest", {
@@ -252,26 +252,26 @@ export default function TransferDashboard() {
             }
 
             const result = await response.json()
-            console.log('result', result)
+            //console.log('result', result)
             fetchMedicineRequests();
             setLoading(false)
             return true;
         } catch (error) {
-            console.error("Error submitting form:", error)
+            //console.error("Error submitting form:", error)
             setLoading(false)
             return false;
         }
     }
 
     const confirmDelivery = async (med: any) => {
-        console.log(med)
+        //console.log(med)
         const responseBody = {
             sharingId: med.responseId,
             acceptOffer: med.acceptedOffer,
             status: "to-confirm",
             returnTerm: med.responseDetail.returnTerm,
         }
-        console.log('responseBody', responseBody)
+        //console.log('responseBody', responseBody)
         setLoading(true)
         try {
             const response = await fetch("/api/updateSharing", {
@@ -287,12 +287,12 @@ export default function TransferDashboard() {
             }
 
             const result = await response.json()
-            console.log('result', result)
+            //console.log('result', result)
             fetchMedicineRequests();
             setLoading(false)
             return true;
         } catch (error) {
-            console.error("Error submitting form:", error)
+            //console.error("Error submitting form:", error)
             setLoading(false)
             return false;
         }
@@ -300,7 +300,7 @@ export default function TransferDashboard() {
 
     // Additional submit functions for different scenarios
     const confirmReturn = async (med: any) => {
-        console.log("med.ticketTypeadsd",med.ticketType)
+        //console.log("med.ticketTypeadsd",med.ticketType)
         if (med.ticketType === "request") {
             const responseBody = {
             responseId: med.id,
@@ -326,18 +326,18 @@ export default function TransferDashboard() {
                 setLoading(false)
                 return true;
             } catch (error) {
-                console.error("Error submitting form:", error)
+                //console.error("Error submitting form:", error)
                 setLoading(false)
                 return false;
             }
 
         } else {
-            console.log('med in confirmReturn', med)
+            //console.log('med in confirmReturn', med)
             const responseBody = {
                 sharingId: med.responseId,
                 status: "returned",
             }
-            console.log('confirmReturn', responseBody)
+            //console.log('confirmReturn', responseBody)
             setLoading(true)
             try {
                 const response = await fetch("/api/updateSharingStatus", {
@@ -357,7 +357,7 @@ export default function TransferDashboard() {
                 setLoading(false)
                 return true;
             } catch (error) {
-                console.error("Error submitting form:", error)
+                //console.error("Error submitting form:", error)
                 setLoading(false)
                 return false;
             }
@@ -384,19 +384,19 @@ export default function TransferDashboard() {
             }
 
             const result = await response.json()
-            console.log('result', result)
+            //console.log('result', result)
             fetchMedicineSharingInReturn();
             setLoading(false)
             return true;
         } catch (error) {
-            console.error("Error submitting form:", error)
+            //console.error("Error submitting form:", error)
             setLoading(false)
             return false;
         }
     }
 
     const handleReturnSharingClick = async (med: any) => {
-        // console.log('handleReturnSharingClick', med);
+        // //console.log('handleReturnSharingClick', med);
         setSelectedMed(med);
         setReturnSharingDialogOpen(true);
     }
@@ -428,7 +428,7 @@ export default function TransferDashboard() {
     //         setLoading(false)
     //         toast.success("ยืนยันการรับคืนเรียบร้อยแล้ว")
     //     } catch (error) {
-    //         console.error("Error confirming return:", error)
+    //         //console.error("Error confirming return:", error)
     //         setLoading(false)
     //         toast.error("เกิดข้อผิดพลาดในการยืนยันการรับคืน")
     //     }
@@ -439,7 +439,7 @@ export default function TransferDashboard() {
         fetchMedicineSharing();
         fetchMedicineSharingInReturn();
     }, [fetchMedicineRequests, fetchMedicineSharing, fetchMedicineSharingInReturn]);
-    // console.log("medicineSharingInReturn", medicineSharingInReturn)
+    // //console.log("medicineSharingInReturn", medicineSharingInReturn)
 
     return (
         <div>

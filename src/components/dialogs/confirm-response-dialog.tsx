@@ -291,7 +291,7 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
             await response.json();
             onOpenChange(false);
         } catch (error) {
-            console.error("Error submitting form:", error);
+            //console.error("Error submitting form:", error);
         } finally {
             setLoading(false);
         }
@@ -322,7 +322,7 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
                                             ตัวอย่างเอกสาร
                                         </h3>
                                     </div>
-                                    <div className="p-2">
+                                    <div className="p-2 ">
                                         <PdfPreview data={data} userData={user} ref={pdfRef} />
                                     </div>
                                 </div>
@@ -344,7 +344,7 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
                             ) : (
                                 <span className="flex items-center gap-2">
                                     <CheckCircle2 className="h-4 w-4" />
-                                    ยืนยันการให้ยืม
+                                    ยืนยันการขอยืม
                                 </span>
                             )}
                         </Button>

@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
 });
 
 function MyDocument({ pdfData }: any) {
-    console.log('pdfData', pdfData)
+    //console.log('pdfData', pdfData)
     // Normalize input for both request and sharing flows
     const baseMedicine = pdfData?.offeredMedicine
         ?? pdfData?.sharingDetails?.sharingMedicine
@@ -142,7 +142,7 @@ function MyDocument({ pdfData }: any) {
         return false;
     };
     const isSupport = resolveSupport(pdfData?.returnData?.supportRequest ?? pdfData?.supportRequest);
-    console.log('isSupport', isSupport)
+    //console.log('isSupport', isSupport)
     const documentType = isSupport
         ? 'ขอสนับสนุนเวชภัณฑ์ยา'
         : 'ขอคืนเวชภัณฑ์ยา';

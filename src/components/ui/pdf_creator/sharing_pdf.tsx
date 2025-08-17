@@ -72,8 +72,8 @@ const styles = StyleSheet.create({
 
 function MyDocument({ pdfData }: any) {
     const { responseDetail, sharingMedicineDetail, userData } = pdfData;
-    console.log("responseDetail", responseDetail)
-    console.log("sharingMed", sharingMedicineDetail)
+    //console.log("responseDetail", responseDetail)
+    //console.log("sharingMed", sharingMedicineDetail)
     const { postingHospitalNameTH, sharingMedicine } = sharingMedicineDetail;
     const { respondingHospitalNameTH, acceptedOffer } = responseDetail;
     const { address, director, contact } = userData;
@@ -153,8 +153,8 @@ function MyDocument({ pdfData }: any) {
 
 
 const SharingPdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => {
-    console.log('sharingDatapdf', pdfData)
-    // console.log('user data at pdf preview', userData)
+    //console.log('sharingDatapdf', pdfData)
+    // //console.log('user data at pdf preview', userData)
     const [blob, setBlob] = useState<Blob | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 

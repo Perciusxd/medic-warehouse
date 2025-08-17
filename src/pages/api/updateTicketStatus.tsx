@@ -42,7 +42,7 @@ export default async function handler(
                 });
             })
         } catch (error) {
-            console.error("Error in transaction:", error);
+            //console.error("Error in transaction:", error);
             res.status(500).json({ error: error });
         }
     } catch (error) {

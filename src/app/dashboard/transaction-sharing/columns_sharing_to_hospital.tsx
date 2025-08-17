@@ -37,6 +37,7 @@ export const columns = (
             header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ภาพ</div>,
             cell: ({ row }) => {
                 const original: any = row.original as any
+                //console.log("original", original)
                 const imgUrl: string | null = original.sharingMedicineImage || original.sharingMedicine?.imageRef || null
                 if (!imgUrl) {
                     return <div className="text-xs text-muted-foreground">-</div>
@@ -178,7 +179,7 @@ export const columns = (
                             const isValid = !isNaN(date.getTime());
                             const formattedDate = isValid ? format(date, 'dd/MM/yyyy') : "-";
                             const timeOnly = isValid ? format(date, 'HH:mm:ss') : "-";
-                            // console.log("responseDetailsaaaaaa",date)
+                            // //console.log("responseDetailsaaaaaa",date)
                             return (
                                 <div key={index}>
                                     <div className="text-sm font-medium ">{formattedDate}</div>
@@ -215,7 +216,7 @@ export const columns = (
             cell: ({ row }) => {
                 const med = row.original;
                 const responseDetails = row.original.responseDetails;
-                // console.log('row==================', row.original)
+                // //console.log('row==================', row.original)
                 const maxDisplay = 3;
                 const details = responseDetails.slice(0, maxDisplay);
                 const hasMore = responseDetails.length > maxDisplay;

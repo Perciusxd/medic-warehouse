@@ -57,7 +57,7 @@ export default function CancelDialog({
             status: 'cancelled',
             updatedAt: Date.now().toString()
         }
-        console.log('cancelBody', cancelBody)
+        //console.log('cancelBody', cancelBody)
         try {
             const response = await fetch("/api/updateTicketStatus", {
                 method: "POST",
@@ -69,7 +69,7 @@ export default function CancelDialog({
             onOpenChange(false);
             toast.success(successMessage);
         } catch (error) {
-            console.log("Error canceling:", error)
+            //console.log("Error canceling:", error)
             toast.error(errorMessage);
         } finally {
             setIsSubmitting(false);

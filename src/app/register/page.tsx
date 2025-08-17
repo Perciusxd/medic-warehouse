@@ -28,7 +28,7 @@ const RegisterPage: React.FC = () => {
         const searchParams = new URLSearchParams(window.location.search);
         // Example: get a parameter named "ref"
         const ref = searchParams.get('onlyAdmin');
-        console.log(`Ref parameter: ${ref}`);
+        //console.log(`Ref parameter: ${ref}`);
         if (!ref) {
             // If no ref parameter, redirect to home
             router.push('/');

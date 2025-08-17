@@ -48,7 +48,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
         },
         cell: ({ row }) => {
             const med = row.original
-             console.log("row.original in borrow dashbroad", med)
+             //console.log("row.original in borrow dashbroad", med)
             const requestDetails = med.requestDetails
             const name = requestDetails.requestMedicine.name
             const trademark = requestDetails.requestMedicine.trademark
@@ -70,7 +70,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
             const requestDetails = med.requestDetails
             const createdAt = requestDetails.updatedAt
             const date = Number(createdAt); // convert string to number, then to Date
-            const formattedDate = format(date, 'dd/MM/yyyy'); // format to date only
+            const formattedDate = format(new Date(Number(date)), 'dd-MM-') + (new Date(Number(date)).getFullYear() + 543)
             const timeOnly = format(date, 'HH:mm:ss'); // format to time only
             return <div>
                 <div className="text-sm font-medium">{formattedDate}</div>
@@ -90,7 +90,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จากโรงพยาบาล</div>,
         cell: ({ row }) => {
             const postingHospitalNameTH: string = row.original.requestDetails.postingHospitalNameTH
-            //console.log("Posting Hospital Name:", postingHospitalNameTH)
+            ////console.log("Posting Hospital Name:", postingHospitalNameTH)
             return (
                 <div className="flex flex-row">
                     <div className="flex flex-col justify-start">
@@ -169,11 +169,11 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
          ),
          cell: ({ row }) => {
             const med = row.original;
-            console.log("med", med);
+            //console.log("med", med);
             const condition = med.requestDetails.requestTerm.receiveConditions.condition
-            console.log("condition", condition);
+            //console.log("condition", condition);
             const supportType = med.requestDetails.requestTerm.receiveConditions.supportType
-            console.log("supportType", supportType);
+            //console.log("supportType", supportType);
             let supportTypetDiv;
             let conditionDiv;
 

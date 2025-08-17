@@ -20,6 +20,7 @@ export const columns = (
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">วันที่แจ้ง</div>,
         cell: ({ row }) => {
             const createdAt = row.original.requestDetails.updatedAt
+            //console.log("row response", row.original)
             const date = new Date(Number(createdAt)); // convert string to number, then to Date
             return(
             <div>

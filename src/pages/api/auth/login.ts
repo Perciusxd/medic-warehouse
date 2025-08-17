@@ -70,7 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             redirectUrl: '/'
         });
     } catch (error) {
-        console.error('Login error:', error);
+        //console.error('Login error:', error);
         res.status(500).json({ 
             message: 'Internal server error',
             error: error instanceof Error ? error.message : 'Unknown error'

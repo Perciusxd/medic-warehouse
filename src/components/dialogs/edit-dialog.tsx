@@ -43,12 +43,12 @@ export function EditPopover(props: any) {
                     props.onClose(e);
                 }
             } else {
-                console.log("Response not ok:", response);
+                //console.log("Response not ok:", response);
                 toast.error("เกิดข้อผิดพลาดในการขอยืมยา");
             }
             props.fetchData();
         } catch (error) {
-            console.error("Error:", error);
+            //console.error("Error:", error);
             toast.error("เกิดข้อผิดพลาดในการขอยืมยา");
         } finally {
             setLoading(false);

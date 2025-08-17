@@ -21,7 +21,7 @@ export const formatDate = (dateString: string) => {
             return new Date(Number(dateString)).toLocaleDateString();
         }
     } catch (e) {
-        console.error("Error formatting date:", e);
+        //console.error("Error formatting date:", e);
         return dateString;
     }
 };

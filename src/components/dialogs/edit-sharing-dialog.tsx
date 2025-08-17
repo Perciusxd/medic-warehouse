@@ -110,7 +110,7 @@ export default function EditSharingDialog({ selectedMed, openDialog, onOpenChang
 
     const onSubmit = async (data: z.infer<typeof editSharingFormSchema>) => {
         const filterPendingResponse = responseDetails.filter((item: any) => item.status === 'pending')
-        console.log('filterPendingResponse', filterPendingResponse)
+        //console.log('filterPendingResponse', filterPendingResponse)
         const filterHospital = hospitalList.filter(hospital => data.selectedHospitals.includes(hospital.id))
         const sharingMedicine = {
             id: `SHARE-${Date.now()}`,
@@ -171,7 +171,7 @@ export default function EditSharingDialog({ selectedMed, openDialog, onOpenChang
             onOpenChange(false)
             toast.success("แก้ไขข้อมูลยาเรียบร้อย")
         } catch (error) {
-            console.error("Error submitting form:", error)
+            //console.error("Error submitting form:", error)
             toast.error("เกิดข้อผิดพลาดในการแก้ไขข้อมูลยา")
         }
     }
@@ -185,9 +185,9 @@ export default function EditSharingDialog({ selectedMed, openDialog, onOpenChang
         }
     }
     const toggleHospitalSelection = (hospitalId: number) => {
-        console.log('toggleHospitalSelection', hospitalId)
+        //console.log('toggleHospitalSelection', hospitalId)
         const current = getValues("selectedHospitals") || []
-        console.log('current', current)
+        //console.log('current', current)
         const updated = current.includes(hospitalId)
             ? current.filter((id) => id !== hospitalId)
             : [...current, hospitalId]

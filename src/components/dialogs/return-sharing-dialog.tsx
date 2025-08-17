@@ -165,7 +165,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
     const onError = () => { /* silent, UI shows field errors */ };
 
     const onSubmit = async (data: z.infer<typeof returnFormSchema>) => {
-        console.log('data', data)
+        //console.log('data', data)
         const supportRequest = data.supportRequest === "support" ? true : false;
         setLoading(true);
         const returnData = {
@@ -179,13 +179,13 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
             returnMedicine: data.returnMedicine,    // should be empty if supportRequest is true??
             returnType: supportRequest ? "supportType" : data.returnType,
         }
-        console.log('returnData', returnData)
+        //console.log('returnData', returnData)
         const returnBody = {
             returnData: returnData,
             selectedHospital: respondingHospitalNameEN,
             responseId: id,
         }
-        console.log('returnBody', returnBody)
+        //console.log('returnBody', returnBody)
         try {
             const response = await fetch("/api/createReturn", {
                 method: "POST",
@@ -196,7 +196,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
             await response.json()
             onOpenChange(false);
         } catch (error) {
-            console.log("Error submitting form:", error)
+            //console.log("Error submitting form:", error)
         } finally {
             setLoading(false);
         }
