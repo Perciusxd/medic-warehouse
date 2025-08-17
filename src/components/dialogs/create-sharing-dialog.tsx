@@ -272,9 +272,9 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
             } else {
                 if (filterHospital.length) {
                     // sendmail
-                    // sendMailsSequentially(filterHospital, sharingMedicine).catch((err) => {
-                    //     console.error("sendMails error:", err);
-                    // });;
+                    sendMailsSequentially(filterHospital, sharingMedicine).catch((err) => {
+                        console.error("sendMails error:", err);
+                    });;
                 }
             }
 

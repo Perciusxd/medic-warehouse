@@ -48,59 +48,90 @@ export default function HistoryDashboard() {
     // console.log(loggedInHospital, 'loggedInHospital');    
     if (!loggedInHospital) return;
     setFilteredData(allData);
-    const mapped = allData.map((item: any) => {
-      if (item.ticketType === 'sharing') {
+    // const mapped = allData.map((item: any) => {
+    //   if (item.ticketType === 'sharing') {
+    //     const resp = item.responseDetails?.[0] ?? {};
+    //     const medsArr = item.postingHospitalAddress;
+    //     const hospitalName = item.postingHospitalNameTH;
+    //     const director = user?.director
+    //     const now = Date.now();
+    //     const expectedReturnDate = resp.acceptedOffer?.expectedReturnDate;
+    //     const diff = Number(expectedReturnDate) - now;
+    //     let diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+    //     if (diffDays < 0) {
+    //       diffDays = Math.abs(diffDays)
+    //     }
+    //     // console.log('diffDays', diffDays);
+        
+    //     return {
+    //       ticketType: item.ticketType,
+    //       responseDetails: item.responseDetails,
+    //       sharingMedicine: item.sharingMedicine,
+    //       sharingReturnTerm: item.sharingReturnTerm,
+    //       dayAmount: diffDays,
+    //       overDue: diffDays > 90 ? true : false,
+    //       address: medsArr,
+    //       hospitalName: hospitalName,
+    //       director: director
+    //     }
+    //   } else {
+    //     return null
+    //   }
+
+    const mapped = allData
+      .filter((item: any) => item.ticketType === 'sharing' && item.responseDetails?.acceptedOffer)
+      .map((item: any) => {
         const resp = item.responseDetails?.[0] ?? {};
         const medsArr = item.postingHospitalAddress;
         const hospitalName = item.postingHospitalNameTH;
-        const director = user?.director
+        const director = user?.director;
         const now = Date.now();
         const expectedReturnDate = resp.acceptedOffer?.expectedReturnDate;
         const diff = Number(expectedReturnDate) - now;
         let diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
-        if (diffDays < 0) {
-          diffDays = Math.abs(diffDays)
-        }
-        // console.log('diffDays', diffDays);
-        
+        if (diffDays < 0) diffDays = Math.abs(diffDays);
+
         return {
           ticketType: item.ticketType,
           responseDetails: item.responseDetails,
           sharingMedicine: item.sharingMedicine,
           sharingReturnTerm: item.sharingReturnTerm,
           dayAmount: diffDays,
-          overDue: diffDays > 90 ? true : false,
+          overDue: diffDays > 90,
           address: medsArr,
-          hospitalName: hospitalName,
-          director: director
-        }
-      } else if (item.ticketType === 'request') {
-        const resp = item.responseDetails?.[0] ?? {};
-        const medsArr = item.postingHospitalAddress;
-        const hospitalName = item.postingHospitalNameTH;
-        const director = user?.director
-        const now = Date.now();
-        const expectedReturnDate = item.requestTerm.expectedReturnDate;
-        const diff = Number(expectedReturnDate) - now;
-        let diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
-        if (diffDays < 0) {
-          diffDays = Math.abs(diffDays)
-        }
-        // console.log('diffDays', diffDays);
+          hospitalName,
+          director
+        };
+      // });
+
+
+      // else if (item.ticketType === 'request') {
+      //   const resp = item.responseDetails?.[0] ?? {};
+      //   const medsArr = item.postingHospitalAddress;
+      //   const hospitalName = item.postingHospitalNameTH;
+      //   const director = user?.director
+      //   const now = Date.now();
+      //   const expectedReturnDate = item.requestTerm.expectedReturnDate;
+      //   const diff = Number(expectedReturnDate) - now;
+      //   let diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+      //   if (diffDays < 0) {
+      //     diffDays = Math.abs(diffDays)
+      //   }
+      //   // console.log('diffDays', diffDays);
         
-        return {
-          ticketType: item.ticketType,
-          responseDetails: item.responseDetails,
-          requestMedicine: item.requestMedicine,
-          offeredMedicine: resp.offeredMedicine,
-          requestTerm: item.requestTerm,
-          dayAmount: diffDays,
-          overDue: diffDays > 90 ? true : false,
-          address: medsArr,
-          hospitalName: hospitalName,
-          director: director
-        }
-      }
+      //   return {
+      //     ticketType: item.ticketType,
+      //     responseDetails: item.responseDetails,
+      //     requestMedicine: item.requestMedicine,
+      //     offeredMedicine: resp.offeredMedicine,
+      //     requestTerm: item.requestTerm,
+      //     dayAmount: diffDays,
+      //     overDue: diffDays > 90 ? true : false,
+      //     address: medsArr,
+      //     hospitalName: hospitalName,
+      //     director: director
+      //   }
+      // }
       
     });
 
@@ -260,7 +291,9 @@ export default function HistoryDashboard() {
         <div className="flex flex-col gap-4 mt-[30px] mx-auto max-w-[90%]">
           <div className="flex justify-start gap-2">
             <div className="flex">
-              <PDFPreviewButton data={reportData}/>
+              <button disabled={reportData.length === 0} className={`w-full transition-opacity ${reportData.length === 0 ? "opacity-50 cursor-not-allowed" : "opacity-100"}`}>
+                <PDFPreviewButton data={reportData} />
+              </button>
             </div>
                 {/* <div className="flex gap-2">
                   <Button

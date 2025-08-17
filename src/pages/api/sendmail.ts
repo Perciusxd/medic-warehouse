@@ -25,9 +25,9 @@ const sendMailHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     });
   }
 
-  const sender = 'onboarding@resend.dev';
-  // const to = 'lscinnopsu@gmail.com'
-  const to = 'pupzaporjict@gmail.com'
+  const sender = 'no-reply@bcmed.online';
+  const to = 'lscinnopsu@gmail.com'
+  // const to = 'pupzaporjict@gmail.com'
   let subjectNotice;
   let notice;
   let hospitalName
