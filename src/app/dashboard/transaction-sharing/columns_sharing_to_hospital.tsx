@@ -216,12 +216,11 @@ export const columns = (
             cell: ({ row }) => {
                 const med = row.original;
                 const responseDetails = row.original.responseDetails;
-                // //console.log('row==================', row.original)
                 const maxDisplay = 3;
                 const details = responseDetails.slice(0, maxDisplay);
                 const hasMore = responseDetails.length > maxDisplay;
 
-
+                console.log('med', med)
 
 
                 return (
@@ -268,7 +267,7 @@ export const columns = (
                                             sharingDetails: med.sharingMedicine,
                                             responseStatus: detail.status,
                                             displayMedicineName: detail.returnMedicine.returnMedicine.name,
-                                            displayMedicineAmount: detail.returnMedicine.returnMedicine.returnAmount,
+                                            displayMedicineAmount: detail.returnMedicine?.returnType === 'supportType' ? "ขอสนับสนุน" : detail.returnMedicine.returnMedicine.returnAmount,
                                             displayHospitalName: detail.respondingHospitalNameTH,
                                         })}>โปรดยืนยันการคืนยา ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></Button>
                                     ) : detail.status === 'returned' ? (
