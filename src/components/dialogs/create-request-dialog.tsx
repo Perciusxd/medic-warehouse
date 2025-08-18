@@ -319,9 +319,9 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
             } else {
                 if (filterHospital.length) {
                     // sendmail
-                    // sendMailsSequentially(filterHospital, requestData).catch((err) => {
-                    //     console.error("sendMails error:", err);
-                    // });
+                    sendMailsSequentially(filterHospital, requestData).catch((err) => {
+                        console.error("sendMails error:", err);
+                    });
                 }
             }
 

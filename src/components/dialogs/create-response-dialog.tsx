@@ -177,16 +177,16 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                 <DialogTitle>
                     <div className="grid grid-cols-4 gap-4 items-center">
                         {dialogTitle}
-                        <div className="col-span-2">
+                        {/* <div className="col-span-2">
                             <Label className="font-bold">ภาพประกอบ <ImageHoverPreview previewUrl={imgUrl} /></Label>
                             <div className="flex items-center gap-2">
-                                {/* <img
+                                <img
                                                 src={imgUrl}
                                                 alt="thumb"
                                                 className="h-40 w-40 object-cover rounded border"
-                                            /> */}
+                                            />
                             </div>
-                        </div>
+                        </div> */}
                     </div>
 
                 </DialogTitle>
@@ -412,6 +412,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                         <Button type="submit">
                             {loading ? <div className="flex flex-row items-center gap-2 text-muted-foreground"><LoadingSpinner /> ยืมยันการให้ยืม</div> : "ยืมยันการให้ยืม"}
                         </Button>
+                        
 
                     </DialogFooter>
                 </form>
