@@ -28,7 +28,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
             trademark: z.string(),
             pricePerUnit: z.number().gt(0, "Price per unit must be greater than 0").max(100000, "Price per unit must be less than 100000"),
             manufacturer: z.string(),
-            batchNumber: z.string().optional(),
+            batchNumber: z.string().min(1, "กรุณาระบุหมายเลขล็อต"),
             expiryDate: z.string().min(1, "กรุณาระบุวันที่หมดอายุ"),
             // manufactureDate: z.string(),
             // expiryDate: z.date(),
@@ -330,14 +330,18 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                     </Label>
                                 </div>
                                 <Label className="flex flex-col items-start">
-                                    หมายเลขล๊อต
+                                    หมายเลขล็อต
                                     <Input
                                         type="text"
                                         {...register("offeredMedicine.batchNumber")}
-
                                         className="border p-1"
+                                        placeholder="LOT-135270"
                                     />
+                                    {errors.offeredMedicine?.batchNumber && (
+                                        <span className="text-red-500 text-xs -mt-1">{errors.offeredMedicine.batchNumber.message}</span>
+                                    )}
                                 </Label>
+                                
                                 <div className="flex flex-col gap-2">
                                     <Label className="font-bold">วันหมดอายุ</Label>
                                     <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
@@ -377,6 +381,9 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                             )}
                                         </PopoverContent>
                                     </Popover>
+                                    {errors.offeredMedicine?.expiryDate && (
+                                        <span className="text-red-500 text-xs -mt-1">กรุณาเลือกวันหมดอายุ</span>
+                                    )}
                                 </div>
 
                             </div>
