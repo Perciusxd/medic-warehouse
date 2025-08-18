@@ -21,8 +21,8 @@ const formatThaiDate = (input: string | number | Date | undefined): string => {
     if (isNaN(date.getTime())) return '';
     return new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
         day: '2-digit',
-        month: 'long',
-        year: 'numeric',
+        month: '2-digit',
+        year: '2-digit',
     }).format(date);
 };
 
@@ -72,6 +72,7 @@ const styles = StyleSheet.create({
 });
 
 function ContentPage({ pdfData, variant = 'original' }: any) {
+    console.log('pdfData', pdfData)
     const { userData } = pdfData;
     const { address, director, contact } = userData;
 

@@ -290,7 +290,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
             postingHospitalAddress: postingHospital?.address,
             status: "pending",
             urgent: data.urgent,
-            createAt: Date.now().toString(),
+            createdAt: Date.now().toString(),
             updatedAt: Date.now().toString(),
             requestMedicine: data.requestMedicine,
             requestTerm: data.requestTerm,
