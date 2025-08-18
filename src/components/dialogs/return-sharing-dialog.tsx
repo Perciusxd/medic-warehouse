@@ -19,9 +19,9 @@ import { useAuth } from "../providers";
 
 const ReturnPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/return_pdf'), { ssr: false });
 
-function SharingMedicineDetails({ sharingMedicine, receiveConditions ,selectedMed}: any) {
-    const { name, trademark, unit, quantity, manufacturer } = sharingMedicine;
-    const { createdAt, postingHospitalNameTH ,sharingDetails } = selectedMed;
+function SharingMedicineDetails({ sharingMedicine, receiveConditions, selectedMed }: any) {
+    const { name, trademark, unit, quantity, manufacturer, sharingAmount } = sharingMedicine;
+    const { createdAt, postingHospitalNameTH, sharingDetails } = selectedMed;
     const formattedDate = format(new Date(Number(createdAt)), 'dd/MM/') + (new Date(Number(createdAt)).getFullYear() + 543); // Format to dd/MM/yyyy in Thai Buddhist calendar
     return (
         <div className="flex flex-col gap-4 border p-4 rounded-lg">
@@ -38,9 +38,13 @@ function SharingMedicineDetails({ sharingMedicine, receiveConditions ,selectedMe
                     <Label>โรงพยาบาลที่ให้ยืม</Label>
                     <Input disabled value={sharingDetails.postingHospitalNameTH || ''} />
                 </div>
-                <div className="flex flex-col gap-1 col-span-2">
+                <div className="flex flex-col gap-1 ">
                     <Label>รายการยา</Label>
                     <Input disabled value={name || ''} />
+                </div>
+                <div className="flex flex-col gap-1 ">
+                    <Label>จำนวนที่ขอยืม</Label>
+                    <Input disabled value={sharingAmount || ''} />
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>รูปแบบ/หน่วย</Label>
@@ -164,7 +168,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                 quantity: "",
                 unit: "",
                 manufacturer: "",
-                pricePerUnit: 1,
+                pricePerUnit: undefined,
                 batchNumber: "",
                 returnDate: undefined,
                 reason: "",
@@ -252,8 +256,8 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
             const firstAllowed = allowedReturnTypes.exactType
                 ? "exactType"
                 : allowedReturnTypes.subType
-                ? "subType"
-                : "otherType";
+                    ? "subType"
+                    : "otherType";
             setValue("returnType", firstAllowed, { shouldDirty: true });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -353,11 +357,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className="justify-start text-left font-normal" disabled={isSupportSelected}>
                                     {expiredDate
-                                        ? new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
-                                            day: '2-digit',
-                                            month: 'long',
-                                            year: 'numeric',
-                                        }).format(new Date(Number(expiredDate)))
+                                        ? format(new Date(Number(expiredDate)), 'dd/MM/') + (new Date(Number(expiredDate)).getFullYear() + 543)
                                         : "เลือกวันที่"}
                                     <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                 </Button>
@@ -371,7 +371,6 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                                             const today = new Date();
                                             today.setHours(0, 0, 0, 0);
                                             const dateString = date.getTime().toString()
-
                                             if (date > today) {
                                                 setValue("returnMedicine.returnDate", dateString, { shouldValidate: true, shouldDirty: true });
                                                 setDateError("");
@@ -399,7 +398,23 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                     </div>
                     <div className="flex flex-col gap-1">
                         <Label>ราคาต่อหน่วย</Label>
-                        <Input placeholder="20" type="number" {...register("returnMedicine.pricePerUnit", { valueAsNumber: true })} disabled={isSupportSelected} />
+                        <Input
+                            placeholder="20"
+                            type="number"
+                            step="0.01"
+                            {...register("returnMedicine.pricePerUnit", { valueAsNumber: true })}
+                            disabled={isSupportSelected}
+                            onChange={(e) => {
+                                let value = e.target.value;
+                                if (value.includes(".")) {
+                                    const [intPart, decPart] = value.split(".");
+                                    if (decPart.length > 2) {
+                                        value = `${intPart}.${decPart.slice(0, 2)}`;
+                                    }
+                                }
+                                e.target.value = value;
+                            }}
+                        />
                         {errors.returnMedicine?.pricePerUnit?.message && <span className="text-red-500 text-xs">{String(errors.returnMedicine.pricePerUnit.message)}</span>}
                     </div>
                     <Separator className="col-span-3 my-1" />
@@ -469,7 +484,9 @@ export default function ReturnSharingDialog({ open, onOpenChange, selectedMed }:
                 && returnFormValues?.returnMedicine?.batchNumber
                 && returnFormValues?.returnMedicine?.returnDate
                 && (returnFormValues?.returnMedicine?.returnAmount ?? 0) > 0
-                && (returnFormValues?.returnMedicine?.pricePerUnit ?? 0) > 0);
+                && typeof returnFormValues?.returnMedicine?.pricePerUnit === "number"
+                && !isNaN(returnFormValues?.returnMedicine?.pricePerUnit));
+
         if (invalid || !requiredOk) {
             toast.error("กรุณากรอกข้อมูลให้ครบถ้วนก่อนสร้างเอกสาร");
             return;
@@ -493,7 +510,7 @@ export default function ReturnSharingDialog({ open, onOpenChange, selectedMed }:
 
                     <div className="overflow-y-auto px-6 py-5">
                         <div className="grid grid-cols-3 gap-2">
-                            <SharingMedicineDetails sharingMedicine={sharingMedicine} receiveConditions={receiveConditions} selectedMed={selectedMed}/>
+                            <SharingMedicineDetails sharingMedicine={sharingMedicine} receiveConditions={receiveConditions} selectedMed={selectedMed} />
                             <ReturnMedicineDetails selectedMed={selectedMed} onOpenChange={onOpenChange} loading={loading} setLoading={setLoading} formId={formId} onFormChange={setReturnFormValues} onSavePdf={handleSavePdf} />
                         </div>
                     </div>
