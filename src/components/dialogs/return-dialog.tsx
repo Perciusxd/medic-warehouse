@@ -29,6 +29,7 @@ import { toast } from "sonner"
 import { saveAs } from "file-saver";
 import { pdf } from "@react-pdf/renderer";
 import MyDocument from "@/components/ui/pdf_creator/return_pdf";
+import { useAuth } from "../providers";
 const ReturnPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/return_pdf'), { ssr: false });
 
 interface ReturnDialogProps {
@@ -158,7 +159,7 @@ const ReturnFormSchema = z.discriminatedUnion('supportRequest', [
 
 function ReturnDetails({ selectedMed, onOpenChange }: any) {
     const pdfRef = useRef<{ savePdf?: () => void }>(null);
-    //console.log('selectedMed', selectedMed)
+    const { user } = useAuth();
     const { loggedInHospital } = useHospital();
     const { requestId, responseId, postingHospitalNameEN } = selectedMed;
     const { name, trademark, offerAmount, pricePerUnit, unit, returnConditions, manufacturer } = selectedMed.offeredMedicine;
@@ -436,7 +437,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                 </div>
 
                 <div style={{ display: 'none' }}>
-                    <ReturnPdfPreview data={selectedMed} returnData={watchAllFields} ref={pdfRef} />
+                    <ReturnPdfPreview data={selectedMed} returnData={watchAllFields} userData={user} ref={pdfRef} />
                 </div>
 
             </div>
