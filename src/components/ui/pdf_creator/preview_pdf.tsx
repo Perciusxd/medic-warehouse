@@ -129,7 +129,7 @@ function ContentPage({ pdfData, variant = 'original' }: any) {
                 <View style={styles.tableRow}>
                     <Text style={[styles.tableCell, { flex: 1 }]}></Text>
                     <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-                    <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {lendingHospitalAddress}</Text>
+                    <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {lendingHospitalAddress} <span style={{ display: 'none' }}>hidden</span></Text>
                 </View>
             </View>
 
