@@ -370,11 +370,8 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className="justify-start text-left font-normal" disabled={isSupportSelected}>
                                     {returnDate
-                                        ? new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
-                                            day: '2-digit',
-                                            month: 'long',
-                                            year: 'numeric',
-                                        }).format(new Date(Number(returnDate)))
+                                        ? format(new Date(Number(returnDate)), 'dd/MM/') + (new Date(Number(returnDate)).getFullYear() + 543)
+                                            
                                         : "เลือกวันที่"}
                                     <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                 </Button>

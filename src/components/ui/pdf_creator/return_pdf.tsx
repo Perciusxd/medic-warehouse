@@ -54,6 +54,7 @@ const styles = StyleSheet.create({
 
 function ContentPage({ pdfData, variant = 'original' }: any) {
     const { userData } = pdfData;
+    console.log('pdfData', pdfData);
     const baseMedicine = pdfData?.offeredMedicine
         ?? pdfData?.sharingDetails?.sharingMedicine
         ?? pdfData?.sharingMedicine
@@ -102,7 +103,9 @@ function ContentPage({ pdfData, variant = 'original' }: any) {
         ?? pdfData?.respondingHospitalNameEN
         ?? pdfData?.sharingDetails?.respondingHospitalNameTH
         ?? '';
-
+    const createdAt = pdfData?.createdAt 
+        ?? pdfData?.requestTerm?.expectedReturnDate
+        ?? '';
     const isRequestType = pdfData?.ticketType === "request" || !!pdfData?.requestDetails || !!pdfData?.requestMedicine;
 
     const requestedMedicineName = pdfData?.requestDetails?.name
@@ -186,13 +189,13 @@ function ContentPage({ pdfData, variant = 'original' }: any) {
                 </View>
                 <View style={styles.tableRow}>
                     <Text style={[styles.tableCell, { width: '25%' }]}>{requestedMedicineName}</Text>
-                    <Text style={[styles.tableCell, { width: '15%' }]}>{requestedQuantity} ({unit})</Text>
-                    <Text style={[styles.tableCell, { width: '10%' }]}>{Number(pricePerUnit).toFixed(2)}</Text>
-                    <Text style={[styles.tableCell, { width: '15%' }]}>{Number(requestedQuantity * pricePerUnit).toFixed(2)}</Text>
+                    <Text style={[styles.tableCell, { width: '15%' }]}>{requestedQuantity.toLocaleString("th-TH")} ({unit})</Text>
+                    <Text style={[styles.tableCell, { width: '10%' }]}>{Number(pricePerUnit.toLocaleString("th-TH")).toFixed(2)}</Text>
+                    <Text style={[styles.tableCell, { width: '15%' }]}>{Number(requestedQuantity * pricePerUnit).toLocaleString("th-TH")}</Text>
                     <Text style={[styles.tableCell, { width: '15%' }]}>{manufacturer}</Text>
                     <Text style={[styles.tableCell, { width: '20%' }]}>{(() => {
-                        if (!pdfData?.createdAt) return '';
-                        const d = new Date(Number(pdfData?.createdAt));
+                        if (!createdAt) return '';
+                        const d = new Date(Number(createdAt));
                         if (isNaN(d.getTime())) return '';
                         return `${format(d, 'dd/MM')}/${d.getFullYear() + 543}`;
                     })()}</Text>
@@ -212,9 +215,9 @@ function ContentPage({ pdfData, variant = 'original' }: any) {
                     </View>
                     <View style={styles.tableRow}>
                         <Text style={[styles.tableCell, { width: '25%' }]}>{returnMedicine?.name ?? ''}</Text>
-                        <Text style={[styles.tableCell, { width: '15%' }]}>{(returnMedicine?.returnAmount ?? 0)} ({returnMedicine?.quantity ?? ''})</Text>
-                        <Text style={[styles.tableCell, { width: '10%' }]}>{Number(returnMedicine?.pricePerUnit ?? 0).toFixed(2)}</Text>
-                        <Text style={[styles.tableCell, { width: '15%' }]}>{Number((returnMedicine?.returnAmount ?? 0) * (returnMedicine?.pricePerUnit ?? 0)).toFixed(2)}</Text>
+                        <Text style={[styles.tableCell, { width: '15%' }]}>{(returnMedicine?.returnAmount ?? 0).toLocaleString("th-TH")} ({returnMedicine?.quantity ?? ''})</Text>
+                        <Text style={[styles.tableCell, { width: '10%' }]}>{Number(returnMedicine?.pricePerUnit ?? 0).toLocaleString("th-TH")}</Text>
+                        <Text style={[styles.tableCell, { width: '15%' }]}>{Number((returnMedicine?.returnAmount ?? 0) * (returnMedicine?.pricePerUnit ?? 0)).toLocaleString("th-TH")}</Text>
                         <Text style={[styles.tableCell, { width: '15%' }]}>{returnMedicine?.manufacturer ?? ''}</Text>
                         <Text style={[styles.tableCell, { width: '20%' }]}>{(() => {
                             if (!returnMedicine?.returnDate) return '';
