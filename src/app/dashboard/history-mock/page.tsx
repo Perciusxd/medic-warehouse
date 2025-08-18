@@ -1,5 +1,5 @@
 'use client';
-import { use, useEffect, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "../request/data-table";
 import { columns } from "./columns";
@@ -81,13 +81,16 @@ export default function HistoryDashboard() {
     //   }
 
     const mapped = allData
-      .filter((item: any) => item.ticketType === 'sharing' && item.responseDetails?.acceptedOffer)
+      .filter((item: any) => item.ticketType === 'sharing')
+      // copy in comment to condition if wanna close button that not have data
+      // && item.responseDetails?.acceptedOffer
       .map((item: any) => {
         const resp = item.responseDetails?.[0] ?? {};
-        const medsArr = item.postingHospitalAddress;
+        const medsArr = user?.address;
         const hospitalName = item.postingHospitalNameTH;
         const director = user?.director;
         const now = Date.now();
+        const contact = user?.contact;
         const expectedReturnDate = resp.acceptedOffer?.expectedReturnDate;
         const diff = Number(expectedReturnDate) - now;
         let diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -102,7 +105,8 @@ export default function HistoryDashboard() {
           overDue: diffDays > 90,
           address: medsArr,
           hospitalName,
-          director
+          director,
+          contact
         };
       // });
 
@@ -300,9 +304,9 @@ export default function HistoryDashboard() {
         <div className="flex flex-col gap-4 mt-[30px] mx-auto max-w-[90%]">
           <div className="flex justify-start gap-2">
             <div className="flex">
-              <button disabled={reportData.length === 0} className={`w-full transition-opacity ${reportData.length === 0 ? "opacity-50 cursor-not-allowed" : "opacity-100"}`}>
-                <PDFPreviewButton data={reportData} />
-              </button>
+              {/* <Button disabled={reportData.length === 0} className={` transition-opacity ${reportData.length === 0 ? "opacity-50" : "opacity-100"}`}> */}
+                <PDFPreviewButton data={reportData} disabled={reportData.length === 0} />
+              {/* </Button> */}
             </div>
                 {/* <div className="flex gap-2">
                   <Button

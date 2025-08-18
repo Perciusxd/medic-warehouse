@@ -225,7 +225,7 @@ export const columns: ColumnDef<any>[] = [
     header: "วันที่คาดว่าจะได้รับคืน",
     cell: ({ row }) => {
       if (row.original.ticketType === 'sharing') {
-        const expectedReturnDate = Number(row.original.responseDetails[0].acceptedOffer.expectedReturnDate);
+        const expectedReturnDate = Number(row.original.responseDetails[0].acceptedOffer?.expectedReturnDate);
         const date = new Date(expectedReturnDate);
         return <span>{!isNaN(date.getTime()) ? date.toLocaleDateString("th-TH") : '-'}</span>;
       }

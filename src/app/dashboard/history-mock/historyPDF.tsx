@@ -32,7 +32,7 @@ Font.register({
 })
 
 const styles = StyleSheet.create({
-    body: { fontFamily: 'THSarabunNew', fontSize: 14, padding: 28 },
+    body: { fontFamily: 'THSarabunNew', fontSize: 10, padding: 28 },
     image: { width: 80, height: 80, marginHorizontal: 240, marginVertical: 20 },
     text: { marginBottom: 8 },
     table: {
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
 const todayFormat = new Date();
 const today = format(todayFormat, 'dd/MM/yyyy');
 // ✅ รับ props: data
-export default function PDFPreviewButton({ data }: { data: any[] }) {
+export default function PDFPreviewButton({ data, disabled = false }: { data: any[], disabled?: boolean }) {
     console.log("data === ",data)
     const [blobUrl, setBlobUrl] = useState<string | null>(null);
         
@@ -84,10 +84,24 @@ export default function PDFPreviewButton({ data }: { data: any[] }) {
     };
   }, [blobUrl]);
 
+  const downloadPDF = async () => {
+    const blob = await pdf(<MySimplePDF data={data} isCopy={true} />).toBlob();
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    const dateStr = format(new Date(), 'ddMMyyyy');
+    link.download = `medicine_recall_${dateStr}.pdf`;
+    link.click();
+
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <Dialog onOpenChange={(open) => open && generatePDF()}>
+    <Dialog onOpenChange={(open) => open && !disabled && generatePDF()}>
       <DialogTrigger asChild>
-      <Button><Printer/>พิมพ์เอกสารการเรียกคืนยา</Button>
+      <Button disabled={disabled}
+          className={`transition-opacity ${disabled ? "opacity-50" : "opacity-100"}`}><Printer/>พิมพ์เอกสารการเรียกคืนยา</Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl w-full h-[90vh]">
       <DialogHeader>
@@ -101,14 +115,15 @@ export default function PDFPreviewButton({ data }: { data: any[] }) {
           file={blobUrl}
           className="w-full h-full"
           >
-          <PDFPage pageNumber={1} width={600} />
+          <PDFPage pageNumber={1} width={800} renderTextLayer={false} renderAnnotationLayer={false} />
           </PDFViewer>
         </div>
         )}
       </div>
       <DialogFooter className="mt-4">
+        <Button onClick={downloadPDF}>ดาวน์โหลด PDF</Button>
         <DialogClose asChild>
-        <Button variant="ghost">ปิด</Button>
+          <Button variant="ghost">ปิด</Button>
         </DialogClose>
       </DialogFooter>
       </DialogContent>
@@ -137,74 +152,243 @@ export default function PDFPreviewButton({ data }: { data: any[] }) {
     address: string;
     hospitalName: string;
     director: string;
+    contact: string;
   };
 
+  const chunkArray = (arr: any[], size: number) => {
+    const result = [];
+    for (let i = 0; i < arr.length; i += size) {
+      result.push(arr.slice(i, i + size));
+    }
+    return result;
+  };
+  
+
 // ✅ PDF Document ที่ใช้ mock data
-const MySimplePDF = ({ data }: { data: MyDocumentProps[] }) => (
-  <PDFDocGen>
-              <Page size="A4" style={styles.body}>
-                  <Image style={styles.image} src="/krut_mark.jpg"/>
-                  <View style={[styles.table, { marginBottom: 10 }]}>
-                      {/* Row 1 */}
-                      <View style={styles.tableRow}>
-                        <Text style={[styles.tableCell, { flex: 1, textAlign: 'left' }]}>ที่ สข. 80231</Text>
-                        <Text style={[styles.tableCell, { flex: 1, textAlign: 'right' }]}>{data?.[0] ? `${data[0].hospitalName}\nที่อยู่ ${data[0].address}` : ''}</Text>
-                      </View>
+// const MySimplePDF = ({ data }: { data: MyDocumentProps[] }) => (
+//   <PDFDocGen>
+//               <Page size="A4" style={styles.body}>
+//                   {/* <Image style={styles.image} src="/krut_mark.jpg"/> */}
+//                   <Text style={{ textAlign: 'center', fontSize: 28, fontWeight: 'bold', marginBottom: 40 }}>สำเนา </Text>
+//                   <View style={[styles.table, { marginBottom: 10 }]} fixed>
+//                       <View style={styles.tableRow}>
+//                           <Text style={[styles.tableCell, { flex: 1 }]}>ที่ สข. 80231</Text>
+//                           <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+//                           <Text style={[styles.tableCell, { flex: 1 }]}>{data[0].hospitalName} </Text>
+//                       </View>
+      
+//                       <View style={styles.tableRow}>
+//                           <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+//                           <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+//                           <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {data[0].address}  <span style={{ display: 'none' }}>hidden</span> </Text>
+//                       </View>
 
-                      <View style={styles.tableRow}>
-                        <Text style={[styles.tableCell, { flex: 1, textAlign: 'left' }]}></Text>
-                        <Text style={[styles.tableCell, { flex: 1, textAlign: 'right' }]}></Text>
-                      </View>
+//                   </View>
+  
+//                   <Text style={{ textAlign: 'center' }} >{today}</Text>
+//                   {/* <Text style={[styles.tableCell, { flex: 1 }]}>{} </Text> */}
+//                   <Text style={styles.text}>เรื่อง    ขอเรียกคืนเวชภัณฑ์ยาที่ครบกำหนด </Text>
+//                   <Text style={styles.text}>เรียน    ผู้อำนวยการ{data?.[0] ? data[0].hospitalName : ''}</Text>
+//                   <Text style={{ marginTop: 6, textIndent: 80 }}>เนื่องด้วย {data?.[0] ? data[0].hospitalName : ''} มีความประสงค์ที่จะขอเรียกคืนยาที่ครบกำหนดระยะเวลาการยืม ดังรายการต่อไปนี้ </Text>
+  
+//                   <View style={[styles.table, { marginTop: 14 }]}>
+//                       <View style={styles.tableRow}>
+//                           <Text style={styles.tableHeader}>รายการ</Text>
+//                           <Text style={styles.tableHeader}>จำนวน </Text>
+//                           <Text style={styles.tableHeader}>ราคา </Text>
+//                           <Text style={styles.tableHeader}>มูลค่า </Text>
+//                           <Text style={styles.tableHeader}>วันที่ยืม </Text>
+//                           <Text style={styles.tableHeader}>กำหนดรับคืน </Text>
+//                           <Text style={styles.tableHeader}>จำนวนวันที่ยืม </Text>
+//                       </View>
+//                       {data.map((item, index) => (
+//                       <View key={index} style={styles.tableRow}>
+//                           <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.offeredMedicine?.name ?? '-' : item.sharingMedicine.name ?? '-'}</Text>
+//                             <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? Number(item.offeredMedicine?.offerAmount).toLocaleString() : Number(item.sharingMedicine.sharingAmount).toLocaleString() + `(${item.sharingMedicine.unit})`}</Text>
+//                             <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? Number(item.offeredMedicine?.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(item.sharingMedicine.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+//                             <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? (Number(item.offeredMedicine?.offerAmount) * Number(item.offeredMedicine?.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (Number(item.sharingMedicine.sharingAmount) * Number(item.sharingMedicine.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+//                           <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.responseDetails[0].updatedAt) : formatDate(item.responseDetails[0].createdAt)}</Text>
+//                           <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.requestTerm.expectedReturnDate) : formatDate(item.responseDetails[0].acceptedOffer?.expectedReturnDate)}</Text>
+//                           <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.dayAmount : item.dayAmount} วัน</Text>
+//                       </View> ))}
+//                   </View>
+  
+//                   {/* <Text style={{ marginTop: 30, textIndent: 80 }}>
+//                       ทั้งนี้ {} จะส่งคืนยาให้แก่โรงพยาบาล {} ภายในวันที่ {} และหากมีการเปลี่ยนแปลงจะต้องแจ้งให้ทราบล่วงหน้า
+//                   </Text> */}
+//                   <Text style={{ marginTop: 30, textIndent: 80 }}>จึงเรียนมาเพื่อโปรดดำเนินการ </Text>
+  
+//                   <Text style={{ marginTop: 30, textIndent: 320 }}>ขอแสดงความนับถือ</Text>
+//                   <Text style={{ marginTop: 100, textIndent: 305 }}>{data[0]?.director}</Text>
+//                   <Text style={{ textIndent: 297 }}>ผู้อำนวยการ{data[0]?.hospitalName}</Text>
+//                   <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
+//                   <Text>ติดต่อ {data[0]?.contact}</Text>
+//               </Page>
+//           </PDFDocGen>
+// );
 
-                      <View style={styles.tableRow}>
-                        <Text style={[styles.tableCell, { flex: 1, textAlign: 'left' }]}></Text>
-                        <Text style={[styles.tableCell, { flex: 1, textAlign: 'right' }]}></Text>
-                      </View>
-                  </View>
-  
-                  <Text style={{ textAlign: 'center' }} >{today}</Text>
-                  <Text style={[styles.tableCell, { flex: 1 }]}>{} </Text>
-                  <Text style={styles.text}>เรื่อง    ขอเรียกคืนเวชภัณฑ์ยาที่ครบกำหนด</Text>
-                  <Text style={styles.text}>เรียน    ผู้อำนวยการ{data?.[0] ? data[0].hospitalName : ''}</Text>
-                  <Text style={{ marginTop: 6, textIndent: 80 }}>
-                      เนื่องด้วย {data?.[0] ? data[0].hospitalName : ''} มีความประสงค์ที่จะขอเรียกคืนยาที่ครบกำหนดระยะเวลาการยืม ดังรายการต่อไปนี้
-                  </Text>
-  
-                  <View style={[styles.table, { marginTop: 14 }]}>
-                      <View style={styles.tableRow}>
-                          <Text style={styles.tableHeader}>รายการ</Text>
-                          <Text style={styles.tableHeader}>จำนวน </Text>
-                          <Text style={styles.tableHeader}>ราคา </Text>
-                          <Text style={styles.tableHeader}>มูลค่า </Text>
-                          <Text style={styles.tableHeader}>วันที่ยืม </Text>
-                          <Text style={styles.tableHeader}>กำหนดรับคืน </Text>
-                          <Text style={styles.tableHeader}>จำนวนวันที่ยืม</Text>
-                      </View>
-                      {data.map((item, index) => (
-                      <View key={index} style={styles.tableRow}>
-                          <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.offeredMedicine?.name ?? '-' : item.sharingMedicine.name ?? '-'}</Text>
-                            <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? Number(item.offeredMedicine?.offerAmount).toLocaleString() : Number(item.sharingMedicine.sharingAmount).toLocaleString()}</Text>
-                            <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? Number(item.offeredMedicine?.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(item.sharingMedicine.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-                            <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? (Number(item.offeredMedicine?.offerAmount) * Number(item.offeredMedicine?.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (Number(item.sharingMedicine.sharingAmount) * Number(item.sharingMedicine.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-                          <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.responseDetails[0].updatedAt) : formatDate(item.responseDetails[0].createdAt)}</Text>
-                          <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.requestTerm.expectedReturnDate) : formatDate(item.responseDetails[0].acceptedOffer?.expectedReturnDate)}</Text>
-                          <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.dayAmount : item.dayAmount} วัน</Text>
-                      </View> ))}
-                  </View>
-  
-                  {/* <Text style={{ marginTop: 30, textIndent: 80 }}>
-                      ทั้งนี้ {} จะส่งคืนยาให้แก่โรงพยาบาล {} ภายในวันที่ {} และหากมีการเปลี่ยนแปลงจะต้องแจ้งให้ทราบล่วงหน้า
-                  </Text> */}
-                  <Text style={{ marginTop: 30, textIndent: 80 }}>
-                      จึงเรียนมาเพื่อโปรดดำเนินการ
-                  </Text>
-  
-                  <Text style={{ marginTop: 30, textIndent: 280 }}>ขอแสดงความนับถือ</Text>
-                  <Text style={{ marginTop: 100, textIndent: 280 }}>{data[0]?.director}</Text>
-                  <Text style={{ textIndent: 280 }}>ผู้อำนวยการ{data[0]?.hospitalName}</Text>
-                  <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
-                  <Text>ติดต่อ</Text>
-              </Page>
-          </PDFDocGen>
-);
+const MySimplePDF = ({ data, isCopy }: { data: MyDocumentProps[], isCopy?: boolean }) => {
+  // กำหนดว่า 1 หน้าอยากให้มีไม่เกินกี่แถว
+  const rowsPerPage = 5;
+  const pages = chunkArray(data, rowsPerPage);
 
+  return (
+    <PDFDocGen>
+      {pages.map((pageData, pageIndex) => (
+        <Page key={pageIndex} size="A4" style={styles.body}>
+          <Image style={styles.image} src="/krut_mark.jpg" />
+          {/* {isCopy
+            ? <Text style={{ textAlign: "center", fontSize: 28, fontWeight: "bold", marginBottom: 20 }}>สำเนา</Text>
+            : <Image style={styles.image} src="/krut_mark.jpg" />
+          } */}
+          <View style={[styles.table, { marginBottom: 10 }]} fixed>
+              <View style={styles.tableRow}>
+                  <Text style={[styles.tableCell, { flex: 1 }]}>ที่ สข. 80231</Text>
+                  <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+                  <Text style={[styles.tableCell, { flex: 1 }]}>{data[0].hospitalName} </Text>
+              </View>
+
+              <View style={styles.tableRow}>
+                  <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+                  <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+                  <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {data[0].address}  <span style={{ display: 'none' }}>hidden</span> </Text>
+              </View>
+
+          </View>
+  
+          <Text style={{ textAlign: 'center' }} >{today}</Text>
+          {/* <Text style={[styles.tableCell, { flex: 1 }]}>{} </Text> */}
+          <Text style={styles.text}>เรื่อง    ขอเรียกคืนเวชภัณฑ์ยาที่ครบกำหนด </Text>
+          <Text style={styles.text}>เรียน    ผู้อำนวยการ{data?.[0] ? data[0].hospitalName : ''}</Text>
+          <Text style={{ marginTop: 6, textIndent: 80 }}>เนื่องด้วย {data?.[0] ? data[0].hospitalName : ''} มีความประสงค์ที่จะขอเรียกคืนยาที่ครบกำหนดระยะเวลาการยืม ดังรายการต่อไปนี้ </Text>
+
+          {/* Table Header */}
+          <View style={[styles.table, { marginTop: 14 }]} wrap={false}>
+            <View style={styles.tableRow}>
+              <Text style={styles.tableHeader}>รายการ </Text>
+              <Text style={styles.tableHeader}>จำนวน </Text>
+              <Text style={styles.tableHeader}>ราคา </Text>
+              <Text style={styles.tableHeader}>มูลค่า </Text>
+              <Text style={styles.tableHeader}>วันที่ยืม </Text>
+              <Text style={styles.tableHeader}>กำหนดรับคืน </Text>
+              <Text style={styles.tableHeader}>จำนวนวันที่ยืม </Text>
+            </View>
+
+            {/* Table Rows */}
+            {pageData.map((item, index) => (
+              <View key={index} style={styles.tableRow}>
+                <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.offeredMedicine?.name ?? '-' : item.sharingMedicine?.name + ` (${item.sharingMedicine?.quantity})`}</Text>
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? Number(item.offeredMedicine?.offerAmount).toLocaleString() : Number(item.sharingMedicine.sharingAmount).toLocaleString() + `(${item.sharingMedicine.unit})`}</Text>
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? Number(item.offeredMedicine?.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(item.sharingMedicine.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? (Number(item.offeredMedicine?.offerAmount) * Number(item.offeredMedicine?.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (Number(item.sharingMedicine.sharingAmount) * Number(item.sharingMedicine.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.responseDetails[0].updatedAt) : formatDate(item.responseDetails[0].createdAt)}</Text>
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.requestTerm?.expectedReturnDate) : formatDate(item.responseDetails[0].acceptedOffer?.expectedReturnDate)}</Text>
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.dayAmount : item.dayAmount} วัน</Text>
+                </View> ))}
+          </View>
+
+          {/* Footer ที่อยากให้โผล่ทุกหน้า */}
+          {/* <Text
+            style={{
+              position: "absolute",
+              bottom: 20,
+              left: 0,
+              right: 0,
+              textAlign: "center",
+              fontSize: 10,
+            }}
+          >
+
+          </Text> */}
+
+          
+          <Text style={{ marginTop: 30, textIndent: 80 }}>จึงเรียนมาเพื่อโปรดดำเนินการ </Text>
+
+          <Text style={{ marginTop: 30, textIndent: 320 }}>ขอแสดงความนับถือ</Text>
+          <Text style={{ marginTop: 100, textIndent: 305 }}>{data[0]?.director}</Text>
+          <Text style={{ textIndent: 297 }}>ผู้อำนวยการ{data[0]?.hospitalName}</Text>
+          <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
+          <Text>ติดต่อ {data[0]?.contact}</Text>
+        </Page>
+      ))}
+
+      {isCopy && pages.map((pageData, pageIndex) => (
+        <Page key={`copy-${pageIndex}`} size="A4" style={styles.body}>
+          {isCopy
+            ? <Text style={{ textAlign: "center", fontSize: 28, fontWeight: "bold", marginBottom: 20 }}>สำเนา </Text>
+            : <Image style={styles.image} src="/krut_mark.jpg" />
+          }
+          {/* Footer เหมือนเดิม */}
+          <View style={[styles.table, { marginBottom: 10 }]} fixed>
+              <View style={styles.tableRow}>
+                  <Text style={[styles.tableCell, { flex: 1 }]}>ที่ สข. 80231</Text>
+                  <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+                  <Text style={[styles.tableCell, { flex: 1 }]}>{data[0].hospitalName} </Text>
+              </View>
+
+              <View style={styles.tableRow}>
+                  <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+                  <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+                  <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {data[0].address}  <span style={{ display: 'none' }}>hidden</span> </Text>
+              </View>
+
+          </View>
+  
+          <Text style={{ textAlign: 'center' }} >{today}</Text>
+          {/* <Text style={[styles.tableCell, { flex: 1 }]}>{} </Text> */}
+          <Text style={styles.text}>เรื่อง    ขอเรียกคืนเวชภัณฑ์ยาที่ครบกำหนด </Text>
+          <Text style={styles.text}>เรียน    ผู้อำนวยการ{data?.[0] ? data[0].hospitalName : ''}</Text>
+          <Text style={{ marginTop: 6, textIndent: 80 }}>เนื่องด้วย {data?.[0] ? data[0].hospitalName : ''} มีความประสงค์ที่จะขอเรียกคืนยาที่ครบกำหนดระยะเวลาการยืม ดังรายการต่อไปนี้ </Text>
+
+          {/* Table Header */}
+          <View style={[styles.table, { marginTop: 14 }]} wrap={false}>
+            <View style={styles.tableRow}>
+              <Text style={styles.tableHeader}>รายการ </Text>
+              <Text style={styles.tableHeader}>จำนวน </Text>
+              <Text style={styles.tableHeader}>ราคา </Text>
+              <Text style={styles.tableHeader}>มูลค่า </Text>
+              <Text style={styles.tableHeader}>วันที่ยืม </Text>
+              <Text style={styles.tableHeader}>กำหนดรับคืน </Text>
+              <Text style={styles.tableHeader}>จำนวนวันที่ยืม </Text>
+            </View>
+
+            {/* Table Rows */}
+            {pageData.map((item, index) => (
+              <View key={index} style={styles.tableRow}>
+                <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.offeredMedicine?.name ?? '-' : item.sharingMedicine?.name + ` (${item.sharingMedicine?.quantity})`}</Text>
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? Number(item.offeredMedicine?.offerAmount).toLocaleString() : Number(item.sharingMedicine.sharingAmount).toLocaleString() + `(${item.sharingMedicine.unit})`}</Text>
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? Number(item.offeredMedicine?.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(item.sharingMedicine.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? (Number(item.offeredMedicine?.offerAmount) * Number(item.offeredMedicine?.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (Number(item.sharingMedicine.sharingAmount) * Number(item.sharingMedicine.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.responseDetails[0].updatedAt) : formatDate(item.responseDetails[0].createdAt)}</Text>
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.requestTerm?.expectedReturnDate) : formatDate(item.responseDetails[0].acceptedOffer?.expectedReturnDate)}</Text>
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.dayAmount : item.dayAmount} วัน</Text>
+                </View> ))}
+          </View>
+
+          {/* Footer ที่อยากให้โผล่ทุกหน้า */}
+          {/* <Text
+            style={{
+              position: "absolute",
+              bottom: 20,
+              left: 0,
+              right: 0,
+              textAlign: "center",
+              fontSize: 10,
+            }}
+          >
+
+          </Text> */}
+
+          
+          <Text style={{ marginTop: 30, textIndent: 80 }}>จึงเรียนมาเพื่อโปรดดำเนินการ </Text>
+
+          <Text style={{ marginTop: 30, textIndent: 320 }}>ขอแสดงความนับถือ</Text>
+          <Text style={{ marginTop: 100, textIndent: 305 }}>{data[0]?.director}</Text>
+          <Text style={{ textIndent: 297 }}>ผู้อำนวยการ{data[0]?.hospitalName}</Text>
+          <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
+          <Text>ติดต่อ {data[0]?.contact}</Text>
+        </Page>
+      ))}
+    </PDFDocGen>
+  );
+};
