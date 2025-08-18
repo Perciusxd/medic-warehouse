@@ -35,8 +35,7 @@ function RequestDetails({ sharingMed }: any) {
     const sharingMedicine = sharingMed.offeredMedicine ? sharingMed.sharingMedicine : sharingDetails.sharingMedicine
     const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber, sharingAmount } = sharingMedicine
     const sharingReturnTerm = sharingMed.offeredMedicine ? sharingMed.sharingReturnTerm.receiveConditions : sharingMed.sharingDetails.sharingReturnTerm.receiveConditions
-    const imgUrl: string | null = sharingMed.sharingDetails.sharingMedicineImage || sharingMed?.sharingDetails.sharingMedicine.imageRef || null;
-    console.log('imgUrl', sharingMed)
+    const imgUrl: string | null = sharingMed.sharingDetails.sharingMedicineImage || sharingMed?.sharingDetails.sharingMedicine?.imageRef || null;
     ////console.log('sharingReturnTermsชชชชชชชชชชชชชชชชชชช', sharingDetails.sharingMedicine)
     /* const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy'); */
     // const formattedExpiryDate = format(sharingDetails.sharingMedicine.expiryDate, 'dd/MM/yyyy'); //ดึงมาก่อนนะอิงจากที่มี ดึงไว้ใน columns.tsx

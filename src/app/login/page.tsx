@@ -86,16 +86,16 @@ export default function LoginPage() {
         <div className="flex flex-col md:flex-row items-center justify-center gap-16">
             <div className="w-full md:w-1/2 flex justify-center">
             <Image 
-                src="/hospital.png" 
+                src="/medicine-icon-29795.png" 
                 alt="logo" 
-                width={500} 
-                height={500}
+                width={200} 
+                height={200}
                 className="w-full max-w-md animate-float" 
             />
             </div>
             <div className="w-full md:w-1/2">
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl">
-                <h1 className="text-4xl font-bold text-white mb-8 text-center">Welcome Back</h1>
+                <h1 className="text-4xl font-bold text-white mb-8 text-center">ยินดีต้อนรับกลับ</h1>
                 {error && (
                 <div className="mb-6 p-4 bg-red-500/20 border border-red-500 text-red-200 rounded-lg">
                     {error}
