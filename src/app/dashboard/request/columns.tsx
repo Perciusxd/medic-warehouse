@@ -235,6 +235,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
         cell: ({ row }) => {
             const med = row.original
             const status = med.requestDetails.urgent
+            console.log("status", status)
             return (
                 <div className="flex items-left space-x-2 items-center">
                    

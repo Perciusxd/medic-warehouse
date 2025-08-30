@@ -408,7 +408,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                             const raw = e.target.value.replace(/,/g, "");
                                             if (raw === "" || isNaN(Number(raw))) return;
                                             e.target.value = Number(raw).toLocaleString("th-TH", {
-                                                minimumFractionDigits: 0,
+                                                minimumFractionDigits: 2,
                                                 maximumFractionDigits: 2,
                                             });
                                         }
@@ -467,7 +467,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                         const raw = e.target.value.replace(/,/g, "");
                                         if (raw === "" || isNaN(Number(raw))) return;
                                         e.target.value = Number(raw).toLocaleString("th-TH", {
-                                            minimumFractionDigits: 0,
+                                            minimumFractionDigits: 2,
                                             maximumFractionDigits: 2,
                                         });
                                     }}

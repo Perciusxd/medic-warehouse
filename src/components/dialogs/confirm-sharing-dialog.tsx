@@ -182,7 +182,7 @@ function AcceptanceDetailPanel({ responseData }: any) {
                 <div className="border rounded-lg p-4 bg-gradient-to-r from-green-50 to-emerald-50">
                     <div className="flex items-center gap-2 mb-3">
                         <Pill className="h-4 w-4 text-green-600" />
-                        <span className="font-semibold text-green-800">ยาที่ขอรับ</span>
+                        <span className="font-semibold text-green-800"></span>
                     </div>
                     
                     <div className="space-y-2">

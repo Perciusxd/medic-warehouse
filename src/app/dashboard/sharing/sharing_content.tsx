@@ -23,7 +23,7 @@ export default function SharingContent() {
     const { loggedInHospital } = useHospital()
 
     // Stabilize the status array reference to prevent infinite re-fetching
-    const statusFilter = useMemo(() => ['pending', 're-confirm'], []);
+    const statusFilter = useMemo(() => ['pending'], []);
 
     const { medicineSharing, loading, error, fetchMedicineSharing } = useMedicineSharing(loggedInHospital, statusFilter);
     //console.log("medicineSharing", medicineSharing)

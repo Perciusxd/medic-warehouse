@@ -7,6 +7,11 @@ import { format } from "date-fns"
 import { useHospital } from "@/context/HospitalContext";
 import { Button } from "@/components/ui/button"
 import {
+    HoverCard,
+    HoverCardContent,
+    HoverCardTrigger,
+} from "@/components/ui/hover-card"
+import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -18,10 +23,10 @@ import CreateResponse from "@/components/dialogs/create-response-dialog"
 import { Badge } from "@/components/ui/badge"
 import ConfirmResponseDialog from "@/components/dialogs/confirm-response-dialog"
 import ConfirmSharingDialog from "@/components/dialogs/confirm-sharing-dialog"
-
+import clsx from "clsx";
 import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2Icon, LoaderIcon, ShieldAlertIcon, Truck, Clock, TicketCheck, BookDown, BookUp, SquareX, SquareCheck, History } from "lucide-react"
 import CreateResponseDialog from "@/components/dialogs/create-response-dialog"
-import StatusIndicator from "@/components/ui/status-indicator"
+import StatusIndicator, { getStatusColor, getTextStatusColor } from "@/components/ui/status-indicator"
 import ReturnConditionIndicator from "@/components/ui/return-condition-indicator"
 import ImageHoverPreview from "@/components/ui/image-hover-preview"
 export const columns = (
@@ -30,7 +35,7 @@ export const columns = (
     handleReturnClick: (med: any) => void,
     handleReConfirmClick: (med: any) => void,
     handleEditClick: (med: any) => void,
-    handleconfirReceiveDelivery:(med:any) => void,
+    handleconfirReceiveDelivery: (med: any) => void,
     ticketType: string,
 ): ColumnDef<any>[] => [
         {
@@ -45,29 +50,29 @@ export const columns = (
             }
         },
         {
-                    id: "image",
-                    size: 70,
-                    header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ภาพ</div>,
-                    cell: ({ row }) => {
-                        const original: any = row.original as any
-                        //console.log("original", original)
-                        const imgUrl: string | null = original.requestMedicine.requestMedicineImage || original.requestMedicineImage?.imageRef || null
-                        if (!imgUrl) {
-                            return <div className="text-xs text-muted-foreground">-</div>
-                        }
-                        return (
-                            <div className="flex items-center gap-2">
-                               
-                                {/* <img
+            id: "image",
+            size: 70,
+            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ภาพ</div>,
+            cell: ({ row }) => {
+                const original: any = row.original as any
+                //console.log("original", original)
+                const imgUrl: string | null = original.requestMedicine.requestMedicineImage || original.requestMedicineImage?.imageRef || null
+                if (!imgUrl) {
+                    return <div className="text-xs text-muted-foreground">-</div>
+                }
+                return (
+                    <div className="flex items-center gap-2">
+
+                        {/* <img
                                     src={imgUrl}
                                     alt="thumb"
                                     className="h-10 w-10 object-cover rounded border"
                                 /> */}
-                                <ImageHoverPreview previewUrl={imgUrl} />
-                            </div>
-                        )
-                    }
-                },
+                        <ImageHoverPreview previewUrl={imgUrl} />
+                    </div>
+                )
+            }
+        },
         {
             accessorKey: "createdAt",
             size: 80,
@@ -147,9 +152,8 @@ export const columns = (
                 const remainingAmount = requestAmount - offeredAmount
                 const pricePerUnit = med.requestMedicine.pricePerUnit;
                 const totalPrice = requestAmount * pricePerUnit;
-                //console.log('medasdasdasd', med)
                 return (
-                    <div  className="flex flex-col">
+                    <div className="flex flex-col">
                         <div className="text-md font-medium ">{requestAmount.toLocaleString()} ( {remainingAmount.toLocaleString()} )</div>
                         <div className="text-xs text-muted-foreground">รวม {totalPrice.toLocaleString()} บาท</div>
                     </div>
@@ -204,29 +208,29 @@ export const columns = (
                 let conditionDiv;
 
                 if (condition === "exactType") {
-                    conditionDiv = <div className="flex text-red-600 items-center gap-x-1 "> <SquareX className="w-5 h-5"/>ยืมรายการทดแทนไม่ได้</div>
+                    conditionDiv = <div className="flex text-red-600 items-center gap-x-1 "> <SquareX className="w-5 h-5" />ยืมรายการทดแทนไม่ได้</div>
                 } else {
                     conditionDiv = <div className="flex text-green-600 items-center gap-x-1"> <SquareCheck className="w-5 h-5" />ยืมรายการทดแทนได้</div>;
                 }
 
 
                 if (supportType === true) {
-                    supportTypetDiv = <div className="flex text-green-600 items-center gap-x-1"> <SquareCheck className="w-5 h-5"/>ขอสนับสนุน</div>
+                    supportTypetDiv = <div className="flex text-green-600 items-center gap-x-1"> <SquareCheck className="w-5 h-5" />ขอสนับสนุน</div>
                 } else {
-                    supportTypetDiv = <div className="flex text-red-600 items-center gap-x-1"> <SquareX className="w-5 h-5"/>ขอสนับสนุน</div>;
+                    supportTypetDiv = <div className="flex text-red-600 items-center gap-x-1"> <SquareX className="w-5 h-5" />ขอสนับสนุน</div>;
                 }
 
                 return (
 
                     <div className="flex flex-row gap-x-2 text-center font-medium justify-between">
 
-                            <div className="text-center basis-2/3">
-                                {conditionDiv}
-                            </div>
-                            
-                            <div className="text-center basis-1/3">
-                                {supportTypetDiv}
-                            </div>
+                        <div className="text-center basis-2/3">
+                            {conditionDiv}
+                        </div>
+
+                        <div className="text-center basis-1/3">
+                            {supportTypetDiv}
+                        </div>
                     </div>
                 )
             },
@@ -271,7 +275,7 @@ export const columns = (
         //                     </div>  
         //                 ))}
         //             </div>
-                        
+
         //         );
         //     },
         //     enableGlobalFilter: false
@@ -287,16 +291,18 @@ export const columns = (
                     <div className="font-medium text-muted-foreground text-left cursor-default min-w-[150px] ">
                         โรงพยาบาลที่ให้ยืม
                     </div>
-                    <div className="font-medium text-muted-foreground  cursor-default text-left  min-w-[180px] ">
+                    <div className="font-medium text-muted-foreground  cursor-default text-start  min-w-[180px] ">
                         สถานะ(จำนวนยาที่ได้ยืม)
                     </div>
                 </div>
             ),
             cell: ({ row }) => {
                 const med = row.original;
+                console.log("med status", med)
                 const maxDisplay = 3;
                 const details = med.responseDetails.slice(0, maxDisplay);
                 const hasMore = med.responseDetails.length > maxDisplay;
+                //console.log('med', med)
                 //console.log("med ssds" ,)
                 // const [dialogOpen, setDialogOpen] = useState(false);
                 // const handleConfirm = () => {
@@ -306,67 +312,176 @@ export const columns = (
                 return (
                     <div className="" >
                         {med.responseDetails.map((detail: any, index: any) => (
-                            <div key={index} className="flex flex-row  items-center  justify-between">
-                                 <div className="text-md font-medium  flex justify-start min-w-[120px]">
-                                   <span>
+                            <div key={index} className="flex flex-row  items-center  justify-between mt-1">
+                                <div className="text-md font-medium  flex justify-start min-w-[120px]">
+                                    <span>
                                         {detail.updatedAt && !isNaN(Number(detail.updatedAt))
                                             ? format(new Date(Number(detail.updatedAt)), 'dd/MM/') + (new Date(Number(detail.updatedAt)).getFullYear() + 543)
                                             : "-"}
-                                        </span>
+                                    </span>
                                 </div>
                                 <div className="basis-1/2 text-wrap w-[120px] truncate overflow-hidden text-ellipsis whitespace-nowrap">
                                     <span>{detail.respondingHospitalNameTH}</span>
                                 </div>
-                                <div className="text-sm font-medium text-gray-600 flex    items-center text-left  justify-start min-w-[180px]">
-                                    <div className="flex items-center gap-x-1 basis-1/2">
+                                <div className="text-md font-medium items-center text-left  justify-start min-w-[180px] ">
+                                    <div className={"flex items-center gap-x-1 basis-1/2  justify-start "}>
                                         {detail.status === 'offered' ? (
-                                            <Button
-                                                variant={"link"}
-                                                className="flex gap-x-1 !px-0 "
-                                                onClick={() => handleApproveClick({
-                                                    ...med,
-                                                    responseId: detail.id,
-                                                    offeredMedicine: detail.offeredMedicine,
-                                                    requestDetails: med.requestMedicine,
-                                                    responseDetail: detail,
-                                                })}>ได้รับการยืนยัน <StatusIndicator status={detail.status} />
-                                            </Button>
-
-                                        )
-                                            : detail.status === 'pending'
-                                                ? (<Button variant={'link'} disabled className="flex gap-x-1 p-0">รอการยืนยันให้ยืม<StatusIndicator status={detail.status} /></Button>)
-                                                : detail.status === 'to-transfer'
-                                                    ? (<Button variant={'link'} className="flex gap-x-1  " disabled>รอรับมอบ<StatusIndicator status={detail.status} /></Button>)
-                                                    : detail.status === 'to-return'
-                                                        ? (<Button variant={'link'} className="flex gap-x-1 p-0" onClick={() => handleconfirReceiveDelivery({
+                                            <HoverCard>
+                                                <HoverCardTrigger >
+                                                    <Button
+                                                        variant={"text_status"}
+                                                        size={"text_status"}
+                                                        className={clsx(
+                                                            // "flex content-center h-6 font-bold text-xs",
+                                                            getStatusColor(detail.status),
+                                                            getTextStatusColor(detail.status)
+                                                        )}
+                                                        onClick={() => handleApproveClick({
                                                             ...med,
-                                                            displayHospitalName: detail.respondingHospitalNameTH,
-                                                            displayMedicineName: detail.offeredMedicine.name,
-                                                            displayMedicineAmount: detail.offeredMedicine.offerAmount,//dalog ต้องทำใหม่ให้อัพเดท สเตตัส ให้ถูก
                                                             responseId: detail.id,
                                                             offeredMedicine: detail.offeredMedicine,
                                                             requestDetails: med.requestMedicine,
-                                                        })}>ยืนยันการรับยา<StatusIndicator status={detail.status} /></Button>)
+                                                            responseDetail: detail,
+                                                        })}>
+                                                        ได้รับการยืนยัน
+                                                        <div className=" text-xs">{detail.offeredMedicine ? "(" + (detail.offeredMedicine.offerAmount) + ")" : "(-)"}</div>
+                                                         <SquareCheck className="h-4 w-4" />
+                                                    </Button>
+                                                </HoverCardTrigger>
+                                                <HoverCardContent>
+                                                    <div className="text-xs text-red-700 flex justify-center">โปรดยืนยันเมื่อได้รับยาแล้ว</div>
+                                                </HoverCardContent>
+                                            </HoverCard>
+                                        )
+                                            : detail.status === 'pending'
+                                                ? (<Badge
+                                                    variant={'text_status'}
+                                                    className={clsx(
+                                                        // "flex content-center h-6 font-bold",
+                                                        getStatusColor(detail.status),
+                                                        getTextStatusColor(detail.status)
+                                                    )}
+                                                    >
+                                                    รอการยืนยันให้ยืม
+                                                    <div className=" text-xs">{detail.offeredMedicine ? "(" + (detail.offeredMedicine.offerAmount) + ")" : "(-)"}</div>
+                                                </Badge>)
+                                                : detail.status === 'to-transfer'
+                                                    ? (<Badge
+                                                        variant={'text_status'}
+                                                        className={clsx(
+                                                            // "flex content-center h-6 font-bold",
+                                                            getStatusColor(detail.status),
+                                                            getTextStatusColor(detail.status)
+                                                        )}
+                                                    >
+                                                        รอรับมอบ
+                                                        <div className=" text-xs">{detail.offeredMedicine ? "(" + (detail.offeredMedicine.offerAmount) + ")" : "(-)"}</div>
+                                                        {/* <StatusIndicator status={detail.status} /> */}
+                                                    </Badge>)
+                                                    : detail.status === 'to-return'
+                                                        ? (
+                                                            <HoverCard>
+                                                                <HoverCardTrigger >
+                                                                    <Button
+                                                                        variant={"text_status"}
+                                                                        size={"text_status"}
+                                                                        className={clsx(
+                                                                            // "flex content-center h-6 font-bold text-xs",
+                                                                            getStatusColor(detail.status),
+                                                                            getTextStatusColor(detail.status)
+                                                                        )}
+                                                                        onClick={() => handleconfirReceiveDelivery({
+                                                                            ...med,
+                                                                            displayHospitalName: detail.respondingHospitalNameTH,
+                                                                            displayMedicineName: detail.offeredMedicine.name,
+                                                                            displayMedicineAmount: detail.offeredMedicine.offerAmount,//dalog ต้องทำใหม่ให้อัพเดท สเตตัส ให้ถูก
+                                                                            responseId: detail.id,
+                                                                            offeredMedicine: detail.offeredMedicine,
+                                                                            requestDetails: med.requestMedicine,
+                                                                        })}>
+                                                                        ยืนยันการรับยา
+                                                                        <div className=" text-xs">{detail.offeredMedicine ? "(" + (detail.offeredMedicine.offerAmount) + ")" : "(-)"}</div>
+                                                                        <SquareCheck className="h-4 w-4" />
+                                                                    </Button>
+                                                                </HoverCardTrigger>
+                                                                <HoverCardContent>
+                                                                    <div className="text-xs text-red-700 flex justify-center">โปรดยืนยันเมื่อได้รับยาแล้ว</div>
+                                                                </HoverCardContent>
+                                                            </HoverCard>
+                                                        )
                                                         : detail.status === 'in-return'
-                                                            ? (<Button variant={'link'} className="flex gap-x-1 p-0" onClick={() => handleReturnClick(
-                                                                {
-                                                                    ...med,
-                                                                    responseId: detail.id,
-                                                                    offeredMedicine: detail.offeredMedicine,
-                                                                    requestDetails: med.requestMedicine,
-                                                                    responseDetail: detail,
-                                                                })
-                                                            }>ส่งคืนยา<StatusIndicator status={detail.status} /></Button>)
-                                                            : detail.status === "confirm-return"
-                                                                ? (<span className="flex gap-x-1 p-0">รอยืนยันการได้รับคืน< StatusIndicator status={detail.status} /></span>)
+                                                            ? (
+                                                                <HoverCard>
+                                                                    <HoverCardTrigger >
+                                                                        <Button
+                                                                            variant={"text_status"}
+                                                                            size={"text_status"}
+                                                                            className={clsx(
+                                                                                // "flex content-center h-6 font-bold text-xs",
+                                                                                getStatusColor(detail.status),
+                                                                                getTextStatusColor(detail.status)
+                                                                            )}
+
+                                                                            onClick={() => handleReturnClick(
+                                                                                {
+                                                                                    ...med,
+                                                                                    responseId: detail.id,
+                                                                                    offeredMedicine: detail.offeredMedicine,
+                                                                                    requestDetails: med.requestMedicine,
+                                                                                    responseDetail: detail,
+                                                                                })
+                                                                            }
+                                                                        >
+                                                                            ส่งคืนยา
+                                                                            <div className=" text-xs">{detail.offeredMedicine ? "(" + (detail.offeredMedicine.offerAmount) + ")" : "(-)"}</div>
+                                                                            <SquareCheck className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </HoverCardTrigger>
+                                                                    {/* <HoverCardContent>
+                                                                        <div className="text-xs text-red-700 flex justify-center">โปรดกรอกข้อมูลให้ครบถ้วน</div>
+                                                                    </HoverCardContent> */}
+                                                                </HoverCard>
+                                                            )
+                                                            : detail.status === 'confirm-return'
+                                                                ? (<Badge
+                                                                    variant={'text_status'}
+                                                                    className={clsx(
+                                                                        // "flex content-center h-6 font-bold",
+                                                                        getStatusColor(detail.status),
+                                                                        getTextStatusColor(detail.status)
+                                                                    )}
+                                                                >
+                                                                    รอยืนยันการได้รับคืน
+                                                                    <div className=" text-xs">{detail.offeredMedicine ? "(" + (detail.offeredMedicine.offerAmount) + ")" : "(-)"}</div>
+                                                                </Badge>)
                                                                 : detail.status === 'returned'
-                                                                    ? (<span className="flex gap-x-1   ">เสร็จสิ้น<StatusIndicator status={detail.status} /></span>)
+                                                                    ? (<Badge
+                                                                        variant={'text_status'}
+                                                                        className={clsx(
+                                                                            // "flex content-center h-6 font-bold",
+                                                                            getStatusColor(detail.status),
+                                                                            getTextStatusColor(detail.status)
+                                                                        )}
+                                                                    >
+                                                                        เสร็จสิ้น
+                                                                    </Badge>)
                                                                     : detail.status === 'cancelled'
-                                                                        ? (<span className="flex gap-x-1 p-0">ยกเลิก<StatusIndicator status={detail.status} /></span>)
+                                                                        ? (<Badge
+                                                                        variant={'text_status'}
+                                                                        className={clsx(
+                                                                            // "flex content-center h-6 font-bold",
+                                                                            getStatusColor(detail.status),
+                                                                            getTextStatusColor(detail.status)
+                                                                        )}
+                                                                    >
+                                                                            ยกเลิก
+                                                                            {/* <div className=" text-xs">{detail.offeredMedicine ? "(" + (detail.offeredMedicine.offerAmount) + ")" : "(-)"}</div> */}
+                                                                        </Badge>)
                                                                         : null
                                         }
+                                        {/* <div className=" text-xs">{detail.offeredMedicine ? "("+(detail.offeredMedicine.offerAmount)+")" : "(-)"}</div> */}
                                     </div>
-                                    {/* <div className="flex ">({detail.offerAmount})</div> */}
+
                                 </div>
                             </div>
                         ))}
@@ -375,29 +490,29 @@ export const columns = (
                 );
             },
         },
-        {
-            accessorKey: "history",
-            size: 150,
-            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">สถานะ</div>,
-            cell: ({ row }: { row: any }) => {
-                const med = row.original;
-                const status = med.status;
-                return (
+        // {
+        //     accessorKey: "history",
+        //     size: 150,
+        //     header: () => <div className="font-medium text-muted-foreground text-left cursor-default">สถานะ</div>,
+        //     cell: ({ row }: { row: any }) => {
+        //         const med = row.original;
+        //         const status = med.status;
+        //         return (
 
-                    <div className="flex justify-start items-center gap-x-2 flex-row">
-                        <div className="flex flex-row items-center gap-x-2">
-                            {status === 'pending' ? "กำลังดำเนินการ"
-                                : status === "cancelled" ? "ยกเลิก"
-                                    : ""
-                            }
+        //             <div className="flex justify-start items-center gap-x-2 flex-row">
+        //                 <div className="flex flex-row items-center gap-x-2">
+        //                     {status === 'pending' ? "กำลังดำเนินการ"
+        //                         : status === "cancelled" ? "ยกเลิก"
+        //                             : ""
+        //                     }
 
-                            <StatusIndicator status={status} />
-                        </div>
-                        <div><History className="w-4 h-4 text-muted-foreground cursor-pointer" /></div>
-                    </div>
+        //                     <StatusIndicator status={status} />
+        //                 </div>
+        //                 <div><History className="w-4 h-4 text-muted-foreground cursor-pointer" /></div>
+        //             </div>
 
-                )
-            },
-            enableGlobalFilter: false
-        },
+        //         )
+        //     },
+        //     enableGlobalFilter: false
+        // },
     ]

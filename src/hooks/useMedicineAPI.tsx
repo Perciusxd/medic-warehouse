@@ -135,7 +135,7 @@ export function useMedicineRequestsStatus(loggedInHospital: string, status: stri
         try {
             const response = await fetchAllStatusByTicketType(loggedInHospital, status, "request");
             setMedicineRequests(response);
-            console.log(response, 'request == data');
+            // console.log(response, 'request == data');
 
             return response;
         } catch (error: any) {
@@ -170,7 +170,7 @@ export function useMedicineSharingStatus(loggedInHospital: string, status: strin
         try {
             const response = await fetchAllStatusByTicketType(loggedInHospital, status, "sharing");
             setMedicineSharing(response);
-            console.log("share == data", response);
+            // console.log("share == data", response);
             return response;
         } catch (error: any) {
             setError(error.message || "Failed to fetch medicine sharing");

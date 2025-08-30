@@ -5,6 +5,8 @@ import { format } from "date-fns"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import ImageHoverPreview from "@/components/ui/image-hover-preview"
+import { Button } from "@/components/ui/button"
+import { Download } from "lucide-react"
 const formatThaiDate = (input: string | number | Date | undefined): string => {
     if (!input) return '';
     let date: Date;
@@ -92,7 +94,7 @@ export default function RequestDetails({ requestData, responseForm }: any) {
             }
         }
     };
-    const total = (requestDetails.requestMedicine.pricePerUnit || 0)  * (requestDetails.requestMedicine.requestAmount || 0) ;
+    const total = (requestDetails.requestMedicine.pricePerUnit || 0) * (requestDetails.requestMedicine.requestAmount || 0);
     const imgUrl: string | null = requestDetails.requestMedicine.requestMedicineImage || requestDetails.requestMedicine?.imageRef || null;
     const [details, setDetails] = useState([
         { label: "วันที่ขอยืม", value: format(new Date(Number(requestDetails.updatedAt)), 'dd/MM/') + (new Date(Number(requestDetails.updatedAt)).getFullYear() + 543) },
@@ -111,7 +113,7 @@ export default function RequestDetails({ requestData, responseForm }: any) {
         // { label: "จำนวนที่ขอยืม", value: requestDetails.requestMedicine.requestAmount },
         // { label: "วันที่คาดว่าจะคืน", value: formatDate(requestDetails.requestTerm.expectedReturnDate) },
     ])
-
+    console.log("Request Details:", requestDetails);
     return (
         <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -147,9 +149,25 @@ export default function RequestDetails({ requestData, responseForm }: any) {
                         <Label className="font-bold">เหตุผลการยืม</Label>
                         <Input type="text" value={requestDetails.requestMedicine.description} disabled />
                     </div>
-                   <div className="col-span-1">
-                        <Label className="font-bold">ภาพประกอบ <ImageHoverPreview previewUrl={imgUrl} /></Label>
-                   </div> 
+                    <div className="col-span-1 grid ">
+                        <Label className="font-bold">ภาพประกอบ</Label>
+                        <div className="flex flex-row items-end gap-x-2">
+                            {imgUrl &&
+                            <Button asChild variant="outline" className="">
+                                <a href={imgUrl} download="file.jpg">
+                                    <Download className="" /> ดาวน์โหลด
+                                </a>
+                            </Button>
+                            }
+                            {
+                                !imgUrl &&
+                                <Input className="text-sm text-gray-500 italic" type="text" value={"ไม่มีภาพประกอบ"} disabled/>
+                            }
+                            {imgUrl &&
+                                <ImageHoverPreview previewUrl={imgUrl} />
+                            }
+                        </div>
+                    </div>
                 </div>
                 {/* <div className="col-span-2">
                     <Label className="font-bold">ภาพประกอบ <ImageHoverPreview previewUrl={imgUrl} /></Label>
@@ -163,5 +181,5 @@ export default function RequestDetails({ requestData, responseForm }: any) {
                 </div> */}
             </div>
         </div>
-            );
+    );
 }

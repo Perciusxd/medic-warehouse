@@ -93,7 +93,7 @@ export default function TransferDashboard() {
     }, [sharingStatusFilter]);
 
     const { medicineSharing, loading: loadingShare, error: errorShare, fetchMedicineSharing } = useMedicineSharingStatus(loggedInHospital, selectedStatuses);
-    //console.log("medicineSharingsssss", medicineSharing)
+    // console.log("medicineSharingsssss", medicineSharing)
     const handleApproveClick = (med: any) => {
         setSelectedMed(med);
         setConfirmDialogOpen(true);

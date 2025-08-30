@@ -15,12 +15,13 @@ import { Calendar } from "@/components/ui/calendar"
 import { Badge } from "@/components/ui/badge"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { ImageHoverPreview } from "@/components/ui/image-hover-preview"
-import { Calendar1Icon, ShieldAlert } from "lucide-react"
+import { Calendar1Icon, ShieldAlert, CheckCircle, AlertTriangle } from "lucide-react"
 import { Calendar1, Hospital } from "lucide-react"
 import RequestDetails from "./request-details"
 
 export default function CreateResponseDialog({ requestData, responseId, dialogTitle, status, openDialog, onOpenChange }: any) {
     const { requestTerm } = requestData;
+    console.log("requestTerm:", requestTerm)
     const ResponseSchema = z.object({
         offeredMedicine: z.object({
             // offerAmount: z.number().min(1, "กรุณากรอกมากว่า 0").max(requestData.requestMedicine.requestAmount, `กรุณากรอกน้อยกว่า ${requestData.requestMedicine.requestAmount}`),
@@ -170,7 +171,31 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
             setLoading(false)
         }
     }
+    type UrgentType = "normal" | "immediate" | "urgent"
 
+    const URGENT_CONFIG: Record<UrgentType, {
+        variant: "normal" | "immediate" | "destructive",
+        label: string,
+        icon: React.ReactNode
+    }> = {
+        normal: {
+            variant: "normal", // เขียว
+            label: "ปกติ",
+            icon: <ShieldAlert />
+        },
+        immediate: {
+            variant: "immediate", // ส้ม
+            label: "ด่วน",
+            icon: <ShieldAlert />
+        },
+        urgent: {
+            variant: "destructive", // แดง
+            label: "ด่วนที่สุด",
+            icon: <ShieldAlert />
+        }
+    }
+    const priority: UrgentType = requestData.urgent || "normal"
+    const config = URGENT_CONFIG[priority]
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[1200px]">
@@ -197,7 +222,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                         <RequestDetails requestData={requestData} responseForm={true} />
                         <div className="ml-15">
                             <div className="flex items-center space-x-2 mb-2">
-                                <Badge
+                                {/* <Badge
                                     variant={"destructive"}
                                     className="flex gap-1 px-1.5 [&_svg]:size-3 mb-4">
                                     {requestData.urgent ?
@@ -207,12 +232,19 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                     <div className="text-sm">
                                         {requestData.urgent ? "ด่วนที่สุด" : "Normal"}
                                     </div>
+                                </Badge> */}
+                                <Badge
+                                    variant={config.variant}
+                                    className="flex gap-1 px-1.5 [&_svg]:size-3 mb-4"
+                                >
+                                    {config.icon}
+                                    <div className="text-sm">{config.label}</div>
                                 </Badge>
                                 <Badge
                                     variant={"outline"}
                                     className="flex gap-1 px-1.5 [&_svg]:size-3 mb-4">
-                                    <div className="text-sm text-gray-600">
-                                        {requestData.requestTerm.receiveConditions.condition === "exactType" ? "ยืมรายการที่ต้องการ" : "ยืมรายการทดแทนได้"}
+                                    <div className="text-sm text-gray-600 text-wrap">
+                                        {requestData.requestTerm.receiveConditions.condition === "exactType" ? "ยืมรายการที่ต้องการ" : "ให้ยืมรายการที่ต้องการหรือยืมรายการทดแทนได้"}
                                     </div>
                                 </Badge>
                             </div>
@@ -341,7 +373,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                         <span className="text-red-500 text-xs -mt-1">{errors.offeredMedicine.batchNumber.message}</span>
                                     )}
                                 </Label>
-                                
+
                                 <div className="flex flex-col gap-2">
                                     <Label className="font-bold">วันหมดอายุ</Label>
                                     <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
@@ -419,7 +451,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                         <Button type="submit">
                             {loading ? <div className="flex flex-row items-center gap-2 text-muted-foreground"><LoadingSpinner /> ยืมยันการให้ยืม</div> : "ยืมยันการให้ยืม"}
                         </Button>
-                        
+
 
                     </DialogFooter>
                 </form>

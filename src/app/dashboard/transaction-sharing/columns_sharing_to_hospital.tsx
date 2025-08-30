@@ -4,10 +4,16 @@ import { SharingAsset } from "@/types/sharingMed"
 import { ColumnDef } from "@tanstack/react-table"
 // import { formatDate } from "@/lib/utils"
 import { format, differenceInCalendarDays } from "date-fns"
-import { History, Edit, Pencil } from "lucide-react"
-
+import { History, Edit, Pencil, SquareCheck } from "lucide-react"
+import {
+    HoverCard,
+    HoverCardContent,
+    HoverCardTrigger,
+} from "@/components/ui/hover-card"
+import { Badge } from "@/components/ui/badge"
+import clsx from "clsx";
 import { Button } from "@/components/ui/button"
-import StatusIndicator from "@/components/ui/status-indicator"
+import StatusIndicator, { getStatusColor, getTextStatusColor } from "@/components/ui/status-indicator"
 import ReturnConditionIndicator from "@/components/ui/return-condition-indicator"
 import { Progress } from "@/components/ui/progress"
 import ImageHoverPreview from "@/components/ui/image-hover-preview"
@@ -44,11 +50,11 @@ export const columns = (
                 }
                 return (
                     <div className="flex items-center gap-2">
-                        <img
+                        {/* <img
                             src={imgUrl}
                             alt="thumb"
                             className="h-10 w-10 object-cover rounded border"
-                        />
+                        /> */}
                         <ImageHoverPreview previewUrl={imgUrl} />
                     </div>
                 )
@@ -62,7 +68,7 @@ export const columns = (
                 const createdAt = row.getValue("createdAt")
                 const date = new Date(Number(createdAt)); // convert string to number, then to Date
                 const isValid = !isNaN(date.getTime());
-                const formattedDate = isValid ? format(new Date(Number(date)), 'dd/MM/') + (new Date(Number(date)).getFullYear() + 543): "-"; // format to date only
+                const formattedDate = isValid ? format(new Date(Number(date)), 'dd/MM/') + (new Date(Number(date)).getFullYear() + 543) : "-"; // format to date only
                 const timeOnly = isValid ? format(date, 'HH:mm:ss') : "-"; // format to time only
                 return (<div>
                     <div className="text-sm font-medium text-gray-600">{formattedDate}</div>
@@ -181,7 +187,7 @@ export const columns = (
                             // //console.log("responseDetailsaaaaaa",date)
                             return (
                                 <div key={index}>
-                                    <div className="text-sm font-medium ">{formattedDate}</div>
+                                    <div className="flex flex-row  items-center  justify-between mt-1">{formattedDate}</div>
                                     {/* <div className="text-xs text-muted-foreground">{item.updatedAt}</div> */}
                                 </div>
                             );
@@ -219,61 +225,186 @@ export const columns = (
                 const details = responseDetails.slice(0, maxDisplay);
                 const hasMore = responseDetails.length > maxDisplay;
 
-                console.log('med', med)
+                // console.log('med', med)
 
 
                 return (
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col  ">
                         {med.responseDetails.map((detail, index) => (
-                            <div key={index} className="flex items-center gap-x-2 gap-y-2 h-4">
+                            <div key={index} className="flex flex-row  items-center  justify-between ">
                                 <div className="basis-1/2 text-wrap w-[120px] truncate overflow-hidden text-ellipsis whitespace-nowrap" title={detail.respondingHospitalNameTH}>
                                     <span>{detail.respondingHospitalNameTH}</span>
                                 </div>
-                                <div className="basis-1/2">
-                                    {detail.status === 'pending' ? (
-                                        <div className="flex gap-x-2">แจ้งแบ่งปัน<StatusIndicator status={detail.status} /></div>
-                                    ) : detail.status === 'offered' ? (
-                                        <Button variant={'link'} className="flex gap-x-2 p-0" onClick={() => handleReConfirmClick({
-                                            ...med,
-                                            responseId: detail.id,
-                                            offeredMedicine: detail.acceptedOffer,
-                                            sharingDetails: med.sharingMedicine,
-                                            responseStatus: detail.status,
-                                            returnTerm: detail.returnTerm,
-                                        })}>แจ้งขอยืม ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></Button>
-                                    ) : detail.status === 're-confirm' ? (
-                                        <Button variant={'link'} className="flex gap-x-2 p-0" disabled>รอยืนยันการขอยืม ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /> </Button>
-                                    ) : detail.status === 'to-transfer' ? (
-                                        <Button variant={'link'} className="flex gap-x-2 p-0" onClick={() => handleDeliveryClick({
-                                            ...med,
-                                            responseId: detail.id,
-                                            // offeredMedicine: detail.acceptedOffer,
-                                            // sharingDetails: med.sharingMedicine,
-                                            responseDetail: detail,
-                                            acceptedOffer: detail.acceptedOffer,
-                                        })}>ส่งมอบ ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></Button>
-                                    ) : detail.status === 'in-return' ? (
-                                        <div className="flex gap-x-2">รอรับคืน ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></div>
-                                    ) : detail.status === 'to-confirm' ? (
-                                        <div className="flex gap-x-2">รอยืนยันการรับของ ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></div>
-                                    ) : detail.status === 'to-return' ? (
-                                        <div className="flex gap-x-2">รอรับคืน ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></div>
-                                    ) : detail.status === 'confirm-return' ? (
-                                        <Button variant={'link'} className="flex gap-x-2 p-0" onClick={() => handleReturnConfirm({
-                                            ...med,
-                                            responseId: detail.id,
-                                            offeredMedicine: detail.acceptedOffer,
-                                            sharingDetails: med.sharingMedicine,
-                                            responseStatus: detail.status,
-                                            displayMedicineName: detail.returnMedicine.returnMedicine.name,
-                                            displayMedicineAmount: detail.returnMedicine?.returnType === 'supportType' ? "ขอสนับสนุน" : detail.returnMedicine.returnMedicine.returnAmount,
-                                            displayHospitalName: detail.respondingHospitalNameTH,
-                                        })}>โปรดยืนยันการคืนยา ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></Button>
-                                    ) : detail.status === 'returned' ? (
-                                        <div className="flex gap-x-2">เสร็จสิ้น ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></div>
-                                    ) : detail.status === 'cancelled' ? (
-                                        <div className="flex gap-x-2">ยกเลิก<StatusIndicator status={detail.status} /></div>
-                                    ) : null}
+                                <div className="basis-1/2 mt-1">
+                                    {detail.status === 'pending'
+                                        ? (
+                                            <Badge
+                                                variant={'text_status'}
+                                                className={clsx(
+                                                    // "flex content-center h-6 font-bold",
+                                                    getStatusColor(detail.status),
+                                                    getTextStatusColor(detail.status)
+                                                )}
+                                            >
+                                                แจ้งแบ่งปัน
+                                                {/* <StatusIndicator status={detail.status} /> */}
+                                            </Badge>
+                                        ) : detail.status === 'offered'
+                                            ? (
+                                                <HoverCard>
+                                                    <HoverCardTrigger >
+                                                        <Button
+                                                            variant={"text_status"}
+                                                            size={"text_status"}
+                                                            className={clsx(
+                                                                // "flex content-center h-6 font-bold text-xs",
+                                                                getStatusColor(detail.status),
+                                                                getTextStatusColor(detail.status)
+                                                            )}
+                                                            onClick={() => handleReConfirmClick({
+                                                                ...med,
+                                                                responseId: detail.id,
+                                                                offeredMedicine: detail.acceptedOffer,
+                                                                sharingDetails: med.sharingMedicine,
+                                                                responseStatus: detail.status,
+                                                                returnTerm: detail.returnTerm,
+                                                                respondingHospitalNameTH: detail.respondingHospitalNameTH,
+                                                            })}
+                                                        >
+                                                            รอยืนยันให้ยืม ({detail.acceptedOffer.responseAmount})
+                                                            <SquareCheck className="h-4 w-4" />
+                                                        </Button>
+                                                    </HoverCardTrigger>
+                                                    {/* <HoverCardContent>
+                                                        <div className="text-xs text-red-700 flex justify-center">โปรดยืนยันเมื่อได้รับยาแล้ว</div>
+                                                    </HoverCardContent> */}
+                                                </HoverCard>
+                                            ) : detail.status === 're-confirm' ? (
+                                                <Badge
+                                                    variant={'text_status'}
+                                                    className={clsx(
+                                                        // "flex content-center h-6 font-bold",
+                                                        getStatusColor(detail.status),
+                                                        getTextStatusColor(detail.status)
+                                                    )}
+                                                >
+                                                    รอยืนยันการขอยืม ({detail.acceptedOffer.responseAmount})
+                                                    {/* <StatusIndicator status={detail.status} />  */}
+                                                </Badge>
+                                            ) : detail.status === 'to-transfer'
+                                                ? (
+                                                    <HoverCard>
+                                                        <HoverCardTrigger >
+                                                            <Button
+                                                                variant={"text_status"}
+                                                                size={"text_status"}
+                                                                className={clsx(
+                                                                    // "flex content-center h-6 font-bold text-xs",
+                                                                    getStatusColor(detail.status),
+                                                                    getTextStatusColor(detail.status)
+                                                                )}
+                                                                onClick={() => handleDeliveryClick({
+                                                                    ...med,
+                                                                    responseId: detail.id,
+                                                                    // offeredMedicine: detail.acceptedOffer,
+                                                                    // sharingDetails: med.sharingMedicine,
+                                                                    responseDetail: detail,
+                                                                    acceptedOffer: detail.acceptedOffer,
+                                                                })}
+                                                            >
+                                                                ส่งมอบ ({detail.acceptedOffer.responseAmount})
+                                                                <SquareCheck className="h-4 w-4" />
+                                                                {/* <StatusIndicator status={detail.status} /> */}
+                                                            </Button>
+                                                        </HoverCardTrigger>
+                                                        {/* <HoverCardContent>
+                                                        <div className="text-xs text-red-700 flex justify-center">โปรดยืนยันเมื่อได้รับยาแล้ว</div>
+                                                    </HoverCardContent> */}
+                                                    </HoverCard>
+                                                ) : detail.status === 'in-return' ? (
+                                                    <Badge
+                                                        variant={'text_status'}
+                                                        className={clsx(
+                                                            // "flex content-center h-6 font-bold",
+                                                            getStatusColor(detail.status),
+                                                            getTextStatusColor(detail.status)
+                                                        )}
+                                                    >
+                                                        รอรับคืน ({detail.acceptedOffer.responseAmount})
+                                                        {/* <StatusIndicator status={detail.status} /> */}
+                                                    </Badge>
+                                                ) : detail.status === 'to-confirm' ? (
+                                                    <Badge
+                                                        variant={'text_status'}
+                                                        className={clsx(
+                                                            // "flex content-center h-6 font-bold",
+                                                            getStatusColor(detail.status),
+                                                            getTextStatusColor(detail.status)
+                                                        )}
+                                                    >
+                                                        รอยืนยันการรับของ ({detail.acceptedOffer.responseAmount})
+                                                        {/* <StatusIndicator status={detail.status} /> */}
+                                                    </Badge>
+                                                ) : detail.status === 'to-return' ? (
+                                                    <div className="flex gap-x-2">รอรับคืน ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></div>
+                                                ) : detail.status === 'confirm-return' ? (
+                                                    <HoverCard>
+                                                        <HoverCardTrigger >
+                                                            <Button
+                                                                variant={"text_status"}
+                                                                size={"text_status"}
+                                                                className={clsx(
+                                                                    // "flex content-center h-6 font-bold text-xs",
+                                                                    getStatusColor(detail.status),
+                                                                    getTextStatusColor(detail.status)
+                                                                )}
+
+                                                                onClick={() => handleReturnConfirm({
+                                                                    ...med,
+                                                                    responseId: detail.id,
+                                                                    offeredMedicine: detail.acceptedOffer,
+                                                                    sharingDetails: med.sharingMedicine,
+                                                                    responseStatus: detail.status,
+                                                                    displayMedicineName: detail.returnMedicine.returnMedicine.name,
+                                                                    displayMedicineAmount: detail.returnMedicine?.returnType === 'supportType' ? "ขอสนับสนุน" : detail.returnMedicine.returnMedicine.returnAmount,
+                                                                    displayHospitalName: detail.respondingHospitalNameTH,
+                                                                })}
+                                                            >
+                                                                โปรดยืนยันการคืนยา ({detail.acceptedOffer.responseAmount})
+                                                                <SquareCheck className="h-4 w-4" />
+                                                                {/* <StatusIndicator status={detail.status} /> */}
+                                                            </Button>
+                                                        </HoverCardTrigger>
+                                                        {/* <HoverCardContent>
+                                                        <div className="text-xs text-red-700 flex justify-center">โปรดยืนยันเมื่อได้รับยาแล้ว</div>
+                                                    </HoverCardContent> */}
+                                                    </HoverCard>
+                                                ) : detail.status === 'returned' ? (
+                                                    <Badge
+                                                        variant={'text_status'}
+                                                        className={clsx(
+                                                            // "flex content-center h-6 font-bold",
+                                                            getStatusColor(detail.status),
+                                                            getTextStatusColor(detail.status)
+                                                        )}
+                                                    >
+                                                        เสร็จสิ้น ({detail.acceptedOffer.responseAmount})
+                                                        {/* <StatusIndicator status={detail.status} /> */}
+                                                    </Badge>
+
+                                                ) : detail.status === 'cancelled' ? (
+                                                    <Badge
+                                                        variant={'text_status'}
+                                                        className={clsx(
+                                                            // "flex content-center h-6 font-bold",
+                                                            getStatusColor(detail.status),
+                                                            getTextStatusColor(detail.status)
+                                                        )}
+                                                    >
+                                                        ยกเลิก
+                                                        {/* <StatusIndicator status={detail.status} /> */}
+                                                    </Badge>
+                                                ) : null}
                                 </div>
                             </div>
                         ))}

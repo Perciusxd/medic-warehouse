@@ -13,7 +13,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ImageHoverPreview } from "@/components/ui/image-hover-preview"
 // Icons
-import { Calendar1, FileText } from "lucide-react"
+import { Calendar1, FileText, Download } from "lucide-react"
 
 import { format } from "date-fns"
 import { z } from "zod"
@@ -26,17 +26,22 @@ const SharingPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/shar
 import { useAuth } from "@/components/providers";
 
 function RequestDetails({ sharingMed }: any) {
-    //console.log('sharingMed RequestDetails', sharingMed)
+    console.log('sharingMed RequestDetails', sharingMed)
     const { createdAt } = sharingMed
     const date = new Date(Number(createdAt)); // convert string to number, then to Date
     // Thai date formatting helper (Buddhist calendar)
     const formattedDate = format(new Date(Number(date)), 'dd/MM/') + (new Date(Number(date)).getFullYear() + 543)
     const sharingDetails = sharingMed.sharingDetails
     const sharingMedicine = sharingMed.offeredMedicine ? sharingMed.sharingMedicine : sharingDetails.sharingMedicine
-    const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber, sharingAmount } = sharingMedicine
+    const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber, sharingAmount ,pricePerUnit} = sharingMedicine
     const sharingReturnTerm = sharingMed.offeredMedicine ? sharingMed.sharingReturnTerm.receiveConditions : sharingMed.sharingDetails.sharingReturnTerm.receiveConditions
-    const imgUrl: string | null = sharingMed.sharingDetails.sharingMedicineImage || sharingMed?.sharingDetails.sharingMedicine?.imageRef || null;
-    ////console.log('sharingReturnTermsชชชชชชชชชชชชชชชชชชช', sharingDetails.sharingMedicine)
+    const imgUrl: string | null = sharingMed.sharingDetails.sharingMedicineImage || sharingMed.sharingMedicineImage || null;
+    const responseStatus = sharingMed.responseStatus
+    const respondingHospitalNameTH = sharingMed.respondingHospitalNameTH
+   
+    const totalAmount = sharingAmount as number*pricePerUnit as number
+    
+    //console.log('sharingReturnTermsชชชชชชชชชชชชชชชชชชช', sharingDetails.sharingMedicine)
     /* const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy'); */
     // const formattedExpiryDate = format(sharingDetails.sharingMedicine.expiryDate, 'dd/MM/yyyy'); //ดึงมาก่อนนะอิงจากที่มี ดึงไว้ใน columns.tsx
     const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/') + (new Date(Number(expiryDate)).getFullYear() + 543)
@@ -48,38 +53,67 @@ function RequestDetails({ sharingMed }: any) {
                     <Input disabled value={formattedDate} />
                 </div>
                 <div className="flex flex-col gap-1">
-                    <Label>โรงพยาบาลที่แจ้ง</Label>
-                    <Input disabled value={sharingDetails.postingHospitalNameTH} />
+                    {responseStatus === 'offered' ? <Label>โรงพยาบาลที่ขอแบ่งปัน</Label> : <Label>โรงพยาบาลที่แบ่งปัน</Label>}
+                    {/* <Label>โรงพยาบาลที่แบ่งปัน</Label> */}
+                    {responseStatus === 'offered' ? <Input disabled value={respondingHospitalNameTH} /> : <Input disabled value={sharingDetails.postingHospitalNameTH} />}
+                    {/* <Input disabled value={sharingDetails.postingHospitalNameTH} /> */}
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>ชื่อยา</Label>
                     <Input disabled value={name} />
                 </div>
                 <div className="flex flex-col gap-1">
-                    <Label>รูปแบบ/หน่วย</Label>
-                    <Input disabled value={unit} />
+                    <Label>ผู้ผลิต</Label>
+                    <Input disabled value={manufacturer} />
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>ชื่อการค้า</Label>
                     <Input disabled value={trademark} />
                 </div>
-                <div className="grid grid-cols-3 gap-1 items-center">
-                    <div className="flex flex-col col-span-2 gap-1">
-                        <Label>ผู้ผลิต</Label>
-                        <Input disabled value={manufacturer} />
+                <div className="flex flex-col gap-1">
+                    <Label>หมายเลขล็อต</Label>
+                    <Input disabled value={batchNumber} />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                    <Label>จำนวน</Label>
+                    <Input disabled value={sharingAmount.toLocaleString()} />
+                </div>
+                <div className="grid grid-cols-2 gap-1">
+                    <div className="flex flex-col col-span-1 gap-1">
+                        <Label>รูปแบบ/หน่วย</Label>
+                        <Input disabled value={unit} />
                     </div>
                     <div className="flex flex-col col-span-1 gap-1">
-                        <Label className="font-bold">ภาพประกอบ <ImageHoverPreview previewUrl={imgUrl} /></Label>
+                        <Label>ขนาด</Label>
+                        <Input disabled value={quantity} />
                     </div>
                 </div>
                 <div className="flex flex-col gap-1">
-                    <Label>จำนวน</Label>
-                    <Input disabled value={sharingAmount} />
+                    <Label>ราคาต่อหน่วย (รวม)</Label>
+                    <Input disabled value={sharingMedicine.pricePerUnit ? sharingMedicine.pricePerUnit.toLocaleString('en-US', { style: 'currency', currency: 'THB' }) + " ( "+totalAmount.toLocaleString() +" )": '-'} />
                 </div>
-                <div className="grid grid-cols-3 gap-1">
-                    <div className="flex flex-col col-span-2 gap-1">
-                        <Label>หมายเลขล็อต</Label>
-                        <Input disabled value={batchNumber} />
+                <div className="grid grid-cols-2 gap-1">
+                    <div className="flex flex-col col-span-1 gap-1">
+                        <Label className="">ภาพประกอบ</Label>
+                        <div className="flex flex-row items-end gap-x-0.5">
+                            {imgUrl &&
+                                <Button asChild variant="outline" className="" >
+                                    <a href={imgUrl} download="file.jpg">
+                                        ดาวน์โหลด
+                                    </a>
+
+                                </Button>
+                            }
+                            {imgUrl &&
+                                <ImageHoverPreview previewUrl={imgUrl} />
+                            }
+
+                            {
+                                !imgUrl &&
+                                <Input className="text-sm text-gray-500 italic" type="text" value={"ไม่มีภาพประกอบ"} disabled />
+                            }
+                        </div>
                     </div>
                     <div className="flex flex-col col-span-1 gap-1">
                         <Label>วันหมดอายุ</Label>
@@ -142,7 +176,7 @@ function ResponseFormSchema(sharingMedicine: any) {
 }
 
 function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) {
-    // //console.log('sharingMed', sharingMed)
+    console.log('sharingMedหหห', sharingMed)
     // //console.log('sharingMed.sharingMedicine', sharingMed.sharingDetails.sharingMedicine)
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [dateError, setDateError] = useState(""); // for error message
@@ -257,7 +291,7 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                         <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
                         <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                             <PopoverTrigger asChild>
-                                <Button variant="outline" className="justify-start text-left font-normal" disabled={sharingMed.status === 're-confirm'} >
+                                <Button variant="outline" className="justify-start text-left font-normal" disabled={sharingMed.status === 're-confirm' || sharingMed.responseStatus === 'offered'} >
                                     {expectedReturn
                                         ?
                                         format(new Date(Number(expectedReturn)), 'dd/MM/') + (new Date(Number(expectedReturn)).getFullYear() + 543)
@@ -345,7 +379,7 @@ export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChan
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
     const isReconfirm = !!sharingMed?.acceptedOffer;
-    const dialogTitle = isReconfirm ? "แก้ไข/ยอมรับแบ่งปัน" : "เวชภัณฑ์ยาที่ต้องการแบ่งปัน";
+    const dialogTitle = isReconfirm ? "ยืนยันการยืม" : "เวชภัณฑ์ยาที่ต้องการแบ่งปัน";
 
     const handleCancel = () => {
         // onOpenChange(false);

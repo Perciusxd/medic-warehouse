@@ -15,6 +15,8 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
+import { Download } from "lucide-react"
+import ImageHoverPreview from "@/components/ui/image-hover-preview"
 import { Calendar } from "@/components/ui/calendar"
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,12 +47,13 @@ function OfferDetails({ selectedMed }: any) {
     const { requestAmount } = requestDetails;
     const { expectedReturnDate } = requestTerm;
     const totalPrice = offerAmount * pricePerUnit;
-
+    const description = requestDetails.description
+    console.log("requestDetails", requestDetails)
     const date = new Date(Number(expectedReturnDate));
     const isValid = !isNaN(date.getTime());
     const formattedDate = isValid ? `${format(date, 'dd/MM')}/${date.getFullYear() + 543}` : "-";
     //console.log(expectedReturnDate);
-
+    const imgUrl = requestMedicine.requestMedicineImage ? requestMedicine.requestMedicineImage : null;
     return (
         <div className="flex flex-col gap-6 border p-4 rounded-lg">
             <h2 className="text-lg font-semibold">รายละเอียดรายการยืม</h2>
@@ -72,30 +75,49 @@ function OfferDetails({ selectedMed }: any) {
                     <Input disabled value={unit} />
                 </div>
                 <div className="flex flex-col gap-1">
-                    <Label>ขนาด</Label>
-                    <Input disabled value={quantity} />
-                </div>
-                <div className="flex flex-col gap-1">
                     <Label>ชื่อการค้า</Label>
                     <Input disabled value={trademark} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>ขนาด</Label>
+                    <Input disabled value={quantity} />
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>ผู้ผลิต</Label>
                     <Input disabled value={manufacturer} />
                 </div>
                 <div className="flex flex-col gap-1">
-                    <Label>ราคาต่อหน่วย</Label>
-                    <Input disabled value={pricePerUnit} />
+                     <Label className="">ภาพประกอบ</Label>
+                        <div className="flex flex-row items-end gap-x-2">
+                            {imgUrl &&
+                            <Button asChild variant="outline" className="">
+                                <a href={imgUrl} download="file.jpg">
+                                    <Download className="" /> ดาวน์โหลด
+                                </a>
+                            </Button>
+                            }
+                            {
+                                !imgUrl &&
+                                <Input className="text-sm text-gray-500 italic" type="text" value={"ไม่มีภาพประกอบ"} disabled/>
+                            }
+                            {imgUrl &&
+                                <ImageHoverPreview previewUrl={imgUrl} />
+                            }
+                        </div>
                 </div>
-                <div className="grid grid-cols-2 gap-1">
+                <div className="flex flex-col gap-1 col-span-2">
+                    <Label>จำนวนที่ให้ยืม</Label>
+                    <Input disabled value={description} />
+                </div>
+                <div className="flex flex-cols-1 gap-1 flex-wrap">
                     <div className="flex flex-col gap-1">
                         <Label>จำนวนที่ขอยืม</Label>
                         <Input disabled value={requestAmount} />
                     </div>
                     <div className="flex flex-col gap-1">
-                        <Label>ผู้ผลิต</Label>
-                        <Input disabled value={manufacturer} />
-                    </div>
+                    <Label>ราคาต่อหน่วย</Label>
+                    <Input disabled value={pricePerUnit} />
+                </div>
                 </div>
                 <div className="grid grid-cols-1 gap-2">
                     <div className="flex flex-row gap-1">
