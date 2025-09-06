@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import StatusIndicator from "@/components/ui/status-indicator"
 
-import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2Icon, LoaderIcon, ShieldAlertIcon,BookDown ,BookUp, SquareX ,SquareCheck } from "lucide-react"
+import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2Icon, LoaderIcon, ShieldAlertIcon, BookDown, BookUp, SquareX, SquareCheck } from "lucide-react"
 
 export const columns = (handleApproveClick: (med: ResponseAsset) => void, handleCancelClick: (med: ResponseAsset) => void): ColumnDef<ResponseAsset>[] => [
     // {
@@ -34,21 +34,21 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
         header: ({ column }) => {
             return (
                 <div className="font-medium text-muted-foreground text-left cursor-default">
-                    ชื่อยา/ชื่อการค้า
-                <Button
+                    รายการยา/ชื่อการค้า
+                    {/* <Button
                     className="font-medium text-muted-foreground text-left cursor-pointer"
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
                     
                     <ArrowUpDown className="h-4 w-4" />
-                </Button>
+                </Button> */}
                 </div>
             )
         },
         cell: ({ row }) => {
             const med = row.original
-             //console.log("row.original in borrow dashbroad", med)
+            //console.log("row.original in borrow dashbroad", med)
             const requestDetails = med.requestDetails
             const name = requestDetails.requestMedicine.name
             const trademark = requestDetails.requestMedicine.trademark
@@ -61,74 +61,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
         },
         enableGlobalFilter: true
     },
-    {
-        accessorKey: "updatedAt",
-        size: 80,
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ประกาศเมื่อ</div>,
-        cell: ({ row }) => {
-            const med = row.original
-            const requestDetails = med.requestDetails
-            const createdAt = requestDetails.updatedAt
-            const date = Number(createdAt); // convert string to number, then to Date
-            const formattedDate = format(new Date(Number(date)), 'dd/MM/') + (new Date(Number(date)).getFullYear() + 543)
-            const timeOnly = format(date, 'HH:mm:ss'); // format to time only
-            return <div>
-                <div className="text-sm font-medium">{formattedDate}</div>
-                <div className="text-xs text-muted-foreground ">{timeOnly}</div>
-            </div>
-        },
-        enableGlobalFilter: false
-    },
-    // {
-    //     accessorKey: "status",
-    //     header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Status</div>,
-    //     enableGlobalFilter: false
-    // },
-    {
-        accessorKey: "postingHospitalNameEN",
-        size: 180,
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จากโรงพยาบาล</div>,
-        cell: ({ row }) => {
-            const postingHospitalNameTH: string = row.original.requestDetails.postingHospitalNameTH
-            ////console.log("Posting Hospital Name:", postingHospitalNameTH)
-            return (
-                <div className="flex flex-row">
-                    <div className="flex flex-col justify-start">
-                        <div className="text-md  ">{postingHospitalNameTH}</div>
-                        {/* <div className="text-xs text-gray-600">คุณ xxx xxx</div>
-                        <div className="text-xs text-gray-600">ติดต่อ 080xxxxx</div> */}
-                    </div>
 
-                </div>
-            )
-        },
-        enableGlobalFilter: true
-    },
-    {
-        accessorKey: "requestDetails.requestMedicine.requestAmount",
-        size: 80,
-        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่ขอยืม</div>,
-        cell: ({ row }) => {
-            const med = row.original
-            const requestDetails = med.requestDetails
-            const requestAmount = requestDetails.requestMedicine.requestAmount
-            const pricePerUnit = requestDetails.requestMedicine.pricePerUnit
-            const totalPrice = requestAmount * pricePerUnit
-            return (
-                <div className="text-sm font-medium  flex flex-col">
-                    <div>
-                         {requestDetails.requestMedicine.requestAmount}
-                    </div>
-
-                   <div className="text-xs text-muted-foreground">
-                        รวม {totalPrice} บาท      
-                   </div>
-                              
-                </div>
-            )
-        },
-        enableGlobalFilter: false
-    },
     {
         accessorKey: "requestDetails.quantity",
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ขนาด/หน่วย</div>,
@@ -150,24 +83,175 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
         enableSorting: false,
     },
     {
-         accessorKey: "requestDetails.id", 
-         size: 280,
-         header: () => (
-           <div className="font-medium text-muted-foreground text-center cursor-default">
-                        <div>
-                            เงื่อนไขการรับยา
-                        </div>
-                        <div className="flex flex-row  text-center font-medium justify-center">
-                            <div className="text-center basis-1/2">
-                                ยืมรายการทดแทนได้
-                            </div>
-                            <div className="text-center basis-1/2">
-                                ขอสนับสนุน
-                            </div>
+        accessorKey: "updatedAt",
+        size: 80,
+        header: ({ column }) =>
+            <div className="font-medium text-muted-foreground text-left cursor-default items-center flex">
+                วันที่แจ้ง
+                <Button
+                    className="font-medium text-muted-foreground text-left cursor-pointer"
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+
+                    <ArrowUpDown className="h-4 w-4" />
+                </Button>
+            </div>,
+        cell: ({ row }) => {
+            const med = row.original
+            const requestDetails = med.requestDetails
+            const createdAt = requestDetails.updatedAt
+            const date = Number(createdAt); // convert string to number, then to Date
+            const formattedDate = format(new Date(Number(date)), 'dd/MM/') + (new Date(Number(date)).getFullYear() + 543)
+            const timeOnly = format(date, 'HH:mm:ss'); // format to time only
+            return <div>
+                <div className="text-sm font-medium">{formattedDate}</div>
+                <div className="text-xs text-muted-foreground ">{timeOnly}</div>
+
+            </div>
+        },
+        enableGlobalFilter: false
+    },
+    // {
+    //     accessorKey: "status",
+    //     header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Status</div>,
+    //     enableGlobalFilter: false
+    // },
+    {
+        accessorKey: "postingHospitalNameEN",
+        size: 180,
+        header: ({ column }) =>
+            <div className="font-medium text-muted-foreground text-left cursor-default items-center flex">
+                แจ้งโดย
+                <Button
+                    className="font-medium text-muted-foreground text-left cursor-pointer"
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+
+                    <ArrowUpDown className="h-4 w-4" />
+                </Button>
+            </div>,
+        cell: ({ row }) => {
+            const postingHospitalNameTH: string = row.original.requestDetails.postingHospitalNameTH
+            ////console.log("Posting Hospital Name:", postingHospitalNameTH)
+            return (
+                <div className="flex flex-row">
+                    <div className="flex flex-col justify-start">
+                        <div className="text-md  overflow-hidden ">{postingHospitalNameTH}</div>
+                        {/* <div className="text-xs text-gray-600">คุณ xxx xxx</div>
+                        <div className="text-xs text-gray-600">ติดต่อ 080xxxxx</div> */}
+                    </div>
+
+                </div>
+            )
+        },
+        enableGlobalFilter: true
+    },
+    {
+        accessorKey: "requestDetails.requestMedicine.requestAmount",
+        size: 100,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวน</div>,
+        cell: ({ row }) => {
+            const med = row.original
+            const requestDetails = med.requestDetails
+            const requestAmount = requestDetails.requestMedicine.requestAmount
+            const pricePerUnit = requestDetails.requestMedicine.pricePerUnit
+            const totalPrice = requestAmount * pricePerUnit
+            return (
+                <div className="text-sm font-medium  flex flex-col">
+                    <div>
+                        {requestDetails.requestMedicine.requestAmount}
+                    </div>
+
+                    <div className="text-xs text-muted-foreground">
+                        รวม {totalPrice} บาท
+                    </div>
+
+                </div>
+            )
+        },
+        enableGlobalFilter: false
+    },
+    {
+        accessorKey: "manufacturer",
+        size: 150,
+        header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ผู้ผลิต</div>,
+        cell: ({ row }) => {
+            const manufacturer: string = row.original.requestDetails.requestMedicine.manufacturer
+            ////console.log("Posting Hospital Name:", postingHospitalNameTH)
+            return (
+                <div className="flex flex-row">
+                    <div className="flex flex-col justify-start">
+                        <div className="text-md  ">{manufacturer}</div>
+                        {/* <div className="text-xs text-gray-600">คุณ xxx xxx</div>
+                        <div className="text-xs text-gray-600">ติดต่อ 080xxxxx</div> */}
+                    </div>
+
+                </div>
+            )
+        },
+        enableGlobalFilter: false
+    },
+    {
+        accessorKey: "requestDetails.type",
+        size: 180,
+        header: () => <div className="font-medium text-muted-foreground text-center cursor-default">
+                <div>
+                    ความาต้องการ
+                </div>
+                <div className="flex flex-row  text-center font-medium justify-center">
+                    <div className="text-center basis-1/2">
+                        ขอยืม
+                    </div>
+                    <div className="text-center basis-1/2">
+                        ขอสนับสนุน
+                    </div>
+                </div>
+            </div>,
+        cell: ({ row }) => {
+            const med = row.original
+            console.log("med", med);
+            const supportType = med.requestDetails.requestTerm.receiveConditions.supportType
+            return (
+                <div className="flex flex-row gap-x-2 text-left font-medium justify-center">
+
+                    <div className="text-left basis-1/2">
+                        <div className="flex flex-row justify-center">
+                           {supportType === false ? <div className="flex text-green-600 items-center"> <SquareCheck /> </div> : <div className="flex text-red-600 items-center"> <SquareX /></div>}
                         </div>
                     </div>
-         ),
-         cell: ({ row }) => {
+
+                    <div className="text-left basis-1/2">
+                        <div className="flex flex-row justify-center">
+                           {supportType === true ? <div className="flex text-green-600 items-center"> <SquareCheck /> </div> : <div className="flex text-red-600 items-center"> <SquareX /></div>}
+                        </div>
+                    </div>
+
+                </div>
+            )
+        }
+            
+    },
+    {
+        accessorKey: "requestDetails.id",
+        size: 280,
+        header: () => (
+            <div className="font-medium text-muted-foreground text-center cursor-default">
+                <div>
+                    เงื่อนไขการรับยา
+                </div>
+                <div className="flex flex-row  text-center font-medium justify-center">
+                    <div className="text-center basis-1/2">
+                        ยาจากผู้ผลิตรายนี้
+                    </div>
+                    <div className="text-center basis-1/2">
+                        ยาจากผู้ผลิตรายอื่น
+                    </div>
+                </div>
+            </div>
+        ),
+        cell: ({ row }) => {
             const med = row.original;
             //console.log("med", med);
             const condition = med.requestDetails.requestTerm.receiveConditions.condition
@@ -177,42 +261,42 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
             let supportTypetDiv;
             let conditionDiv;
 
-            if (condition === "exactType"){
-                conditionDiv = <div className="flex text-red-600 items-center"> <SquareX/>ยืมรายการทดแทนไม่ได้</div>;
-            }else{
-                conditionDiv = <div className="flex text-green-600 items-center"> <SquareCheck/>ยืมรายการทดแทนได้</div>;
-            }
-
-
-            if (supportType === true) { 
-            supportTypetDiv = <div className="flex text-green-600 items-center"> <SquareCheck/>ขอสนับสนุน </div>;
+            if (condition === "exactType") {
+                conditionDiv = <div className="flex text-red-600 items-center"> <SquareX />ยาจากผู้ผลิตรายนี้</div>;
             } else {
-            supportTypetDiv = <div className="flex text-red-600 items-center"> <SquareX/> ขอสนับสนุน</div>;
+                conditionDiv = <div className="flex text-green-600 items-center"> <SquareCheck />ยาจากผู้ผลิตรายอื่น</div>;
             }
-            
-            return(
-                
-            <div className="flex flex-row gap-x-2 text-left font-medium justify-center">
 
-                     <div className="text-left basis-1/2">
-                        <div className="flex flex-row justify-center">
-                            {conditionDiv} 
-                        </div>
-                   </div>
-                
-                   <div className="text-left basis-1/2">
-                        <div className="flex flex-row justify-center">
-                            {supportTypetDiv} 
-                        </div>
-                   </div>
 
-            </div>
+            if (supportType === true) {
+                supportTypetDiv = <div className="flex text-green-600 items-center"> <SquareCheck />ขอสนับสนุน </div>;
+            } else {
+                supportTypetDiv = <div className="flex text-red-600 items-center"> <SquareX /> ขอสนับสนุน</div>;
+            }
+
+            return (
+
+                <div className="flex flex-row gap-x-2 text-left font-medium justify-center">
+
+                    <div className="text-left basis-1/2">
+                        <div className="flex flex-row justify-center">
+                           {condition === 'exactType' ? <div className="flex text-green-600 items-center"> <SquareCheck /> </div> : <div className="flex text-red-600 items-center"> <SquareX /></div>}
+                        </div>
+                    </div>
+
+                    <div className="text-left basis-1/2">
+                        <div className="flex flex-row justify-center">
+                            {condition === 'subType' ? <div className="flex text-green-600 items-center"> <SquareCheck /> </div> : <div className="flex text-red-600 items-center"> <SquareX /></div>}
+                        </div>
+                    </div>
+
+                </div>
             )
-    
-            
-         },
-         enableGlobalFilter: false
-         
+
+
+        },
+        enableGlobalFilter: false
+
     },
     {
         accessorKey: "requestDetails.urgent",
@@ -221,14 +305,14 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
             return (
                 <div className="font-medium text-muted-foreground text-left cursor-pointer items-center">
                     ความเร่งด่วน
-                <Button
-                    className="font-medium text-muted-foreground text-left cursor-pointer "
-                    variant="ghost"
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                >
-                    
-                    <ArrowUpDown className="h-4 w-4" />
-                </Button>
+                    <Button
+                        className="font-medium text-muted-foreground text-left cursor-pointer "
+                        variant="ghost"
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                    >
+
+                        <ArrowUpDown className="h-4 w-4" />
+                    </Button>
                 </div>
             )
         },
@@ -238,11 +322,11 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
             console.log("status", status)
             return (
                 <div className="flex items-left space-x-2 items-center">
-                   
+
                     <div>
                         {status === "urgent" ? "ด่วนที่สุด" : status === "immediate" ? "ด่วน" : "ปกติ"}
                     </div>
-                     <div>
+                    <div>
                         <StatusIndicator status={status} />
                     </div>
 

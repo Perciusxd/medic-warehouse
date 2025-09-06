@@ -33,14 +33,14 @@ function RequestDetails({ sharingMed }: any) {
     const formattedDate = format(new Date(Number(date)), 'dd/MM/') + (new Date(Number(date)).getFullYear() + 543)
     const sharingDetails = sharingMed.sharingDetails
     const sharingMedicine = sharingMed.offeredMedicine ? sharingMed.sharingMedicine : sharingDetails.sharingMedicine
-    const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber, sharingAmount ,pricePerUnit} = sharingMedicine
+    const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber, sharingAmount, pricePerUnit } = sharingMedicine
     const sharingReturnTerm = sharingMed.offeredMedicine ? sharingMed.sharingReturnTerm.receiveConditions : sharingMed.sharingDetails.sharingReturnTerm.receiveConditions
     const imgUrl: string | null = sharingMed.sharingDetails.sharingMedicineImage || sharingMed.sharingMedicineImage || null;
     const responseStatus = sharingMed.responseStatus
     const respondingHospitalNameTH = sharingMed.respondingHospitalNameTH
-   
-    const totalAmount = sharingAmount as number*pricePerUnit as number
-    
+
+    const totalAmount = sharingAmount as number * pricePerUnit as number
+
     //console.log('sharingReturnTermsชชชชชชชชชชชชชชชชชชช', sharingDetails.sharingMedicine)
     /* const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy'); */
     // const formattedExpiryDate = format(sharingDetails.sharingMedicine.expiryDate, 'dd/MM/yyyy'); //ดึงมาก่อนนะอิงจากที่มี ดึงไว้ใน columns.tsx
@@ -85,13 +85,13 @@ function RequestDetails({ sharingMed }: any) {
                         <Input disabled value={unit} />
                     </div>
                     <div className="flex flex-col col-span-1 gap-1">
-                        <Label>ขนาด</Label>
+                        <Label>ขนาดบรรจุ</Label>
                         <Input disabled value={quantity} />
                     </div>
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>ราคาต่อหน่วย (รวม)</Label>
-                    <Input disabled value={sharingMedicine.pricePerUnit ? sharingMedicine.pricePerUnit.toLocaleString('en-US', { style: 'currency', currency: 'THB' }) + " ( "+totalAmount.toLocaleString() +" )": '-'} />
+                    <Input disabled value={sharingMedicine.pricePerUnit ? sharingMedicine.pricePerUnit.toLocaleString('en-US', { style: 'currency', currency: 'THB' }) + " ( " + totalAmount.toLocaleString() + " )" : '-'} />
                 </div>
                 <div className="grid grid-cols-2 gap-1">
                     <div className="flex flex-col col-span-1 gap-1">
@@ -302,6 +302,12 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                             <PopoverContent className="w-auto p-0">
                                 <Calendar
                                     mode="single"
+                                    captionLayout="dropdown"
+                                    fromYear={2020}            // ปีเก่าสุดที่เลือกได้
+                                    toYear={new Date().getFullYear() + 20}  //  เลือกได้ถึง 20 ปีข้างหน้า
+                                    formatters={{
+                                        formatYearCaption: (year: Date) => (year.getFullYear() + 543).toString(), // แสดงปีเป็น พ.ศ.
+                                    }}
                                     selected={expectedReturn ? new Date(Number(expectedReturn)) : undefined}
                                     onSelect={(date) => {
                                         if (date instanceof Date && !isNaN(date.getTime())) {

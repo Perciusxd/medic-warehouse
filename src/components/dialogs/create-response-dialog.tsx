@@ -388,6 +388,12 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                         <PopoverContent className="w-auto p-0">
                                             <Calendar
                                                 mode="single"
+                                                captionLayout="dropdown"
+                                                fromYear={2020}            // ปีเก่าสุดที่เลือกได้
+                                                toYear={new Date().getFullYear() + 20}  //  เลือกได้ถึง 20 ปีข้างหน้า
+                                                formatters={{
+                                                    formatYearCaption: (year: Date) => (year.getFullYear() + 543).toString(), // แสดงปีเป็น พ.ศ.
+                                                }}
                                                 selected={expiryDate ? new Date(expiryDate) : undefined}
                                                 onSelect={(date) => {
                                                     if (date instanceof Date && !isNaN(date.getTime())) {

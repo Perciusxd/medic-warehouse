@@ -291,6 +291,12 @@ export default function StatusDashboard() {
             <div className="flex items-center justify-between mb-4">
                 <div /> {/* Placeholder for alignment, can add search if needed */}
                 <div className="flex items-center space-x-2">
+                     <Button>
+                        พิมพ์เอกสารขอยืมยา/สนับสนุน
+                    </Button>
+                    <Button>
+                        พิมพ์เอกสารส่งคืนยา
+                    </Button>
                     <Button variant={"outline"} onClick={() => {
                         fetchMedicineRequests();
                         fetchMedicineSharingInReturn();

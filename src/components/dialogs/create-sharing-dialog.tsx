@@ -98,7 +98,7 @@ const SharingFormSchema = z.object({
     sharingMedicine: z.object({
         name: z.string().min(1, "กรุณาระบุชื่อยา"),
         trademark: z.string().min(1, "กรุณาระบุยี่ห้อยา"),
-        quantity: z.string().min(1, "กรุณาระบุจำนวนยา"),
+        quantity: z.string().optional(),
         sharingAmount: z.number().min(1, "กรุณาระบุจำนวนยา"),
         pricePerUnit: z.number().min(1, "กรุณาระบุราคาต่อหน่วย"),
         unit: z.string().min(1, "กรุณาระบุหน่วยยา"),
@@ -298,7 +298,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[1200px]">
                 <DialogHeader>
-                    <DialogTitle>แบ่งปันยา</DialogTitle>
+                    <DialogTitle>แจ้งแบ่งปันยา</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -311,7 +311,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
-                                <Label className="font-bold">ขนาด</Label>
+                                <Label className="font-bold">ขนาดบรรจุ</Label>
                                 <Input type="text" {...register("sharingMedicine.quantity")} placeholder="10 mg/ 1 ml" />
                                 {errors.sharingMedicine?.quantity && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.quantity.message}</span>
@@ -439,6 +439,12 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                     <PopoverContent className="w-auto p-0">
                                         <Calendar
                                             mode="single"
+                                            captionLayout="dropdown"
+                                            fromYear={2020}            // ปีเก่าสุดที่เลือกได้
+                                            toYear={new Date().getFullYear() + 20}  //  เลือกได้ถึง 20 ปีข้างหน้า
+                                            formatters={{
+                                                formatYearCaption: (year: Date) => (year.getFullYear() + 543).toString(), // แสดงปีเป็น พ.ศ.
+                                            }}
                                             selected={expiryDate ? new Date(expiryDate) : undefined}
                                             onSelect={(date) => {
                                                 if (date instanceof Date && !isNaN(date.getTime())) {
@@ -484,7 +490,9 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                             </div>
                             <ScrollArea className="h-85 w-full rounded-md border">
                                 <div className="p-4">
-                                    {hospitalList.map(hospital => {
+                                    {[...hospitalList]
+                                        .sort((a, b) => a.nameTH.localeCompare(b.nameTH, "th")) // เรียงตามชื่อ ก-ฮ
+                                        .map(hospital => {
                                         const isChecked = selectedHospitals.includes(hospital.id)
 
                                         return (
@@ -512,23 +520,31 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                             <div className="flex flex-col items-start space-y-2">
                                 <Label className="font-normal">
                                     <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.exactType")} />
-                                    รับคืนเฉพาะรายการนี้
+                                    ยาจากผู้ผลิตรายนี้
                                 </Label>
                                 <Label className="font-normal">
                                     <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.subType")} />
-                                    รับคืนรายการทดแทน
+                                    ยาจากผู้ผลิตรายอื่น
                                 </Label>
                                 <Label className="font-normal">
                                     <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.supportType")} />
-                                    สามารถสนับสนุนได้
+                                    สามารถสนับสนุนได้(อาจจะต้องลบออก)
                                 </Label>
                                 <Label className="font-normal">
                                     <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.otherType")} />
-                                    รับคืนรายการอื่นได้
+                                    ยารายการอื่น
                                 </Label>
                                 <Label className="font-normal">
+                                    <input type="checkbox"  />
+                                    หักงบประมาณ Service plan (mock)
+                                </Label>
+                                 <Label className="font-normal">
+                                    <input type="checkbox"  />
+                                    หักงบประมาณบำรุงโรงพยาบาล (mock)
+                                </Label>
+                                 <Label className="font-normal">
                                     <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.noReturn")} />
-                                    ไม่รับคืน (ให้เปล่า)
+                                    สนับสนุนโดยให้เปล่า
                                 </Label>
                                 {!isAnyChecked && isSubmitted && (
                                     <p className="text-red-500 text-sm mt-1">
