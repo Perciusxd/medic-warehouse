@@ -302,7 +302,6 @@ export const columns = (
             ),
             cell: ({ row }) => {
                 const med = row.original;
-                console.log("med status", med)
                 const maxDisplay = 3;
                 const details = med.responseDetails.slice(0, maxDisplay);
                 const hasMore = med.responseDetails.length > maxDisplay;

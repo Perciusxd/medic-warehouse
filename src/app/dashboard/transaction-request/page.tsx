@@ -285,22 +285,40 @@ export default function StatusDashboard() {
     // //console.log('medicineSharing', medicineSharing)
     // //console.log('medicineRequests', medicineRequests);
     // //console.log('medicineSharingInReturn', medicineSharingInReturn)
+    const combinedDataList = [
+        ...(medicineRequests as any[])
+            .filter((item) =>
+                item.responseDetails?.some((res: any) => res.status === "offered")
+            )
+            .map((item) => ({
+                 medicineRequests: item,
+                // เก็บเฉพาะ responseDetails ที่ offered
+                responseDetails: item.responseDetails.filter(
+                    (res: any) => res.status === "offered"
+                ),
+                type: "request",
+            })),
+            
+        ...(medicineSharingInReturn as any[])
+            .filter((item) => item.status === "re-confirm")
+            .map((item) => ({ item, type: "return" }))
+    ]
     const handleSelectMedicine = (item: any) => {
-        console.log("เลือก object:", item)
-        // 👉 เอาไปทำอย่างอื่น เช่น gen PDF หรือ setState
+        //console.log("เลือก object:", item)
+        
     }
-
+    
     return (
         <>
             <div className="flex items-center justify-between mb-4">
                 <div /> {/* Placeholder for alignment, can add search if needed */}
                 <div className="flex items-center space-x-2">
-                    <Button>
-                        พิมพ์เอกสารขอยืมยา/สนับสนุน  <SelectDataMedDialog dataList={medicineRequests} onSelect={handleSelectMedicine} />
-                    </Button>
-                    <Button>
-                        พิมพ์เอกสารส่งคืนยา <SelectDataMedDialog dataList={medicineSharingInReturn} onSelect={handleSelectMedicine} />
-                    </Button>
+
+                    <SelectDataMedDialog dataList={combinedDataList} onSelect={handleSelectMedicine} />
+
+
+                    {/* <SelectDataMedDialog dataList={medicineSharingInReturn} onSelect={handleSelectMedicine} /> */}
+
                     <Button variant={"outline"} onClick={() => {
                         fetchMedicineRequests();
                         fetchMedicineSharingInReturn();

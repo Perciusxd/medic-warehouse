@@ -158,6 +158,7 @@ function ResponseFormSchema(sharingMedicine: any) {
             .min(1, { message: "จำนวนที่ยืมต้องมีค่ามากกว่า 0" })
             .max(maxAmount, { message: `จำนวนที่ยืมต้องไม่เกิน ${maxAmount}` }),
         expectedReturnDate: z.string().min(1, { message: "วันที่ยืมต้องเป็นวันที่ในอนาคต" }),
+        description: z.string().optional(),
         returnTerm: z.object({
             exactType: z.boolean(),
             otherType: z.boolean(),
@@ -209,6 +210,7 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                 : (sharingMed.acceptedOffer?.expectedReturnDate
                     ? String(sharingMed.acceptedOffer.expectedReturnDate)
                     : undefined),
+            description: existingOffer?.description ?? sharingMed.acceptedOffer?.description ?? "",
             returnTerm: {
                 exactType: Boolean(existingReturnTerm?.exactType),
                 otherType: Boolean(existingReturnTerm?.otherType),
@@ -234,12 +236,13 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
             acceptOffer: {
                 responseAmount: data.responseAmount,
                 expectedReturnDate: data.expectedReturnDate,
+                description: data.description || "",
             },
             returnTerm: data.returnTerm,
             updatedAt: Date.now().toString(),
             status: newStatus
         }
-        //console.log('accept offer responseBody', responseBody)
+        console.log('accept offer responseBody', responseBody)
 
         try {
             setLoading(true);
@@ -369,6 +372,16 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                                 )}
                             </div>
                         </div>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <Label>เหตุผลการยืม</Label>
+                        <Input
+                            placeholder="ระบุเหตุผลการยืม"
+                            type="text"
+                            disabled={sharingMed.status === 're-confirm' || sharingMed.responseStatus === 'offered'}
+                            {...register("description")}
+                        />
+                        {errors.description?.message && <span className="text-red-500 text-sm">{errors.description.message}</span>}
                     </div>
 
                 </div>
