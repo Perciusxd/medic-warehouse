@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
+import  {generatePdf}  from "@/components/ui/pdf_creator/new_request_pdf"
 
 interface SelectDataMedDialogProps {
   dataList: any[]
@@ -25,14 +26,14 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
     const obj = dataList[index]
 
     if (selectedIndices.includes(index)) {
-      
+
       const newIndices = selectedIndices.filter(i => i !== index)
       const newObjects = selectedObjects.filter(o => o !== obj)
       setSelectedIndices(newIndices)
       setSelectedObjects(newObjects)
       onSelect(newObjects)
     } else {
-     
+
       const newIndices = [...selectedIndices, index]
       const newObjects = [...selectedObjects, obj]
       setSelectedIndices(newIndices)
@@ -63,7 +64,7 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
           {dataList
             .filter((item) => item.type === "request")
             .map((item, index) => {
-              const globalIndex = dataList.indexOf(item) 
+              const globalIndex = dataList.indexOf(item)
               // console.log("item", item, globalIndex)
               //console.log("responseDetails?.offeredMedicine?.name", item)
               return (
@@ -149,15 +150,16 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
                     obj.item.sharingDetails?.sharingMedicine?.unit ?? "ไม่ทราบหน่วย",
                   Quantity:
                     obj.item.sharingDetails?.sharingMedicine?.quantity ?? "ไม่ทราบขนาด",
-                  Description: 
+                  Description:
                     obj.item.acceptedOffer?.description ?? "ไม่ทราบเหตุผล",
                   type: "return",
                   raw: obj, // เก็บต้นฉบับไว้ด้วยถ้าต้องใช้ต่อ
                 }
+                
               }
               return null
             })
-
+            generatePdf(documentData);
             console.log("สร้างเอกสาร:", documentData)
             // เอา documentData ไปใช้สร้าง PDF ต่อ
           }}
