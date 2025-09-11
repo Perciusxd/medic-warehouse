@@ -42,7 +42,7 @@ export const columns = (
             id: "medicineName",
             accessorFn: (row) => row.requestDetails.requestMedicine.name,
             size: 200,
-            header: () => <div className="font-medium text-muted-foreground text-left cursor-default"> ชื่อยา/ชื่อการค้า</div>,
+            header: () => <div className="font-medium text-muted-foreground text-left cursor-default"> รายการยา/ชื่อการค้า</div>,
             cell: ({ getValue }) => {
                 const name = getValue() as string
                 const trademark = getValue() as string
@@ -291,21 +291,21 @@ export const columns = (
                 )
             }
         },
-        {
-            id: "history",
-            size: 50,
-            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ประวัติ</div>,
-            cell: ({ row }) => {
-                const status = row.original.requestDetails.status
-                return <div className="text-md font-medium text-gray-600 flex flex-row items-center gap-x-1">
-                    {/* <div className="flex flex-row gap-x-1">
-                    {status === 'pending' ? "กำลังดำเนินการ"
-                            : status === "cancelled" ? "ยกเลิก"
-                            : ""
-                        } <StatusIndicator status={status} />
-                </div> */}
-                    <History className="w-4 h-4" />
-                </div>
-            }
-        }
+        // {
+        //     id: "history",
+        //     size: 50,
+        //     header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ประวัติ</div>,
+        //     cell: ({ row }) => {
+        //         const status = row.original.requestDetails.status
+        //         return <div className="text-md font-medium text-gray-600 flex flex-row items-center gap-x-1">
+        //             {/* <div className="flex flex-row gap-x-1">
+        //             {status === 'pending' ? "กำลังดำเนินการ"
+        //                     : status === "cancelled" ? "ยกเลิก"
+        //                     : ""
+        //                 } <StatusIndicator status={status} />
+        //         </div> */}
+        //             <History className="w-4 h-4" />
+        //         </div>
+        //     }
+        // }
     ]

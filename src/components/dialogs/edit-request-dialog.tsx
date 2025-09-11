@@ -26,7 +26,7 @@ const RequestSchema = z.object({
         trademark: z.string().min(1, "Trademark is required"),
         description: z.string().optional(),
         requestAmount: z.number().min(1, "Request amount must be greater than 0").max(1000, "Request amount must be less than 1000"),
-        quantity: z.string().min(1, "Quantity is required"),
+        quantity: z.string().optional(),
         pricePerUnit: z.number().min(1, "Price per unit must be greater than 0").max(100000, "Price per unit must be less than 100000"),
         unit: z.string().min(1, "Unit is required"),
         manufacturer: z.string().min(1, "Manufacturer is required"),
@@ -188,7 +188,7 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
-                                <Label className="font-bold">ขนาด</Label>
+                                <Label className="font-bold">ขนาดบรรจุ</Label>
                                 <Input type="text" {...register("requestMedicine.quantity")} placeholder="10 mg/ 1 ml" />
                                 {errors.requestMedicine?.quantity && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.quantity.message}</span>
@@ -281,6 +281,7 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
                                     <PopoverContent className="w-auto p-0">
                                         <Calendar
                                             mode="single"
+                                            captionLayout="dropdown"
                                             selected={expectedReturnDate ? new Date(expectedReturnDate) : undefined}
                                             onSelect={(date) => {
                                                 if (date instanceof Date && !isNaN(date.getTime())) {

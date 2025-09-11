@@ -80,7 +80,7 @@ export const columns = (
             id: "sharingMedicineName",
             accessorFn: (row) => row.sharingMedicine.name,
             size: 200,
-            header: () => <div className="font-medium text-muted-foreground text-left cursor-default"> ชื่อยา/ชื่อการค้า</div>,
+            header: () => <div className="font-medium text-muted-foreground text-left cursor-default"> รายการยา/ชื่อการค้า </div>,
             cell: ({ row }) => {
                 const medName = row.original.sharingMedicine.name;
                 const medTrademark = row.original.sharingMedicine.trademark;
@@ -94,10 +94,29 @@ export const columns = (
             }
         },
         {
+            id: "sharingMedicineQuantity",
+            accessorFn: (row) => row.sharingMedicine.quantity,
+            size: 100,
+            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ขนาด/หน่วย</div>,
+            cell: ({ row }) => {
+                const quantity = row.original.sharingMedicine.quantity;
+                const unit = row.original.sharingMedicine.unit;
+
+                return (
+
+                    <div className="flex flex-col">
+                        <div className="text-sm font-medium text-gray-600">{quantity}</div>
+                        <div className="text-xs text-muted-foreground">{unit}</div>
+                    </div>
+
+                )
+            }
+        },
+        {
             id: "sharingMedicineRemainingAmount",
             accessorFn: (row) => row.remainingAmount,
             size: 80,
-            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่แจ้งแบ่งปัน (คงเหลือ)</div>,
+            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวน(คงเหลือ)</div>,
             cell: ({ row }) => {
                 const sharingAmount = row.original.sharingMedicine.sharingAmount;
                 const pricePerUnit = row.original.sharingMedicine.pricePerUnit;
@@ -128,25 +147,6 @@ export const columns = (
                         <div className="text-xs text-muted-foreground">รวม {totalPrice.toLocaleString()} บาท</div>
 
                     </div>
-                )
-            }
-        },
-        {
-            id: "sharingMedicineQuantity",
-            accessorFn: (row) => row.sharingMedicine.quantity,
-            size: 100,
-            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ขนาด/หน่วย</div>,
-            cell: ({ row }) => {
-                const quantity = row.original.sharingMedicine.quantity;
-                const unit = row.original.sharingMedicine.unit;
-
-                return (
-
-                    <div className="flex flex-col">
-                        <div className="text-sm font-medium text-gray-600">{quantity}</div>
-                        <div className="text-xs text-muted-foreground">{unit}</div>
-                    </div>
-
                 )
             }
         },

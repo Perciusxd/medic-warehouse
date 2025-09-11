@@ -107,7 +107,7 @@ export default function RequestDetails({ requestData, responseForm }: any) {
         { label: "โรงพยาบาลที่ขอยืม", value: requestDetails.postingHospitalNameTH },
         { label: "รายการยา", value: requestDetails.requestMedicine.name },
         { label: "รูปแบบ/หน่วย", value: requestDetails.requestMedicine.unit },
-        { label: "ขนาด", value: requestDetails.requestMedicine.quantity },
+        { label: "ขนาดบรรจุ", value: requestDetails.requestMedicine.quantity },
         { label: "ชื่อการค้า", value: requestDetails.requestMedicine.trademark },
         // { label: "ผู้ผลิต", value: requestDetails.requestMedicine.manufacturer },
         // { label: "จำนวนที่ขอยืม", value: requestDetails.requestMedicine.requestAmount },

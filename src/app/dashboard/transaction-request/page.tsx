@@ -28,7 +28,7 @@ import ReturnDialog from "@/components/dialogs/return-dialog";
 import { formatDistanceToNow } from "date-fns";
 import { th } from "date-fns/locale";
 import EditRequestDialog from "@/components/dialogs/edit-request-dialog";
-
+import { SelectDataMedDialog } from "@/components/ui/select-data-to-pdf";
 export default function StatusDashboard() {
     const statusFilterSharing = useMemo(() => ["to-confirm", "in-return", "returned", "to-transfer", "confirm-return", "re-confirm", "offered",], []);
     const statusFilterRequest = useMemo(() => ["pending", "cancelled"], []);
@@ -284,13 +284,41 @@ export default function StatusDashboard() {
 
     // //console.log('medicineSharing', medicineSharing)
     // //console.log('medicineRequests', medicineRequests);
-
-
+    // //console.log('medicineSharingInReturn', medicineSharingInReturn)
+    const combinedDataList = [
+        ...(medicineRequests as any[])
+            .filter((item) =>
+                item.responseDetails?.some((res: any) => res.status === "offered")
+            )
+            .map((item) => ({
+                 medicineRequests: item,
+                // เก็บเฉพาะ responseDetails ที่ offered
+                responseDetails: item.responseDetails.filter(
+                    (res: any) => res.status === "offered"
+                ),
+                type: "request",
+            })),
+            
+        ...(medicineSharingInReturn as any[])
+            .filter((item) => item.status === "re-confirm")
+            .map((item) => ({ item, type: "return" }))
+    ]
+    const handleSelectMedicine = (item: any) => {
+        //console.log("เลือก object:", item)
+        
+    }
+    
     return (
         <>
             <div className="flex items-center justify-between mb-4">
                 <div /> {/* Placeholder for alignment, can add search if needed */}
                 <div className="flex items-center space-x-2">
+
+                    <SelectDataMedDialog dataList={combinedDataList} onSelect={handleSelectMedicine} />
+
+
+                    {/* <SelectDataMedDialog dataList={medicineSharingInReturn} onSelect={handleSelectMedicine} /> */}
+
                     <Button variant={"outline"} onClick={() => {
                         fetchMedicineRequests();
                         fetchMedicineSharingInReturn();

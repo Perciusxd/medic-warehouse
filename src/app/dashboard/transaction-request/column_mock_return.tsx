@@ -47,7 +47,7 @@ export const columns = (
             accessorKey: "sharingDetails.sharingMedicine.name",
             size: 200,
             header: ({ column }: { column: any }) => <div className="font-medium text-muted-foreground text-left cursor-default">
-                ชื่อยา/ชื่อการค้า
+                รายการยา/ชื่อการค้า
                 <Button
                     className="font-medium text-muted-foreground text-left cursor-pointer"
                     variant="ghost"
