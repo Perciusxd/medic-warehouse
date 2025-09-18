@@ -73,26 +73,43 @@ export const columns = (
             }
         },
         {
-            id: "requestAmount",
-            accessorFn: (row) => row.requestDetails.requestMedicine.requestAmount,
+            id: "returnAmount",
+            accessorFn: (row) => row.returnMedicine.returnAmount,
             size: 100,
-            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวน(คงเหลือ)</div>,
+            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่ตอบกลับ (คืนแล้ว)</div>,
             cell: ({ row }) => {
-                const requestAmount = row.original.requestDetails.requestMedicine.requestAmount as number
-                const pricePerUnit = row.original.requestDetails.requestMedicine.pricePerUnit as number
-                const offerAmount = row.original.offeredMedicine.offerAmount as number
-                const totalAmount = pricePerUnit - offerAmount
-                // console.log("totalAmount", totalAmount)
-                const totalPrice = requestAmount * pricePerUnit
+                console.log(row.original)
+                const returnAmount = row.original.returnMedicine?.returnMedicine?.returnAmount ?? 0
 
                 return (
                     <div>
-                        <div className="text-md font-medium">{requestAmount.toLocaleString()} ({offerAmount.toLocaleString()}) </div>
-                        <div className="text-xs text-muted-foreground">รวม {totalPrice.toLocaleString()} บาท</div>
+                        <div className="text-md font-medium">{row.original.offeredMedicine.offerAmount.toLocaleString()} ({returnAmount}) </div>
                     </div>
                 )
             }
         },
+        // {
+        //     id: "requestAmount",
+        //     accessorFn: (row) => row.requestDetails.requestMedicine.requestAmount,
+        //     size: 100,
+        //     header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวน(คงเหลือ)</div>,
+        //     cell: ({ row }) => {
+        //         console.log(row.original)
+        //         const requestAmount = row.original.requestDetails.requestMedicine.requestAmount as number
+        //         const pricePerUnit = row.original.requestDetails.requestMedicine.pricePerUnit as number
+        //         const offerAmount = row.original.offeredMedicine.offerAmount as number
+        //         const totalAmount = pricePerUnit - offerAmount
+        //         // console.log("totalAmount", totalAmount)
+        //         const totalPrice = requestAmount * pricePerUnit
+
+        //         return (
+        //             <div>
+        //                 <div className="text-md font-medium">{requestAmount.toLocaleString()} ({offerAmount.toLocaleString()}) </div>
+        //                 <div className="text-xs text-muted-foreground">รวม {totalPrice.toLocaleString()} บาท</div>
+        //             </div>
+        //         )
+        //     }
+        // },
         {
             id: "updatedAt",
             accessorFn: (row) => row.updatedAt,

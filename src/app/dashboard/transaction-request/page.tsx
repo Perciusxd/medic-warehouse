@@ -30,7 +30,7 @@ import { th } from "date-fns/locale";
 import EditRequestDialog from "@/components/dialogs/edit-request-dialog";
 
 export default function StatusDashboard() {
-    const statusFilterSharing = useMemo(() => ["to-confirm", "in-return", "returned", "to-transfer", "confirm-return", "re-confirm", "offered",], []);
+    const statusFilterSharing = useMemo(() => ["to-confirm", "in-return", "returned", "to-transfer", "confirm-return", "re-confirm", "offered", "to-return"], []);
     const statusFilterRequest = useMemo(() => ["pending", "cancelled"], []);
     const { loggedInHospital } = useHospital();
     const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequestsStatus(loggedInHospital, statusFilterRequest);
