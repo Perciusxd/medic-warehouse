@@ -164,10 +164,10 @@ export default function Dashboard() {
             { !isLoading && (
                 <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
                 <TabsList className="mb-4 flex flex-wrap gap-2">
-                    <TabsTrigger value="borrow">เวชภัณฑ์ยาที่ขาดแคลน {
+                    <TabsTrigger value="borrow">รายการยาขาดแคลน {
                         borrowNumber > 0 ? <NotificationNumber number={borrowNumber} /> : null
                         }</TabsTrigger>
-                    <TabsTrigger value="return">เวชภัณฑ์ยาที่ต้องการแบ่งปัน</TabsTrigger>
+                    <TabsTrigger value="return">รายการยาแบ่งปัน</TabsTrigger>
                     {/* <TabsTrigger value="status">รายการยาที่ขอยืม <NotificationNumber number={2} /></TabsTrigger> */}
                     <TabsTrigger value="status">รายการยาที่ขอยืม</TabsTrigger>
                     <TabsTrigger value="transfer">รายการยาที่ให้ยืม</TabsTrigger>

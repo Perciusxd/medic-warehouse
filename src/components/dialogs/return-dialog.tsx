@@ -79,7 +79,7 @@ function OfferDetails({ selectedMed }: any) {
                     <Input disabled value={trademark} />
                 </div>
                 <div className="flex flex-col gap-1">
-                    <Label>ขนาด</Label>
+                    <Label>ขนาดบรรจุ</Label>
                     <Input disabled value={quantity} />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -87,23 +87,23 @@ function OfferDetails({ selectedMed }: any) {
                     <Input disabled value={manufacturer} />
                 </div>
                 <div className="flex flex-col gap-1">
-                     <Label className="">ภาพประกอบ</Label>
-                        <div className="flex flex-row items-end gap-x-2">
-                            {imgUrl &&
+                    <Label className="">ภาพประกอบ</Label>
+                    <div className="flex flex-row items-end gap-x-2">
+                        {imgUrl &&
                             <Button asChild variant="outline" className="">
                                 <a href={imgUrl} download="file.jpg">
                                     <Download className="" /> ดาวน์โหลด
                                 </a>
                             </Button>
-                            }
-                            {
-                                !imgUrl &&
-                                <Input className="text-sm text-gray-500 italic" type="text" value={"ไม่มีภาพประกอบ"} disabled/>
-                            }
-                            {imgUrl &&
-                                <ImageHoverPreview previewUrl={imgUrl} />
-                            }
-                        </div>
+                        }
+                        {
+                            !imgUrl &&
+                            <Input className="text-sm text-gray-500 italic" type="text" value={"ไม่มีภาพประกอบ"} disabled />
+                        }
+                        {imgUrl &&
+                            <ImageHoverPreview previewUrl={imgUrl} />
+                        }
+                    </div>
                 </div>
                 <div className="flex flex-col gap-1 col-span-2">
                     <Label>จำนวนที่ให้ยืม</Label>
@@ -115,9 +115,9 @@ function OfferDetails({ selectedMed }: any) {
                         <Input disabled value={requestAmount} />
                     </div>
                     <div className="flex flex-col gap-1">
-                    <Label>ราคาต่อหน่วย</Label>
-                    <Input disabled value={pricePerUnit} />
-                </div>
+                        <Label>ราคาต่อหน่วย</Label>
+                        <Input disabled value={pricePerUnit} />
+                    </div>
                 </div>
                 <div className="grid grid-cols-1 gap-2">
                     <div className="flex flex-row gap-1">
@@ -168,7 +168,7 @@ const ReturnFormSchema = z.discriminatedUnion('supportRequest', [
             trademark: z.string().min(1, "กรุณาระบุชื่อการค้า"),
             description: z.string().optional(),
             returnAmount: z.number().min(1, "กรุณากรอกจำนวนมากกว่า 0").max(100000, "กรุณากรอกจำนวนน้อยกว่า 100000"),
-            quantity: z.string().min(1, "กรุณาระบุขนาดของยา"),
+            quantity: z.string().optional(),
             unit: z.string().min(1, "กรุณาระบุรูปแบบ/หน่วยของยา"),
             manufacturer: z.string().min(1, "กรุณาระบุผู้ผลิตของยา"),
             pricePerUnit: z.number().min(1, "ราคาต่อหน่วยควรมากกว่า 0").max(100000, "ราคาต่อหน่วยควรน้อยกว่า 100000"),
@@ -356,7 +356,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                         <div className="flex flex-col gap-1">
-                            <Label>ขนาด</Label>
+                            <Label>ขนาดบรรจุ</Label>
                             <Input placeholder="1mg" {...register("returnMedicine.quantity")} disabled={isSupportSelected} />
                             {errors.returnMedicine?.quantity && <span className="text-red-500 text-xs">{errors.returnMedicine.quantity.message}</span>}
                         </div>
@@ -393,7 +393,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                                 <Button variant="outline" className="justify-start text-left font-normal" disabled={isSupportSelected}>
                                     {returnDate
                                         ? format(new Date(Number(returnDate)), 'dd/MM/') + (new Date(Number(returnDate)).getFullYear() + 543)
-                                            
+
                                         : "เลือกวันที่"}
                                     <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                 </Button>
@@ -402,6 +402,12 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                                 <Calendar
                                     mode="single"
                                     selected={returnDate ? new Date(Number(returnDate)) : undefined}
+                                    captionLayout="dropdown"
+                                    fromYear={2020}            // ปีเก่าสุดที่เลือกได้
+                                    toYear={new Date().getFullYear() + 20}  //  เลือกได้ถึง 20 ปีข้างหน้า
+                                    formatters={{
+                                        formatYearCaption: (year: Date) => (year.getFullYear() + 543).toString(), // แสดงปีเป็น พ.ศ.
+                                    }}
                                     onSelect={(date) => {
                                         if (date instanceof Date && !isNaN(date.getTime())) {
                                             const today = new Date();

@@ -116,7 +116,7 @@ export const columns = (
             header: ({ column }) => {
                 return (
                     <div className="flex justify-start items-center text-gray-600">
-                        ชื่อยา/ชื่อการค้า
+                        รายการยา/ชื่อการค้า
                         <Button
                             className="font-medium text-muted-foreground text-left cursor-pointer"
                             variant="ghost"
@@ -189,10 +189,10 @@ export const columns = (
                         </div>
                         <div className="flex flex-row gap-x-2 text-center font-medium justify-center">
                             <div className="text-center basis-2/3">
-                                ยืมรายการทดแทนได้
+                                ยืมจากผู้ผลิตรายนี้
                             </div>
                             <div className="text-center basis-1/3">
-                                ขอสนับสนุน
+                                ยืมจากผู้ผลิตรายอื่น
                             </div>
                         </div>
                     </div>
@@ -224,13 +224,17 @@ export const columns = (
 
                     <div className="flex flex-row gap-x-2 text-center font-medium justify-between">
 
-                        <div className="text-center basis-2/3">
-                            {conditionDiv}
+                         <div className="text-left basis-1/2">
+                        <div className="flex flex-row justify-center">
+                           {condition === 'exactType' ? <div className="flex text-green-600 items-center"> <SquareCheck /> </div> : <div className="flex text-red-600 items-center"> <SquareX /></div>}
                         </div>
+                    </div>
 
-                        <div className="text-center basis-1/3">
-                            {supportTypetDiv}
+                    <div className="text-left basis-1/2">
+                        <div className="flex flex-row justify-center">
+                            {condition === 'subType' ? <div className="flex text-green-600 items-center"> <SquareCheck /> </div> : <div className="flex text-red-600 items-center"> <SquareX /></div>}
                         </div>
+                    </div>
                     </div>
                 )
             },
@@ -298,7 +302,6 @@ export const columns = (
             ),
             cell: ({ row }) => {
                 const med = row.original;
-                console.log("med status", med)
                 const maxDisplay = 3;
                 const details = med.responseDetails.slice(0, maxDisplay);
                 const hasMore = med.responseDetails.length > maxDisplay;

@@ -23,6 +23,9 @@ import { Calendar1, Hospital } from "lucide-react"
 import { format } from "date-fns"
 import { HospitalList } from "@/context/HospitalList"
 import sendMailHandler from "@/pages/api/sendmail"
+import { Calendar as CalendarIcon } from "lucide-react"
+import { th } from "date-fns/locale" // ใช้ locale ภาษาไทย
+import * as React from "react"
 
 // Convert a Blob/File to a Base64 data URL
 const blobToDataUrl = (blob: Blob): Promise<string> => {
@@ -127,7 +130,7 @@ const RequestSchema = z.object({
         requestAmount: z.coerce.number({ required_error: "กรุณากรอกจำนวนที่ต้องการยืม" })
             .min(1, "จำนวนที่ต้องการยืมต้องมากกว่า 0")
             .max(10000, "จำนวนที่ต้องการยืมต้องไม่เกิน 10000"),
-        quantity: z.string().min(1, "กรุณากรอกรูปแบบ/ขนาด"),
+        quantity: z.string().optional(),
         pricePerUnit: z.coerce.number({ required_error: "กรุณากรอกราคาต่อหน่วย" })
             .min(1, "ราคาต่อหน่วยต้องมากกว่า 0")
             .max(100000, "ราคาต่อหน่วยต้องไม่เกิน 100,000"),
@@ -137,7 +140,7 @@ const RequestSchema = z.object({
         image: z.custom<File | undefined>((value) => value === undefined || value instanceof File, {
             message: "กรุณาอัปโหลดไฟล์ภาพที่ถูกต้อง",
         }).optional(),
-        
+
     }),
     requestTerm: z.object({
         expectedReturnDate: z.coerce.string({ invalid_type_error: "วันที่คาดว่าจะคืนต้องเป็นวันที่ถูกต้อง" }),
@@ -243,23 +246,23 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
     const sendMailsSequentially = async (filterHospital: any, requestData: any) => {
         for (const val of filterHospital) {
             try {
-            // รอ 1 วิ ก่อนยิง request
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+                // รอ 1 วิ ก่อนยิง request
+                await new Promise((resolve) => setTimeout(resolve, 1000));
 
-            const mailResponse = await fetch("/api/sendmail", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                requestData: requestData,
-                selectedHospitals: val,
-                }),
-            });
+                const mailResponse = await fetch("/api/sendmail", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        requestData: requestData,
+                        selectedHospitals: val,
+                    }),
+                });
 
-            if (!mailResponse.ok) {
-                console.warn("sendmail failed:", await mailResponse.text());
-            } else {
-                console.log("sendmail success");
-            }
+                if (!mailResponse.ok) {
+                    console.warn("sendmail failed:", await mailResponse.text());
+                } else {
+                    console.log("sendmail success");
+                }
             } catch (err) {
                 console.error("sendmail error:", err);
             }
@@ -339,6 +342,9 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
             setLoading(false)
         }
     }
+    const [isOpen, setIsOpen] = React.useState(false)
+    const [date, setDate] = React.useState<Date | undefined>(undefined)
+
 
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
@@ -355,7 +361,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
-                                <Label className="font-bold">ขนาด</Label>
+                                <Label className="font-bold">ขนาดบรรจุ</Label>
                                 <Input type="text" {...register("requestMedicine.quantity")} placeholder="10 mg/ 1 ml" />
                                 {errors.requestMedicine?.quantity && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.quantity.message}</span>
@@ -493,34 +499,52 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
 
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
-                                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
+                                <Popover open={isOpen} onOpenChange={setIsOpen} modal={true}>
                                     <PopoverTrigger asChild>
-                                        <Button variant="outline" className="justify-start text-left font-normal">
-                                            {expectedReturnDate
-                                                ? format(new Date(Number(expectedReturnDate)), 'dd/MM/') + (new Date(Number(expectedReturnDate)).getFullYear() + 543)
+                                        <Button
+                                            variant="outline"
+                                            className="justify-start text-left font-normal"
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {date
+                                                ? // แสดงผล dd/MM/yyyy + พ.ศ.
+                                                format(date, "dd/MM/", { locale: th }) +
+                                                (date.getFullYear() + 543)
                                                 : "เลือกวันที่"}
-                                            <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
                                         </Button>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0">
+                                    <PopoverContent className="w-auto p-0 overflow-hidden">
                                         <Calendar
                                             mode="single"
-                                            selected={expectedReturnDate ? new Date(expectedReturnDate) : undefined}
-                                            onSelect={(date) => {
-                                                if (date instanceof Date && !isNaN(date.getTime())) {
-                                                    const today = new Date();
-                                                    today.setHours(0, 0, 0, 0); // normalize time
-                                                    const dateString = date.getTime().toString()
+                                            selected={date}
+                                            captionLayout="dropdown"
+                                            fromYear={2020}            // ปีเก่าสุดที่เลือกได้
+                                            toYear={new Date().getFullYear() + 20}  //  เลือกได้ถึง 20 ปีข้างหน้า
+                                            formatters={{
+                                                formatYearCaption: (year: Date) => (year.getFullYear() + 543).toString(), // แสดงปีเป็น พ.ศ.
+                                            }}
+                                            locale={th}
+                                            onSelect={(d) => {
+                                                setDate(date)
+                                                setIsOpen(false)
+                                                if (d instanceof Date && !isNaN(d.getTime())) {
+                                                    const today = new Date()
+                                                    today.setHours(0, 0, 0, 0)
 
-                                                    if (date > today) {
-                                                        setValue("requestTerm.expectedReturnDate", dateString, { shouldValidate: true });
-                                                        setDateError(""); // clear error
-                                                        setIsCalendarOpen(false); // close popover
+                                                    if (d > today) {
+                                                        setDate(d)
+                                                        setValue(
+                                                            "requestTerm.expectedReturnDate",
+                                                            d.getTime().toString(),
+                                                            { shouldValidate: true }
+                                                        )
+                                                        setDateError("")
+                                                        setIsOpen(false)
                                                     } else {
-                                                        setDateError("กรุณาเลือกวันที่ในอนาคต");
+                                                        setDateError("กรุณาเลือกวันที่ในอนาคต")
                                                     }
                                                 } else {
-                                                    setDateError("วันที่ไม่ถูกต้อง");
+                                                    setDateError("วันที่ไม่ถูกต้อง")
                                                 }
                                             }}
                                             initialFocus
@@ -567,23 +591,25 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                             </div>
                             <ScrollArea className="h-85 w-full rounded-md border">
                                 <div className="p-4">
-                                    {hospitalList.map(hospital => {
-                                        const isChecked = selectedHospitals.includes(hospital.id)
-                                        return (
-                                            <div className="" key={hospital.id}>
-                                                <div className="flex items-center gap-2" key={hospital.id}>
-                                                    <Checkbox
-                                                        id={`hospital-${hospital.id}`}
-                                                        className="cursor-pointer"
-                                                        checked={isChecked}
-                                                        onCheckedChange={() => toggleHospitalSelection(hospital.id)}
-                                                    />
-                                                    <Label htmlFor={`hospital-${hospital.id}`} className="font-normal">{hospital.nameTH}</Label>
+                                    {[...hospitalList]
+                                        .sort((a, b) => a.nameTH.localeCompare(b.nameTH, "th")) // เรียงตามชื่อ ก-ฮ
+                                        .map(hospital => {
+                                            const isChecked = selectedHospitals.includes(hospital.id)
+                                            return (
+                                                <div className="" key={hospital.id}>
+                                                    <div className="flex items-center gap-2" key={hospital.id}>
+                                                        <Checkbox
+                                                            id={`hospital-${hospital.id}`}
+                                                            className="cursor-pointer"
+                                                            checked={isChecked}
+                                                            onCheckedChange={() => toggleHospitalSelection(hospital.id)}
+                                                        />
+                                                        <Label htmlFor={`hospital-${hospital.id}`} className="font-normal">{hospital.nameTH}</Label>
+                                                    </div>
+                                                    <Separator className="my-2" />
                                                 </div>
-                                                <Separator className="my-2" />
-                                            </div>
-                                        )
-                                    })}
+                                            )
+                                        })}
                                 </div>
                             </ScrollArea>
                             {errors.selectedHospitals && (

@@ -29,7 +29,7 @@ function EditSharingFormSchema({selectedMed}: any) {
         sharingMedicine: z.object({
             name: z.string().min(1, "กรุณาระบุชื่อยา"),
             trademark: z.string().min(1, "กรุณาระบุยี่ห้อยา"),
-            quantity: z.string().min(1, "กรุณาระบุจำนวนยา"),
+            quantity: z.string().optional(),
             sharingAmount: z.number().min(1, "กรุณาระบุจำนวนยา"),
             pricePerUnit: z.number().min(1, "กรุณาระบุราคาต่อหน่วย"),
             unit: z.string().min(1, "กรุณาระบุหน่วยยา"),
@@ -212,7 +212,7 @@ export default function EditSharingDialog({ selectedMed, openDialog, onOpenChang
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
-                                <Label className="font-bold">ขนาด</Label>
+                                <Label className="font-bold">ขนาดบรรจุ</Label>
                                 <Input type="text" {...register("sharingMedicine.quantity")} placeholder="10 mg/ 1 ml" />
                                 {errors.sharingMedicine?.quantity && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.quantity.message}</span>
@@ -306,6 +306,7 @@ export default function EditSharingDialog({ selectedMed, openDialog, onOpenChang
                                     <PopoverContent className="w-auto p-0">
                                         <Calendar
                                             mode="single"
+                                            captionLayout="dropdown"
                                             selected={expiryDate ? new Date(expiryDate) : undefined}
                                             onSelect={(date) => {
                                                 if (date instanceof Date && !isNaN(date.getTime())) {
