@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { verifyAuth } from '../../../lib/auth';
 import { UserModel } from '../../../models/user';
+import dbConnect from '../../../lib/mongodb';
 import bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 
@@ -16,14 +17,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { directorName, position, documentNumber, contact, email } = req.body;
+    await dbConnect();
+
+    const { directorName, position, documentNumber, contact, notifyEmail } = req.body;
 
     // Validate required fields
-    if (!directorName || !email) {
-      return res.status(400).json({ message: 'Director name and email are required' });
+    if (!directorName || !notifyEmail) {
+      return res.status(400).json({ message: 'Director name and notification email are required' });
     }
 
-    console.log(directorName, position, documentNumber, contact, email);
+    console.log(directorName, position, documentNumber, contact, notifyEmail);
 
     // Check if email is already taken by another user
     // const existingUser = await UserModel.findOne({
@@ -39,10 +42,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       { username: user.username },
       {
         director: directorName,
-        role: position,
-        documentNumber: documentNumber || '',
-        contact: contact || '',
-        email,
+        position: position,
+        documentNumber: documentNumber,
+        contact: contact,
+        notifyEmail: notifyEmail,
         updatedAt: new Date(),
       },
       { new: true }
@@ -51,7 +54,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!updatedUser) {
       return res.status(404).json({ message: 'User not found' });
     }
-
     // Return updated user data (without password)
     const userData = {
       id: (updatedUser._id as Types.ObjectId).toString(),
@@ -61,6 +63,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       contact: updatedUser.contact,
       role: updatedUser.role,
       documentNumber: updatedUser.documentNumber,
+      position: updatedUser.position,
+      username: updatedUser.username,
+      hospitalName: updatedUser.hospitalName,
+      address: updatedUser.address,
+      notifyEmail: updatedUser.notifyEmail,
     };
 
     return res.status(200).json(userData);

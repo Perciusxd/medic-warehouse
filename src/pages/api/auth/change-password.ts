@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Get user from database
-    const dbUser = await UserModel.findById(user.id);
+    const dbUser = await UserModel.findOne({ username: user.username });
 
     if (!dbUser) {
       return res.status(404).json({ message: 'User not found' });
@@ -40,8 +40,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const hashedNewPassword = await bcrypt.hash(newPassword, 12);
 
     // Update password
-    await UserModel.findByIdAndUpdate(
-      user.id,
+    await UserModel.findOneAndUpdate(
+      { username: user.username },
       {
         password: hashedNewPassword,
         updatedAt: new Date(),

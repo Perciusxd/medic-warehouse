@@ -12,6 +12,10 @@ export interface JWTPayload {
   contact?: string; // Optional: Add contact if needed
   address?: string; // Optional: Add address if needed
   director?: string; // Optional: Add director if needed
+  position?: string; // Optional: Add position if needed
+  documentNumber?: string; // Document number for profile
+  username?: string; // Ensure username is unique
+  notifyEmail?: string; // Notification email
 }
 
 export async function verifyAuth(req: NextApiRequest, res: NextApiResponse) {

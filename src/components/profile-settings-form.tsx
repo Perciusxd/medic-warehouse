@@ -14,7 +14,7 @@ interface UserProfile {
   position: string;
   documentNumber: string;
   contact: string;
-  email: string;
+  notifyEmail: string;
 }
 
 interface ProfileSettingsFormProps {
@@ -29,7 +29,7 @@ export function ProfileSettingsForm({ onClose }: ProfileSettingsFormProps) {
     position: "",
     documentNumber: "",
     contact: "",
-    email: "",
+    notifyEmail: "",
   });
 
   useEffect(() => {
@@ -38,10 +38,10 @@ export function ProfileSettingsForm({ onClose }: ProfileSettingsFormProps) {
     if (user) {
       setFormData({
         directorName: user.director || "",
-        position: user.role || "",
+        position: user.position || "",
         documentNumber: user.documentNumber || "",
         contact: user.contact || "",
-        email: user.email || "",
+        notifyEmail: user.notifyEmail || "",
       });
     }
   }, [user]);
@@ -58,7 +58,7 @@ export function ProfileSettingsForm({ onClose }: ProfileSettingsFormProps) {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`/api/auth/update-profile?t=${Date.now()}`, {
+      const response = await fetch(`/api/auth/update-profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -71,47 +71,28 @@ export function ProfileSettingsForm({ onClose }: ProfileSettingsFormProps) {
           position: formData.position,
           documentNumber: formData.documentNumber,
           contact: formData.contact,
-          email: formData.email,
+          notifyEmail: formData.notifyEmail,
         }),
       });
 
       if (!response.ok) {
         throw new Error("Failed to update profile");
       }
-
       const updatedUser: any = await response.json();
 
       // If the API returned the updated user, update the local form state
       if (updatedUser) {
         setFormData({
           directorName: updatedUser.director || "",
-          position: updatedUser.role || "",
+          position: updatedUser.position || "",
           documentNumber: updatedUser.documentNumber || "",
           contact: updatedUser.contact || "",
-          email: updatedUser.email || "",
+          notifyEmail: updatedUser.notifyEmail || "",
         });
       }
 
-      // // Ensure auth/user context is fresh. Prefer using checkAuth from the provider if available.
-      // if (typeof checkAuth === "function") {
-      //   await checkAuth();
-      // } else {
-      //   // Fallback: fetch the current user directly from the server
-      //   const meRes = await fetch("/api/auth/me");
-      //   if (meRes.ok) {
-      //     const freshUser = await meRes.json();
-      //     setFormData({
-      //   directorName: freshUser.director || "",
-      //   position: freshUser.role || "",
-      //   documentNumber: freshUser.documentNumber || "",
-      //   contact: freshUser.contact || "",
-      //   email: freshUser.email || "",
-      //     });
-      //   }
-      }
-
-      // Update user data directly
-      // setUser(updatedUser);
+      // Ensure auth/user context is fresh
+      await checkAuth();
 
       toast.success("บันทึกข้อมูลสำเร็จ");
       onClose();
@@ -167,12 +148,12 @@ export function ProfileSettingsForm({ onClose }: ProfileSettingsFormProps) {
         </div>
 
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="email">อีเมล์</Label>
+          <Label htmlFor="notifyEmail">อีเมล์</Label>
           <Input
-            id="email"
+            id="notifyEmail"
             type="email"
-            value={formData.email}
-            onChange={(e) => handleInputChange("email", e.target.value)}
+            value={formData.notifyEmail}
+            onChange={(e) => handleInputChange("notifyEmail", e.target.value)}
             placeholder="อีเมล์"
           />
         </div>

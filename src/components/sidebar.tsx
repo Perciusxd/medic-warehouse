@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Home, LayoutDashboard, Info, Menu, ChevronLeft, ChevronRight ,FileClock } from "lucide-react"
+import { Home, LayoutDashboard, Info, Menu, ChevronLeft, ChevronRight ,FileClock, User, Lock } from "lucide-react"
 import {
   Sheet,
   SheetContent,
@@ -19,9 +19,18 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { useHospital } from "@/context/HospitalContext"
 import { useAuth } from "./providers"
 import { useRouter } from "next/navigation"
+import { ProfileSettingsForm } from "@/components/profile-settings-form"
+import { ChangePasswordModal } from "@/components/change-password-modal"
 
 const mainNavItems = [
   // {
@@ -45,6 +54,8 @@ export function Sidebar() {
   const router = useRouter();
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = React.useState(true)
+  const [isProfileDialogOpen, setIsProfileDialogOpen] = React.useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = React.useState(false);
   const { loggedInHospital } = useHospital()
   const {  user, logout, loading } = useAuth();
 
@@ -69,7 +80,7 @@ export function Sidebar() {
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-[240px] p-0 bg-gray-50/50">
-          <MobileSidebar />
+          <MobileSidebar setIsProfileDialogOpen={setIsProfileDialogOpen} setIsPasswordDialogOpen={setIsPasswordDialogOpen} />
         </SheetContent>
         </Sheet>
 
@@ -146,7 +157,68 @@ export function Sidebar() {
             })}
             </TooltipProvider>
           </div>
+          
           </ScrollArea>
+          {/* Profile and Password Buttons */}
+          <div className="border-t px-4 py-2 space-y-2">
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "w-full justify-start gap-3 h-8",
+                      isCollapsed && "justify-center px-2 gap-0",
+                      "hover:bg-black hover:text-white"
+                    )}
+                    onClick={() => setIsProfileDialogOpen(true)}
+                  >
+                    <User className="h-4 w-4 shrink-0" />
+                    <span className={cn(
+                      "transition-all duration-300",
+                      isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
+                    )}>
+                      Profile Settings
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                {isCollapsed && (
+                  <TooltipContent side="right">
+                    <span>Profile Settings</span>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "w-full justify-start gap-3 h-8",
+                      isCollapsed && "justify-center px-2 gap-0",
+                      "hover:bg-black hover:text-white"
+                    )}
+                    onClick={() => setIsPasswordDialogOpen(true)}
+                  >
+                    <Lock className="h-4 w-4 shrink-0" />
+                    <span className={cn(
+                      "transition-all duration-300",
+                      isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
+                    )}>
+                      Change Password
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                {isCollapsed && (
+                  <TooltipContent side="right">
+                    <span>Change Password</span>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+
           {/* Avatar & Hospital Info (pinned bottom) */}
           <div className="border-t px-4 py-3">
           <TooltipProvider delayDuration={0}>
@@ -195,13 +267,33 @@ export function Sidebar() {
           </div>
         </div>
         </div>
+
+        {/* Profile Settings Dialog */}
+        <Dialog open={isProfileDialogOpen} onOpenChange={setIsProfileDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Profile Settings</DialogTitle>
+            </DialogHeader>
+            <ProfileSettingsForm onClose={() => setIsProfileDialogOpen(false)} />
+          </DialogContent>
+        </Dialog>
+
+        {/* Change Password Dialog */}
+        <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Change Password</DialogTitle>
+            </DialogHeader>
+            <ChangePasswordModal onClose={() => setIsPasswordDialogOpen(false)} />
+          </DialogContent>
+        </Dialog>
       </>
       )}
     </>
   )
 }
 
-function MobileSidebar() {
+function MobileSidebar({ setIsProfileDialogOpen, setIsPasswordDialogOpen }: { setIsProfileDialogOpen: (open: boolean) => void, setIsPasswordDialogOpen: (open: boolean) => void }) {
   const pathname = usePathname()
   const { loggedInHospital } = useHospital()
 
@@ -234,6 +326,24 @@ function MobileSidebar() {
           })}
         </div>
       </ScrollArea>
+      <div className="border-t px-4 py-2 space-y-2">
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-3 h-8"
+          onClick={() => setIsProfileDialogOpen(true)}
+        >
+          <User className="h-4 w-4 shrink-0" />
+          Profile Settings
+        </Button>
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-3 h-8"
+          onClick={() => setIsPasswordDialogOpen(true)}
+        >
+          <Lock className="h-4 w-4 shrink-0" />
+          Change Password
+        </Button>
+      </div>
       <div className="border-t px-4 py-4 flex items-center gap-3">
         <Avatar className="size-8">
           <AvatarImage src="/avatar.png" alt="User" />

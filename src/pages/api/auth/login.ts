@@ -42,11 +42,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             id: user._id,
             email: user.email,
             name: user.name,
+            username: user.username,
             role: user.role,
             hospitalName: user.hospitalName,
             address: user.address,
             contact: user.contact,
-            director: user.director
+            director: user.director,
+            position: user.position,
+            documentNumber: user.documentNumber,
+            notifyEmail: user.notifyEmail
         })
         .setProtectedHeader({ alg: 'HS256' })
         .setExpirationTime('24h')
