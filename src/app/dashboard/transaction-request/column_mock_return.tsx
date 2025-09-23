@@ -292,7 +292,21 @@ export const columns = (
                                                         )}
                                                         onClick={() => handleReturnSharingClick(med)}
                                                     >
-                                                        ต้องส่งคืน
+                                                        ส่งคืนยา
+                                                        {(() => {
+                                                            const offered = Number(med?.acceptedOffer?.responseAmount ?? 0);
+                                                            const rm: any = (med as any).returnMedicine;
+                                                            const returnedTotal = Array.isArray(rm)
+                                                                ? rm.reduce((sum: number, item: any) => {
+                                                                    const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                    const amt = Number(nested?.returnAmount ?? 0);
+                                                                    return sum + (isNaN(amt) ? 0 : amt);
+                                                                }, 0)
+                                                                : Number(rm?.returnMedicine?.returnAmount ?? 0);
+                                                            return (
+                                                                <div className=" text-xs">({Number(returnedTotal).toLocaleString()}/{Number(offered).toLocaleString()})</div>
+                                                            );
+                                                        })()}
                                                         <SquareCheck className="h-4 w-4" />
                                                         {/* <StatusIndicator status={status} /> */}
                                                     </Button>
@@ -325,7 +339,22 @@ export const columns = (
                                                     getTextStatusColor(status)
                                                 )}
                                             >
-                                                รอยืนยันการคืน
+                                                รอยืนยันการได้รับคืน
+                                                {(() => {
+                                                    const offered = Number(med?.acceptedOffer?.responseAmount ?? 0);
+                                                    const rm: any = (med as any).returnMedicine;
+                                                    const returnedTotal = Array.isArray(rm)
+                                                        ? rm.reduce((sum: number, item: any) => {
+                                                            const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                            const amt = Number(nested?.returnAmount ?? 0);
+                                                            return sum + (isNaN(amt) ? 0 : amt);
+                                                        }, 0)
+                                                        : Number(rm?.returnMedicine?.returnAmount ?? 0);
+                                                    const remaining = Math.max(0, offered - returnedTotal);
+                                                    return (
+                                                        <div className=" text-xs">({Number(returnedTotal).toLocaleString()} เหลือ {Number(remaining).toLocaleString()})</div>
+                                                    );
+                                                })()}
                                                 {/* <StatusIndicator status={status} /> */}
                                                 {/* <div className="text-xs font-extralight text-muted-foreground">(กดได้เมื่อได้รับการยืนยัน)</div> */}
                                                 {/* <div>( {responseAmount} )</div> */}

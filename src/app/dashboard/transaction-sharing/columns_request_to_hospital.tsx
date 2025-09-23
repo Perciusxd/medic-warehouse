@@ -74,16 +74,33 @@ export const columns = (
         },
         {
             id: "returnAmount",
-            accessorFn: (row) => row.returnMedicine.returnAmount,
+            accessorFn: (row) => {
+                const rm: any = (row as any).returnMedicine;
+                if (Array.isArray(rm)) {
+                    return rm.reduce((sum: number, item: any) => {
+                        const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                        const amt = Number(nested?.returnAmount ?? 0);
+                        return sum + (isNaN(amt) ? 0 : amt);
+                    }, 0);
+                }
+                return (rm?.returnMedicine?.returnAmount ?? 0);
+            },
             size: 100,
-            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่ตอบกลับ (คืนแล้ว)</div>,
+            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่ตอบกลับ (คืนแล้ว/ต้องคืน)</div>,
             cell: ({ row }) => {
-                console.log(row.original)
-                const returnAmount = row.original.returnMedicine?.returnMedicine?.returnAmount ?? 0
+                const rm: any = row.original.returnMedicine as any;
+                const returnedTotal = Array.isArray(rm)
+                    ? rm.reduce((sum: number, item: any) => {
+                        const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                        const amt = Number(nested?.returnAmount ?? 0);
+                        return sum + (isNaN(amt) ? 0 : amt);
+                    }, 0)
+                    : (rm?.returnMedicine?.returnAmount ?? 0);
+                const offered = Number(row.original.offeredMedicine?.offerAmount ?? 0);
 
                 return (
                     <div>
-                        <div className="text-md font-medium">{row.original.offeredMedicine.offerAmount.toLocaleString()} ({returnAmount}) </div>
+                        <div className="text-md font-medium">{Number(returnedTotal).toLocaleString()} / {Number(offered).toLocaleString()}</div>
                     </div>
                 )
             }
@@ -258,11 +275,33 @@ export const columns = (
                                                 onClick={() => handleReturnConfirm({
                                                     ...med,
                                                     displayHospitalName: med.requestDetails.postingHospitalNameTH,
-                                                    displayMedicineName: med.returnMedicine?.returnMedicine?.name,
-                                                    displayMedicineAmount: med.returnMedicine?.returnMedicine?.returnAmount,
+                                                    displayMedicineName: (() => {
+                                                        const r: any = med.returnMedicine as any;
+                                                        const last = Array.isArray(r) ? r[r.length - 1] : r;
+                                                        const nested = last && last.returnMedicine ? last.returnMedicine : last;
+                                                        return nested?.name;
+                                                    })(),
+                                                    displayMedicineAmount: (() => {
+                                                        const r: any = med.returnMedicine as any;
+                                                        const last = Array.isArray(r) ? r[r.length - 1] : r;
+                                                        const nested = last && last.returnMedicine ? last.returnMedicine : last;
+                                                        return nested?.returnAmount;
+                                                    })(),
                                                 })}
                                             >
-                                                โปรดยืนยันการคืนยา
+                                                {(() => {
+                                                    const rm: any = med.returnMedicine as any;
+                                                    const returnedTotal = Array.isArray(rm)
+                                                        ? rm.reduce((sum: number, item: any) => {
+                                                            const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                            const amt = Number(nested?.returnAmount ?? 0);
+                                                            return sum + (isNaN(amt) ? 0 : amt);
+                                                        }, 0)
+                                                        : Number(rm?.returnMedicine?.returnAmount ?? 0);
+                                                    const offered = Number(med.offeredMedicine?.offerAmount ?? 0);
+                                                    const remaining = Math.max(0, offered - returnedTotal);
+                                                    return `โปรดยืนยันการคืนยา (${Number(returnedTotal).toLocaleString()} เหลือ ${Number(remaining).toLocaleString()})`;
+                                                })()}
                                                 <SquareCheck className="h-4 w-4" />
                                                 {/* <StatusIndicator status={status} /> */}
                                             </Button>
@@ -280,21 +319,72 @@ export const columns = (
                                             getTextStatusColor(status)
                                         )}
                                     >
-                                        รอรับคืนยา
+                                        {(() => {
+                                            const rm: any = med.returnMedicine as any;
+                                            const returnedTotal = Array.isArray(rm)
+                                                ? rm.reduce((sum: number, item: any) => {
+                                                    const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                    console.log("nested", nested)
+                                                    const amt = Number(nested?.returnAmount ?? 0);
+                                                    return sum + (isNaN(amt) ? 0 : amt);
+                                                }, 0)
+                                                : Number(rm?.returnMedicine?.returnAmount ?? 0);
+                                            const offered = Number(med.offeredMedicine?.offerAmount ?? 0);
+                                            const remaining = Math.max(0, offered - returnedTotal);
+                                            return `รอรับคืน (${Number(returnedTotal).toLocaleString()} เหลือ ${Number(remaining).toLocaleString()})`;
+                                        })()}
                                         {/* <StatusIndicator status={status} /> */}
                                     </Badge>
                                     : status === "returned"
-                                        ? <Badge
-                                            variant={"text_status"}
-                                        className={clsx(
-                                            // "flex content-center h-6 font-bold justify-center",
-                                            getStatusColor(status),
-                                            getTextStatusColor(status)
-                                        )}
-                                        >
-                                            ได้รับคืนแล้ว
-                                            
-                                        </Badge>
+                                        ? <HoverCard>
+                                            <HoverCardTrigger>
+                                                <Badge
+                                                    variant={"text_status"}
+                                                    className={clsx(
+                                                        // "flex content-center h-6 font-bold justify-center",
+                                                        getStatusColor(status),
+                                                        getTextStatusColor(status),
+                                                        "cursor-pointer"
+                                                    )}
+                                                >
+                                                    เสร็จสิ้น ({(() => {
+                                                        const rm: any = med.returnMedicine as any;
+                                                        const returnedTotal = Array.isArray(rm)
+                                                            ? rm.reduce((sum: number, item: any) => {
+                                                                const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                const amt = Number(nested?.returnAmount ?? 0);
+                                                                return sum + (isNaN(amt) ? 0 : amt);
+                                                            }, 0)
+                                                            : Number(rm?.returnMedicine?.returnAmount ?? 0);
+                                                        return Number(returnedTotal).toLocaleString();
+                                                    })()})
+                                                </Badge>
+                                            </HoverCardTrigger>
+                                            <HoverCardContent>
+                                                <div className="text-sm">
+                                                    <div className="font-semibold mb-2">รายละเอียดการคืนยา</div>
+                                                    {(() => {
+                                                        const rm: any = med.returnMedicine as any;
+                                                        const returnList = Array.isArray(rm) ? rm : (rm ? [rm] : []);
+                                                        return returnList.map((item: any, index: number) => {
+                                                            const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                            const returnAmount = Number(nested?.returnAmount ?? 0);
+                                                            const returnDate = nested?.updatedAt ? new Date(Number(nested.updatedAt)) : null;
+                                                            const formattedDate = returnDate && !isNaN(returnDate.getTime()) 
+                                                                ? format(returnDate, 'dd/MM/') + (returnDate.getFullYear() + 543)
+                                                                : "ไม่ระบุวันที่";
+                                                            
+                                                            return (
+                                                                <div key={index} className="flex justify-between py-1 border-b last:border-b-0">
+                                                                    <span className="text-xs text-muted-foreground">{formattedDate}</span>
+                                                                    <span className="text-xs font-medium">{returnAmount.toLocaleString()} หน่วย</span>
+                                                                </div>
+                                                            );
+                                                        });
+                                                    })()}
+                                                </div>
+                                            </HoverCardContent>
+                                        </HoverCard>
                                         : status === "cancelled"
                                             ? <div
                                                 className="flex gap-x-2 "

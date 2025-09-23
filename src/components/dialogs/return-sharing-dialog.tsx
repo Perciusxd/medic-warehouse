@@ -19,9 +19,10 @@ import { useAuth } from "../providers";
 
 const ReturnPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/return_pdf'), { ssr: false });
 
-function SharingMedicineDetails({ sharingMedicine, receiveConditions, selectedMed }: any) {
+function SharingMedicineDetails({ sharingMedicine, receiveConditions, selectedMed, acceptedOffer }: any) {
     const { name, trademark, unit, quantity, manufacturer, sharingAmount } = sharingMedicine;
     const { createdAt, postingHospitalNameTH, sharingDetails } = selectedMed;
+    const { responseAmount } = acceptedOffer;
     const formattedDate = format(new Date(Number(createdAt)), 'dd/MM/') + (new Date(Number(createdAt)).getFullYear() + 543); // Format to dd/MM/yyyy in Thai Buddhist calendar
     return (
         <div className="flex flex-col gap-4 border p-4 rounded-lg">
@@ -44,7 +45,7 @@ function SharingMedicineDetails({ sharingMedicine, receiveConditions, selectedMe
                 </div>
                 <div className="flex flex-col gap-1 ">
                     <Label>จำนวนที่ขอยืม</Label>
-                    <Input disabled value={sharingAmount || ''} />
+                    <Input disabled value={responseAmount || ''} />
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>รูปแบบ/หน่วย</Label>
@@ -467,7 +468,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
 
 export default function ReturnSharingDialog({ open, onOpenChange, selectedMed }: any) {
     const { user } = useAuth();
-    const { sharingDetails } = selectedMed;
+    const { sharingDetails, acceptedOffer } = selectedMed;
     const { sharingMedicine } = sharingDetails;
     const receiveConditions = sharingDetails?.sharingReturnTerm?.receiveConditions || {};
     const [loading, setLoading] = useState(false);
@@ -516,7 +517,7 @@ export default function ReturnSharingDialog({ open, onOpenChange, selectedMed }:
 
                     <div className="overflow-y-auto px-6 py-5">
                         <div className="grid grid-cols-3 gap-2">
-                            <SharingMedicineDetails sharingMedicine={sharingMedicine} receiveConditions={receiveConditions} selectedMed={selectedMed} />
+                            <SharingMedicineDetails sharingMedicine={sharingMedicine} receiveConditions={receiveConditions} selectedMed={selectedMed} acceptedOffer={acceptedOffer} />
                             <ReturnMedicineDetails selectedMed={selectedMed} onOpenChange={onOpenChange} loading={loading} setLoading={setLoading} formId={formId} onFormChange={setReturnFormValues} onSavePdf={handleSavePdf} />
                         </div>
                     </div>

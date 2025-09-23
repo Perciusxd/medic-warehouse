@@ -378,7 +378,7 @@ export const columns = (
                                                         )}
                                                     >
                                                         รอรับมอบ
-                                                        <div className=" text-xs">{detail.offeredMedicine ? "(" + (detail.offeredMedicine.offerAmount) + ")" : "(-)"}</div>
+                                                    <div className=" text-xs">{detail.offeredMedicine ? "(" + (detail.offeredMedicine.offerAmount) + ")" : "(-)"}</div>
                                                         {/* <StatusIndicator status={detail.status} /> */}
                                                     </Badge>)
                                                     : detail.status === 'to-return'
@@ -436,7 +436,20 @@ export const columns = (
                                                                             }
                                                                         >
                                                                             ส่งคืนยา
-                                                                            <div className=" text-xs">{detail.offeredMedicine ? "(" + (detail.offeredMedicine.offerAmount) + ")" : "(-)"}</div>
+                                                                            {(() => {
+                                                                                const offered = Number(detail?.offeredMedicine?.offerAmount ?? 0);
+                                                                                const rm: any = (detail as any).returnMedicine;
+                                                                                const returnedTotal = Array.isArray(rm)
+                                                                                    ? rm.reduce((sum: number, item: any) => {
+                                                                                        const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                                        const amt = Number(nested?.returnAmount ?? 0);
+                                                                                        return sum + (isNaN(amt) ? 0 : amt);
+                                                                                    }, 0)
+                                                                                    : Number(rm?.returnMedicine?.returnAmount ?? 0);
+                                                                                return (
+                                                                                    <div className=" text-xs">({Number(returnedTotal).toLocaleString()}/{Number(offered).toLocaleString()})</div>
+                                                                                );
+                                                                            })()}
                                                                             <SquareCheck className="h-4 w-4" />
                                                                         </Button>
                                                                     </HoverCardTrigger>
@@ -455,7 +468,21 @@ export const columns = (
                                                                     )}
                                                                 >
                                                                     รอยืนยันการได้รับคืน
-                                                                    <div className=" text-xs">{detail.offeredMedicine ? "(" + (detail.offeredMedicine.offerAmount) + ")" : "(-)"}</div>
+                                                                    {(() => {
+                                                                        const offered = Number(detail?.offeredMedicine?.offerAmount ?? 0);
+                                                                        const rm: any = (detail as any).returnMedicine;
+                                                                        const returnedTotal = Array.isArray(rm)
+                                                                            ? rm.reduce((sum: number, item: any) => {
+                                                                                const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                                const amt = Number(nested?.returnAmount ?? 0);
+                                                                                return sum + (isNaN(amt) ? 0 : amt);
+                                                                            }, 0)
+                                                                            : Number(rm?.returnMedicine?.returnAmount ?? 0);
+                                                                        const remaining = Math.max(0, offered - returnedTotal);
+                                                                        return (
+                                                                            <div className=" text-xs">({Number(returnedTotal).toLocaleString()} เหลือ {Number(remaining).toLocaleString()})</div>
+                                                                        );
+                                                                    })()}
                                                                 </Badge>)
                                                                 : detail.status === 'returned'
                                                                     ? (<Badge

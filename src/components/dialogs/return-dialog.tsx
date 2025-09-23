@@ -42,6 +42,7 @@ interface ReturnDialogProps {
 
 function OfferDetails({ selectedMed }: any) {
     const { offeredMedicine, requestDetails, requestTerm, responseDetail, requestMedicine } = selectedMed;
+    console.log(selectedMed)
     const { name, trademark, offerAmount, pricePerUnit, unit, returnConditions, manufacturer } = offeredMedicine;
     const { quantity } = requestMedicine;
     const { requestAmount } = requestDetails;
@@ -112,7 +113,7 @@ function OfferDetails({ selectedMed }: any) {
                 <div className="flex flex-cols-1 gap-1 flex-wrap">
                     <div className="flex flex-col gap-1">
                         <Label>จำนวนที่ขอยืม</Label>
-                        <Input disabled value={requestAmount} />
+                        <Input disabled value={offerAmount} />
                     </div>
                     <div className="flex flex-col gap-1">
                         <Label>ราคาต่อหน่วย</Label>
