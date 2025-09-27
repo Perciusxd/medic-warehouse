@@ -353,7 +353,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                     {...register("sharingMedicine.sharingAmount", { valueAsNumber: true })} className={errors.sharingMedicine?.sharingAmount ? "border-red-500" : ""}
                                 />
                                 {errors.sharingMedicine?.sharingAmount && (
-                                    <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.sharingAmount.message}</span>
+                                    <span className="text-red-500 text-xs -mt-1">กรุณาระบุจำนวนยา</span>
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
@@ -387,39 +387,39 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                     inputMode="decimal"
                                     placeholder="10"
                                     {...register("sharingMedicine.pricePerUnit", { valueAsNumber: true })}
-                                onKeyDown={(e) => {
-                                    const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"];
+                                    onKeyDown={(e) => {
+                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"];
 
-                                    if (e.key === ".") {
-                                        if ((e.currentTarget.value || "").includes(".")) {
+                                        if (e.key === ".") {
+                                            if ((e.currentTarget.value || "").includes(".")) {
+                                                e.preventDefault();
+                                            }
+                                            return;
+                                        }
+
+                                        if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
                                             e.preventDefault();
                                         }
-                                        return;
-                                    }
-
-                                    if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
-                                        e.preventDefault();
-                                    }
-                                }}
-                                onBlur={(e) => {
-                                    const raw = e.target.value.replace(/,/g, "");
-                                    if (raw === "" || isNaN(Number(raw))) return;
-                                    e.target.value = Number(raw).toLocaleString("th-TH", {
-                                        minimumFractionDigits: 0,
-                                        maximumFractionDigits: 2,
-                                    });
-                                }}
-                                                                />
+                                    }}
+                                    onBlur={(e) => {
+                                        const raw = e.target.value.replace(/,/g, "");
+                                        if (raw === "" || isNaN(Number(raw))) return;
+                                        e.target.value = Number(raw).toLocaleString("th-TH", {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 2,
+                                        });
+                                    }}
+                                />
                                 {errors.sharingMedicine?.pricePerUnit && (
-                                    <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.pricePerUnit.message}</span>
+                                    <span className="text-red-500 text-xs -mt-1">กรุณาระบุราคาต่อหน่วย</span>
                                 )}
                             </div>
                             <div className="items-end flex flex-row">
                                 <div className="font-extralight">
                                     รวม <span className="font-bold text-gray-950"> {((Number(quantity) || 0) * (Number(pricePerUnit) || 0))?.toLocaleString("th-TH", {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                        })} </span> บาท
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })} </span> บาท
                                 </div>
                             </div>
 
@@ -465,11 +465,15 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                             }}
                                             initialFocus
                                         />
-                                        {dateError && (
-                                            <div className="text-red-500 text-sm px-4 py-2">{dateError}</div>
-                                        )}
+
                                     </PopoverContent>
                                 </Popover>
+                                {dateError && (
+                                    <div className="text-red-500 text-sm px-4 py-2">{dateError}</div>
+                                )}
+                                {errors.sharingMedicine?.expiryDate && (
+                                    <span className="text-red-500 text-xs -mt-1">กรุณาระบุวันที่หมดอายุ</span>
+                                )}
                             </div>
 
                         </div>
@@ -493,23 +497,23 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                     {[...hospitalList]
                                         .sort((a, b) => a.nameTH.localeCompare(b.nameTH, "th")) // เรียงตามชื่อ ก-ฮ
                                         .map(hospital => {
-                                        const isChecked = selectedHospitals.includes(hospital.id)
+                                            const isChecked = selectedHospitals.includes(hospital.id)
 
-                                        return (
-                                            <div className="" key={hospital.id}>
-                                                <div className="flex items-center gap-2" key={hospital.id}>
-                                                    <Checkbox
-                                                        id={`hospital-${hospital.id}`}
-                                                        className="cursor-pointer"
-                                                        checked={isChecked}
-                                                        onCheckedChange={() => toggleHospitalSelection(hospital.id)}
-                                                    />
-                                                    <Label htmlFor={`hospital-${hospital.id}`} className="font-normal">{hospital.nameTH}</Label>
+                                            return (
+                                                <div className="" key={hospital.id}>
+                                                    <div className="flex items-center gap-2" key={hospital.id}>
+                                                        <Checkbox
+                                                            id={`hospital-${hospital.id}`}
+                                                            className="cursor-pointer"
+                                                            checked={isChecked}
+                                                            onCheckedChange={() => toggleHospitalSelection(hospital.id)}
+                                                        />
+                                                        <Label htmlFor={`hospital-${hospital.id}`} className="font-normal">{hospital.nameTH}</Label>
+                                                    </div>
+                                                    <Separator className="my-2" />
                                                 </div>
-                                                <Separator className="my-2" />
-                                            </div>
-                                        )
-                                    })}
+                                            )
+                                        })}
                                 </div>
                             </ScrollArea>
                             {errors.selectedHospitals && (
@@ -535,14 +539,14 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                     ยารายการอื่น
                                 </Label>
                                 <Label className="font-normal">
-                                    <input type="checkbox"  />
+                                    <input type="checkbox" />
                                     หักงบประมาณ Service plan (mock)
                                 </Label>
-                                 <Label className="font-normal">
-                                    <input type="checkbox"  />
+                                <Label className="font-normal">
+                                    <input type="checkbox" />
                                     หักงบประมาณบำรุงโรงพยาบาล (mock)
                                 </Label>
-                                 <Label className="font-normal">
+                                <Label className="font-normal">
                                     <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.noReturn")} />
                                     สนับสนุนโดยให้เปล่า
                                 </Label>
