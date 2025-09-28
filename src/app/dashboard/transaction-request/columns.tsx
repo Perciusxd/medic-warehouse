@@ -29,6 +29,7 @@ import CreateResponseDialog from "@/components/dialogs/create-response-dialog"
 import StatusIndicator, { getStatusColor, getTextStatusColor } from "@/components/ui/status-indicator"
 import ReturnConditionIndicator from "@/components/ui/return-condition-indicator"
 import ImageHoverPreview from "@/components/ui/image-hover-preview"
+import ReturnPdfMultiButton from "@/components/ui/pdf_creator/ReturnPdfMultiButton"
 export const columns = (
     handleApproveClick: (med: any) => void,
     handleDeliveryClick: (med: any) => void,
@@ -485,16 +486,65 @@ export const columns = (
                                                                     })()}
                                                                 </Badge>)
                                                                 : detail.status === 'returned'
-                                                                    ? (<Badge
-                                                                        variant={'text_status'}
-                                                                        className={clsx(
-                                                                            // "flex content-center h-6 font-bold",
-                                                                            getStatusColor(detail.status),
-                                                                            getTextStatusColor(detail.status)
-                                                                        )}
-                                                                    >
-                                                                        เสร็จสิ้น
-                                                                    </Badge>)
+                                                                    ? (
+                                                                        <HoverCard>
+                                                                            <HoverCardTrigger>
+                                                                                <Badge
+                                                                                    variant={'text_status'}
+                                                                                    className={clsx(
+                                                                                        getStatusColor(detail.status),
+                                                                                        getTextStatusColor(detail.status),
+                                                                                        "cursor-pointer"
+                                                                                    )}
+                                                                                >
+                                                                                    {(() => {
+                                                                                        const rm: any = (detail as any).returnMedicine;
+                                                                                        const returnedTotal = Array.isArray(rm)
+                                                                                            ? rm.reduce((sum: number, item: any) => {
+                                                                                                const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                                                const amt = Number(nested?.returnAmount ?? 0);
+                                                                                                return sum + (isNaN(amt) ? 0 : amt);
+                                                                                            }, 0)
+                                                                                            : Number(rm?.returnMedicine?.returnAmount ?? 0);
+                                                                                        return `เสร็จสิ้น (${Number(returnedTotal).toLocaleString()})`;
+                                                                                    })()}
+                                                                                </Badge>
+                                                                            </HoverCardTrigger>
+                                                                            <HoverCardContent>
+                                                                                <div className="text-sm">
+                                                                                    <div className="font-semibold mb-2">รายละเอียดการคืนยา</div>
+                                                                                    {(() => {
+                                                                                        const rm: any = (detail as any).returnMedicine;
+                                                                                        const returnList = Array.isArray(rm) ? rm : (rm ? [rm] : []);
+                                                                                        return returnList.map((item: any, idx: number) => {
+                                                                                            const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                                            const returnAmount = Number(nested?.returnAmount ?? 0);
+                                                                                            const returnDate = nested?.returnDate ? new Date(Number(nested.returnDate)) : null;
+                                                                                            const formattedDate = returnDate && !isNaN(returnDate.getTime())
+                                                                                                ? format(returnDate, 'dd/MM/') + (returnDate.getFullYear() + 543)
+                                                                                                : "ไม่ระบุวันที่";
+                                                                                            return (
+                                                                                                <div key={idx} className="flex justify-between py-1 border-b last:border-b-0">
+                                                                                                    <span className="text-xs text-muted-foreground">{formattedDate}</span>
+                                                                                                    <span className="text-xs font-medium">{returnAmount.toLocaleString()} หน่วย</span>
+                                                                                                </div>
+                                                                                            );
+                                                                                        });
+                                                                                    })()}
+                                                                                    <ReturnPdfMultiButton
+                                                                                        className="mt-2"
+                                                                                        data={{
+                                                                                            ...med,
+                                                                                            respondingHospitalNameTH: detail.respondingHospitalNameTH,
+                                                                                            offeredMedicine: detail.offeredMedicine,
+                                                                                        }}
+                                                                                        returnList={(detail as any).returnMedicine}
+                                                                                        buttonText="ออกเอกสาร PDF การคืนยา"
+                                                                                    />
+                                                                                </div>
+                                                                            </HoverCardContent>
+                                                                        </HoverCard>
+                                                                    )
                                                                     : detail.status === 'cancelled'
                                                                         ? (<Badge
                                                                         variant={'text_status'}

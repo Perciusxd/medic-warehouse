@@ -158,6 +158,7 @@ const ReturnFormSchema = z.discriminatedUnion('supportRequest', [
             manufacturer: z.string().optional(),
             pricePerUnit: z.any().optional(),
             batchNumber: z.string().optional(),
+            expiryDate: z.coerce.string().optional(),
             returnDate: z.coerce.string().optional(),
         }),
     }),
@@ -174,7 +175,8 @@ const ReturnFormSchema = z.discriminatedUnion('supportRequest', [
             manufacturer: z.string().min(1, "กรุณาระบุผู้ผลิตของยา"),
             pricePerUnit: z.number().min(1, "ราคาต่อหน่วยควรมากกว่า 0").max(100000, "ราคาต่อหน่วยควรน้อยกว่า 100000"),
             batchNumber: z.string().min(1, "กรุณาระบุหมายเลขล็อตของยา"),
-            returnDate: z.coerce.string({ invalid_type_error: "กรุณาระบุวันที่คืนยา" }),
+            expiryDate: z.coerce.string({ invalid_type_error: "กรุณาระบุวันหมดอายุ" }),
+            returnDate: z.coerce.string().optional(),
             reason: z.string().optional(),
         }),
     }),
@@ -219,6 +221,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                 quantity: "",
                 pricePerUnit: 1,
                 batchNumber: "",
+                expiryDate: undefined,
                 returnDate: undefined,
                 reason: "",
             }
@@ -226,6 +229,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
     })
 
     const returnDate = watch("returnMedicine.returnDate");
+    const expiryDate = watch("returnMedicine.expiryDate");
     const watchReturnType = watch("returnType");
     const watchAllFields = watch();
     const supportSelection = watch("supportRequest") || "none";
@@ -262,6 +266,8 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
 
     const onSubmit = async (data: z.infer<typeof ReturnFormSchema>) => {
         const supportRequest = supportSelection === 'support';
+        const nowStr = Date.now().toString();
+        const finalReturnMedicine = { ...data.returnMedicine, returnDate: nowStr };
         const returnData = {
             id: `RET-${Date.now()}`,
             requestId: requestId,
@@ -270,7 +276,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
             toHospitalId: postingHospitalNameEN,
             createAt: Date.now().toString(),
             updatedAt: Date.now().toString(),
-            returnMedicine: data.returnMedicine,
+            returnMedicine: finalReturnMedicine,
             returnType: supportRequest ? 'supportType' : data.returnType,
             supportRequest: supportRequest,
         }
@@ -392,8 +398,8 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                         <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className="justify-start text-left font-normal" disabled={isSupportSelected}>
-                                    {returnDate
-                                        ? format(new Date(Number(returnDate)), 'dd/MM/') + (new Date(Number(returnDate)).getFullYear() + 543)
+                                    {expiryDate
+                                        ? format(new Date(Number(expiryDate)), 'dd/MM/') + (new Date(Number(expiryDate)).getFullYear() + 543)
 
                                         : "เลือกวันที่"}
                                     <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
@@ -402,7 +408,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                             <PopoverContent className="w-auto p-0">
                                 <Calendar
                                     mode="single"
-                                    selected={returnDate ? new Date(Number(returnDate)) : undefined}
+                                    selected={expiryDate ? new Date(Number(expiryDate)) : undefined}
                                     captionLayout="dropdown"
                                     fromYear={2020}            // ปีเก่าสุดที่เลือกได้
                                     toYear={new Date().getFullYear() + 20}  //  เลือกได้ถึง 20 ปีข้างหน้า
@@ -416,7 +422,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                                             const dateString = date.getTime().toString()
 
                                             if (date > today) {
-                                                setValue("returnMedicine.returnDate", dateString, { shouldValidate: true, shouldDirty: true });
+                                                setValue("returnMedicine.expiryDate", dateString, { shouldValidate: true, shouldDirty: true });
                                                 setDateError(""); // clear error
                                                 setIsCalendarOpen(false); // close popover
                                             } else {
@@ -435,7 +441,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                                 )}
                             </PopoverContent>
                         </Popover>
-                        {errors.returnMedicine?.returnDate && <span className="text-red-500 text-xs">{errors.returnMedicine.returnDate.message}</span>}
+                        {errors.returnMedicine?.expiryDate && <span className="text-red-500 text-xs">{errors.returnMedicine.expiryDate.message}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
                         <Label>จำนวนที่ให้คืน</Label>

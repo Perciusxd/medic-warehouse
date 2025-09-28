@@ -369,7 +369,7 @@ export const columns = (
                                                         return returnList.map((item: any, index: number) => {
                                                             const nested = item && item.returnMedicine ? item.returnMedicine : item;
                                                             const returnAmount = Number(nested?.returnAmount ?? 0);
-                                                            const returnDate = nested?.updatedAt ? new Date(Number(nested.updatedAt)) : null;
+                                                            const returnDate = nested?.returnDate ? new Date(Number(nested.returnDate)) : null;
                                                             const formattedDate = returnDate && !isNaN(returnDate.getTime()) 
                                                                 ? format(returnDate, 'dd/MM/') + (returnDate.getFullYear() + 543)
                                                                 : "ไม่ระบุวันที่";

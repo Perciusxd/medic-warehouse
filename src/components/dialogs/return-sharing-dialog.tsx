@@ -114,6 +114,7 @@ function ReturnFormSchema({ selectedMed }: any) {
                 manufacturer: z.string().optional(),
                 pricePerUnit: z.any().optional(),
                 batchNumber: z.string().optional(),
+                expiryDate: z.coerce.string().optional(),
                 returnDate: z.coerce.string().optional(),
             }),
         }),
@@ -130,7 +131,8 @@ function ReturnFormSchema({ selectedMed }: any) {
                 manufacturer: z.string().min(1, "กรุณาระบุผู้ผลิตของยา"),
                 pricePerUnit: z.number().min(1, "ราคาต่อหน่วยควรมากกว่า 0").max(100000, "ราคาต่อหน่วยควรน้อยกว่า 100000"),
                 batchNumber: z.string().min(1, "กรุณาระบุหมายเลขล็อตของยา"),
-                returnDate: z.coerce.string({ invalid_type_error: "กรุณาระบุวันที่คืนยา" }),
+                expiryDate: z.coerce.string({ invalid_type_error: "กรุณาระบุวันหมดอายุ" }),
+                returnDate: z.coerce.string().optional(),
                 reason: z.string().optional(),
             }),
         }),
@@ -171,6 +173,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                 manufacturer: "",
                 pricePerUnit: undefined,
                 batchNumber: "",
+                expiryDate: undefined,
                 returnDate: undefined,
                 reason: "",
             }
@@ -183,6 +186,8 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
         //console.log('data', data)
         const supportRequest = data.supportRequest === "support" ? true : false;
         setLoading(true);
+        const nowStr = Date.now().toString();
+        const finalReturnMedicine = { ...data.returnMedicine, returnDate: nowStr };
         const returnData = {
             id: `RET-${Date.now()}`,
             sharingId: sharingId,
@@ -191,7 +196,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
             toHospitalId: postingHospitalNameEN,
             createAt: Date.now().toString(),
             updatedAt: Date.now().toString(),
-            returnMedicine: data.returnMedicine,    // should be empty if supportRequest is true??
+            returnMedicine: finalReturnMedicine,    // should be empty if supportRequest is true??
             returnType: supportRequest ? "supportType" : data.returnType,
         }
         const returnBody = {
@@ -215,7 +220,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
         }
     };
 
-    const expiredDate = watch("returnMedicine.returnDate");
+    const expiredDate = watch("returnMedicine.expiryDate");
     const watchReturnType = watch("returnType");
     const supportSelection = watch("supportRequest") || "none";
     const isSupportSelected = supportSelection === "support";
@@ -379,7 +384,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                                             today.setHours(0, 0, 0, 0);
                                             const dateString = date.getTime().toString()
                                             if (date > today) {
-                                                setValue("returnMedicine.returnDate", dateString, { shouldValidate: true, shouldDirty: true });
+                                                setValue("returnMedicine.expiryDate", dateString, { shouldValidate: true, shouldDirty: true });
                                                 setDateError("");
                                                 setIsCalendarOpen(false);
                                             } else {
@@ -396,7 +401,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                                 )}
                             </PopoverContent>
                         </Popover>
-                        {errors.returnMedicine?.returnDate && <span className="text-red-500 text-xs">{errors.returnMedicine.returnDate.message}</span>}
+                        {errors.returnMedicine?.expiryDate && <span className="text-red-500 text-xs">{errors.returnMedicine.expiryDate.message}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
                         <Label>จำนวนที่ให้คืน</Label>
