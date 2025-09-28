@@ -7,11 +7,14 @@ export interface IUser extends Document {
   address: string; // Optional: Add address if needed
   director: string; // Optional: Add director if needed
   contact: string; // Optional: Add contact if needed
+  documentNumber: string; // Document number for profile
   name: string;
   createdAt: Date;
   updatedAt: Date;
   role: 'admin' | 'user'; // Optional: Add role if needed
-  hospitalName: string; // Optional: Add hospital association if needed
+  hospitalName: string; // Optional: Add hospital association if needed,
+  position: string; // Optional: Add position if needed
+  notifyEmail: string; // Notification email
   // role: 'admin' | 'user'; // Optional: Add role if needed
   // hospitalName?: string; // Optional: Add hospital association if needed
   // Songkla Hospital
@@ -26,12 +29,15 @@ const UserSchema: Schema<IUser> = new Schema<IUser>({
   address: { type: String, default: '' }, // Optional: Add address if needed
   director: { type: String, default: '' }, // Optional: Add director if needed
   contact: { type: String, default: '' }, // Optional: Add contact if needed
+  documentNumber: { type: String, default: '' }, // Document number for profile
   password: { type: String, required: true },
   name: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
   role: { type: String, enum: ['admin', 'user']}, // Optional: Add role if needed
+  position: { type: String, default: '' }, // Optional: Add position if needed
   hospitalName: { type: String, default: '' }, // Optional: Add hospital association if needed
+  notifyEmail: { type: String, default: '' }, // Optional: Add notification email if needed
 });
 
 export const UserModel: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema); 

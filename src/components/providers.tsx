@@ -12,6 +12,10 @@ interface User {
   contact?: string; // Optional: Add contact if needed
   address?: string; // Optional: Add address if needed
   director?: string; // Optional: Add director if needed
+  documentNumber?: string; // Document number for profile
+  position?: string; // Optional: Add position if needed
+  notifyEmail?: string; // Notification email
+  username?: string; // Ensure username is unique
 }
 
 interface AuthContextType {
@@ -47,6 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await fetch('/api/auth/me');
       if (res.ok) {
         const data = await res.json();
+        console.log(data);
+        
         setUser(data);
       } else {
         setUser(null);

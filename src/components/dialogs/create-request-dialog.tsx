@@ -143,7 +143,10 @@ const RequestSchema = z.object({
 
     }),
     requestTerm: z.object({
-        expectedReturnDate: z.coerce.string({ invalid_type_error: "วันที่คาดว่าจะคืนต้องเป็นวันที่ถูกต้อง" }),
+        expectedReturnDate: z.string({
+            invalid_type_error: "วันที่คาดว่าจะคืนต้องเป็นวันที่ถูกต้อง",
+            required_error: "กรุณาเลือกวันที่คาดว่าจะคืน"
+        }).min(1, "กรุณาเลือกวันที่คาดว่าจะคืน"),
         receiveConditions: z.object({
             condition: z.enum(["exactType", "subType"]),
             supportType: z.boolean().optional(),
@@ -188,7 +191,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                 manufacturer: "",
             },
             requestTerm: {
-                expectedReturnDate: undefined,
+                expectedReturnDate: "",
                 receiveConditions: {
                     condition: "exactType",
                     supportType: false,
@@ -507,9 +510,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                         >
                                             <CalendarIcon className="mr-2 h-4 w-4" />
                                             {date
-                                                ? // แสดงผล dd/MM/yyyy + พ.ศ.
-                                                format(date, "dd/MM/", { locale: th }) +
-                                                (date.getFullYear() + 543)
+                                                ? format(date, "dd/MM/", { locale: th }) + (date.getFullYear() + 543)
                                                 : "เลือกวันที่"}
                                         </Button>
                                     </PopoverTrigger>
@@ -518,14 +519,14 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                             mode="single"
                                             selected={date}
                                             captionLayout="dropdown"
-                                            fromYear={2020}            // ปีเก่าสุดที่เลือกได้
-                                            toYear={new Date().getFullYear() + 20}  //  เลือกได้ถึง 20 ปีข้างหน้า
+                                            fromYear={2020}
+                                            toYear={new Date().getFullYear() + 20}
                                             formatters={{
-                                                formatYearCaption: (year: Date) => (year.getFullYear() + 543).toString(), // แสดงปีเป็น พ.ศ.
+                                                formatYearCaption: (year: Date) =>
+                                                    (year.getFullYear() + 543).toString(),
                                             }}
                                             locale={th}
                                             onSelect={(d) => {
-                                                setDate(date)
                                                 setIsOpen(false)
                                                 if (d instanceof Date && !isNaN(d.getTime())) {
                                                     const today = new Date()
@@ -539,9 +540,11 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                                             { shouldValidate: true }
                                                         )
                                                         setDateError("")
-                                                        setIsOpen(false)
                                                     } else {
                                                         setDateError("กรุณาเลือกวันที่ในอนาคต")
+                                                        setValue("requestTerm.expectedReturnDate", "", {
+                                                            shouldValidate: true,
+                                                        })
                                                     }
                                                 } else {
                                                     setDateError("วันที่ไม่ถูกต้อง")
@@ -549,12 +552,23 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                             }}
                                             initialFocus
                                         />
-                                        {dateError && (
-                                            <div className="text-red-500 text-sm px-4 py-2">{dateError}</div>
-                                        )}
+                                         {/* Error จากการเลือกย้อนหลัง */}
+                                {dateError && (
+                                    <div className="text-red-500 text-sm px-4 py-2">{dateError}</div>
+                                )}
                                     </PopoverContent>
                                 </Popover>
+
+                                {/* Error จาก Zod */}
+                                {errors.requestTerm?.expectedReturnDate && (
+                                    <div className="text-red-500 text-sm px-4 py-2">
+                                        {errors.requestTerm.expectedReturnDate.message}
+                                    </div>
+                                )}
+
+                               
                             </div>
+
 
                         </div>
                         <div className="ml-10">
