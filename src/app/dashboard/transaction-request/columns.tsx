@@ -489,6 +489,7 @@ export const columns = (
                                                                     ? (
                                                                         <HoverCard>
                                                                             <HoverCardTrigger>
+                                                                                <div className="flex flex-row gap-x-2 items-center">
                                                                                 <Badge
                                                                                     variant={'text_status'}
                                                                                     className={clsx(
@@ -509,6 +510,16 @@ export const columns = (
                                                                                         return `เสร็จสิ้น (${Number(returnedTotal).toLocaleString()})`;
                                                                                     })()}
                                                                                 </Badge>
+                                                                                <ReturnPdfMultiButton
+                                                                                    data={{
+                                                                                        ...med,
+                                                                                        respondingHospitalNameTH: detail.respondingHospitalNameTH,
+                                                                                        offeredMedicine: detail.offeredMedicine,
+                                                                                    }}
+                                                                                    returnList={(detail as any).returnMedicine}
+                                                                                    buttonText="ออกเอกสาร PDF การคืนยา"
+                                                                                />
+                                                                                </div>
                                                                             </HoverCardTrigger>
                                                                             <HoverCardContent>
                                                                                 <div className="text-sm">
@@ -531,16 +542,6 @@ export const columns = (
                                                                                             );
                                                                                         });
                                                                                     })()}
-                                                                                    <ReturnPdfMultiButton
-                                                                                        className="mt-2"
-                                                                                        data={{
-                                                                                            ...med,
-                                                                                            respondingHospitalNameTH: detail.respondingHospitalNameTH,
-                                                                                            offeredMedicine: detail.offeredMedicine,
-                                                                                        }}
-                                                                                        returnList={(detail as any).returnMedicine}
-                                                                                        buttonText="ออกเอกสาร PDF การคืนยา"
-                                                                                    />
                                                                                 </div>
                                                                             </HoverCardContent>
                                                                         </HoverCard>

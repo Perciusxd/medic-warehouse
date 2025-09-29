@@ -3,6 +3,7 @@ import React, { useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/providers'
+import { DownloadIcon } from 'lucide-react'
 
 const ReturnPdfMultiPreview = dynamic(() => import('./return_pdf_multi'), { ssr: false })
 
@@ -25,8 +26,9 @@ export default function ReturnPdfMultiButton({ data, returnList, className, butt
 
     return (
         <div className={className}>
-            <Button variant="secondary" size="sm" onClick={handleGenerate} className="mt-2">
-                {buttonText}
+            <Button variant="ghost" size="sm" onClick={handleGenerate} className='cursor-pointer'>
+                {/* {buttonText} */}
+                <DownloadIcon />
             </Button>
             {/* Hidden preview for generation */}
             <div style={{ display: 'none' }}>

@@ -131,7 +131,8 @@ export function DataTable<TData, TValue>({
 
             <div className="flex items-center justify-between space-x-2 py-2">
                 <div className="text-sm text-muted-foreground px-2">
-                    Showing {startRow}–{endRow} of {totalRows} row(s)
+                    { totalRows === 0 ? "ไม่พบข้อมูล" : `กำลังแสดงแถวที่ ${startRow} ถึง ${endRow} จากทั้งหมด ${totalRows} แถว` }
+                    {/* กำลังแสดงแถวที่ {startRow}–{endRow} จาก {totalRows} แถว */}
                 </div>
                 <div className="flex items-center space-x-2 mr-2">
                     <Button

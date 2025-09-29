@@ -320,27 +320,34 @@ export const columns = (
                                         ) : status === 'returned' ? (
                                             <HoverCard>
                                                 <HoverCardTrigger>
-                                                    <Badge
-                                                        variant={'text_status'}
-                                                        className={clsx(
-                                                            // "flex content-center h-6 font-bold",
-                                                            getStatusColor(status),
-                                                            getTextStatusColor(status),
-                                                            "cursor-pointer"
-                                                        )}
-                                                    >
-                                                        เสร็จสิ้น ({(() => {
-                                                            const rm: any = (med as any).returnMedicine;
-                                                            const returnedTotal = Array.isArray(rm)
-                                                                ? rm.reduce((sum: number, item: any) => {
-                                                                    const nested = item && item.returnMedicine ? item.returnMedicine : item;
-                                                                    const amt = Number(nested?.returnAmount ?? 0);
-                                                                    return sum + (isNaN(amt) ? 0 : amt);
-                                                                }, 0)
-                                                                : Number(rm?.returnMedicine?.returnAmount ?? 0);
-                                                            return Number(returnedTotal).toLocaleString();
-                                                        })()})
-                                                    </Badge>
+                                                    <div className="flex flex-row gap-x-2 items-center">
+                                                        <Badge
+                                                            variant={'text_status'}
+                                                            className={clsx(
+                                                                // "flex content-center h-6 font-bold",
+                                                                getStatusColor(status),
+                                                                getTextStatusColor(status),
+                                                                "cursor-pointer"
+                                                            )}
+                                                        >
+                                                            เสร็จสิ้น ({(() => {
+                                                                const rm: any = (med as any).returnMedicine;
+                                                                const returnedTotal = Array.isArray(rm)
+                                                                    ? rm.reduce((sum: number, item: any) => {
+                                                                        const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                        const amt = Number(nested?.returnAmount ?? 0);
+                                                                        return sum + (isNaN(amt) ? 0 : amt);
+                                                                    }, 0)
+                                                                    : Number(rm?.returnMedicine?.returnAmount ?? 0);
+                                                                return Number(returnedTotal).toLocaleString();
+                                                            })()})
+                                                        </Badge>
+                                                        <ReturnPdfMultiButton
+                                                            data={med}
+                                                            returnList={(med as any).returnMedicine}
+                                                            buttonText="ออกเอกสาร PDF การคืนยา"
+                                                        />
+                                                    </div>
                                                 </HoverCardTrigger>
                                                 <HoverCardContent>
                                                     <div className="text-sm">
@@ -363,12 +370,6 @@ export const columns = (
                                                                 );
                                                             });
                                                         })()}
-                                                        <ReturnPdfMultiButton
-                                                            className="mt-2"
-                                                            data={med}
-                                                            returnList={(med as any).returnMedicine}
-                                                            buttonText="ออกเอกสาร PDF การคืนยา"
-                                                        />
                                                     </div>
                                                 </HoverCardContent>
                                             </HoverCard>
