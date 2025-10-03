@@ -617,19 +617,21 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                     </div>
 
 
-                                    <div className="flex flex-row gap-2">
+                                    <div className="flex flex-col gap-2">
                                         <Label className="font-medium">เงื่อนไขการรับ <RequiredMark /></Label>
-                                        <Label className="font-normal">
-                                            <input type="radio" value="exactType" {...register("requestTerm.receiveConditions.condition")} />
-                                            ยาจากผู้ผลิตรายนี้
-                                        </Label>
-                                        <Label className="font-normal">
-                                            <input type="radio" value="subType" {...register("requestTerm.receiveConditions.condition")} />
-                                            ยาจากผู้ผลิตรายอื่น
-                                        </Label>
-                                        {errors.requestTerm?.receiveConditions?.condition && (
-                                            <span className="text-red-500 text-xs">{String(errors.requestTerm.receiveConditions.condition.message)}</span>
-                                        )}
+                                        <div className="flex flex-row gap-2 mt-2">
+                                            <Label className="font-normal">
+                                                <input type="radio" value="exactType" {...register("requestTerm.receiveConditions.condition")} />
+                                                ยาจากผู้ผลิตรายนี้
+                                            </Label>
+                                            <Label className="font-normal">
+                                                <input type="radio" value="subType" {...register("requestTerm.receiveConditions.condition")} />
+                                                ยาจากผู้ผลิตรายอื่น
+                                            </Label>
+                                            {errors.requestTerm?.receiveConditions?.condition && (
+                                                <span className="text-red-500 text-xs">{String(errors.requestTerm.receiveConditions.condition.message)}</span>
+                                            )}
+                                        </div>
                                     </div>
 
                                     <div className="flex flex-col gap-2">
@@ -704,25 +706,28 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                         )}
                                     </div>
 
-                                    <div className="flex flex-row gap-2 items-start">
+                                    <div className="flex flex-col gap-2 items-start">
                                         <Label className="font-medium">ข้อเสนอการคืน <RequiredMark /></Label>
-                                        <Label className="font-normal">
-                                            <input type="radio" value="exactType" {...register("requestTerm.returnConditions.condition")} />
-                                            คืนยารายการนี้
-                                        </Label>
+                                    <div className="flex flex-row flex-wrap items-start gap-3 mt-2">
+                                        <Label className="font-normal whitespace-nowrap">
+                                                <input type="radio" value="exactType" {...register("requestTerm.returnConditions.condition")} />
+                                                คืนยารายการนี้
+                                            </Label>
 
-                                        <Label className="font-normal">
-                                            <input type="radio" value="otherType" {...register("requestTerm.returnConditions.condition")} />
-                                            คืนยารายการอื่น
-                                        </Label>
-                                        {errors.requestTerm?.returnConditions?.condition && (
-                                            <span className="text-red-500 text-xs">{String(errors.requestTerm.returnConditions.condition.message)}</span>
-                                        )}
-                                        <div className="">
+                                        <Label className="font-normal whitespace-nowrap">
+                                                <input type="radio" value="otherType" {...register("requestTerm.returnConditions.condition")} />
+                                                คืนยารายการอื่น
+                                            </Label>
+                                            {errors.requestTerm?.returnConditions?.condition && (
+                                                <span className="text-red-500 text-xs">{String(errors.requestTerm.returnConditions.condition.message)}</span>
+                                            )}
+                                        <div className="basis-full mt-1">
                                             {returnConditions?.condition === "otherType" && (
                                                 <Input type="text" placeholder="ระบุรายรายการยา/ผู้ผลิต/ราคาต่อหน่วย" {...register("requestTerm.returnConditions.otherTypeSpecification")} />
                                             )}
                                         </div>
+                                        </div>
+                                        
                                     </div>
                                 </div>
                             )
