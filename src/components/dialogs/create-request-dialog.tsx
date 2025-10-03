@@ -222,7 +222,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                 },
                 returnConditions: {
                     condition: "exactType",
-                    otherTypeSpecification: "xxx/xxx/xxx",
+                    otherTypeSpecification: "",
                 },
                 supportCondition: undefined,
             },
@@ -458,7 +458,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">จำนวน <RequiredMark /></Label>
                                 <Input
-                                    inputMode="numeric"
+                                    inputMode="decimal"
                                     placeholder="10"
                                     onKeyDown={(e) => {
                                         const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"];
@@ -480,9 +480,10 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                         onBlur: (e) => {
                                             const raw = e.target.value.replace(/,/g, "");
                                             if (raw === "" || isNaN(Number(raw))) return;
-                                            e.target.value = Number(raw).toLocaleString("th-TH", {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
+                                            const rounded = Math.round(Number(raw) * 1000) / 1000;
+                                            e.target.value = rounded.toLocaleString("th-TH", {
+                                                minimumFractionDigits: 3,
+                                                maximumFractionDigits: 3,
                                             });
                                         }
                                     })} className={errors.requestMedicine?.requestAmount ? "border-red-500" : ""}
@@ -719,7 +720,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                         )}
                                         <div className="">
                                             {returnConditions?.condition === "otherType" && (
-                                                <Input type="text" placeholder={returnConditions?.otherTypeSpecification} {...register("requestTerm.returnConditions.otherTypeSpecification")} />
+                                                <Input type="text" placeholder="ระบุรายรายการยา/ผู้ผลิต/ราคาต่อหน่วย" {...register("requestTerm.returnConditions.otherTypeSpecification")} />
                                             )}
                                         </div>
                                     </div>

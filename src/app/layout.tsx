@@ -36,7 +36,7 @@ export default function RootLayout({
             <div className="relative flex min-h-screen">
               <Sidebar />
               <Toaster position="top-right" richColors />
-              <main className="flex-1">{children}</main>
+              <main className="flex-1 min-w-0">{children}</main>
             </div>
           </HospitalProvider>
         </AuthProvider>
