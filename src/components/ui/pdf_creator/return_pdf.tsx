@@ -220,8 +220,8 @@ function ContentPage({ pdfData, variant = 'original' }: any) {
                         <Text style={[styles.tableCell, { width: '15%' }]}>{Number((returnMedicine?.returnAmount ?? 0) * (returnMedicine?.pricePerUnit ?? 0)).toLocaleString("th-TH")}</Text>
                         <Text style={[styles.tableCell, { width: '15%' }]}>{returnMedicine?.manufacturer ?? ''}</Text>
                         <Text style={[styles.tableCell, { width: '20%' }]}>{(() => {
-                            if (!returnMedicine?.returnDate) return '';
-                            const d = new Date(Number(returnMedicine.returnDate));
+                            if (!returnMedicine?.expiryDate) return '';
+                            const d = new Date(Number(returnMedicine.expiryDate));
                             const lotNumber = returnMedicine?.batchNumber ?? '';
                             if (isNaN(d.getTime())) return '';
                             return `${format(d, 'dd/MM')}/${d.getFullYear() + 543} (${lotNumber})`;
