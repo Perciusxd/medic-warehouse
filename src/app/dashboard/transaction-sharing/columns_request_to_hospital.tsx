@@ -11,6 +11,7 @@ import StatusIndicator, { getStatusColor, getTextStatusColor } from "@/component
 import { Badge } from "@/components/ui/badge"
 import { text } from "stream/consumers"
 import textHover from "@/components/ui/text_hover"
+import ReturnSummaryHover from "@/components/ui/return-summary-hover"
 import {
     HoverCard,
     HoverCardContent,
@@ -28,7 +29,6 @@ export const columns = (
             header: () => <div className="font-medium text-muted-foreground text-left cursor-default">วันที่แจ้ง</div>,
             cell: ({ row }) => {
                 const createdAt = row.original.requestDetails.updatedAt
-                // console.log("row response", row.original)
                 const date = new Date(Number(createdAt)); // convert string to number, then to Date
                 return (
                     <div>
@@ -43,14 +43,15 @@ export const columns = (
             accessorFn: (row) => row.requestDetails.requestMedicine.name,
             size: 200,
             header: () => <div className="font-medium text-muted-foreground text-left cursor-default"> รายการยา/ชื่อการค้า</div>,
-            cell: ({ getValue }) => {
+            cell: ({ getValue, row }) => {
                 const name = getValue() as string
-                const trademark = getValue() as string
+                const returnTerm = row.original.requestDetails.requestTerm.returnConditions
+                const trademark = row.original.requestDetails.requestMedicine.trademark
                 return (
                     <div>
                         <div className="text-md font-medium">{name}</div>
                         <div className="text-xs text-muted-foreground">{trademark}</div>
-
+                        <Badge variant="outline" className="text-xs text-gray-600 mt-2">{returnTerm.condition === "exactType" ? "คืนยาตามรายการ" : "คืนยาทดแทน"}</Badge>
                     </div>
                 )
             }
@@ -76,31 +77,58 @@ export const columns = (
             id: "returnAmount",
             accessorFn: (row) => {
                 const rm: any = (row as any).returnMedicine;
-                if (Array.isArray(rm)) {
-                    return rm.reduce((sum: number, item: any) => {
-                        const nested = item && item.returnMedicine ? item.returnMedicine : item;
-                        const amt = Number(nested?.returnAmount ?? 0);
-                        return sum + (isNaN(amt) ? 0 : amt);
-                    }, 0);
-                }
-                return (rm?.returnMedicine?.returnAmount ?? 0);
-            },
-            size: 100,
-            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่ตอบกลับ (คืนแล้ว/ต้องคืน)</div>,
-            cell: ({ row }) => {
-                const rm: any = row.original.returnMedicine as any;
-                const returnedTotal = Array.isArray(rm)
+                const returnedPriceTotal = Array.isArray(rm)
                     ? rm.reduce((sum: number, item: any) => {
                         const nested = item && item.returnMedicine ? item.returnMedicine : item;
                         const amt = Number(nested?.returnAmount ?? 0);
-                        return sum + (isNaN(amt) ? 0 : amt);
+                        const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                        const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                        return sum + lineTotal;
                     }, 0)
-                    : (rm?.returnMedicine?.returnAmount ?? 0);
-                const offered = Number(row.original.offeredMedicine?.offerAmount ?? 0);
+                    : (() => {
+                        const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
+                        const amt = Number(nested?.returnAmount ?? 0);
+                        const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                        return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                    })();
+                const offeredAmount = Number((row as any).offeredMedicine?.offerAmount ?? 0);
+                const offeredUnitPrice = Number((row as any).offeredMedicine?.pricePerUnit ?? 0);
+                const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
+                const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
+                return percent;
+            },
+            size: 100,
+            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">คืนแล้ว (%)</div>,
+            cell: ({ row }) => {
+                const rm: any = row.original.returnMedicine as any;
+                const returnedPriceTotal = Array.isArray(rm)
+                    ? rm.reduce((sum: number, item: any) => {
+                        const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                        const amt = Number(nested?.returnAmount ?? 0);
+                        const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                        const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                        return sum + lineTotal;
+                    }, 0)
+                    : (() => {
+                        const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
+                        const amt = Number(nested?.returnAmount ?? 0);
+                        const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                        return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                    })();
+                const offeredAmount = Number(row.original.offeredMedicine?.offerAmount ?? 0);
+                const offeredUnitPrice = Number(row.original.offeredMedicine?.pricePerUnit ?? 0);
+                const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
+                const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
 
                 return (
-                    <div>
-                        <div className="text-md font-medium">{Number(returnedTotal).toLocaleString()} / {Number(offered).toLocaleString()}</div>
+                    <div className="flex items-center gap-2">
+                        <div className="text-md font-medium">{percent.toFixed(0)}%</div>
+                        <ReturnSummaryHover
+                            requestMedicine={row.original?.requestDetails?.requestMedicine}
+                            offeredMedicine={row.original?.offeredMedicine}
+                            acceptedOffer={(row.original as any)?.acceptedOffer}
+                            returnMedicine={row.original?.returnMedicine}
+                        />
                     </div>
                 )
             }
@@ -144,38 +172,38 @@ export const columns = (
                 )
             }
         },
-        {
-            accessorKey: "returnConditions",
-            size: 280,
-            header: () => <div className="font-medium text-muted-foreground text-center cursor-default">
-                <div>
-                    เงื่อนไขการรับยา
-                </div>
-                <div className="flex flex-row gap-x-2 text-center font-medium justify-center">
-                    <div className="text-center basis-1/2">
-                        ยืมรายการทดแทนได้
-                    </div>
-                    <div className="text-center basis-1/2">
-                        ขอสนับสนุน
-                    </div>
-                </div>
-            </div>,
-            cell: ({ row }) => {
-                const med = row.original.requestDetails.requestTerm.receiveConditions;
-                const exactType = med.condition === "exactType" ? (<div className="text-md text-red-600 flex flex-row items-center"><SquareX className="w-5 h-5" />  ยืมรายการทดแทนไม่ได้ </div>) : (<div className="text-md text-green-600 flex flex-row items-center"><SquareX className="w-5 h-5" />  ยืมรายการทดแทนได้ </div>);
-                const supportType = med.supportType === true ? (<div className="text-md text-green-600 flex flex-row items-center"><SquareCheck className="w-5 h-5" />  ขอสนับสนุน </div>) : (<div className="text-md text-red-600 flex flex-row items-center"><SquareX className="w-5 h-5" />  ขอสนับสนุน </div>);
-                return (
-                    <div className="flex flex-row justify-around items-center">
-                        <div className="text-md font-medium flex basic-1/2">
-                            {exactType}
-                        </div>
-                        <div className="text-md font-medium flex basic-1/2">
-                            {supportType}
-                        </div>
-                    </div>
-                )
-            }
-        },
+        // {
+        //     accessorKey: "returnConditions",
+        //     size: 280,
+        //     header: () => <div className="font-medium text-muted-foreground text-center cursor-default">
+        //         <div>
+        //             เงื่อนไขการรับยา
+        //         </div>
+        //         <div className="flex flex-row gap-x-2 text-center font-medium justify-center">
+        //             <div className="text-center basis-1/2">
+        //                 ยืมรายการทดแทนได้
+        //             </div>
+        //             <div className="text-center basis-1/2">
+        //                 ขอสนับสนุน
+        //             </div>
+        //         </div>
+        //     </div>,
+        //     cell: ({ row }) => {
+        //         const med = row.original.requestDetails.requestTerm.receiveConditions;
+        //         const exactType = med.condition === "exactType" ? (<div className="text-md text-red-600 flex flex-row items-center"><SquareX className="w-5 h-5" />  ยืมรายการทดแทนไม่ได้ </div>) : (<div className="text-md text-green-600 flex flex-row items-center"><SquareX className="w-5 h-5" />  ยืมรายการทดแทนได้ </div>);
+        //         const supportType = med.supportType === true ? (<div className="text-md text-green-600 flex flex-row items-center"><SquareCheck className="w-5 h-5" />  ขอสนับสนุน </div>) : (<div className="text-md text-red-600 flex flex-row items-center"><SquareX className="w-5 h-5" />  ขอสนับสนุน </div>);
+        //         return (
+        //             <div className="flex flex-row justify-around items-center">
+        //                 <div className="text-md font-medium flex basic-1/2">
+        //                     {exactType}
+        //                 </div>
+        //                 <div className="text-md font-medium flex basic-1/2">
+        //                     {supportType}
+        //                 </div>
+        //             </div>
+        //         )
+        //     }
+        // },
         // {
         //     id: "postingHospitalNameTH",
         //     accessorFn: (row) => row.requestDetails.postingHospitalNameTH,
@@ -266,12 +294,12 @@ export const columns = (
                                         <HoverCardTrigger >
                                             <Button
                                                 variant={"text_status"}
-                                                    size={"text_status"}
-                                                    className={clsx(
-                                                        // "flex content-center h-6 font-bold justify-center",
-                                                        getStatusColor(status),
-                                                        getTextStatusColor(status)
-                                                    )}
+                                                size={"text_status"}
+                                                className={clsx(
+                                                    // "flex content-center h-6 font-bold justify-center",
+                                                    getStatusColor(status),
+                                                    getTextStatusColor(status)
+                                                )}
                                                 onClick={() => handleReturnConfirm({
                                                     ...med,
                                                     displayHospitalName: med.requestDetails.postingHospitalNameTH,
@@ -370,10 +398,10 @@ export const columns = (
                                                             const nested = item && item.returnMedicine ? item.returnMedicine : item;
                                                             const returnAmount = Number(nested?.returnAmount ?? 0);
                                                             const returnDate = nested?.returnDate ? new Date(Number(nested.returnDate)) : null;
-                                                            const formattedDate = returnDate && !isNaN(returnDate.getTime()) 
+                                                            const formattedDate = returnDate && !isNaN(returnDate.getTime())
                                                                 ? format(returnDate, 'dd/MM/') + (returnDate.getFullYear() + 543)
                                                                 : "ไม่ระบุวันที่";
-                                                            
+
                                                             return (
                                                                 <div key={index} className="flex justify-between py-1 border-b last:border-b-0">
                                                                     <span className="text-xs text-muted-foreground">{formattedDate}</span>
@@ -397,22 +425,6 @@ export const columns = (
                     </div>
                 )
             }
-        },
-        // {
-        //     id: "history",
-        //     size: 50,
-        //     header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ประวัติ</div>,
-        //     cell: ({ row }) => {
-        //         const status = row.original.requestDetails.status
-        //         return <div className="text-md font-medium text-gray-600 flex flex-row items-center gap-x-1">
-        //             {/* <div className="flex flex-row gap-x-1">
-        //             {status === 'pending' ? "กำลังดำเนินการ"
-        //                     : status === "cancelled" ? "ยกเลิก"
-        //                     : ""
-        //                 } <StatusIndicator status={status} />
-        //         </div> */}
-        //             <History className="w-4 h-4" />
-        //         </div>
-        //     }
-        // }
+        }, 
+        
     ]
