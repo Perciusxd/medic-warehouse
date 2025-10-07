@@ -203,7 +203,7 @@ export const columns = (
                 const med = row.original;
                 const condition = med.requestTerm.receiveConditions.condition
                 const supportType = med.requestTerm.receiveConditions.supportType
-
+                console.log("condition", med)
                 let supportTypetDiv;
                 let conditionDiv;
 

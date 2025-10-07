@@ -61,7 +61,7 @@ export const HospitalList = [
     },
     {
         id: 11,
-        nameTH: 'โรงพยาบาลสทิงห์พระ',
+        nameTH: 'โรงพยาบาลสทิงพระ',
         nameEN: 'Sathingphan Hospital',
         address: '123 Main St, City A',
     },
@@ -77,12 +77,12 @@ export const HospitalList = [
         nameEN: 'Ranot Hospital',
         address: '123 Main St, City A',
     },
-    {
-        id: 14,
-        nameTH: 'โรงพยาบาลบางกะปิ',
-        nameEN: 'Bang Kapi Hospital',
-        address: '123 Main St, City A',
-    },
+    // {
+    //     id: 14,
+    //     nameTH: 'โรงพยาบาลบางกะปิ',
+    //     nameEN: 'Bang Kapi Hospital',
+    //     address: '123 Main St, City A',
+    // },
     {
         id: 15,
         nameTH: 'โรงพยาบาลควนเนียง',
@@ -97,7 +97,7 @@ export const HospitalList = [
     },
     {
         id: 17,
-        nameTH: 'โรงพยาบาลปาดังเบซา',
+        nameTH: 'โรงพยาบาลปาดังเบซาร์',
         nameEN: 'Phatthana Besa Hospital',
         address: '123 Main St, City A',
     },

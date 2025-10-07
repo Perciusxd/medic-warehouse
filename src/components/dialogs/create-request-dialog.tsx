@@ -24,8 +24,9 @@ import { format } from "date-fns"
 import { HospitalList } from "@/context/HospitalList"
 import sendMailHandler from "@/pages/api/sendmail"
 import { Calendar as CalendarIcon } from "lucide-react"
-import { th } from "date-fns/locale" // ใช้ locale ภาษาไทย
+import { th, tr } from "date-fns/locale" // ใช้ locale ภาษาไทย
 import * as React from "react"
+import { fa } from "zod/v4/locales"
 
 // Convert a Blob/File to a Base64 data URL
 const blobToDataUrl = (blob: Blob): Promise<string> => {
@@ -150,6 +151,9 @@ const RequestSchema = z.object({
         receiveConditions: z.object({
             condition: z.enum(["exactType", "subType"]),
             supportType: z.boolean().optional(),
+            offerplan: z.enum(["servicePlan", "budgetPlan", "free", "notSupportType"]).optional(),
+            returnOffer: z.enum(["exactType", "subType"]).optional(),
+            offerdescription: z.string().optional(),
         })
     }),
     selectedHospitals: z.array(z.number()).min(1, "กรุณาเลือกโรงพยาบาลอย่างน้อย 1 แห่ง"),
@@ -195,12 +199,15 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                 receiveConditions: {
                     condition: "exactType",
                     supportType: false,
+                    offerplan: "notSupportType",
+                    returnOffer: "exactType",
+                    offerdescription: "",
                 },
             },
             selectedHospitals: [],
         },
     })
-
+    console.log("Form errors:", errors)
     const selectedHospitals = watch("selectedHospitals")
     const urgent = watch("urgent")
     const expectedReturnDate = watch("requestTerm.expectedReturnDate");
@@ -273,6 +280,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
     }
 
     const onSubmit = async (data: z.infer<typeof RequestSchema>) => {
+        console.log("🟢 onSubmit triggered with data:", data);
         const filterHospital = hospitalList.filter(hospital => data.selectedHospitals.includes(hospital.id))
         // Compress and prepare Base64 image (data URL) for persistence instead of a blob URL
         let base64Image: string | null = null
@@ -299,7 +307,13 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
             createdAt: Date.now().toString(),
             updatedAt: Date.now().toString(),
             requestMedicine: data.requestMedicine,
-            requestTerm: data.requestTerm,
+            requestTerm: {
+                ...data.requestTerm,
+                receiveConditions: {
+                    ...data.requestTerm.receiveConditions,
+                    supportType: supportType, // ✅ แก้ตรงนี้เป็น boolean จริง
+                }
+            },
             description: data.requestMedicine.description,
             // Save Base64 data URL; keep blob URL only for preview
             requestMedicineImage: base64Image,
@@ -309,7 +323,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
             requestData: requestData,
             selectedHospitals: filterHospital
         }
-        //console.log('requestBody', requestBody)
+        console.log('requestBody', requestBody)
         try {
             setLoading(true)
             const response = await fetch("/api/createRequest", {
@@ -347,8 +361,10 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
     }
     const [isOpen, setIsOpen] = React.useState(false)
     const [date, setDate] = React.useState<Date | undefined>(undefined)
-
-
+    const supportType = watch("requestTerm.receiveConditions.supportType");
+    console.log("Support Type:", supportType, typeof supportType);
+    const [selected, setSelected] = useState<'borrow' | 'support' | null>(null);
+    console.log("Selected:", selected);
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[1200px]">
@@ -448,10 +464,6 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                     <span className="text-red-500 text-xs -mt-1">{String(errors.requestMedicine.image.message)}</span>
                                 )}
                             </div>
-                            <div className="col-span-2 flex flex-col gap-2">
-                                <Label className="font-bold">เหตุผลการยืม</Label>
-                                <Input type="text" {...register("requestMedicine.description")} placeholder="รอการส่งมอบจากตัวแทนจำหน่าย" />
-                            </div>
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">ราคาต่อหน่วย</Label>
                                 <Input
@@ -498,78 +510,6 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                     </span> บาท
                                 </div>
                             </div>
-
-
-                            <div className="flex flex-col gap-2">
-                                <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
-                                <Popover open={isOpen} onOpenChange={setIsOpen} modal={true}>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            className="justify-start text-left font-normal"
-                                        >
-                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                            {date
-                                                ? format(date, "dd/MM/", { locale: th }) + (date.getFullYear() + 543)
-                                                : "เลือกวันที่"}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0 overflow-hidden">
-                                        <Calendar
-                                            mode="single"
-                                            selected={date}
-                                            captionLayout="dropdown"
-                                            fromYear={2020}
-                                            toYear={new Date().getFullYear() + 20}
-                                            formatters={{
-                                                formatYearCaption: (year: Date) =>
-                                                    (year.getFullYear() + 543).toString(),
-                                            }}
-                                            locale={th}
-                                            onSelect={(d) => {
-                                                setIsOpen(false)
-                                                if (d instanceof Date && !isNaN(d.getTime())) {
-                                                    const today = new Date()
-                                                    today.setHours(0, 0, 0, 0)
-
-                                                    if (d > today) {
-                                                        setDate(d)
-                                                        setValue(
-                                                            "requestTerm.expectedReturnDate",
-                                                            d.getTime().toString(),
-                                                            { shouldValidate: true }
-                                                        )
-                                                        setDateError("")
-                                                    } else {
-                                                        setDateError("กรุณาเลือกวันที่ในอนาคต")
-                                                        setValue("requestTerm.expectedReturnDate", "", {
-                                                            shouldValidate: true,
-                                                        })
-                                                    }
-                                                } else {
-                                                    setDateError("วันที่ไม่ถูกต้อง")
-                                                }
-                                            }}
-                                            initialFocus
-                                        />
-                                         {/* Error จากการเลือกย้อนหลัง */}
-                                {dateError && (
-                                    <div className="text-red-500 text-sm px-4 py-2">{dateError}</div>
-                                )}
-                                    </PopoverContent>
-                                </Popover>
-
-                                {/* Error จาก Zod */}
-                                {errors.requestTerm?.expectedReturnDate && (
-                                    <div className="text-red-500 text-sm px-4 py-2">
-                                        {errors.requestTerm.expectedReturnDate.message}
-                                    </div>
-                                )}
-
-                               
-                            </div>
-
-
                         </div>
                         <div className="ml-10">
                             <div className="mb-4">
@@ -630,12 +570,22 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                 <p className="text-red-500 text-sm">{errors.selectedHospitals.message}</p>
                             )}
 
-                            <Label className="mb-2 mt-4">เงื่อนไขการรับยา</Label>
+
+
+
+
+
+
+
+
+                            {/* <Label className="mb-2 mt-4">เงื่อนไขการรับยา</Label>
                             <div className="flex flex-col items-start space-y-2">
                                 <div className="flex items-start gap-4">
-                                    <div className="flex flex-col space-y-2">
-                                        <Label className="font-normal">
-                                            <input type="radio" value="exactType" {...register("requestTerm.receiveConditions.condition")} />
+                                    <div className="flex flex-col space-y-2" hidden={supportType}>
+                                        <Label className="font-normal">NM
+                                            <input type="radio" value="exactType" {...register("requestTerm.receiveConditions.condition")}
+
+                                            />
                                             ยืมรายการที่ต้องการ
                                         </Label>
                                         <Label className="font-normal">
@@ -652,11 +602,186 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                         <Label htmlFor="supportType" className="font-normal">ขอสนับสนุน</Label>
                                     </div>
                                 </div>
+                            </div> */}
+                        </div>
+                        <div id="condition-selector" className="flex items-center gap-4 col-span-4">
+                            <div  className="flex items-center gap-4 col-span-2">
+                                <div className="flex items-center gap-2 ml-8">
+                                <input
+                                    type="radio"
+                                    name="requestType"
+                                    value="borrow"
+                                    checked={selected === 'borrow'}
+                                    onChange={() => {
+                                        setSelected('borrow');
+                                        setValue("requestTerm.receiveConditions.supportType", false); // ✅ ติ๊ก checkbox
+                                    }}
+
+                                />
+                                <Label className="font-bold">เงื่อนไขการขอยืม</Label>
+                            </div>
+                            <div className="flex items-center gap-2 ml-8">
+                                <input
+                                    type="radio"
+                                    name="requestType"
+                                    value="support"
+                                    checked={selected === 'support'}
+                                    onChange={() => {
+                                        setSelected('support');
+                                        setValue("requestTerm.receiveConditions.supportType", true); // ✅ ติ๊ก checkbox
+                                    }}
+                                />
+                                <input
+                                    hidden
+                                    type="checkbox"
+                                    id="supportType"
+                                    {...register("requestTerm.receiveConditions.supportType")}
+                                />
+                                <Label className="font-bold">เงื่อนไขการขอสนับสนุน</Label>
+                            </div>
+                            </div>
+                            
+
+                            <div  className="flex items-center gap-4 col-span-2">
+                                <div id="return" className="flex flex-col space-y-2 ">
+                                <label className="font-bold mb-2">ข้อเสนอการคืน</label>
+                                <Label className="font-normal">
+                                    <input type="radio" value="exactType" {...register("requestTerm.receiveConditions.returnOffer")}
+
+                                    />
+                                    คืนยารายการนี้
+                                </Label>
+                                <div className="flex flex-row gap-2">
+                                    <Label className="font-normal">
+                                        <input type="radio" value="subType" {...register("requestTerm.receiveConditions.returnOffer")} />
+                                        คืนยารายการอื่น
+                                    </Label>
+                                    <Input className="max-w-100" type="text"  {...register("requestTerm.receiveConditions.offerdescription")} placeholder="ระบุรายการยา/ผู้ผลิต/ราคาต่อหน่วย" />
+                                </div>
+
+
+                            </div>
                             </div>
                         </div>
+
+                        <div id="filed-selector" className="col-span-2 grid grid-cols-2 gap-4">
+
+                            <div className="flex flex-col space-y-2">
+
+
+                                <div id="borrow" hidden={supportType} >
+
+
+                                    <div className="col-span-2 flex flex-col gap-2">
+                                        <Label className="font-bold">เหตุผลการยืม</Label>
+                                        <Input type="text" {...register("requestMedicine.description")} placeholder="รอการส่งมอบจากตัวแทนจำหน่าย" />
+                                    </div>
+                                    <div className="flex flex-col gap-2 mt-2">
+                                        <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
+                                        <Popover open={isOpen} onOpenChange={setIsOpen} modal={true}>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    className="justify-start text-left font-normal"
+                                                >
+                                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                                    {date
+                                                        ? format(date, "dd/MM/", { locale: th }) + (date.getFullYear() + 543)
+                                                        : "เลือกวันที่"}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0 overflow-hidden">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={date}
+                                                    captionLayout="dropdown"
+                                                    fromYear={2020}
+                                                    toYear={new Date().getFullYear() + 20}
+                                                    formatters={{
+                                                        formatYearCaption: (year: Date) =>
+                                                            (year.getFullYear() + 543).toString(),
+                                                    }}
+                                                    locale={th}
+                                                    onSelect={(d) => {
+                                                        setIsOpen(false)
+                                                        if (d instanceof Date && !isNaN(d.getTime())) {
+                                                            const today = new Date()
+                                                            today.setHours(0, 0, 0, 0)
+
+                                                            if (d > today) {
+                                                                setDate(d)
+                                                                setValue(
+                                                                    "requestTerm.expectedReturnDate",
+                                                                    d.getTime().toString(),
+                                                                    { shouldValidate: true }
+                                                                )
+                                                                setDateError("")
+                                                            } else {
+                                                                setDateError("กรุณาเลือกวันที่ในอนาคต")
+                                                                setValue("requestTerm.expectedReturnDate", "", {
+                                                                    shouldValidate: true,
+                                                                })
+                                                            }
+                                                        } else {
+                                                            setDateError("วันที่ไม่ถูกต้อง")
+                                                        }
+                                                    }}
+                                                    initialFocus
+                                                />
+                                                {/* Error จากการเลือกย้อนหลัง */}
+                                                {dateError && (
+                                                    <div className="text-red-500 text-sm px-4 py-2">{dateError}</div>
+                                                )}
+                                            </PopoverContent>
+                                        </Popover>
+
+                                        {/* Error จาก Zod */}
+                                        {errors.requestTerm?.expectedReturnDate && (
+                                            <div className="text-red-500 text-sm px-4 py-2">
+                                                {errors.requestTerm.expectedReturnDate.message}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col space-y-2 mt-2" >
+                                        <Label className="font-normal">
+                                            <input type="radio" value="exactType" {...register("requestTerm.receiveConditions.condition")}
+
+                                            />
+                                            ยืมรายการที่ต้องการ
+                                        </Label>
+                                        <Label className="font-normal">
+                                            <input type="radio" value="subType" {...register("requestTerm.receiveConditions.condition")} />
+                                            ยืมรายการที่ต้องการหรือรายการทดแทนได้
+                                        </Label>
+                                    </div>
+                                </div>
+
+
+                                <div id="support" className="flex flex-col space-y-2" hidden={!supportType}>
+                                    <Label className="font-normal">
+                                        <input type="radio" value="servicePlan" {...register("requestTerm.receiveConditions.offerplan")}
+
+                                        />
+                                        หักงบประมาณ Service plan
+                                    </Label>
+                                    <Label className="font-normal">
+                                        <input type="radio" value="budgetPlan" {...register("requestTerm.receiveConditions.offerplan")} />
+                                        หักงบประมาณบำรุงโรงพยาบาล
+                                    </Label>
+                                    <Label className="font-normal">
+                                        <input type="radio" value="free" {...register("requestTerm.receiveConditions.offerplan")} />
+                                        สนับสนุนโดยให้เปล่า
+                                    </Label>
+                                </div>
+
+
+                            </div>
+                        </div>
+
                     </div>
 
                     <DialogFooter>
+
                         <Button type="submit" className="" disabled={loading}>
                             {loading
                                 ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500">สร้าง</span></div>

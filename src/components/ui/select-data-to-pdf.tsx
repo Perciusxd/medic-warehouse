@@ -17,11 +17,13 @@ interface SelectDataMedDialogProps {
   dataList: any[]
   onSelect: (items: any[]) => void
 }
+import { HospitalList } from "@/context/HospitalList"
 
 export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogProps) {
   const [selectedIndices, setSelectedIndices] = React.useState<number[]>([])
   const [selectedObjects, setSelectedObjects] = React.useState<any[]>([])
-  const [selectedHospital, setSelectedHospital] = React.useState<string | null>(null)
+  const [selectedHospital, setSelectedHospital] = React.useState<string >('')
+  const HospitalListNamesTH = HospitalList.map(h => h.nameTH)
 
   const handleSelect = (index: number) => {
     const obj = dataList[index]
@@ -37,13 +39,14 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
     if (selectedIndices.includes(index)) {
       // เอาออก
       const newIndices = selectedIndices.filter(i => i !== index)
-      const newObjects = selectedObjects.filter(o => o !== obj)
+      const newObjects = selectedObjects.filter(o => o.id !== obj.id); 
+      
       setSelectedIndices(newIndices)
       setSelectedObjects(newObjects)
 
       // ถ้าไม่มีอะไรถูกเลือกแล้ว → reset hospital filter
       if (newObjects.length === 0) {
-        setSelectedHospital(null)
+        setSelectedHospital('')
       }
 
       onSelect(newObjects)
@@ -65,8 +68,9 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
 
 
   const userdata = useAuth();
-
+  console.log("userdata from select dialog", userdata)
   return (
+
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline">
@@ -82,6 +86,20 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
         </DialogHeader>
 
         <ScrollArea className="h-60 w-full rounded-md border p-2">
+
+          <select
+            className="border p-2 mb-4 w-full rounded"
+            value={selectedHospital}
+            onChange={(e) => setSelectedHospital(e.target.value)}
+          >
+            <option value="">-- รายการทั้งหมด --</option>
+            {HospitalListNamesTH.map((hospital, idx) => (
+              <option key={idx} value={hospital}>
+                {hospital}
+              </option>
+            ))}
+          </select>
+
           <h4 className="font-bold mb-2">ขอยืม (ขาดแคลน)</h4>
           {dataList
             .filter((item) => item.type === "request")
@@ -145,6 +163,10 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
         </ScrollArea>
         <Button
           onClick={() => {
+            if (selectedObjects.length === 0) {
+              alert("กรุณาเลือกอย่างน้อย 1 รายการ")
+              return
+            }
             // สร้าง object ใหม่จาก selectedItems
             const documentData = selectedObjects.map((obj) => {
 
@@ -163,7 +185,7 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
                   Quantity:
                     obj.responseDetails?.[0]?.offeredMedicine?.quantity ?? "ไม่ทราบขนาด",
                   Description: obj.medicineRequests.requestMedicine.description ?? "ไม่ทราบเหตุผล",
-                  SupportType: 
+                  SupportType:
                     obj.medicineRequests.requestTerm.supportType ?? "ไม่ทราบประเภท",
                   type: "request",
                   raw: obj, // เก็บต้นฉบับไว้ด้วยถ้าต้องใช้ต่อ
@@ -204,6 +226,7 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
 
           สร้างเอกสาร PDF
         </Button>
+
       </DialogContent>
     </Dialog>
   )

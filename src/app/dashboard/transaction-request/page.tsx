@@ -288,19 +288,20 @@ export default function StatusDashboard() {
     const combinedDataList = [
         ...(medicineRequests as any[])
             .filter((item) =>
-                item.responseDetails?.some((res: any) => res.status === "offered")
+                item.responseDetails?.some((res: any) => res.status !== "pending" && res.status !== "cancelled")
             )
             .map((item) => ({
                  medicineRequests: item,
                 // เก็บเฉพาะ responseDetails ที่ offered
-                responseDetails: item.responseDetails.filter(
-                    (res: any) => res.status === "offered"
-                ),
+                responseDetails: item.responseDetails,
+                // responseDetails: item.responseDetails.filter(
+                //     (res: any) => res.status === "offered"
+                // ),
                 type: "request",
             })),
             
         ...(medicineSharingInReturn as any[])
-            .filter((item) => item.status === "re-confirm")
+            // .filter((item) => item.status === "re-confirm")
             .map((item) => ({ item, type: "return" }))
     ]
     const handleSelectMedicine = (item: any) => {
