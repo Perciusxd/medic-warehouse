@@ -2,6 +2,7 @@
 import { useState } from "react"
 import { ResponseAsset } from "@/types/responseMed"
 import { ColumnDef } from "@tanstack/react-table"
+import type { ConfirmReturnRow } from "@/types/tableRows"
 import { format, differenceInCalendarDays } from "date-fns"
 
 import { Button } from "@/components/ui/button"
@@ -22,10 +23,10 @@ import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2I
 import StatusIndicator from "@/components/ui/status-indicator"
 
 export const columnsConfirmReturn = (
-    handleConfirmReturn: (med: ResponseAsset) => void,
+    handleConfirmReturn: (med: ConfirmReturnRow) => void,
     loading: boolean = false,
     loadingRowId: string | null = null
-): ColumnDef<any>[] => [
+): ColumnDef<ConfirmReturnRow>[] => [
      {
         accessorKey: "ticketType",
         size:100,

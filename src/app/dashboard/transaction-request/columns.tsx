@@ -1,5 +1,6 @@
 "use client"
 import { ColumnDef } from "@tanstack/react-table"
+import type { RequestTicketRow, ApproveOfferPayload, ConfirmReceiveDeliveryPayload, ReturnClickPayload } from "@/types/tableRows"
 // import { formatDate } from "@/lib/utils"
 import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
@@ -15,14 +16,14 @@ import StatusIndicator, { getStatusColor, getTextStatusColor } from "@/component
 import ImageHoverPreview from "@/components/ui/image-hover-preview"
 import ReturnPdfMultiButton from "@/components/ui/pdf_creator/ReturnPdfMultiButton"
 export const columns = (
-    handleApproveClick: (med: any) => void,
-    handleDeliveryClick: (med: any) => void,
-    handleReturnClick: (med: any) => void,
-    handleReConfirmClick: (med: any) => void,
-    handleEditClick: (med: any) => void,
-    handleconfirReceiveDelivery: (med: any) => void,
+    handleApproveClick: (med: ApproveOfferPayload) => void,
+    handleDeliveryClick: (med: RequestTicketRow) => void,
+    handleReturnClick: (med: ReturnClickPayload) => void,
+    handleReConfirmClick: (med: RequestTicketRow) => void,
+    handleEditClick: (med: RequestTicketRow) => void,
+    handleconfirReceiveDelivery: (med: ConfirmReceiveDeliveryPayload) => void,
     ticketType: string,
-): ColumnDef<any>[] => [
+): ColumnDef<RequestTicketRow>[] => [
         {
             id: "edit",
             size: 50,

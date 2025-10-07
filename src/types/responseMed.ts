@@ -1,7 +1,6 @@
 import { RequestAsset } from "./requestMed";
 
 export type ResponseAsset = {
-  returnMedicine?: any;
   id: string;
   requestId: string;
   respondingHospitalId: string;
@@ -12,7 +11,7 @@ export type ResponseAsset = {
   createdAt: string;
   updatedAt: string;
   offeredMedicine: {
-    offerAmount?: any;
+    offerAmount: number;
     name: string;
     trademark: string;
     quantity: number;
@@ -20,16 +19,17 @@ export type ResponseAsset = {
     unit: string;
     batchNumber: string;
     manufacturer: string;
-    manufactureDate: string;
     expiryDate: string;
-    imageRef: string;
-    returnTerm: {
-      sameUnit: boolean;
-      subsidiary: boolean;
-      sameValue: boolean;
-      other: boolean;
-      notes: string;
+    /** exactType = same item, subType = substitute allowed */
+    recieveCondition: "exactType" | "subType";
+    /** optional image reference if present */
+    imageRef?: string;
+    returnConditions: {
+      condition: "exactType" | "otherType";
+      otherTypeSpecification?: string;
     };
   };
   requestDetails: RequestAsset;
+  /** populated when a return transaction is recorded */
+  returnMedicine?: any;
 };
