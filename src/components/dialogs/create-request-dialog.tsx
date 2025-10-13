@@ -605,10 +605,17 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                     </div>
 
                     <div className="flex flex-col">
-                        <Label className="mt-2">
-                            <input type="radio" value="normalReturn" {...register("requestTerm.returnType")} />
-                            ขอยืม
-                        </Label>
+                        <div className="flex flex-row items-center gap-4">
+                            <Label className="mt-2">
+                                <input type="radio" value="normalReturn" {...register("requestTerm.returnType")} />
+                                ขอยืม
+                            </Label>
+                            <Label className="mt-2">
+                                <input type="radio" value="supportReturn" {...register("requestTerm.returnType")} />
+                                ขอสนับสนุน
+                            </Label>
+                        </div>
+
                         {
                             returnType === "normalReturn" && (
                                 <div className="grid grid-cols-2 gap-4 mt-4">
@@ -709,26 +716,26 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
 
                                     <div className="flex flex-col gap-2 items-start">
                                         <Label className="font-medium">ข้อเสนอการคืน <RequiredMark /></Label>
-                                    <div className="flex flex-row flex-wrap items-start gap-3 mt-2">
-                                        <Label className="font-normal whitespace-nowrap">
+                                        <div className="flex flex-row flex-wrap items-start gap-3 mt-2">
+                                            <Label className="font-normal whitespace-nowrap">
                                                 <input type="radio" value="exactType" {...register("requestTerm.returnConditions.condition")} />
                                                 คืนยารายการนี้
                                             </Label>
 
-                                        <Label className="font-normal whitespace-nowrap">
+                                            <Label className="font-normal whitespace-nowrap">
                                                 <input type="radio" value="otherType" {...register("requestTerm.returnConditions.condition")} />
                                                 คืนยารายการอื่น
                                             </Label>
                                             {errors.requestTerm?.returnConditions?.condition && (
                                                 <span className="text-red-500 text-xs">{String(errors.requestTerm.returnConditions.condition.message)}</span>
                                             )}
-                                        <div className="basis-full mt-1">
-                                            {returnConditions?.condition === "otherType" && (
-                                                <Input type="text" placeholder="ระบุรายรายการยา/ผู้ผลิต/ราคาต่อหน่วย" {...register("requestTerm.returnConditions.otherTypeSpecification")} />
-                                            )}
+                                            <div className="basis-full mt-1">
+                                                {returnConditions?.condition === "otherType" && (
+                                                    <Input type="text" placeholder="ระบุรายรายการยา/ผู้ผลิต/ราคาต่อหน่วย" {...register("requestTerm.returnConditions.otherTypeSpecification")} />
+                                                )}
+                                            </div>
                                         </div>
-                                        </div>
-                                        
+
                                     </div>
                                 </div>
                             )
@@ -736,10 +743,6 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                     </div>
 
                     <div className="flex flex-col">
-                        <Label className="mt-2">
-                            <input type="radio" value="supportReturn" {...register("requestTerm.returnType")} />
-                            ขอสนับสนุน
-                        </Label>
                         {
                             returnType === "supportReturn" && (
                                 <div className="flex flex-col items-start space-y-2 mt-4">
