@@ -12,6 +12,7 @@ import {
     HoverCardTrigger,
 } from "@/components/ui/hover-card"
 import { Badge } from "@/components/ui/badge"
+import ReturnPdfMultiButton from "@/components/ui/pdf_creator/ReturnPdfMultiButton"
 import clsx from "clsx";
 export const columns = (
     handleReturnSharingClick: (med: any) => void,
@@ -292,7 +293,21 @@ export const columns = (
                                                         )}
                                                         onClick={() => handleReturnSharingClick(med)}
                                                     >
-                                                        ต้องส่งคืน
+                                                        ส่งคืนยา
+                                                        {(() => {
+                                                            const offered = Number(med?.acceptedOffer?.responseAmount ?? 0);
+                                                            const rm: any = (med as any).returnMedicine;
+                                                            const returnedTotal = Array.isArray(rm)
+                                                                ? rm.reduce((sum: number, item: any) => {
+                                                                    const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                    const amt = Number(nested?.returnAmount ?? 0);
+                                                                    return sum + (isNaN(amt) ? 0 : amt);
+                                                                }, 0)
+                                                                : Number(rm?.returnMedicine?.returnAmount ?? 0);
+                                                            return (
+                                                                <div className=" text-xs">({Number(returnedTotal).toLocaleString()}/{Number(offered).toLocaleString()})</div>
+                                                            );
+                                                        })()}
                                                         <SquareCheck className="h-4 w-4" />
                                                         {/* <StatusIndicator status={status} /> */}
                                                     </Button>
@@ -303,18 +318,61 @@ export const columns = (
                                             </HoverCardContent> */}
                                             </HoverCard>
                                         ) : status === 'returned' ? (
-                                            <Badge
-                                                variant={'text_status'}
-                                                className={clsx(
-                                                    // "flex content-center h-6 font-bold",
-                                                    getStatusColor(status),
-                                                    getTextStatusColor(status)
-                                                )}
-                                            >
-                                                เสร็จสิ้น
-                                                {/* <StatusIndicator status={status} /> */}
-                                                {/* <div>( {responseAmount} )</div> */}
-                                            </Badge>
+                                            <HoverCard>
+                                                <HoverCardTrigger>
+                                                    <div className="flex flex-row gap-x-2 items-center">
+                                                        <Badge
+                                                            variant={'text_status'}
+                                                            className={clsx(
+                                                                // "flex content-center h-6 font-bold",
+                                                                getStatusColor(status),
+                                                                getTextStatusColor(status),
+                                                                "cursor-pointer"
+                                                            )}
+                                                        >
+                                                            เสร็จสิ้น ({(() => {
+                                                                const rm: any = (med as any).returnMedicine;
+                                                                const returnedTotal = Array.isArray(rm)
+                                                                    ? rm.reduce((sum: number, item: any) => {
+                                                                        const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                        const amt = Number(nested?.returnAmount ?? 0);
+                                                                        return sum + (isNaN(amt) ? 0 : amt);
+                                                                    }, 0)
+                                                                    : Number(rm?.returnMedicine?.returnAmount ?? 0);
+                                                                return Number(returnedTotal).toLocaleString();
+                                                            })()})
+                                                        </Badge>
+                                                        <ReturnPdfMultiButton
+                                                            data={med}
+                                                            returnList={(med as any).returnMedicine}
+                                                            buttonText="ออกเอกสาร PDF การคืนยา"
+                                                        />
+                                                    </div>
+                                                </HoverCardTrigger>
+                                                <HoverCardContent>
+                                                    <div className="text-sm">
+                                                        <div className="font-semibold mb-2">รายละเอียดการคืนยา</div>
+                                                        {(() => {
+                                                            const rm: any = (med as any).returnMedicine;
+                                                            const returnList = Array.isArray(rm) ? rm : (rm ? [rm] : []);
+                                                            return returnList.map((item: any, index: number) => {
+                                                                const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                const returnAmount = Number(nested?.returnAmount ?? 0);
+                                                                const returnDate = nested?.returnDate ? new Date(Number(nested.returnDate)) : null;
+                                                                const formattedDate = returnDate && !isNaN(returnDate.getTime())
+                                                                    ? format(returnDate, 'dd/MM/') + (returnDate.getFullYear() + 543)
+                                                                    : "ไม่ระบุวันที่";
+                                                                return (
+                                                                    <div key={index} className="flex justify-between py-1 border-b last:border-b-0">
+                                                                        <span className="text-xs text-muted-foreground">{formattedDate}</span>
+                                                                        <span className="text-xs font-medium">{returnAmount.toLocaleString()} หน่วย</span>
+                                                                    </div>
+                                                                );
+                                                            });
+                                                        })()}
+                                                    </div>
+                                                </HoverCardContent>
+                                            </HoverCard>
                                         ) : status === 'confirm-return' ? (
                                             // <div className="flex flex-col items-start gap-x-2 cursor-not-allowed">
                                             <Badge
@@ -325,7 +383,22 @@ export const columns = (
                                                     getTextStatusColor(status)
                                                 )}
                                             >
-                                                รอยืนยันการคืน
+                                                รอยืนยันการได้รับคืน
+                                                {(() => {
+                                                    const offered = Number(med?.acceptedOffer?.responseAmount ?? 0);
+                                                    const rm: any = (med as any).returnMedicine;
+                                                    const returnedTotal = Array.isArray(rm)
+                                                        ? rm.reduce((sum: number, item: any) => {
+                                                            const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                            const amt = Number(nested?.returnAmount ?? 0);
+                                                            return sum + (isNaN(amt) ? 0 : amt);
+                                                        }, 0)
+                                                        : Number(rm?.returnMedicine?.returnAmount ?? 0);
+                                                    const remaining = Math.max(0, offered - returnedTotal);
+                                                    return (
+                                                        <div className=" text-xs">({Number(returnedTotal).toLocaleString()} เหลือ {Number(remaining).toLocaleString()})</div>
+                                                    );
+                                                })()}
                                                 {/* <StatusIndicator status={status} /> */}
                                                 {/* <div className="text-xs font-extralight text-muted-foreground">(กดได้เมื่อได้รับการยืนยัน)</div> */}
                                                 {/* <div>( {responseAmount} )</div> */}

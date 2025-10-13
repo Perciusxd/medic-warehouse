@@ -30,7 +30,7 @@ import { th } from "date-fns/locale";
 import EditRequestDialog from "@/components/dialogs/edit-request-dialog";
 import { SelectDataMedDialog } from "@/components/ui/select-data-to-pdf";
 export default function StatusDashboard() {
-    const statusFilterSharing = useMemo(() => ["to-confirm", "in-return", "returned", "to-transfer", "confirm-return", "re-confirm", "offered",], []);
+    const statusFilterSharing = useMemo(() => ["to-confirm", "in-return", "returned", "to-transfer", "confirm-return", "re-confirm", "offered", "to-return"], []);
     const statusFilterRequest = useMemo(() => ["pending", "cancelled"], []);
     const { loggedInHospital } = useHospital();
     const { medicineRequests, loading: loadingRequest, error: errorRequest, fetchMedicineRequests } = useMedicineRequestsStatus(loggedInHospital, statusFilterRequest);
@@ -291,7 +291,7 @@ export default function StatusDashboard() {
                 item.responseDetails?.some((res: any) => res.status !== "pending" && res.status !== "cancelled")
             )
             .map((item) => ({
-                 medicineRequests: item,
+                medicineRequests: item,
                 // เก็บเฉพาะ responseDetails ที่ offered
                 responseDetails: item.responseDetails,
                 // responseDetails: item.responseDetails.filter(
@@ -299,16 +299,16 @@ export default function StatusDashboard() {
                 // ),
                 type: "request",
             })),
-            
+
         ...(medicineSharingInReturn as any[])
             // .filter((item) => item.status === "re-confirm")
             .map((item) => ({ item, type: "return" }))
     ]
     const handleSelectMedicine = (item: any) => {
         //console.log("เลือก object:", item)
-        
+
     }
-    
+
     return (
         <>
             <div className="flex items-center justify-between mb-4">
@@ -333,24 +333,27 @@ export default function StatusDashboard() {
 
             {/* Request Section */}
             <>ขอยืม (ขาดแคลน)</>
-            {
-                loadingRequest ? (
-                    <div className="p-8 flex flex-col items-center justify-center">
-                        <LoadingSpinner width="48" height="48" />
-                        <p className="mt-4 text-gray-500">กำลังโหลดข้อมูลยา...</p>
-                    </div>
-                ) : (
-                    <DataTable
-                        columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, handleReConfirmClick, handleEditClick, handleconfirReceiveDelivery, "request")}
-                        // data={(medicineRequests as any)?.result?.filter((med: any) => med.ticketType === "request")}
-                        data={medicineRequests}
-                        globalFilter={globalFilter}
-                        setGlobalFilter={setGlobalFilter} />
-                )
-            }
-            <div className="mt-12">
+            <div className="bg-white shadow rounded">
+                {
+                    loadingRequest ? (
+                        <div className="p-8 flex flex-col items-center justify-center">
+                            <LoadingSpinner width="48" height="48" />
+                            <p className="mt-4 text-gray-500">กำลังโหลดข้อมูลยา...</p>
+                        </div>
+                    ) : (
+                        <DataTable
+                            columns={columns(handleApproveClick, handleDeliveryClick, handleReturnClick, handleReConfirmClick, handleEditClick, handleconfirReceiveDelivery, "request")}
+                            // data={(medicineRequests as any)?.result?.filter((med: any) => med.ticketType === "request")}
+                            data={medicineRequests}
+                            globalFilter={globalFilter}
+                            setGlobalFilter={setGlobalFilter} />
+                    )
+                }
+            </div>
+            
+            <div className="mt-12">ขอยืม (แบ่งปัน)</div>
+            <div className="shadow rounded">
                 {/* Sharing Section */}
-                <>ขอยืม (แบ่งปัน)</>
                 {
                     loadingReturn ? (
                         <div className="p-8 flex flex-col items-center justify-center">

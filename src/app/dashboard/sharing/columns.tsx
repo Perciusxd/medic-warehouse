@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { ColumnDef } from "@tanstack/react-table"
+import type { SharingTicketRow } from "@/types/tableRows"
 import { ArrowUpDown, Check, X, SquareX, SquareCheck, MoreHorizontal, Trash2 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import StatusIndicator from "@/components/ui/status-indicator"
@@ -15,10 +16,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export const columns = (
-    handleApproveClick: (med: any) => void,
-    handleCancleClick: (med: any) => void,
+    handleApproveClick: (med: SharingTicketRow) => void,
+    handleCancleClick: (med: SharingTicketRow) => void,
     loadingRowId: string | null = null
-): ColumnDef<any>[] => {
+): ColumnDef<SharingTicketRow>[] => {
     return [
         {
             accessorKey: "sharingDetails.sharingMedicine.name",

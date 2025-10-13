@@ -4,14 +4,15 @@ export type RequestAsset = {
   postingHospitalNameEN: string;
   postingHospitalNameTH: string;
   postingHospitalAddress: string;
-  status: string;
+  status: "pending" | "approved" | "rejected";
   createdAt: string;
   updatedAt: string;
-  urgent: boolean;
+  urgent: "urgent" | "immediate" | "normal";
   requestMedicine: {
     name: string;
     trademark: string;
     quantity: number;
+    requestAmount: number;
     pricePerUnit: number;
     unit: string;
     batchNumber: string;
@@ -19,13 +20,17 @@ export type RequestAsset = {
     manufactureDate: string;
     imageRef: string;
   };
+  requestMedicineImage: string;
   requestTerm: {
     expectedReturnDate: string;
+    returnType: "normalReturn" | "supportReturn";
     receiveConditions: {
-      exactType: boolean;
-      subsidiary: boolean;
-      other: boolean;
-      notes: string;
+      condition: "exactType" | "subType";
     };
+    returnConditions: {
+      condition: "exactType" | "otherType";
+      otherTypeSpecification: string;
+    };
+    supportCondition: "servicePlan" | "budgetPlan" | "freePlan";
   };
 };

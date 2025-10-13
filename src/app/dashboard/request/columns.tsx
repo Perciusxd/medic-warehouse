@@ -1,8 +1,6 @@
 "use client"
-import { useState } from "react"
 import { ResponseAsset } from "@/types/responseMed"
 import { ColumnDef } from "@tanstack/react-table"
-// import { formatDate } from "@/lib/utils"
 import { format } from "date-fns"
 
 import { Button } from "@/components/ui/button"
@@ -14,20 +12,11 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import CreateResponse from "@/components/dialogs/create-response-dialog"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import StatusIndicator from "@/components/ui/status-indicator"
-
-import { ArrowUpDown, Pencil, MoreHorizontal, Check, Trash2, Copy, CheckCircle2Icon, LoaderIcon, ShieldAlertIcon, BookDown, BookUp, SquareX, SquareCheck } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { ArrowUpDown, MoreHorizontal, Check, Trash2, Copy } from "lucide-react"
 
 export const columns = (handleApproveClick: (med: ResponseAsset) => void, handleCancelClick: (med: ResponseAsset) => void): ColumnDef<ResponseAsset>[] => [
-    // {
-    //     accessorKey: "id",
-    //     size: 200,
-    //     header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ID</div>,
-    //     enableGlobalFilter: false
-    // },
     {
         accessorKey: "requestDetails.name",
         size: 200,
@@ -35,27 +24,57 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
             return (
                 <div className="font-medium text-muted-foreground text-left cursor-default">
                     รายการยา/ชื่อการค้า
-                    {/* <Button
-                    className="font-medium text-muted-foreground text-left cursor-pointer"
-                    variant="ghost"
-                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                >
-                    
-                    <ArrowUpDown className="h-4 w-4" />
-                </Button> */}
                 </div>
             )
         },
         cell: ({ row }) => {
             const med = row.original
-            //console.log("row.original in borrow dashbroad", med)
             const requestDetails = med.requestDetails
+            const { requestTerm } = requestDetails
+            const { returnType, supportCondition, receiveConditions, returnConditions } = requestTerm
+            const condition = receiveConditions?.condition
+            const conditionLabel = condition === 'exactType' ? 'ยาจากผู้ผลิตรายนี้' : condition === 'subType' ? 'ยาจากผู้ผลิตรายอื่น' : undefined
             const name = requestDetails.requestMedicine.name
             const trademark = requestDetails.requestMedicine.trademark
             return (
                 <div className="flex flex-col">
                     <div className="text-md">{name}</div>
                     <div className="text-xs text-gray-600">{trademark}</div>
+
+                    <div className="flex items-center gap-2 flex-wrap mt-2">
+                        <Badge variant="outline" className="text-xs text-gray-600">{returnType === "supportReturn" ? "ขอสนับสนุน" : "ขอยืม"}
+                        {returnType === "supportReturn" && supportCondition && (
+                            <Badge variant="secondary" className="text-[10px] text-gray-600">
+                                {supportCondition === "servicePlan" ? "ตามแผนบริการ" : supportCondition === "budgetPlan" ? "ตามงบประมาณ" : "ให้ฟรี"}
+                            </Badge>
+                        )}
+                        {returnType === "normalReturn" && conditionLabel && (
+                            <Badge variant="secondary" className="text-[10px] text-gray-600">{conditionLabel}</Badge>
+                        )}
+                        </Badge>
+                    </div>
+                    {returnType === "normalReturn" && returnConditions && (
+                        <Badge variant="outline" className="text-xs mt-1 text-gray-600">
+                            การคืนยา
+                            {returnConditions.condition === "exactType" ? (
+                                <Badge variant="secondary" className="text-[10px] text-gray-600">คืนยารายการนี้</Badge>
+                            ) : (
+                                <TooltipProvider delayDuration={0}>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Badge variant="secondary" className="text-[10px] text-gray-600 cursor-pointer">คืนยารายการอื่น</Badge>
+                                        </TooltipTrigger>
+                                        {returnConditions.otherTypeSpecification && returnConditions.otherTypeSpecification.trim().length > 0 && (
+                                            <TooltipContent side="top">
+                                                <div className="max-w-[280px] whitespace-pre-wrap">{returnConditions.otherTypeSpecification}</div>
+                                            </TooltipContent>
+                                        )}
+                                    </Tooltip>
+                                </TooltipProvider>
+                            )}
+                        </Badge>
+                    )}
+                    
                 </div>
             )
         },
@@ -65,18 +84,15 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
     {
         accessorKey: "requestDetails.quantity",
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ขนาด/หน่วย</div>,
-        size: 120,
+        size: 100,
         cell: ({ row }) => {
             const med = row.original
             const requestDetails = med.requestDetails
             return (
                 <div className="flex flex-col space-x-2">
                     <span>{requestDetails.requestMedicine.unit}</span>
-                    <span className="text-xs text-muted-foreground">{requestDetails.requestMedicine.quantity}</span>
+                    <span className="text-xs text-muted-foreground">{requestDetails.requestMedicine.quantity || "ไม่ระบุ"}</span>
 
-                    {/* <Button className="cursor-default" variant="link" onClick={() => alert("Edit quantity")}>
-                        <Pencil className="h-4 w-4" />
-                    </Button> */}
                 </div>
             )
         },
@@ -112,11 +128,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
         },
         enableGlobalFilter: false
     },
-    // {
-    //     accessorKey: "status",
-    //     header: () => <div className="font-medium text-muted-foreground text-left cursor-default">Status</div>,
-    //     enableGlobalFilter: false
-    // },
+    
     {
         accessorKey: "postingHospitalNameEN",
         size: 180,
@@ -134,13 +146,10 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
             </div>,
         cell: ({ row }) => {
             const postingHospitalNameTH: string = row.original.requestDetails.postingHospitalNameTH
-            ////console.log("Posting Hospital Name:", postingHospitalNameTH)
             return (
                 <div className="flex flex-row">
                     <div className="flex flex-col justify-start">
                         <div className="text-md  overflow-hidden ">{postingHospitalNameTH}</div>
-                        {/* <div className="text-xs text-gray-600">คุณ xxx xxx</div>
-                        <div className="text-xs text-gray-600">ติดต่อ 080xxxxx</div> */}
                     </div>
 
                 </div>
@@ -149,7 +158,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
         enableGlobalFilter: true
     },
     {
-        accessorKey: "requestDetails.requestMedicine.requestAmount",
+        accessorKey: "requestDetails.requestMedicine.quantity",
         size: 100,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวน</div>,
         cell: ({ row }) => {
@@ -161,11 +170,11 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
             return (
                 <div className="text-sm font-medium  flex flex-col">
                     <div>
-                        {requestDetails.requestMedicine.requestAmount}
+                        {requestAmount}
                     </div>
 
                     <div className="text-xs text-muted-foreground">
-                        รวม {totalPrice} บาท
+                        รวม {totalPrice.toFixed(2)} บาท
                     </div>
 
                 </div>
@@ -175,7 +184,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
     },
     {
         accessorKey: "manufacturer",
-        size: 150,
+        size: 100,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ผู้ผลิต</div>,
         cell: ({ row }) => {
             const manufacturer: string = row.original.requestDetails.requestMedicine.manufacturer
@@ -193,117 +202,13 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
         },
         enableGlobalFilter: false
     },
-    {
-        accessorKey: "requestDetails.type",
-        size: 180,
-        header: () => <div className="font-medium text-muted-foreground text-center cursor-default">
-                <div>
-                    ความาต้องการ
-                </div>
-                <div className="flex flex-row  text-center font-medium justify-center">
-                    <div className="text-center basis-1/2">
-                        ขอยืม
-                    </div>
-                    <div className="text-center basis-1/2">
-                        ขอสนับสนุน
-                    </div>
-                </div>
-            </div>,
-        cell: ({ row }) => {
-            const med = row.original
-            console.log("med", med);
-            const supportType = med.requestDetails.requestTerm.receiveConditions.supportType
-            return (
-                <div className="flex flex-row gap-x-2 text-left font-medium justify-center">
-
-                    <div className="text-left basis-1/2">
-                        <div className="flex flex-row justify-center">
-                           {supportType === false ? <div className="flex text-green-600 items-center"> <SquareCheck /> </div> : <div className="flex text-red-600 items-center"> <SquareX /></div>}
-                        </div>
-                    </div>
-
-                    <div className="text-left basis-1/2">
-                        <div className="flex flex-row justify-center">
-                           {supportType === true ? <div className="flex text-green-600 items-center"> <SquareCheck /> </div> : <div className="flex text-red-600 items-center"> <SquareX /></div>}
-                        </div>
-                    </div>
-
-                </div>
-            )
-        }
-            
-    },
-    {
-        accessorKey: "requestDetails.id",
-        size: 280,
-        header: () => (
-            <div className="font-medium text-muted-foreground text-center cursor-default">
-                <div>
-                    เงื่อนไขการรับยา
-                </div>
-                <div className="flex flex-row  text-center font-medium justify-center">
-                    <div className="text-center basis-1/2">
-                        ยาจากผู้ผลิตรายนี้
-                    </div>
-                    <div className="text-center basis-1/2">
-                        ยาจากผู้ผลิตรายอื่น
-                    </div>
-                </div>
-            </div>
-        ),
-        cell: ({ row }) => {
-            const med = row.original;
-            //console.log("med", med);
-            const condition = med.requestDetails.requestTerm.receiveConditions.condition
-            //console.log("condition", condition);
-            const supportType = med.requestDetails.requestTerm.receiveConditions.supportType
-            //console.log("supportType", supportType);
-            let supportTypetDiv;
-            let conditionDiv;
-
-            if (condition === "exactType") {
-                conditionDiv = <div className="flex text-red-600 items-center"> <SquareX />ยาจากผู้ผลิตรายนี้</div>;
-            } else {
-                conditionDiv = <div className="flex text-green-600 items-center"> <SquareCheck />ยาจากผู้ผลิตรายอื่น</div>;
-            }
-
-
-            if (supportType === true) {
-                supportTypetDiv = <div className="flex text-green-600 items-center"> <SquareCheck />ขอสนับสนุน </div>;
-            } else {
-                supportTypetDiv = <div className="flex text-red-600 items-center"> <SquareX /> ขอสนับสนุน</div>;
-            }
-
-            return (
-
-                <div className="flex flex-row gap-x-2 text-left font-medium justify-center">
-
-                    <div className="text-left basis-1/2">
-                        <div className="flex flex-row justify-center">
-                           {condition === 'exactType' ? <div className="flex text-green-600 items-center"> <SquareCheck /> </div> : <div className="flex text-red-600 items-center"> <SquareX /></div>}
-                        </div>
-                    </div>
-
-                    <div className="text-left basis-1/2">
-                        <div className="flex flex-row justify-center">
-                            {condition === 'subType' ? <div className="flex text-green-600 items-center"> <SquareCheck /> </div> : <div className="flex text-red-600 items-center"> <SquareX /></div>}
-                        </div>
-                    </div>
-
-                </div>
-            )
-
-
-        },
-        enableGlobalFilter: false
-
-    },
+    // removed: ความต้องการ & เงื่อนไขการรับยา columns (redundant with badges)
     {
         accessorKey: "requestDetails.urgent",
         size: 80,
         header: ({ column }) => {
             return (
-                <div className="font-medium text-muted-foreground text-left cursor-pointer items-center">
+                <div className="font-medium text-muted-foreground text-left cursor-default items-center flex">
                     ความเร่งด่วน
                     <Button
                         className="font-medium text-muted-foreground text-left cursor-pointer "
@@ -319,17 +224,15 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
         cell: ({ row }) => {
             const med = row.original
             const status = med.requestDetails.urgent
-            console.log("status", status)
+            const label = status === "urgent" ? "ด่วนที่สุด" : status === "immediate" ? "ด่วน" : "ปกติ"
+            const badgeClass = status === "urgent"
+                ? "bg-red-100 text-red-700 border-red-200"
+                : status === "immediate"
+                ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                : "bg-gray-100 text-gray-700 border-gray-200"
             return (
-                <div className="flex items-left space-x-2 items-center">
-
-                    <div>
-                        {status === "urgent" ? "ด่วนที่สุด" : status === "immediate" ? "ด่วน" : "ปกติ"}
-                    </div>
-                    <div>
-                        <StatusIndicator status={status} />
-                    </div>
-
+                <div className="flex items-center">
+                    <Badge variant="outline" className={`text-xs ${badgeClass}`}>{label}</Badge>
                 </div>
             )
         },

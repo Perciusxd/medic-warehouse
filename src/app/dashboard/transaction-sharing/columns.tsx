@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react"
-import { ResponseAsset } from "@/types/responseMed"
 import { ColumnDef } from "@tanstack/react-table"
+import type { ResponseAsset } from "@/types/responseMed"
 // import { formatDate } from "@/lib/utils"
 import { format, differenceInCalendarDays } from "date-fns"
 
@@ -26,7 +26,7 @@ export const columns = (
     handleApproveClick: (med: ResponseAsset) => void,
     loading: boolean = false,
     loadingRowId: string | null = null
-): ColumnDef<any>[] => [
+): ColumnDef<ResponseAsset>[] => [
     {
         accessorKey: "updatedAt",
         size:100,

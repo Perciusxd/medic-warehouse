@@ -18,10 +18,14 @@ import { ImageHoverPreview } from "@/components/ui/image-hover-preview"
 import { Calendar1Icon, ShieldAlert, CheckCircle, AlertTriangle } from "lucide-react"
 import { Calendar1, Hospital } from "lucide-react"
 import RequestDetails from "./request-details"
+import { RequiredMark } from "@/components/ui/field-indicator"
 
 export default function CreateResponseDialog({ requestData, responseId, dialogTitle, status, openDialog, onOpenChange }: any) {
     const { requestTerm } = requestData;
+    const { receiveConditions, returnConditions } = requestTerm;
     console.log("requestTerm:", requestTerm)
+    // Safe fallbacks when requestTerm.receiveConditions or requestTerm.returnConditions can be null
+
     const ResponseSchema = z.object({
         offeredMedicine: z.object({
             // offerAmount: z.number().min(1, "กรุณากรอกมากว่า 0").max(requestData.requestMedicine.requestAmount, `กรุณากรอกน้อยกว่า ${requestData.requestMedicine.requestAmount}`),
@@ -34,14 +38,30 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
             // manufactureDate: z.string(),
             // expiryDate: z.date(),
             // imageRef: z.string(),
-            returnTerm: z.enum(["exactType", "subType"]),
+            recieveCondition: z.string(),
             returnConditions: z.object({
-                exactType: z.boolean(),
-                subType: z.boolean(),
-                otherType: z.boolean(),
-                supportType: z.boolean(),
+                condition: z.string(),
+                otherTypeSpecification: z.string().optional(),
             })
         })
+    }).superRefine((data, ctx) => {
+        const med = data.offeredMedicine
+        if (med.recieveCondition === "subType") {
+            if (!med.trademark || med.trademark.trim() === "") {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    path: ["offeredMedicine", "trademark"],
+                    message: "กรุณากรอกชื่อการค้า",
+                })
+            }
+            if (!med.manufacturer || med.manufacturer.trim() === "") {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    path: ["offeredMedicine", "manufacturer"],
+                    message: "กรุณากรอกผู้ผลิต",
+                })
+            }
+        }
     })
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [open, setOpen] = useState(false)
@@ -54,9 +74,10 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
         getValues,
         resetField,
         control,
-        formState: { errors, isSubmitted },
+        formState: { errors, isSubmitted, isValid },
     } = useForm<z.infer<typeof ResponseSchema>>({
         resolver: zodResolver(ResponseSchema),
+        mode: "onChange",
         defaultValues: {
             offeredMedicine: {
                 offerAmount: requestData.requestMedicine.requestAmount,
@@ -68,20 +89,17 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                 // manufactureDate: requestData.requestMedicine.manufactureDate,
                 //expiryDate: requestData.requestMedicine.expiryDate,
                 // imageRef: requestData.requestMedicine.imageRef,
-                returnTerm: "exactType",
+                recieveCondition: receiveConditions?.condition ?? undefined,
                 returnConditions: {
-                    exactType: true,
-                    subType: false,
-                    otherType: false,
-                    supportType: false,
+                    condition: returnConditions?.condition ?? undefined,
+                    otherTypeSpecification: returnConditions?.otherTypeSpecification ?? undefined
                 }
             }
         }
     })
-    const returnTerm = watch("offeredMedicine.returnTerm")
+    const recieveCondition = watch("offeredMedicine.recieveCondition")
     const offeredAmount = watch("offeredMedicine.offerAmount")
     const offeredPrice = watch("offeredMedicine.pricePerUnit")
-    const returnConditions = watch("offeredMedicine.returnConditions")
     const expiryDate = watch("offeredMedicine.expiryDate")
     const offeredMedicineRef = useRef(requestData.requestMedicine.name);
     const [subTypeName, setSubTypeName] = useState(requestData.requestMedicine.name);
@@ -102,7 +120,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
 
     useEffect(() => {
         const currentValues = getValues("offeredMedicine");
-        if (returnTerm === "exactType") {
+        if (recieveCondition === "exactType") {
             // save the current values to ref
             subTypeFields.current = {
                 trademark: currentValues.trademark,
@@ -122,7 +140,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
             setValue("offeredMedicine.manufacturer", r.manufacturer);
             // setValue("offeredMedicine.manufactureDate", r.manufactureDate);
             // setValue("offeredMedicine.expiryDate", r.expiryDate);
-        } else if (returnTerm === "subType") {
+        } else if (recieveCondition === "subType") {
             const r = subTypeFields.current;
             setValue("offeredMedicine.trademark", r.trademark);
             setValue("offeredMedicine.offerAmount", r.offerAmount);
@@ -131,7 +149,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
             // setValue("offeredMedicine.manufactureDate", r.manufactureDate);
             // setValue("offeredMedicine.expiryDate", r.expiryDate);
         }
-    }, [returnTerm, setValue, getValues, requestData]);
+    }, [recieveCondition, setValue, getValues, requestData]);
 
     const onSubmit = async (data: z.infer<typeof ResponseSchema>) => {
         const responseBody = {
@@ -202,37 +220,16 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                 <DialogTitle>
                     <div className="grid grid-cols-4 gap-4 items-center">
                         {dialogTitle}
-                        {/* <div className="col-span-2">
-                            <Label className="font-bold">ภาพประกอบ <ImageHoverPreview previewUrl={imgUrl} /></Label>
-                            <div className="flex items-center gap-2">
-                                <img
-                                                src={imgUrl}
-                                                alt="thumb"
-                                                className="h-40 w-40 object-cover rounded border"
-                                            />
-                            </div>
-                        </div> */}
                     </div>
 
                 </DialogTitle>
-                <form onSubmit={handleSubmit(onSubmit, (invalidError) => {
-                    //console.error(invalidError)
+                <form onSubmit={handleSubmit(onSubmit, (invalid) => {
+                    console.log("invalid:", invalid)
                 })} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <RequestDetails requestData={requestData} responseForm={true} />
                         <div className="ml-15">
                             <div className="flex items-center space-x-2 mb-2">
-                                {/* <Badge
-                                    variant={"destructive"}
-                                    className="flex gap-1 px-1.5 [&_svg]:size-3 mb-4">
-                                    {requestData.urgent ?
-                                        <ShieldAlert /> :
-                                        "Normal"
-                                    }
-                                    <div className="text-sm">
-                                        {requestData.urgent ? "ด่วนที่สุด" : "Normal"}
-                                    </div>
-                                </Badge> */}
                                 <Badge
                                     variant={config.variant}
                                     className="flex gap-1 px-1.5 [&_svg]:size-3 mb-4"
@@ -251,36 +248,48 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
 
                             <div className="flex items-center space-x-4">
                                 <Label>
-                                    <input type="radio" value="exactType" {...register("offeredMedicine.returnTerm")} disabled={requestTerm.receiveConditions.condition === "exactType"} />
+                                    <input type="radio" value="exactType" {...register("offeredMedicine.recieveCondition")} disabled={requestTerm.receiveConditions.condition === "exactType"} />
                                     ให้ยืมรายการที่ต้องการ
                                 </Label>
                                 <Label>
-                                    <input type="radio" value="subType" {...register("offeredMedicine.returnTerm")} disabled={requestTerm.receiveConditions.condition === "exactType"} />
+                                    <input type="radio" value="subType" {...register("offeredMedicine.recieveCondition")} disabled={requestTerm.receiveConditions.condition === "exactType"} />
                                     ให้ยืมรายการที่ต้องการหรือยืมรายการทดแทนได้
                                 </Label>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mt-6">
                                 <Label className="flex flex-col items-start">
-                                    ชื่อการค้า
+                                    <div className="flex items-center gap-1">
+                                        <span>ชื่อการค้า</span> <RequiredMark />
+                                    </div>
                                     <Input
                                         type="text"
                                         {...register("offeredMedicine.trademark")}
-                                        disabled={returnTerm === "exactType"}
+                                        disabled={recieveCondition === "exactType"}
                                         className="border p-1"
                                     />
+                                    {errors.offeredMedicine?.trademark && (
+                                        <span className="text-red-500 text-xs -mt-1">{errors.offeredMedicine.trademark.message}</span>
+                                    )}
                                 </Label>
                                 <Label className="flex flex-col items-start">
-                                    ผู้ผลิต
+                                    <div className="flex items-center gap-1">
+                                        <span>ผู้ผลิต</span> <RequiredMark />
+                                    </div>
                                     <Input
                                         type="text"
                                         {...register("offeredMedicine.manufacturer")}
-                                        disabled={returnTerm === "exactType"}
+                                        disabled={recieveCondition === "exactType"}
                                         className="border p-1"
                                     />
+                                    {errors.offeredMedicine?.manufacturer && (
+                                        <span className="text-red-500 text-xs -mt-1">{errors.offeredMedicine.manufacturer.message}</span>
+                                    )}
                                 </Label>
                                 <Label className="flex flex-col items-start">
-                                    จำนวนที่ให้ยืม
+                                    <div className="flex items-center gap-1">
+                                        <span>จำนวนที่ให้ยืม</span> <RequiredMark />
+                                    </div>
                                     <Input
                                         inputMode="decimal"
                                         placeholder="10"
@@ -316,7 +325,10 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                     )}
                                 </Label>
                                 <div >
-                                    <Label className="flex flex-col items-start">ราคาต่อหน่วย
+                                    <Label className="flex flex-col items-start">
+                                        <div className="flex items-center gap-1">
+                                            <span>ราคาต่อหน่วย</span> <RequiredMark />
+                                        </div>
                                         <div className="flex">
                                             <Input
                                                 inputMode="decimal"
@@ -362,7 +374,9 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                     </Label>
                                 </div>
                                 <Label className="flex flex-col items-start">
-                                    หมายเลขล็อต
+                                    <div className="flex items-center gap-1">
+                                        <span>หมายเลขล็อต</span> <RequiredMark />
+                                    </div>
                                     <Input
                                         type="text"
                                         {...register("offeredMedicine.batchNumber")}
@@ -375,7 +389,11 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                 </Label>
 
                                 <div className="flex flex-col gap-2">
-                                    <Label className="font-bold">วันหมดอายุ</Label>
+                                    <Label className="font-bold">
+                                        <div className="flex items-center gap-1">
+                                            <span>วันหมดอายุ</span> <RequiredMark />
+                                        </div>
+                                    </Label>
                                     <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                                         <PopoverTrigger asChild>
                                             <Button variant="outline" className="justify-start text-left font-normal">
@@ -425,37 +443,13 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                 </div>
 
                             </div>
-                            <Label className="mt-4 mb-2">เงื่อนไขการคืนที่ยอมรับ</Label>
-                            <div className="grid grid-cols-2 items-start space-x-4 gap-2">
-                                <Label className="font-normal">
-                                    <input type="checkbox" {...register("offeredMedicine.returnConditions.exactType")} />
-                                    รับคืนเฉพาะรายการนี้
-                                </Label>
-                                <Label className="font-normal">
-                                    <input type="checkbox" {...register("offeredMedicine.returnConditions.subType")} />
-                                    รับคืนยาทดแทนได้
-                                </Label>
-                                <Label className="font-normal">
-                                    <input type="checkbox" {...register("offeredMedicine.returnConditions.otherType")} />
-                                    รับคืนยารายการอื่นได้
-                                </Label>
-                                <Label className="font-normal">
-                                    <input type="checkbox" {...register("offeredMedicine.returnConditions.supportType")} />
-                                    สามารถสนับสนุนได้
-                                </Label>
-                                {!isAnyChecked && isSubmitted && (
-                                    <p className="text-red-500 text-sm mt-1">
-                                        กรุณาเลือกอย่างน้อย 1 เงื่อนไข
-                                    </p>
-                                )}
-                            </div>
                         </div>
                     </div>
 
 
                     <DialogFooter>
-                        <Button type="submit">
-                            {loading ? <div className="flex flex-row items-center gap-2 text-muted-foreground"><LoadingSpinner /> ยืมยันการให้ยืม</div> : "ยืมยันการให้ยืม"}
+                        <Button type="submit" disabled={loading || !isValid}>
+                            {loading ? <div className="flex flex-row items-center gap-2 text-muted-foreground"><LoadingSpinner /> <span className="text-gray-500">ยืนยันการให้ยืม</span></div> : "ยืนยันการให้ยืม"}
                         </Button>
 
 

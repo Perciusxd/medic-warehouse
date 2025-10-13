@@ -19,9 +19,10 @@ import { useAuth } from "../providers";
 
 const ReturnPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/return_pdf'), { ssr: false });
 
-function SharingMedicineDetails({ sharingMedicine, receiveConditions, selectedMed }: any) {
+function SharingMedicineDetails({ sharingMedicine, receiveConditions, selectedMed, acceptedOffer }: any) {
     const { name, trademark, unit, quantity, manufacturer, sharingAmount } = sharingMedicine;
     const { createdAt, postingHospitalNameTH, sharingDetails } = selectedMed;
+    const { responseAmount } = acceptedOffer;
     const formattedDate = format(new Date(Number(createdAt)), 'dd/MM/') + (new Date(Number(createdAt)).getFullYear() + 543); // Format to dd/MM/yyyy in Thai Buddhist calendar
     return (
         <div className="flex flex-col gap-4 border p-4 rounded-lg">
@@ -44,7 +45,7 @@ function SharingMedicineDetails({ sharingMedicine, receiveConditions, selectedMe
                 </div>
                 <div className="flex flex-col gap-1 ">
                     <Label>จำนวนที่ขอยืม</Label>
-                    <Input disabled value={sharingAmount || ''} />
+                    <Input disabled value={responseAmount || ''} />
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>รูปแบบ/หน่วย</Label>
@@ -113,6 +114,7 @@ function ReturnFormSchema({ selectedMed }: any) {
                 manufacturer: z.string().optional(),
                 pricePerUnit: z.any().optional(),
                 batchNumber: z.string().optional(),
+                expiryDate: z.coerce.string().optional(),
                 returnDate: z.coerce.string().optional(),
             }),
         }),
@@ -129,7 +131,8 @@ function ReturnFormSchema({ selectedMed }: any) {
                 manufacturer: z.string().min(1, "กรุณาระบุผู้ผลิตของยา"),
                 pricePerUnit: z.number().min(1, "ราคาต่อหน่วยควรมากกว่า 0").max(100000, "ราคาต่อหน่วยควรน้อยกว่า 100000"),
                 batchNumber: z.string().min(1, "กรุณาระบุหมายเลขล็อตของยา"),
-                returnDate: z.coerce.string({ invalid_type_error: "กรุณาระบุวันที่คืนยา" }),
+                expiryDate: z.coerce.string({ invalid_type_error: "กรุณาระบุวันหมดอายุ" }),
+                returnDate: z.coerce.string().optional(),
                 reason: z.string().optional(),
             }),
         }),
@@ -170,6 +173,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                 manufacturer: "",
                 pricePerUnit: undefined,
                 batchNumber: "",
+                expiryDate: undefined,
                 returnDate: undefined,
                 reason: "",
             }
@@ -182,6 +186,8 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
         //console.log('data', data)
         const supportRequest = data.supportRequest === "support" ? true : false;
         setLoading(true);
+        const nowStr = Date.now().toString();
+        const finalReturnMedicine = { ...data.returnMedicine, returnDate: nowStr };
         const returnData = {
             id: `RET-${Date.now()}`,
             sharingId: sharingId,
@@ -190,7 +196,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
             toHospitalId: postingHospitalNameEN,
             createAt: Date.now().toString(),
             updatedAt: Date.now().toString(),
-            returnMedicine: data.returnMedicine,    // should be empty if supportRequest is true??
+            returnMedicine: finalReturnMedicine,    // should be empty if supportRequest is true??
             returnType: supportRequest ? "supportType" : data.returnType,
         }
         const returnBody = {
@@ -214,7 +220,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
         }
     };
 
-    const expiredDate = watch("returnMedicine.returnDate");
+    const expiredDate = watch("returnMedicine.expiryDate");
     const watchReturnType = watch("returnType");
     const supportSelection = watch("supportRequest") || "none";
     const isSupportSelected = supportSelection === "support";
@@ -378,7 +384,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                                             today.setHours(0, 0, 0, 0);
                                             const dateString = date.getTime().toString()
                                             if (date > today) {
-                                                setValue("returnMedicine.returnDate", dateString, { shouldValidate: true, shouldDirty: true });
+                                                setValue("returnMedicine.expiryDate", dateString, { shouldValidate: true, shouldDirty: true });
                                                 setDateError("");
                                                 setIsCalendarOpen(false);
                                             } else {
@@ -395,7 +401,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                                 )}
                             </PopoverContent>
                         </Popover>
-                        {errors.returnMedicine?.returnDate && <span className="text-red-500 text-xs">{errors.returnMedicine.returnDate.message}</span>}
+                        {errors.returnMedicine?.expiryDate && <span className="text-red-500 text-xs">{errors.returnMedicine.expiryDate.message}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
                         <Label>จำนวนที่ให้คืน</Label>
@@ -467,7 +473,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
 
 export default function ReturnSharingDialog({ open, onOpenChange, selectedMed }: any) {
     const { user } = useAuth();
-    const { sharingDetails } = selectedMed;
+    const { sharingDetails, acceptedOffer } = selectedMed;
     const { sharingMedicine } = sharingDetails;
     const receiveConditions = sharingDetails?.sharingReturnTerm?.receiveConditions || {};
     const [loading, setLoading] = useState(false);
@@ -516,7 +522,7 @@ export default function ReturnSharingDialog({ open, onOpenChange, selectedMed }:
 
                     <div className="overflow-y-auto px-6 py-5">
                         <div className="grid grid-cols-3 gap-2">
-                            <SharingMedicineDetails sharingMedicine={sharingMedicine} receiveConditions={receiveConditions} selectedMed={selectedMed} />
+                            <SharingMedicineDetails sharingMedicine={sharingMedicine} receiveConditions={receiveConditions} selectedMed={selectedMed} acceptedOffer={acceptedOffer} />
                             <ReturnMedicineDetails selectedMed={selectedMed} onOpenChange={onOpenChange} loading={loading} setLoading={setLoading} formId={formId} onFormChange={setReturnFormValues} onSavePdf={handleSavePdf} />
                         </div>
                     </div>

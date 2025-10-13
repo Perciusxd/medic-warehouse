@@ -22,6 +22,7 @@ const formatThaiDate = (input: string | number | Date | undefined): string => {
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRef, useState } from "react"
 
+import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"// import PdfPreview from "@/components/ui/preview_pdf"
@@ -95,17 +96,16 @@ function ResponseDetailPanel({ responseData }: any) {
         offeredMedicine,
         responseDetails,
         responseId,
-        updatedAt
+        updatedAt,
+        requestTerm
     } = responseData;
 
     const totalPrice = offeredMedicine.pricePerUnit * offeredMedicine.offerAmount;
 
     const responseDetail = responseDetails.find((item: any) => item.id === responseId);
     const respondingHospitalNameTH = responseDetail?.respondingHospitalNameTH || "-";
-
-    const returnConditions = offeredMedicine.returnConditions || {};
-
-    console.log("responseData", responseData)
+    const { returnConditions } = requestTerm;
+    console.log("returnConditions", returnConditions)
 
     return (
         <div className="flex flex-col gap-4">
@@ -146,24 +146,17 @@ function ResponseDetailPanel({ responseData }: any) {
             </div>
             <div className="flex flex-col gap-2">
                 <Label>เงื่อนไขการส่งคืน</Label>
-                <div className="grid grid-cols-2 gap-2">
-                    <div className="flex flex-row gap-1">
-                        <input type="checkbox" checked={!!returnConditions.exactType} disabled />
-                        <Label className="font-normal">ส่งคืนตามประเภท</Label>
+                {returnConditions.condition === "exactType" && (
+                    <Badge variant="outline">ส่งคืนรายการนี้</Badge>
+                )}
+                {returnConditions.condition === "otherType" && (
+                    <div>
+                        <Badge variant="outline">ส่งคืนรายการอื่น
+
+                        <Badge variant="secondary">{returnConditions.otherTypeSpecification}</Badge>
+                        </Badge>
                     </div>
-                    <div className="flex flex-row gap-1">
-                        <input type="checkbox" checked={!!returnConditions.otherType} disabled />
-                        <Label className="font-normal">คืนรายการอื่น</Label>
-                    </div>
-                    <div className="flex flex-row gap-1">
-                        <input type="checkbox" checked={!!returnConditions.subType} disabled />
-                        <Label className="font-normal">คืนรายการทดแทน</Label>
-                    </div>
-                    <div className="flex flex-row gap-1">
-                        <input type="checkbox" checked={!!returnConditions.supportType} disabled />
-                        <Label className="font-normal">แบบสนับสนุน</Label>
-                    </div>
-                </div>
+                )}
             </div>
         </div>
     );
@@ -184,12 +177,10 @@ function getConfirmationSchema(requestData: any) {
                 .gt(0, "ราคาต่อหน่วยต้องมากกว่า 0")
                 .max(100000, "ราคาต่อหน่วยต้องไม่เกิน 100,000"),
             manufacturer: z.string(),
-            returnTerm: z.enum(["exactType", "subType"]),
+            returnTerm: z.string(),
             returnConditions: z.object({
-                exactType: z.boolean(),
-                subType: z.boolean(),
-                otherType: z.boolean(),
-                supportType: z.boolean(),
+                condition: z.string(),
+                otherTypeSpecification: z.string().optional(),
             }),
         }),
     });
@@ -221,7 +212,7 @@ export default function ConfirmResponseDialog({ data, dialogTitle, status, openD
                 pricePerUnit: Number(data.offeredMedicine?.pricePerUnit ?? 0),
                 manufacturer: String(data.offeredMedicine?.manufacturer ?? ""),
                 returnTerm: data.offeredMedicine?.returnTerm ?? "exactType",
-                returnConditions: { ...(data.offeredMedicine?.returnConditions ?? { exactType: false, subType: false, otherType: false, supportType: false }) },
+                returnConditions: { ...(data.offeredMedicine?.returnConditions ?? { condition: "exactType", otherTypeSpecification: "" }) },
             },
         }
     });

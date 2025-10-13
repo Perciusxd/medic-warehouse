@@ -58,28 +58,28 @@ const sendMailHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   // console.log(sender, to, subjectNotice, notice, hospitalName, medName, medAmount, medQuantity, medUnit);
   
 
-  try {
-    const { data, error } = await resend.emails.send({
-      from: sender,
-      to: to,
-      subject: subjectNotice,
-      html: `
-        <div>
-          <p>เรียน${String(hospitalName)}</p>
-          <p>${String(hospitalName)} มีการแจ้งรายการ${String(notice)}มายังท่าน ${shareData ? '' : `(${urgent === 'urgent' ? 'ด่วนที่สุด' : urgent === 'immediate' ? 'ด่วน' : 'ปกติ'})`}</p>
-          <p>รายการ ${medName} ${medQuantity} จำนวน ${medAmount} ${medUnit} </p>
+  // try {
+  //   const { data, error } = await resend.emails.send({
+  //     from: sender,
+  //     to: to,
+  //     subject: subjectNotice,
+  //     html: `
+  //       <div>
+  //         <p>เรียน${String(hospitalName)}</p>
+  //         <p>${String(hospitalName)} มีการแจ้งรายการ${String(notice)}มายังท่าน ${shareData ? '' : `(${urgent === 'urgent' ? 'ด่วนที่สุด' : urgent === 'immediate' ? 'ด่วน' : 'ปกติ'})`}</p>
+  //         <p>รายการ ${medName} ${medQuantity} จำนวน ${medAmount} ${medUnit} </p>
 
-          <p>ท่านสามารถตรวจสอบรายละเอียดได้จากระบบ Medicine sharing</p>
-        </div>
-      `,
-    });
+  //         <p>ท่านสามารถตรวจสอบรายละเอียดได้จากระบบ Medicine sharing</p>
+  //       </div>
+  //     `,
+  //   });
 
-    if (error) return res.status(400).json(error);
-    return res.status(200).json(data);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'Failed to send email' });
-  }
+  //   if (error) return res.status(400).json(error);
+  //   return res.status(200).json(data);
+  // } catch (err) {
+  //   console.error(err);
+  //   return res.status(500).json({ error: 'Failed to send email' });
+  // }
 };
 
 export default sendMailHandler;

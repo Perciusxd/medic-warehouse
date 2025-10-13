@@ -53,12 +53,14 @@ export default function RequestDetails({ requestData, responseForm }: any) {
             requestMedicineImage: requestData.requestMedicine.requestMedicineImage
         },
         requestTerm: {
+            returnType: requestData.requestTerm.returnType,
             expectedReturnDate: requestData.requestTerm.expectedReturnDate,
             receiveConditions: {
-                exactType: requestData.requestTerm.receiveConditions.exactType,
-                subsidiary: requestData.requestTerm.receiveConditions.subsidiary,
-                other: requestData.requestTerm.receiveConditions.other,
-                notes: requestData.requestTerm.receiveConditions.notes
+                condition: requestData.requestTerm.receiveConditions?.condition,
+            },
+            returnConditions: {
+                condition: requestData.requestTerm.returnConditions?.condition,
+                otherTypeSpecification: requestData.requestTerm.returnConditions?.otherTypeSpecification,
             }
         }
     } : {
@@ -147,7 +149,7 @@ export default function RequestDetails({ requestData, responseForm }: any) {
                 <div className="grid grid-cols-3 col-span-2 gap-2 items-center">
                     <div className="col-span-2">
                         <Label className="font-bold">เหตุผลการยืม</Label>
-                        <Input type="text" value={requestDetails.requestMedicine.description} disabled />
+                        <Input type="text" value={requestDetails.requestTerm.returnConditions?.otherTypeSpecification || "ไม่ระบุ"} disabled />
                     </div>
                     <div className="col-span-1 grid ">
                         <Label className="font-bold">ภาพประกอบ</Label>
@@ -169,16 +171,6 @@ export default function RequestDetails({ requestData, responseForm }: any) {
                         </div>
                     </div>
                 </div>
-                {/* <div className="col-span-2">
-                    <Label className="font-bold">ภาพประกอบ <ImageHoverPreview previewUrl={imgUrl} /></Label>
-                    <div className="flex items-center gap-2">
-                        <img
-                            src={imgUrl}
-                            alt="thumb"
-                            className="h-40 w-40 object-cover rounded border"
-                        />
-                    </div>
-                </div> */}
             </div>
         </div>
     );
