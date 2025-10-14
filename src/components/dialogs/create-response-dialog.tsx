@@ -44,25 +44,27 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                 otherTypeSpecification: z.string().optional(),
             })
         })
-    }).superRefine((data, ctx) => {
-        const med = data.offeredMedicine
-        if (med.recieveCondition === "subType") {
-            if (!med.trademark || med.trademark.trim() === "") {
-                ctx.addIssue({
-                    code: z.ZodIssueCode.custom,
-                    path: ["offeredMedicine", "trademark"],
-                    message: "กรุณากรอกชื่อการค้า",
-                })
-            }
-            if (!med.manufacturer || med.manufacturer.trim() === "") {
-                ctx.addIssue({
-                    code: z.ZodIssueCode.custom,
-                    path: ["offeredMedicine", "manufacturer"],
-                    message: "กรุณากรอกผู้ผลิต",
-                })
-            }
-        }
     })
+    //     .superRefine((data, ctx) => {
+
+    //     const med = data.offeredMedicine
+    //     if (med.recieveCondition === "subType") {
+    //         if (!med.trademark || med.trademark.trim() === "") {
+    //             ctx.addIssue({
+    //                 code: z.ZodIssueCode.custom,
+    //                 path: ["offeredMedicine", "trademark"],
+    //                 message: "กรุณากรอกชื่อการค้า",
+    //             })
+    //         }
+    //         if (!med.manufacturer || med.manufacturer.trim() === "") {
+    //             ctx.addIssue({
+    //                 code: z.ZodIssueCode.custom,
+    //                 path: ["offeredMedicine", "manufacturer"],
+    //                 message: "กรุณากรอกผู้ผลิต",
+    //             })
+    //         }
+    //     }
+    // })
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -165,7 +167,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
             responseId: responseId,
             status: status
         }
-        //console.log("responseBody sssss:", responseBody)
+        console.log("responseBody sssss:", responseBody)
         try {
             setLoading(true)
             const response = await fetch("/api/updateRequest", {
@@ -448,7 +450,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
 
 
                     <DialogFooter>
-                        <Button type="submit" disabled={loading || !isValid}>
+                        <Button type="submit" disabled={loading }>
                             {loading ? <div className="flex flex-row items-center gap-2 text-muted-foreground"><LoadingSpinner /> <span className="text-gray-500">ยืนยันการให้ยืม</span></div> : "ยืนยันการให้ยืม"}
                         </Button>
 

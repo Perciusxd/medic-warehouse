@@ -45,13 +45,18 @@ export const columns = (
             header: () => <div className="font-medium text-muted-foreground text-left cursor-default"> รายการยา/ชื่อการค้า</div>,
             cell: ({ getValue, row }) => {
                 const name = getValue() as string
-                const returnTerm = row.original.requestDetails.requestTerm.returnConditions
+                //const returnTerm = row.original.requestDetails.requestTerm.returnType === "supportReturn" ? { condition: "supportReturn" } : row.original.requestDetails.requestTerm.returnType || { condition: "exactType" };
                 const trademark = row.original.requestDetails.requestMedicine.trademark
+                const returnTerm = row.original.requestDetails.requestTerm;
+                const returnType = returnTerm.returnType;
+                const receiveConditions = returnTerm.receiveConditions;
+                const condition = receiveConditions.condition;
+                const conditionLabel = condition === 'exactType' ? 'ยืมจากผู้ผลิตรายนี้' : 'ยืมจากผู้ผลิตรายอื่น';
                 return (
                     <div>
                         <div className="text-md font-medium">{name}</div>
                         <div className="text-xs text-muted-foreground">{trademark}</div>
-                        <Badge variant="outline" className="text-xs text-gray-600 mt-2">{returnTerm.condition === "exactType" ? "คืนยาตามรายการ" : "คืนยาทดแทน"}</Badge>
+                         <Badge variant="outline" className="text-xs text-gray-600">{returnType === "supportReturn" ? "ขอสนับสนุน" : "ขอยืม"}</Badge>
                     </div>
                 )
             }
@@ -225,7 +230,9 @@ export const columns = (
                 const status = getValue() as string
                 const postingHospitalNameTH = row.original.requestDetails.postingHospitalNameTH || "ไม่ระบุ"
                 const med = row.original
+                console.log("med sharing", med)
                 const offerAmount = row.original.offeredMedicine.offerAmount as number
+                const returntype = row.original.requestDetails.requestTerm.returnType
                 return (
                     <div className="flex flex-row  items-center">
                         <div className="basis-1/2">
@@ -364,7 +371,20 @@ export const columns = (
                                         {/* <StatusIndicator status={status} /> */}
                                     </Badge>
                                     : status === "returned"
-                                        ? <HoverCard>
+                                        ? (
+                                            returntype === "supportReturn" ?
+                                                <Badge
+                                                    variant={"text_status"}
+                                                    className={clsx(
+                                                        // "flex content-center h-6 font-bold justify-center",
+                                                        getStatusColor(status),
+                                                        getTextStatusColor(status)
+                                                    )}
+                                                >
+                                                    เสร็จสิ้น (สนับสนุน)
+                                                </Badge>
+                                                :
+                                                <HoverCard>
                                             <HoverCardTrigger>
                                                 <Badge
                                                     variant={"text_status"}
@@ -413,6 +433,7 @@ export const columns = (
                                                 </div>
                                             </HoverCardContent>
                                         </HoverCard>
+                                        )
                                         : status === "cancelled"
                                             ? <div
                                                 className="flex gap-x-2 "

@@ -148,12 +148,12 @@ const RequestSchema = z.object({
         returnType: z.enum(["normalReturn", "supportReturn"]),
         receiveConditions: z.object({
             condition: z.enum(["exactType", "subType"]).optional(),
-        }).optional().nullable(),
+        }).optional(),
         // อนุญาตให้เป็น null ได้เมื่อเป็น supportReturn
         returnConditions: z.object({
             condition: z.enum(["exactType", "otherType"]).optional(),
             otherTypeSpecification: z.string().optional(),
-        }).optional().nullable(),
+        }).optional(),
         supportCondition: z.enum(["servicePlan", "budgetPlan", "freePlan"]).optional(),
     }),
     selectedHospitals: z.array(z.number()).min(1, "กรุณาเลือกโรงพยาบาลอย่างน้อย 1 แห่ง"),
@@ -167,13 +167,13 @@ const RequestSchema = z.object({
                 message: "กรุณาเลือกเงื่อนไขการสนับสนุน",
             });
         }
-        if (term.returnConditions && term.returnConditions.condition) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                path: ["requestTerm", "returnConditions"],
-                message: "เมื่อเลือกขอสนับสนุน ไม่ต้องระบุข้อเสนอการคืน",
-            });
-        }
+        // if (term.returnConditions && term.returnConditions.condition) {
+        //     ctx.addIssue({
+        //         code: z.ZodIssueCode.custom,
+        //         path: ["requestTerm", "returnConditions"],
+        //         message: "เมื่อเลือกขอสนับสนุน ไม่ต้องระบุข้อเสนอการคืน",
+        //     });
+        // }
     } else {
         // normalReturn
         if (!term.expectedReturnDate || String(term.expectedReturnDate).trim() === "") {
@@ -261,12 +261,12 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
     }, [watchedImage])
 
     // Ensure returnConditions is null when selecting supportReturn so validation passes
-    useEffect(() => {
-        if (returnType === "supportReturn" && returnConditions !== null) {
-            setValue("requestTerm.returnConditions", null, { shouldValidate: true })
-            setValue("requestTerm.receiveConditions", null, { shouldValidate: true })
-        }
-    }, [returnType, returnConditions, setValue])
+    // useEffect(() => {
+    //     if (returnType === "supportReturn" && returnConditions !== null) {
+    //         setValue("requestTerm.returnConditions", null, { shouldValidate: true })
+    //         setValue("requestTerm.receiveConditions", null, { shouldValidate: true })
+    //     }
+    // }, [returnType, returnConditions, setValue])
 
     const toggleAllHospitals = () => {
         if (allSelected) {
@@ -342,7 +342,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
             requestTerm: {
                 ...data.requestTerm,
                 // ถ้าเป็นการขอสนับสนุน ให้ส่ง returnConditions เป็น null
-                returnConditions: data.requestTerm.supportCondition ? null : data.requestTerm.returnConditions,
+                returnConditions: data.requestTerm.returnConditions,
             },
             description: data.requestMedicine.description,
             // Save Base64 data URL; keep blob URL only for preview
@@ -772,7 +772,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                     </div>
 
                     <DialogFooter>
-                        <Button type="submit" className="" disabled={loading || !isValid}>
+                        <Button type="submit" className="" disabled={loading}>
                             {loading
                                 ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500">สร้าง</span></div>
                                 : "ส่งคำขอ"}

@@ -219,8 +219,9 @@ export default function StatusDashboard() {
         const responseBody = {
             responseId: med.responseId,
             offeredMedicine: med.offeredMedicine,
-            status: "in-return"
+            status: med.requestTerm.returnType === "supportReturn" ? "returned" : "in-return"
         }
+        console.log('confirReceiveDelivery', med)
         setLoading(true)
         try {
             const response = await fetch("/api/updateRequest", {
