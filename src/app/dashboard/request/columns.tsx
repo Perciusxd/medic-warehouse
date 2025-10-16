@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { ArrowUpDown, MoreHorizontal, Check, Trash2, Copy } from "lucide-react"
+import { ArrowUpDown, MoreHorizontal, Check, Trash2, Copy ,SquareX, SquareCheck, } from "lucide-react"
 
 export const columns = (handleApproveClick: (med: ResponseAsset) => void, handleCancelClick: (med: ResponseAsset) => void): ColumnDef<ResponseAsset>[] => [
     {
@@ -43,14 +43,14 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
 
                     <div className="flex items-center gap-2 flex-wrap mt-2">
                         <Badge variant="outline" className="text-xs text-gray-600">{returnType === "supportReturn" ? "ขอสนับสนุน" : "ขอยืม"}
-                        {returnType === "supportReturn" && supportCondition && (
-                            <Badge variant="secondary" className="text-[10px] text-gray-600">
-                                {supportCondition === "servicePlan" ? "ตามแผนบริการ" : supportCondition === "budgetPlan" ? "ตามงบประมาณ" : "ให้ฟรี"}
-                            </Badge>
-                        )}
-                        {returnType === "normalReturn" && conditionLabel && (
-                            <Badge variant="secondary" className="text-[10px] text-gray-600">{conditionLabel}</Badge>
-                        )}
+                            {returnType === "supportReturn" && supportCondition && (
+                                <Badge variant="secondary" className="text-[10px] text-gray-600">
+                                    {supportCondition === "servicePlan" ? "ตามแผนบริการ" : supportCondition === "budgetPlan" ? "ตามงบประมาณ" : "ให้ฟรี"}
+                                </Badge>
+                            )}
+                            {returnType === "normalReturn" && conditionLabel && (
+                                <Badge variant="secondary" className="text-[10px] text-gray-600">{conditionLabel}</Badge>
+                            )}
                         </Badge>
                     </div>
                     {returnType === "normalReturn" && returnConditions && (
@@ -74,7 +74,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
                             )}
                         </Badge>
                     )}
-                    
+
                 </div>
             )
         },
@@ -128,7 +128,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
         },
         enableGlobalFilter: false
     },
-    
+
     {
         accessorKey: "postingHospitalNameEN",
         size: 180,
@@ -202,16 +202,95 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
         },
         enableGlobalFilter: false
     },
+    {
+        accessorKey: "requestDetails.requestTerm.returnType",
+        size: 130,
+        header: () => 
+            <div>
+                <div className="font-medium text-muted-foreground text-center cursor-default">ความต้องการ</div>
+                <div className="font-medium text-muted-foreground text-center cursor-default  flex justify-around gap-2">
+                    <div>
+                        ขอยืม
+                    </div>
+                    <div>
+                        ขอสนับสนุน
+                    </div>
+                </div>
+            </div>
+            
+        ,
+        cell: ({ row }) => {
+            const med = row.original
+            const returnType = med.requestDetails.requestTerm.returnType
+        return(
+           
+                // condition === 'exactType' ? 'รับคืนเฉพาะยารายการนี้' : condition === 'subType' ? 'รับคืนยาอื่นที่ไม่ใช่รายการนี้' : 'ไม่ระบุ'
+                <div className="flex justify-around gap-2">
+                    <div className="flex text-center">
+                        {returnType === 'normalReturn' ? <SquareCheck className="text-green-600"/> : <SquareX className="text-red-600"/>}
+                    </div>
+                    <div className="flex text-center">
+                        {returnType !== 'normalReturn' ? <SquareCheck className="text-green-600"/> : <SquareX className="text-red-600"/>}
+                    </div>
+                </div>
+            
+          
+        )
+        }
+    },
+    {
+        accessorKey: "requestDetails.requestTerm.receiveConditions.condition",
+        size: 120,
+        header: () => 
+            <div>
+                <div className="font-medium text-muted-foreground text-center cursor-default">เงื่อนไขการรับคืน</div>
+                <div className="font-medium text-muted-foreground text-center cursor-default  flex justify-between gap-2">
+                    <div>
+                        ยาจากผู้ผลิตรายนี้
+                    </div>
+                    <div>
+                        ยาจากผู้ผลิตรายอื่น
+                    </div>
+                </div>
+            </div>
+            
+        ,
+        cell: ({ row }) => {
+            const med = row.original
+            const condition = med.requestDetails.requestTerm.receiveConditions?.condition
+            const returnType = med.requestDetails.requestTerm.returnType
+        return(
+            returnType !== 'normalReturn' ? (
+                <div className="flex flex-col col-span-2 text-center">
+                    <div className="m-2 p-2 border rounded-md bg-gray-100">
+                        ขอสนับสนุน
+                    </div>
+                </div>
+            ):(
+                // condition === 'exactType' ? 'รับคืนเฉพาะยารายการนี้' : condition === 'subType' ? 'รับคืนยาอื่นที่ไม่ใช่รายการนี้' : 'ไม่ระบุ'
+                <div className="flex justify-around gap-2">
+                    <div className="flex text-center">
+                        {condition === 'exactType' ? <SquareCheck className="text-green-600"/> : <SquareX className="text-red-600"/>}
+                    </div>
+                    <div className="flex text-center">
+                        {condition !== 'exactType' ? <SquareCheck className="text-green-600"/> : <SquareX className="text-red-600"/>}
+                    </div>
+                </div>
+            )
+          
+        )
+        }
+    },
     // removed: ความต้องการ & เงื่อนไขการรับยา columns (redundant with badges)
     {
         accessorKey: "requestDetails.urgent",
         size: 80,
         header: ({ column }) => {
             return (
-                <div className="font-medium text-muted-foreground text-left cursor-default items-center flex">
+                <div className="font-medium text-muted-foreground text-center cursor-default items-center flex justify-center">
                     ความเร่งด่วน
                     <Button
-                        className="font-medium text-muted-foreground text-left cursor-pointer "
+                        className="font-medium text-muted-foreground text-center cursor-pointer justify-center"
                         variant="ghost"
                         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                     >
@@ -229,11 +308,11 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
             const badgeClass = status === "urgent"
                 ? "bg-red-100 text-red-700 border-red-200"
                 : status === "immediate"
-                ? "bg-yellow-100 text-yellow-700 border-yellow-200"
-                : "bg-gray-100 text-gray-700 border-gray-200"
+                    ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                    : "bg-gray-100 text-gray-700 border-gray-200"
             return (
-                <div className="flex items-center">
-                    <Badge variant="outline" className={`text-xs ${badgeClass}`}>{label}</Badge>
+                <div className="flex items-center text-center justify-center">
+                    <Badge variant="outline" className={`text-xs  ${badgeClass}`}>{label}</Badge>
                 </div>
             )
         },

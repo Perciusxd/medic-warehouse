@@ -141,6 +141,7 @@ const RequestSchema = z.object({
         image: z.custom<File | undefined>((value) => value === undefined || value instanceof File, {
             message: "กรุณาอัปโหลดไฟล์ภาพที่ถูกต้อง",
         }).optional(),
+        packingSize: z.string().optional(), // จริงๆบังคับแต่ยังทำไม่เสร็จ
     }),
     requestTerm: z.object({
         // ทำให้เลือกได้ตามเงื่อนไข (ต้องกรอกเมื่อเป็น normalReturn เท่านั้น)
@@ -214,6 +215,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                 pricePerUnit: 0,
                 unit: "",
                 manufacturer: "",
+                packingSize: "",
             },
             requestTerm: {
                 expectedReturnDate: "",
