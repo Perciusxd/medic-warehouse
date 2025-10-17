@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/hover-card"
 import { Badge } from "@/components/ui/badge"
 import clsx from "clsx";
-import { ArrowUpDown, Pencil, SquareX, SquareCheck } from "lucide-react"
+import { ArrowUpDown, Pencil, SquareX, SquareCheck ,SquareMinus } from "lucide-react"
 import StatusIndicator, { getStatusColor, getTextStatusColor } from "@/components/ui/status-indicator"
 import ImageHoverPreview from "@/components/ui/image-hover-preview"
 import ReturnPdfMultiButton from "@/components/ui/pdf_creator/ReturnPdfMultiButton"
@@ -38,16 +38,16 @@ export const columns = (
         {
             id: "image",
             size: 70,
-            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ภาพ</div>,
+            header: () => <div className="font-medium text-muted-foreground text-center cursor-default">ภาพ</div>,
             cell: ({ row }) => {
                 const original: any = row.original as any
                 console.log("original", original)
                 const imgUrl: string | null = original.requestMedicineImage || original.requestMedicineImage?.imageRef || null
                 if (!imgUrl) {
-                    return <div className="text-xs text-muted-foreground">-</div>
+                    return <div className="text-xs text-muted-foreground text-center">-</div>
                 }
                 return (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 justify-center">
 
                         {/* <img
                                     src={imgUrl}
@@ -121,20 +121,23 @@ export const columns = (
                 const receiveConditions = requestTerm.receiveConditions;
                 const condition = receiveConditions.condition;
                 const conditionLabel = condition === 'exactType' ? 'ยืมจากผู้ผลิตรายนี้' : 'ยืมจากผู้ผลิตรายอื่น';
-
+                const supportCondition = row.original.requestTerm.supportCondition ? row.original.requestTerm.supportCondition : "ไม่ใช่รายการสนับสนุน";
                 return (
                     <div className="flex flex-col">
                         <div className="text-md">{medName}</div>
                         <div className="text-xs text-muted-foreground">{medTrademark}</div>
 
                         <div className="flex item-center gap-2 flex-wrap mt-2">
-                            <Badge variant="outline" className="text-xs text-gray-600">{returnType === "supportReturn" ? "ขอสนับสนุน" : "ขอยืม"}
-                            {returnType === "normalReturn" && receiveConditions.condition && (
+                        <Badge variant="outline" className="text-xs text-gray-600">{returnType === "supportReturn" ? "ขอสนับสนุน" : "ขอยืม"}
+                            {returnType === "supportReturn" && supportCondition && (
                                 <Badge variant="secondary" className="text-[10px] text-gray-600">
-                                    {conditionLabel}
+                                    {supportCondition === "servicePlan" ? "ตามแผนบริการ" : supportCondition === "budgetPlan" ? "ตามงบประมาณ" : "ให้ฟรี"}
                                 </Badge>
                             )}
-                            </Badge>
+                            {returnType === "normalReturn" && conditionLabel && (
+                                <Badge variant="secondary" className="text-[10px] text-gray-600">{conditionLabel}</Badge>
+                            )}
+                        </Badge>
                         </div>
                     </div>
                 )
@@ -168,6 +171,7 @@ export const columns = (
             header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ขนาด/หน่วย</div>,
             cell: ({ row }) => {
                 const med = row.original;
+                console.log("ff",med)
                 const quantity = med.requestMedicine.quantity;
                 const unit = med.requestMedicine.unit
                 return (
@@ -178,6 +182,54 @@ export const columns = (
                 )
             },
             enableGlobalFilter: true
+        },
+        {
+            accessorKey: "requestTerm.receiveConditions.condition",
+            size: 120,
+            header: () => 
+                <div>
+                    <div className="font-medium text-muted-foreground text-center cursor-default">เงื่อนไขการรับคืน</div>
+                    <div className="font-medium text-muted-foreground text-center cursor-default  flex justify-between gap-2">
+                        <div>
+                            ยาจากผู้ผลิตรายนี้
+                        </div>
+                        <div>
+                            ยาจากผู้ผลิตรายอื่น
+                        </div>
+                    </div>
+                </div>
+                
+            ,
+            cell: ({ row }) => {
+                const med = row.original
+                const condition = med.requestTerm.receiveConditions?.condition
+                const returnType = med.requestTerm.returnType
+            return(
+                returnType !== 'normalReturn' ? (
+                    <div className="flex justify-around gap-2">
+                        <SquareMinus className="text-gray-300"></SquareMinus>
+                        <SquareMinus className="text-gray-300"></SquareMinus>
+                    </div>
+
+                    // <div className="flex flex-col col-span-2 text-center">
+                    //     <div className="m-2 p-2 border rounded-md bg-gray-100">
+                    //         ขอสนับสนุน
+                    //     </div>
+                    // </div>
+                ):(
+                    // condition === 'exactType' ? 'รับคืนเฉพาะยารายการนี้' : condition === 'subType' ? 'รับคืนยาอื่นที่ไม่ใช่รายการนี้' : 'ไม่ระบุ'
+                    <div className="flex justify-around gap-2">
+                        <div className="flex text-center">
+                            {condition === 'exactType' ? <SquareCheck className="text-green-600"/> : <SquareX className="text-red-600"/>}
+                        </div>
+                        <div className="flex text-center">
+                            {condition !== 'exactType' ? <SquareCheck className="text-green-600"/> : <SquareX className="text-red-600"/>}
+                        </div>
+                    </div>
+                )
+              
+            )
+            }
         },
         // {
         //     accessorKey: "requestDetails.id",
@@ -324,7 +376,7 @@ export const columns = (
                                             : "-"}
                                     </span>
                                 </div>
-                                <div className="basis-1/2 text-wrap w-[120px] truncate overflow-hidden text-ellipsis whitespace-nowrap">
+                                <div className="basis-1/2 text-wrap w-[120px] truncate overflow-hidden text-ellipsis whitespace-nowrap ">
                                     <span>{detail.respondingHospitalNameTH}</span>
                                 </div>
                                 <div className="text-md font-medium items-center text-left  justify-start min-w-[180px] ">

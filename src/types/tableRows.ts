@@ -49,6 +49,7 @@ export type RequestTicketRow = {
     returnType: "normalReturn" | "supportReturn";
     receiveConditions: { condition: "exactType" | "subType" };
     returnConditions?: { condition: "exactType" | "otherType"; otherTypeSpecification?: string } | null;
+    supportCondition: "servicePlan" | "budgetPlan" | "freePlan";
   };
   responseDetails: RequestResponseDetail[];
   remainingAmount: number;

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { ArrowUpDown, MoreHorizontal, Check, Trash2, Copy ,SquareX, SquareCheck, } from "lucide-react"
+import { ArrowUpDown, MoreHorizontal, Check, Trash2, Copy ,SquareX, SquareCheck, SquareMinus} from "lucide-react"
 
 export const columns = (handleApproveClick: (med: ResponseAsset) => void, handleCancelClick: (med: ResponseAsset) => void): ColumnDef<ResponseAsset>[] => [
     {
@@ -261,11 +261,16 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
             const returnType = med.requestDetails.requestTerm.returnType
         return(
             returnType !== 'normalReturn' ? (
-                <div className="flex flex-col col-span-2 text-center">
-                    <div className="m-2 p-2 border rounded-md bg-gray-100">
-                        ขอสนับสนุน
+                <div className="flex justify-around gap-2">
+                        <SquareMinus className="text-gray-300"></SquareMinus>
+                        <SquareMinus className="text-gray-300"></SquareMinus>
                     </div>
-                </div>
+
+                    // <div className="flex flex-col col-span-2 text-center">
+                    //     <div className="m-2 p-2 border rounded-md bg-gray-100">
+                    //         ขอสนับสนุน
+                    //     </div>
+                    // </div>
             ):(
                 // condition === 'exactType' ? 'รับคืนเฉพาะยารายการนี้' : condition === 'subType' ? 'รับคืนยาอื่นที่ไม่ใช่รายการนี้' : 'ไม่ระบุ'
                 <div className="flex justify-around gap-2">

@@ -52,11 +52,21 @@ export const columns = (
                 const receiveConditions = returnTerm.receiveConditions;
                 const condition = receiveConditions.condition;
                 const conditionLabel = condition === 'exactType' ? 'ยืมจากผู้ผลิตรายนี้' : 'ยืมจากผู้ผลิตรายอื่น';
+                const supportCondition = row.original.requestDetails.requestTerm.supportCondition ? row.original.requestDetails.requestTerm.supportCondition : "ไม่ใช่รายการสนับสนุน";
                 return (
                     <div>
                         <div className="text-md font-medium">{name}</div>
                         <div className="text-xs text-muted-foreground">{trademark}</div>
-                         <Badge variant="outline" className="text-xs text-gray-600">{returnType === "supportReturn" ? "ขอสนับสนุน" : "ขอยืม"}</Badge>
+                        <Badge variant="outline" className="text-xs text-gray-600">{returnType === "supportReturn" ? "ขอสนับสนุน" : "ขอยืม"}
+                            {returnType === "supportReturn" && supportCondition && (
+                                <Badge variant="secondary" className="text-[10px] text-gray-600">
+                                    {supportCondition === "servicePlan" ? "ตามแผนบริการ" : supportCondition === "budgetPlan" ? "ตามงบประมาณ" : "ให้ฟรี"}
+                                </Badge>
+                            )}
+                            {returnType === "normalReturn" && conditionLabel && (
+                                <Badge variant="secondary" className="text-[10px] text-gray-600">{conditionLabel}</Badge>
+                            )}
+                        </Badge>
                     </div>
                 )
             }
