@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -22,7 +23,7 @@ import { HospitalList } from "@/context/HospitalList"
 export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogProps) {
   const [selectedIndices, setSelectedIndices] = React.useState<number[]>([])
   const [selectedObjects, setSelectedObjects] = React.useState<any[]>([])
-  const [selectedHospital, setSelectedHospital] = React.useState<string >('')
+  const [selectedHospital, setSelectedHospital] = React.useState<string>('')
   const HospitalListNamesTH = HospitalList.map(h => h.nameTH)
 
   const handleSelect = (index: number) => {
@@ -39,8 +40,8 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
     if (selectedIndices.includes(index)) {
       // เอาออก
       const newIndices = selectedIndices.filter(i => i !== index)
-      const newObjects = selectedObjects.filter(o => o.id !== obj.id); 
-      
+      const newObjects = selectedObjects.filter(o => o.id !== obj.id);
+
       setSelectedIndices(newIndices)
       setSelectedObjects(newObjects)
 
@@ -68,7 +69,11 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
 
 
   const userdata = useAuth();
-  console.log("userdata from select dialog", userdata)
+  console.log("data", dataList)
+  const [docType, setDocType] = useState<string>('nomalReturn');
+  const handleDocTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setDocType(event.target.value);
+  };
   return (
 
     <Dialog>
@@ -85,7 +90,7 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
           <DialogTitle> พิมพ์เอกสารขอยืมยา/สนับสนุน</DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="h-60 w-full rounded-md border p-2">
+        <ScrollArea className="h-[400px] w-full rounded-md border p-2">
 
           <select
             className="border p-2 mb-4 w-full rounded"
@@ -99,6 +104,46 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
               </option>
             ))}
           </select>
+          <fieldset>
+      <legend>รูปแบบเอกสาร</legend>
+      <div className="flex gap-4 mt-1 mb-1">
+        
+        {/* --- ตัวเลือกที่ 1 --- */}
+        <div className="flex items-center">
+          <input 
+            type="radio" 
+            id="nomalReturnRadio" // เพิ่ม id เพื่อเชื่อมกับ label
+            name="documentType"   // เพิ่ม name เพื่อจัดกลุ่ม
+            value="nomalReturn"
+            checked={docType === 'nomalReturn'} // ควบคุมการ checked จาก state
+            onChange={handleDocTypeChange}      // เรียกใช้ฟังก์ชันเมื่อมีการเปลี่ยนแปลง
+          />
+          <label htmlFor="nomalReturnRadio" className="ml-1 cursor-pointer">
+            เอกสารขอยืม
+          </label>
+        </div>
+
+        {/* --- ตัวเลือกที่ 2 --- */}
+        <div className="flex items-center">
+          <input 
+            type="radio" 
+            id="supportReturnRadio" // เพิ่ม id เพื่อเชื่อมกับ label
+            name="documentType"     // name ต้องเหมือนกับตัวแรก
+            value="supportReturn"
+            checked={docType === 'supportReturn'} // ควบคุมการ checked จาก state
+            onChange={handleDocTypeChange}        // เรียกใช้ฟังก์ชันเมื่อมีการเปลี่ยนแปลง
+          />
+          <label htmlFor="supportReturnRadio" className="ml-1 cursor-pointer">
+            เอกสารสนับสนุน
+          </label>
+        </div>
+      </div>
+
+       {/* (ส่วนนี้ไว้ทดสอบ) แสดงค่าที่กำลังถูกเลือก */}
+       <p className="mt-2 text-xs text-gray-500">
+        ค่าที่เลือก: <strong>{docType}</strong>
+      </p>
+    </fieldset>
 
           <h4 className="font-bold mb-2">ขอยืม (ขาดแคลน)</h4>
           {dataList

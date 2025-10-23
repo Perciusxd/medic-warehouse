@@ -23,6 +23,8 @@ const badgeVariants = cva(
           "bg-orange-500 text-white",
         text_status:
         "flex content-center h-6 font-bold justify-center rounded-full px-3 py-3",
+        none_outline: 
+        "border-transparent text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
       },
     },
     defaultVariants: {

@@ -64,7 +64,7 @@ export const columns = (
                 return (
                     <div className="flex flex-col">
                         <div className="text-md font-medium ">{name}</div>
-                        <div className="text-xs text-muted-foreground">ขื่อการค้า : {trademark}</div>
+                        <div className="text-xs text-muted-foreground">{trademark}</div>
                     </div>
                 )
             },
@@ -108,7 +108,7 @@ export const columns = (
         },
         {
             accessorKey: "sharingDetails.sharingReturnTerm.receiveConditions",
-            size: 280,
+            size: 380,
             header: () => (
                 <div className="font-medium text-muted-foreground text-center cursor-default">
                     <div>เงื่อนไขการคืนยา</div>
@@ -116,10 +116,8 @@ export const columns = (
             ),
             cell: ({ row }: { row: any }) => {
                 const med = row.original;
-                const receiveConditions = med.sharingDetails?.sharingReturnTerm?.receiveConditions || {};
-
-                const noReturn = receiveConditions.noReturn;
-
+                const sharingReturnTerm = med.sharingDetails?.sharingReturnTerm || {};
+                //const returnTerm = med.responseDetails?.returnTerm || {};
                 const renderCondition = (label: string, value: boolean) => (
                     <div className="flex items-center gap-2">
                         {value ? <SquareCheck className="text-green-600 w-5 h-5" /> : <SquareX className="text-red-600 w-5 h-5" />}
@@ -127,27 +125,23 @@ export const columns = (
                     </div>
                 );
 
-                if (noReturn) {
                     return (
-                        <div className="text-sm font-medium  flex items-center gap-2 justify-start">
-                            <SquareCheck className="text-green-600 w-5 h-5" />
-                            ไม่คืน
-                        </div>
-                    );
-                } else {
-                    return (
-                        <div className="text-md font-medium  flex flex-row gap-2">
+                        <div className="text-md font-medium  flex flex-row gap-2 items-start">
                             <div className="basis-1/2 justify-end flex flex-col ">
-                                {renderCondition("คืนรายการที่ให้ยืม", receiveConditions.exactType)}
-                                {renderCondition("คืนรายการทดแทน", receiveConditions.supportType)}
+                                {renderCondition("คืนรายการที่ให้ยืม", sharingReturnTerm.returnConditions.exactTypeCondition)}
+                                {renderCondition("คืนรายการทดแทน", sharingReturnTerm.returnConditions.otherTypeCondition)}
                             </div>
                             <div className="basis-1/2 flex flex-col">
-                                {renderCondition("ขอสนับสนุน", receiveConditions.subType)}
-                                {renderCondition("คืนรายการอื่นได้", receiveConditions.otherType)}
+                                {renderCondition("ตามสิทธิ์แผนบริการ", sharingReturnTerm.supportCondition.servicePlan)}
+                                {renderCondition("ตามงบประมาณสนับสนุน", sharingReturnTerm.supportCondition.budgetPlan)}
+                                {renderCondition("สนับสนุนโดยไม่คิดค่าใช้จ่าย", sharingReturnTerm.supportCondition.freePlan)}
                             </div>
+                            {/* <div>
+                                {renderCondition("สนับสนุนโดยไม่คิดค่าใช้จ่าย", sharingReturnTerm.returnConditions.freePlan)}
+                            </div> */}
                         </div>
                     );
-                }
+                
             },
             enableGlobalFilter: false
         },
@@ -184,7 +178,7 @@ export const columns = (
 
                 return <div className="flex flex-row  items-center  justify-between">
                     <div className="text-sm font-medium text-gray-600 flex justify-start basis-1/2">
-                        {postingHospitalName} :
+                        {postingHospitalName}
                     </div>
                     <div className="text-sm font-medium text-gray-600 flex justify-start basis-1/2">
                         {

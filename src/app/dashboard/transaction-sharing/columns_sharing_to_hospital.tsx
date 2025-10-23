@@ -84,7 +84,8 @@ export const columns = (
             cell: ({ row }) => {
                 const medName = row.original.sharingMedicine.name;
                 const medTrademark = row.original.sharingMedicine.trademark;
-
+                const med = row.original
+                //console.log("med", med)
                 return (
                     <div className="flex flex-col">
                         <div className="text-sm font-medium text-gray-600">{medName}</div>
@@ -269,7 +270,9 @@ export const columns = (
                                                                 responseStatus: detail.status,
                                                                 returnTerm: detail.returnTerm,
                                                                 respondingHospitalNameTH: detail.respondingHospitalNameTH,
+                                                                
                                                             })}
+                                                            
                                                         >
                                                             รอยืนยันให้ยืม ({detail.acceptedOffer.responseAmount})
                                                             <SquareCheck className="h-4 w-4" />

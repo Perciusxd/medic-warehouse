@@ -57,30 +57,40 @@ export type RequestTicketRow = {
 
 // Row shape for the sharing table (sharing tickets list)
 export type SharingReceiveConditions = {
-  exactType: boolean;
-  otherType: boolean;
-  subType: boolean;
-  supportType: boolean;
-  noReturn: boolean;
-};
+  returnType: "normalReturn" | "supportReturn" | "all";
+  returnConditions?: {
+    exactTypeCondition: boolean;
+    otherTypeCondition: boolean;
+    otherTypeSpecification: string;
+    // condition: "exactType" | "otherType"; 
+    // otherTypeSpecification?: string } | null;
+    supportCondition?: {
+      servicePlanCondition: boolean;
+      budgetPlanCondition: boolean;
+      freePlanCondition: boolean;
+    }
+
+    // "servicePlan" | "budgetPlan" | "freePlan";
+  };
+  };
 
 export type SharingDetailsSummary = {
-  createdAt: string;
-  postingHospitalNameTH: string;
-  postingHospitalNameEN: string;
-  sharingMedicine: {
-    name: string;
-    trademark: string;
-    quantity: number | string;
-    unit: string;
-    manufacturer: string;
-    batchNumber: string;
-    expiryDate: string;
-    pricePerUnit: number;
-    sharingAmount: number;
+    createdAt: string;
+    postingHospitalNameTH: string;
+    postingHospitalNameEN: string;
+    sharingMedicine: {
+      name: string;
+      trademark: string;
+      quantity: number | string;
+      unit: string;
+      manufacturer: string;
+      batchNumber: string;
+      expiryDate: string;
+      pricePerUnit: number;
+      sharingAmount: number;
+    };
+    sharingReturnTerm: { receiveConditions: SharingReceiveConditions };
   };
-  sharingReturnTerm: { receiveConditions: SharingReceiveConditions };
-};
 
 export type SharingTicketRow = {
   id: string;

@@ -204,7 +204,7 @@ export default function StatusDashboard() {
     }
 
     const handleReturnClick = async (med: any) => {
-        //console.log('handleReturnClick===', med);
+        console.log('handleReturnClick===', med);
         setSelectedMed(med);
         setReturnDialogOpen(true);
     }

@@ -19,12 +19,13 @@ import {
 } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import ImageHoverPreview from "@/components/ui/image-hover-preview"
-
+import { RequiredMark, OptionalMark } from "@/components/ui/field-indicator"
 import RequestDetails from "./request-details"
 import { Calendar1 } from "lucide-react"
 import { HospitalList } from "@/context/HospitalList"
 import { useAuth } from "../providers"
 import { format } from "date-fns"
+import { se } from "date-fns/locale"
 const allHospitalList = HospitalList
 
 // Convert a Blob/File to a Base64 data URL
@@ -111,22 +112,37 @@ const SharingFormSchema = z.object({
         }).optional(),
     }),
     sharingReturnTerm: z.object({
-        receiveConditions: z.object({
-            exactType: z.boolean(),
-            subType: z.boolean(),
-            otherType: z.boolean(),
-            supportType: z.boolean(),
-            noReturn: z.boolean(),
-        }).refine((data) =>
-            Object.values(data).some(value => value === true),
-            {
-                message: "กรุณาเลือกอย่างน้อย 1 เงื่อนไข",
-                path: []
-            }
-
-        )
+        // ทำให้เลือกได้ตามเงื่อนไข (ต้องกรอกเมื่อเป็น normalReturn เท่านั้น)
+        returnType: z.enum(["normalReturn", "supportReturn", "all"]),
+        // อนุญาตให้เป็น null ได้เมื่อเป็น supportReturn
+        returnConditions: z.object({
+            // condition: z.enum(["exactType", "otherType"]).optional(),
+            exactTypeCondition: z.boolean().optional(),
+            otherTypeCondition: z.boolean().optional(),
+            otherTypeSpecification: z.string().optional(),
+        }).optional(),
+        // supportCondition: z.enum(["servicePlan", "budgetPlan", "freePlan"]).optional(),
+        supportCondition: z.object({
+            servicePlan: z.boolean().optional(),
+            budgetPlan: z.boolean().optional(),
+            freePlan: z.boolean().optional(),
+        }).optional(),
     }),
     selectedHospitals: z.array(z.number()).min(1, "กรุณาเลือกโรงพยาบาลอย่างน้อย 1 แห่ง"),
+}).superRefine((data, ctx) => {
+    const term = data.sharingReturnTerm;
+    if (term.returnType === "supportReturn") {
+        if (!term.supportCondition) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ["sharingReturnTerm", "supportCondition"],
+                message: "กรุณาเลือกเงื่อนไขการสนับสนุน",
+            });
+        }
+    }
+    if (term.returnType === "normalReturn") {
+
+    }
 });
 
 export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
@@ -143,6 +159,19 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
     const { register, handleSubmit, watch, setValue, getValues, resetField, formState: { errors, isSubmitted } } = useForm<z.infer<typeof SharingFormSchema>>({
         resolver: zodResolver(SharingFormSchema),
         defaultValues: {
+            sharingReturnTerm: {
+                returnType: "all",
+                returnConditions: {
+                    exactTypeCondition: false,
+                    otherTypeCondition: false,
+                    otherTypeSpecification: "",
+                },
+                supportCondition: {
+                    servicePlan: false,
+                    budgetPlan: false,
+                    freePlan: false,
+                }
+            },
             selectedHospitals: []
 
         }
@@ -159,8 +188,8 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
     const allHospitals = hospitalList.map(hospital => hospital.id)
     const allSelected = selectedHospitals.length === allHospitals.length
 
-    const receiveConditions = watch("sharingReturnTerm.receiveConditions"); // Get the current values of receiveConditions
-    const isAnyChecked = Object.values(receiveConditions || {}).some(Boolean);// Check if any checkbox is checked
+    //const receiveConditions = watch("sharingReturnTerm.receiveConditions"); // Get the current values of receiveConditions
+    //const isAnyChecked = Object.values(receiveConditions || {}).some(Boolean);// Check if any checkbox is checked
 
     // Image preview state
     const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
@@ -256,7 +285,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
             sharingMedicine: sharingMedicine,
             selectedHospitals: filterHospital
         }
-        //console.log('sharingBody', sharingBody)
+        console.log('sharingMedicine', sharingBody)
         try {
             setLoading(true)
             const response = await fetch("/api/createSharing", {
@@ -284,7 +313,8 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
             resetField("sharingMedicine")
             resetField("sharingReturnTerm")
             setValue("selectedHospitals", [])
-        } catch (error) {
+        }
+        catch (error) {
             //console.error("Error submitting form:", error)
             setLoading(false)
         }
@@ -293,7 +323,32 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
     const onError = (errors: FieldErrors<z.infer<typeof SharingFormSchema>>) => {
         //console.error("❌ Form validation errors:", errors);
     }
+    const returnType = watch("sharingReturnTerm.returnType")
+    const sharingReturnTerm = watch("sharingReturnTerm")
+    console.log("sharingReturnTerm", sharingReturnTerm)
+    console.log("returnType", returnType)
+    const otherTypeCondition = watch("sharingReturnTerm.returnConditions.otherTypeCondition")
 
+    useEffect(() => {
+        // if (returnConditions === "exactType") {
+        //     // ถ้าเลือก "คืนยารายการนี้" ให้ล้างค่าในช่อง text
+        //     setValue("sharingReturnTerm.returnConditions.otherTypeSpecification", "");
+        //     console.log(setValue);
+        // }
+        if (returnType === "supportReturn") {
+            // clear the enum field using undefined so it matches the expected type ("exactType" | "otherType" | undefined)
+            setValue("sharingReturnTerm.returnConditions.otherTypeSpecification", "");
+            setValue("sharingReturnTerm.returnConditions.exactTypeCondition", false);
+            setValue("sharingReturnTerm.returnConditions.otherTypeCondition", false);
+        }
+        if (returnType === "normalReturn") {
+            setValue("sharingReturnTerm.supportCondition.servicePlan", false);
+            setValue("sharingReturnTerm.supportCondition.budgetPlan", false);
+            setValue("sharingReturnTerm.supportCondition.freePlan", false);
+        }
+    }, [
+        // returnConditions
+        , returnType, setValue]);
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[1200px]">
@@ -520,42 +575,235 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                 <span className="text-red-500 text-sm">{errors.selectedHospitals.message}</span>
                             )}
 
-                            <Label className="mb-2 mt-4">เงื่อนไขการรับคืนยา</Label>
-                            <div className="flex flex-col items-start space-y-2">
-                                <Label className="font-normal">
-                                    <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.exactType")} />
-                                    ยาจากผู้ผลิตรายนี้
-                                </Label>
-                                <Label className="font-normal">
-                                    <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.subType")} />
-                                    ยาจากผู้ผลิตรายอื่น
-                                </Label>
-                                <Label className="font-normal">
-                                    <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.supportType")} />
-                                    สามารถสนับสนุนได้(อาจจะต้องลบออก)
-                                </Label>
-                                <Label className="font-normal">
-                                    <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.otherType")} />
-                                    ยารายการอื่น
-                                </Label>
-                                <Label className="font-normal">
-                                    <input type="checkbox" />
-                                    หักงบประมาณ Service plan (mock)
-                                </Label>
-                                <Label className="font-normal">
-                                    <input type="checkbox" />
-                                    หักงบประมาณบำรุงโรงพยาบาล (mock)
-                                </Label>
-                                <Label className="font-normal">
-                                    <input type="checkbox" {...register("sharingReturnTerm.receiveConditions.noReturn")} />
-                                    สนับสนุนโดยให้เปล่า
-                                </Label>
-                                {!isAnyChecked && isSubmitted && (
-                                    <p className="text-red-500 text-sm mt-1">
-                                        กรุณาเลือกอย่างน้อย 1 เงื่อนไข
-                                    </p>
-                                )}
+                            <div className="flex flex-col">
+                                <Label className="font-medium mt-2">รูปแบบการแบ่งปัน <RequiredMark /></Label>
+                                <div className="flex flex-row items-center gap-4">
+                                    <Label className="mt-2 w-[190px]">
+                                        <input type="radio" value="supportReturn" {...register("sharingReturnTerm.returnType")} />
+                                        ขอสนับสนุน
+                                    </Label>
+                                    <Label className="mt-2 w-[120px]">
+                                        <input type="radio" value="normalReturn" {...register("sharingReturnTerm.returnType")} />
+                                        แบ่งปัน
+                                    </Label>
+                                    <Label className="mt-2 ">
+                                        <input type="radio" value="all"  {...register("sharingReturnTerm.returnType")} />
+                                        ทั้งแบ่งปันและขอสนับสนุน
+                                    </Label>
+                                </div>
+
+                                {
+                                    returnType === "all" && (
+                                        <div className="flex flex-row  mt-4 gap-4 " >
+
+                                            <div className="flex items-start w-[190px] ">
+                                                <div className="flex flex-col space-y-2 ">
+                                                    <Label className="font-medium items-center">เงื่อนไขการสนับสนุน <RequiredMark /></Label>
+                                                    <Label className="font-normal">
+                                                        <input type="checkbox"
+                                                            // value="servicePlan"  
+                                                            {...register("sharingReturnTerm.supportCondition.servicePlan")} />
+                                                        ตามสิทธิ์แผนบริการ
+                                                    </Label>
+                                                    <Label className="font-normal">
+                                                        <input type="checkbox"
+                                                            // value="budgetPlan" 
+                                                            {...register("sharingReturnTerm.supportCondition.budgetPlan")} />
+                                                        ตามงบประมาณสนับสนุน
+                                                    </Label>
+                                                    <Label className="font-normal">
+                                                        <input type="checkbox"
+                                                            // value="freePlan"  
+                                                            {...register("sharingReturnTerm.supportCondition.freePlan")} />
+                                                        สนับสนุนโดยไม่คิดค่าใช้จ่าย
+                                                    </Label>
+                                                    {errors.sharingReturnTerm?.supportCondition && (
+                                                        <span className="text-red-500 text-xs">{String(errors.sharingReturnTerm.supportCondition.message)}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col gap-2 items-start " >
+                                                <Label className="font-medium">เงื่อนไขการรับคืน <RequiredMark /></Label>
+                                                <div className="flex flex-col flex-wrap items-start gap-2">
+                                                    <Label className="font-normal whitespace-nowrap">
+                                                        <input type="checkbox"
+                                                            // value="exactType"  
+                                                            {...register("sharingReturnTerm.returnConditions.exactTypeCondition")} />
+                                                        คืนยารายการนี้
+                                                    </Label>
+                                                    <div >
+                                                        <Label className="font-normal whitespace-nowrap">
+                                                            <input type="checkbox"
+                                                                // value="otherType"  
+                                                                {...register("sharingReturnTerm.returnConditions.otherTypeCondition")} />
+                                                            คืนยารายการอื่น
+                                                        </Label>
+                                                        <Input type="text" placeholder="ระบุรายรายการยา/ผู้ผลิต/ราคาต่อหน่วย" disabled={otherTypeCondition === false} className="w-[250px] mt-1" {...register("sharingReturnTerm.returnConditions.otherTypeSpecification")} />
+                                                    </div>
+
+                                                    {errors.sharingReturnTerm?.returnConditions?.exactTypeCondition && (
+                                                        <span className="text-red-500 text-xs">{String(errors.sharingReturnTerm.returnConditions.exactTypeCondition.message)}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    )
+                                }
+                                {
+                                    returnType === "normalReturn" && (
+                                        <div className="flex flex-row  mt-4 gap-4 " >
+
+                                            <div className="flex items-start w-[190px] ">
+                                                <div className="flex flex-col space-y-2 ">
+                                                    <Label className="font-medium items-center">เงื่อนไขการสนับสนุน <RequiredMark /></Label>
+                                                    <Label className="font-normal">
+                                                        <input type="checkbox" disabled {...register("sharingReturnTerm.supportCondition.servicePlan")} />
+                                                        ตามสิทธิ์แผนบริการ
+                                                    </Label>
+                                                    <Label className="font-normal">
+                                                        <input type="checkbox" disabled {...register("sharingReturnTerm.supportCondition.budgetPlan")} />
+                                                        ตามงบประมาณสนับสนุน
+                                                    </Label>
+                                                    <Label className="font-normal">
+                                                        <input type="checkbox" disabled {...register("sharingReturnTerm.supportCondition.freePlan")} />
+                                                        สนับสนุนโดยไม่คิดค่าใช้จ่าย
+                                                    </Label>
+                                                    {errors.sharingReturnTerm?.supportCondition && (
+                                                        <span className="text-red-500 text-xs">{String(errors.sharingReturnTerm.supportCondition.message)}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col gap-2 items-start " >
+                                                <Label className="font-medium">เงื่อนไขการรับคืน <RequiredMark /></Label>
+                                                <div className="flex flex-col flex-wrap items-start gap-2">
+                                                    <Label className="font-normal whitespace-nowrap">
+                                                        <input type="checkbox"
+                                                            // value="exactType" 
+                                                            {...register("sharingReturnTerm.returnConditions.exactTypeCondition")} />
+                                                        คืนยารายการนี้
+                                                    </Label>
+                                                    <div >
+                                                        <Label className="font-normal whitespace-nowrap">
+                                                            <input type="checkbox"
+                                                                // value="otherType"  
+                                                                {...register("sharingReturnTerm.returnConditions.otherTypeCondition")} />
+                                                            คืนยารายการอื่น
+                                                        </Label>
+                                                        <Input type="text" placeholder="ระบุรายรายการยา/ผู้ผลิต/ราคาต่อหน่วย" disabled={otherTypeCondition === false} className="w-[250px] mt-1" {...register("sharingReturnTerm.returnConditions.otherTypeSpecification")} />
+                                                    </div>
+
+                                                    {errors.sharingReturnTerm && (
+                                                        <span className="text-red-500 text-xs">{String(errors.sharingReturnTerm.message)}</span>
+                                                    )}
+
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    )
+                                }
+                                {
+                                    returnType === "supportReturn" && (
+                                        <div className="flex flex-row  mt-4 gap-4 " >
+
+                                            <div className="flex items-start w-[190px] ">
+                                                <div className="flex flex-col space-y-2 ">
+                                                    <Label className="font-medium items-center">เงื่อนไขการสนับสนุน <RequiredMark /></Label>
+                                                    <Label className="font-normal">
+                                                        <input type="checkbox" {...register("sharingReturnTerm.supportCondition.servicePlan")} />
+                                                        ตามสิทธิ์แผนบริการ
+                                                    </Label>
+                                                    <Label className="font-normal">
+                                                        <input type="checkbox"  {...register("sharingReturnTerm.supportCondition.budgetPlan")} />
+                                                        ตามงบประมาณสนับสนุน
+                                                    </Label>
+                                                    <Label className="font-normal">
+                                                        <input type="checkbox"   {...register("sharingReturnTerm.supportCondition.freePlan")} />
+                                                        สนับสนุนโดยไม่คิดค่าใช้จ่าย
+                                                    </Label>
+                                                    {errors.sharingReturnTerm?.supportCondition && (
+                                                        <span className="text-red-500 text-xs">{String(errors.sharingReturnTerm.supportCondition.message)}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col gap-2 items-start " >
+                                                <Label className="font-medium">เงื่อนไขการรับคืน <RequiredMark /></Label>
+                                                <div className="flex flex-col flex-wrap items-start gap-2">
+                                                    <Label className="font-normal whitespace-nowrap">
+                                                        <input type="checkbox"
+                                                            // value="exactType" 
+                                                            disabled {...register("sharingReturnTerm.returnConditions.exactTypeCondition")} />
+                                                        คืนยารายการนี้
+                                                    </Label>
+                                                    <div >
+                                                        <Label className="font-normal whitespace-nowrap">
+                                                            <input type="checkbox"
+                                                                // value="otherType" 
+                                                                disabled {...register("sharingReturnTerm.returnConditions.otherTypeCondition")} />
+                                                            คืนยารายการอื่น
+                                                        </Label>
+                                                        <Input type="text" placeholder="ระบุรายรายการยา/ผู้ผลิต/ราคาต่อหน่วย" disabled className="w-[250px] mt-1" {...register("sharingReturnTerm.returnConditions.otherTypeSpecification")} />
+                                                    </div>
+
+                                                    {errors.sharingReturnTerm?.returnConditions && (
+                                                        <span className="text-red-500 text-xs">{String(errors.sharingReturnTerm.returnConditions.message)}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    )
+                                }
+
+                                {/* <div className="flex flex-row  mt-4 gap-4 " >
+
+                                    <div className="flex items-start w-[190px] ">
+                                        <div className="flex flex-col space-y-2 ">
+                                            <Label className="font-medium items-center">เงื่อนไขการสนับสนุน <RequiredMark /></Label>
+                                            <Label className="font-normal">
+                                                <input type="radio" value="servicePlan" disabled={returnType === "normalReturn"} {...register("sharingReturnTerm.supportCondition")} />
+                                                ตามสิทธิ์แผนบริการ
+                                            </Label>
+                                            <Label className="font-normal">
+                                                <input type="radio" value="budgetPlan" disabled={returnType === "normalReturn"}{...register("sharingReturnTerm.supportCondition")} />
+                                                ตามงบประมาณสนับสนุน
+                                            </Label>
+                                            <Label className="font-normal">
+                                                <input type="radio" value="freePlan" disabled={returnType === "normalReturn"} {...register("sharingReturnTerm.supportCondition")} />
+                                                สนับสนุนโดยไม่คิดค่าใช้จ่าย
+                                            </Label>
+                                            {errors.sharingReturnTerm?.supportCondition && (
+                                                <span className="text-red-500 text-xs">{String(errors.sharingReturnTerm.supportCondition.message)}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-2 items-start " >
+                                        <Label className="font-medium">เงื่อนไขการรับคืน <RequiredMark /></Label>
+                                        <div className="flex flex-col flex-wrap items-start gap-2">
+                                            <Label className="font-normal whitespace-nowrap">
+                                                <input type="radio" value="exactType" disabled={returnType !== "normalReturn"} {...register("sharingReturnTerm.returnConditions.condition")} />
+                                                คืนยารายการนี้
+                                            </Label>
+                                            <div >
+                                                <Label className="font-normal whitespace-nowrap">
+                                                    <input type="radio" value="otherType" disabled={returnType !== "normalReturn"} {...register("sharingReturnTerm.returnConditions.condition")} />
+                                                    คืนยารายการอื่น
+                                                </Label>
+                                                <Input type="text" placeholder="ระบุรายรายการยา/ผู้ผลิต/ราคาต่อหน่วย" className="w-[250px] mt-1" disabled={returnConditions === "exactType"} {...register("sharingReturnTerm.returnConditions.otherTypeSpecification")} />
+                                            </div>
+
+                                            {errors.sharingReturnTerm?.returnConditions?.condition && (
+                                                <span className="text-red-500 text-xs">{String(errors.sharingReturnTerm.returnConditions.condition.message)}</span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                </div> */}
+
                             </div>
+
+
                         </div>
                     </div>
 

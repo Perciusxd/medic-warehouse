@@ -41,7 +41,7 @@ export const columns = (
             header: () => <div className="font-medium text-muted-foreground text-center cursor-default">ภาพ</div>,
             cell: ({ row }) => {
                 const original: any = row.original as any
-                console.log("original", original)
+                //console.log("original", original)
                 const imgUrl: string | null = original.requestMedicineImage || original.requestMedicineImage?.imageRef || null
                 if (!imgUrl) {
                     return <div className="text-xs text-muted-foreground text-center">-</div>
@@ -171,7 +171,7 @@ export const columns = (
             header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ขนาด/หน่วย</div>,
             cell: ({ row }) => {
                 const med = row.original;
-                console.log("ff",med)
+                //console.log("ff",med)
                 const quantity = med.requestMedicine.quantity;
                 const unit = med.requestMedicine.unit
                 return (

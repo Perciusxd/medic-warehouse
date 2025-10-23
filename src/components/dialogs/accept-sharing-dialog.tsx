@@ -19,14 +19,15 @@ import { format } from "date-fns"
 import { z } from "zod"
 import { useForm, FieldErrors } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState, useRef } from "react"
-
+import { useState, useRef, useEffect } from "react"
+import { RequiredMark, OptionalMark } from "@/components/ui/field-indicator"
 import dynamic from 'next/dynamic';
 const SharingPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/sharing_pdf'), { ssr: false });
 import { useAuth } from "@/components/providers";
+import clsx from "clsx"
 
 function RequestDetails({ sharingMed }: any) {
-    console.log('sharingMed RequestDetails', sharingMed)
+    // console.log('sharingReturnTerm', sharingMed.sharingReturnTerm.returnConditions)
     const { createdAt } = sharingMed
     const date = new Date(Number(createdAt)); // convert string to number, then to Date
     // Thai date formatting helper (Buddhist calendar)
@@ -34,17 +35,18 @@ function RequestDetails({ sharingMed }: any) {
     const sharingDetails = sharingMed.sharingDetails
     const sharingMedicine = sharingMed.offeredMedicine ? sharingMed.sharingMedicine : sharingDetails.sharingMedicine
     const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber, sharingAmount, pricePerUnit } = sharingMedicine
-    const sharingReturnTerm = sharingMed.offeredMedicine ? sharingMed.sharingReturnTerm.receiveConditions : sharingMed.sharingDetails.sharingReturnTerm.receiveConditions
+    const sharingReturnTerm = sharingMed.offeredMedicine ? sharingMed.sharingReturnTerm.returnConditions : sharingMed.sharingDetails.sharingReturnTerm
     const imgUrl: string | null = sharingMed.sharingDetails.sharingMedicineImage || sharingMed.sharingMedicineImage || null;
     const responseStatus = sharingMed.responseStatus
     const respondingHospitalNameTH = sharingMed.respondingHospitalNameTH
 
     const totalAmount = sharingAmount as number * pricePerUnit as number
-
+    //console.log('sharingDetails', sharingMed)
     //console.log('sharingReturnTermsชชชชชชชชชชชชชชชชชชช', sharingDetails.sharingMedicine)
     /* const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy'); */
     // const formattedExpiryDate = format(sharingDetails.sharingMedicine.expiryDate, 'dd/MM/yyyy'); //ดึงมาก่อนนะอิงจากที่มี ดึงไว้ใน columns.tsx
     const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/') + (new Date(Number(expiryDate)).getFullYear() + 543)
+    console.log('returnConditions', sharingMed.sharingReturnTerm)
     return (
         <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-2">
@@ -124,26 +126,56 @@ function RequestDetails({ sharingMed }: any) {
             <div className="flex flex-col gap-2">
                 <Label>เงื่อนไขการคืนยาที่ยอมรับ</Label>
                 <div className="grid grid-cols-2 gap-2">
-                    <div className="flex flex-row gap-1">
-                        <input type="checkbox" checked={sharingReturnTerm.exactType} disabled />
-                        <Label>รับคืนเฉพาะรายการนี้</Label>
+                    <div className="flex flex-col gap-2">
+                        <div className="flex flex-row gap-1">
+                            <input type="checkbox" checked={
+                                sharingMed?.sharingReturnTerm?.returnConditions?.exactTypeCondition 
+                                ? sharingMed?.sharingReturnTerm?.returnConditions?.exactTypeCondition 
+                                : sharingMed?.sharingDetails.sharingReturnTerm?.returnConditions?.exactTypeCondition 
+                            } disabled />
+                            <Label>คืนยารายการนี้</Label>
+                        </div>
+                        <div className="flex flex-row gap-1">
+                            <input type="checkbox" checked={
+                                sharingMed?.sharingReturnTerm?.returnConditions?.otherTypeCondition 
+                                ? sharingMed?.sharingReturnTerm?.returnConditions?.otherTypeCondition 
+                                : sharingMed?.sharingDetails.sharingReturnTerm?.returnConditions?.otherTypeCondition 
+                                } disabled />
+                            <Label>คืนยารายการอื่น</Label>
+                            {
+                                sharingMed.responseStatus === 'offered' && (
+                                    <Label>
+                                        ( {sharingMed?.sharingReturnTerm?.returnConditions?.otherTypeSpecification ?? "-"} )
+                                    </Label>
+                                )
+                            }
+                        </div>
                     </div>
-                    <div className="flex flex-row gap-1">
-                        <input type="checkbox" checked={sharingReturnTerm.otherType} disabled />
-                        <Label>รับคืนรายการอื่นได้</Label>
+                    <div className="flex flex-col gap-2">
+                        <div className="flex flex-row gap-1">
+                            <input type="checkbox" checked={
+                                sharingMed?.sharingReturnTerm?.supportCondition?.servicePlan 
+                                ? sharingMed?.sharingReturnTerm?.supportCondition?.servicePlan 
+                                : sharingMed?.sharingDetails.sharingReturnTerm?.supportCondition?.servicePlan } disabled />
+                            <Label>ตามสิทธิ์แผนบริการ</Label>
+                        </div>
+                        <div className="flex flex-row gap-1">
+                            <input type="checkbox" checked={
+                                sharingMed?.sharingReturnTerm?.supportCondition?.budgetPlan 
+                                ? sharingMed?.sharingReturnTerm?.supportCondition?.budgetPlan 
+                                : sharingMed?.sharingDetails.sharingReturnTerm?.supportCondition?.budgetPlan
+                                } disabled />
+                            <Label>ตามงบประมาณสนับสนุน</Label>
+                        </div>
+                        <div className="flex flex-row gap-1">
+                            <input type="checkbox" checked={sharingMed?.sharingReturnTerm?.supportCondition?.freePlan 
+                                ? sharingMed?.sharingReturnTerm?.supportCondition?.freePlan
+                                : sharingMed?.sharingDetails.sharingReturnTerm?.supportCondition?.freePlan
+                                } disabled />
+                            <Label>สนับสนุนโดยไม่คิดค่าใช้จ่าย</Label>
+                        </div>
                     </div>
-                    <div className="flex flex-row gap-1">
-                        <input type="checkbox" checked={sharingReturnTerm.subType} disabled />
-                        <Label>รับคืนรายการทดแทน</Label>
-                    </div>
-                    <div className="flex flex-row gap-1">
-                        <input type="checkbox" checked={sharingReturnTerm.supportType} disabled />
-                        <Label>สามารถสนับสนุนได้</Label>
-                    </div>
-                    <div className="flex flex-row gap-1">
-                        <input type="checkbox" checked={sharingReturnTerm.noReturn} disabled />
-                        <Label>ไม่รับคืน</Label>
-                    </div>
+
                 </div>
 
             </div>
@@ -160,25 +192,32 @@ function ResponseFormSchema(sharingMedicine: any) {
         expectedReturnDate: z.string().min(1, { message: "วันที่ยืมต้องเป็นวันที่ในอนาคต" }),
         description: z.string().optional(),
         returnTerm: z.object({
-            exactType: z.boolean(),
-            otherType: z.boolean(),
-            subType: z.boolean(),
-            supportType: z.boolean(),
-            noReturn: z.boolean(),
-        }).refine((data) =>
-            Object.values(data).some(value => value === true),
-            {
-                message: "กรุณาเลือกอย่างน้อย 1 เงื่อนไข",
-                path: []
-            }
-
-        )
+            // exactType: z.boolean(),
+            // otherType: z.boolean(),
+            // subType: z.boolean(),
+            // supportType: z.boolean(),
+            // noReturn: z.boolean(),
+            returnType: z.enum(["normalReturn", "supportReturn", "all"]).optional(),
+            returnConditions: z.object({
+                condition: z.enum(["exactType", "otherType"]).optional(),
+                otherTypeSpecification: z.string().optional(),
+            }).optional(),
+            supportCondition: z.enum(["servicePlan", "budgetPlan", "freePlan"]).optional(),
+        })
+        // .refine((data) =>
+        //     Object.values(data).some(value => value === true),
+        //     {
+        //         message: "กรุณาเลือกอย่างน้อย 1 เงื่อนไข",
+        //         path: []
+        //     }
+        // )
     })
 }
 
 function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) {
-    console.log('sharingMedหหห', sharingMed)
-    // //console.log('sharingMed.sharingMedicine', sharingMed.sharingDetails.sharingMedicine)
+    console.log('sharingMedsssss', sharingMed)
+    console.log('responseStatus', sharingMed?.responseDetails?.returnTerm?.returnType)
+    console.log('responseDetails', sharingMed.responseDetails)
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [dateError, setDateError] = useState(""); // for error message
     const [loading, setLoading] = useState(false);
@@ -212,11 +251,21 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                     : undefined),
             description: existingOffer?.description ?? sharingMed.acceptedOffer?.description ?? "",
             returnTerm: {
-                exactType: Boolean(existingReturnTerm?.exactType),
-                otherType: Boolean(existingReturnTerm?.otherType),
-                subType: Boolean(existingReturnTerm?.subType),
-                supportType: Boolean(existingReturnTerm?.supportType),
-                noReturn: Boolean(existingReturnTerm?.noReturn),
+                returnType: sharingMed.responseStatus === 'offered' ? sharingMed?.returnTerm?.returnType :
+                    sharingMed?.sharingDetails?.sharingReturnTerm?.returnType === "all"
+                        ? "normalReturn"
+                        : sharingMed?.responseDetails?.returnTerm?.returnType,
+                returnConditions: {
+                    condition: sharingMed.responseStatus === 'offered' ? sharingMed?.returnTerm?.returnConditions?.condition : undefined,
+                    // ? sharingMed.responseDetails?.returnTerm?.returnConditions?.condition ,
+                    otherTypeSpecification: sharingMed.responseStatus === 'offered' ? sharingMed?.returnTerm?.returnConditions?.otherTypeSpecification : "",
+                },
+                supportCondition: sharingMed?.sharingDetails?.sharingReturnTerm?.supportCondition ?? sharingMed.responseDetails?.returnTerm?.supportCondition ?? undefined,
+                // exactType: Boolean(existingReturnTerm?.exactType),
+                // otherType: Boolean(existingReturnTerm?.otherType),
+                // subType: Boolean(existingReturnTerm?.subType),
+                // supportType: Boolean(existingReturnTerm?.supportType),
+                // noReturn: Boolean(existingReturnTerm?.noReturn),
             }
         }
     })
@@ -270,77 +319,109 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
         //console.error("❌ Form validation errors:", errors);
     }
 
+    const returnType = watch("returnTerm.returnType")
+    const sharingReturnTerm = watch("returnTerm")
+    console.log("sharingReturnTerm", sharingReturnTerm)
+    console.log("returnType", returnType)
+    const responseStatus = sharingMed.responseStatus
+    const returnConditions = watch("returnTerm.returnConditions.condition")
+
+    useEffect(() => {
+        if (returnConditions === "exactType") {
+            // ถ้าเลือก "คืนยารายการนี้" ให้ล้างค่าในช่อง text
+            setValue("returnTerm.returnConditions.otherTypeSpecification", "");
+            console.log(setValue);
+        }
+        if (returnType === "supportReturn") {
+            // clear the enum field using undefined so it matches the expected type ("exactType" | "otherType" | undefined)
+            setValue("returnTerm.returnConditions.otherTypeSpecification", "");
+            setValue("returnTerm.returnConditions.condition", undefined);
+        }
+        if (returnType === "normalReturn") {
+            setValue("returnTerm.supportCondition", undefined);
+        }
+    }, [returnConditions, returnType, setValue]);
+
     return (
         <form id="accept-sharing-form" onSubmit={handleSubmit(onSubmit, onError)}>
             <div className="flex flex-col gap-4">
-                <div className="grid grid-cols-2 gap-2">
-                    <div className="flex flex-col gap-1">
-                        <Label>จำนวนที่ยืม</Label>
-                        <Input
-                            inputMode="numeric"
-                            placeholder="10"
-                            onKeyDown={(e) => {
-                                const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
-                                if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
-                                    e.preventDefault();
-                                }
-                            }}
-                            {...register("responseAmount", { valueAsNumber: true })}
-                            disabled={sharingMed.status === 're-confirm'}
-                        />
-                        {errors.responseAmount?.message && <span className="text-red-500 text-sm">{errors.responseAmount.message}</span>}
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
-                        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
-                            <PopoverTrigger asChild>
-                                <Button variant="outline" className="justify-start text-left font-normal" disabled={sharingMed.status === 're-confirm' || sharingMed.responseStatus === 'offered'} >
-                                    {expectedReturn
-                                        ?
-                                        format(new Date(Number(expectedReturn)), 'dd/MM/') + (new Date(Number(expectedReturn)).getFullYear() + 543)
-                                        : "เลือกวันที่"}
-                                    <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                                <Calendar
-                                    mode="single"
-                                    captionLayout="dropdown"
-                                    fromYear={2020}            // ปีเก่าสุดที่เลือกได้
-                                    toYear={new Date().getFullYear() + 20}  //  เลือกได้ถึง 20 ปีข้างหน้า
-                                    formatters={{
-                                        formatYearCaption: (year: Date) => (year.getFullYear() + 543).toString(), // แสดงปีเป็น พ.ศ.
-                                    }}
-                                    selected={expectedReturn ? new Date(Number(expectedReturn)) : undefined}
-                                    onSelect={(date) => {
-                                        if (date instanceof Date && !isNaN(date.getTime())) {
-                                            const today = new Date();
-                                            today.setHours(0, 0, 0, 0); // normalize time
-                                            const stringDate = date.getTime().toString();
-                                            //console.log('stringDate', stringDate)
-
-                                            if (date > today) {
-                                                setValue("expectedReturnDate", stringDate, { shouldValidate: true, shouldDirty: true });
-                                                setDateError(""); // clear error
-                                                setIsCalendarOpen(false); // close popover
-                                            } else {
-                                                setDateError("กรุณาเลือกวันที่ในอนาคต");
-                                            }
-                                        } else {
-                                            setDateError("วันที่ไม่ถูกต้อง");
+                {/* <div  className=" grid grid-cols-2  gap-2 "> */}
+                <div className={
+                    clsx(
+                        sharingMed.responseDetail.status === 're-confirm' && "", sharingMed.status !== "re-confirm" && " grid grid-cols-2  gap-2 "
+                    )
+                }>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-row gap-4">
+                            <div className="flex flex-col gap-1 flex-1/2">
+                                <Label>จำนวนที่ยืม</Label>
+                                <Input
+                                    inputMode="numeric"
+                                    placeholder="10"
+                                    onKeyDown={(e) => {
+                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
+                                        if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
+                                            e.preventDefault();
                                         }
                                     }}
-                                    initialFocus
+                                    {...register("responseAmount", { valueAsNumber: true })}
+                                    disabled={sharingMed.status === 're-confirm'}
                                 />
-                                {dateError && (
-                                    <div className="text-red-500 text-sm px-4 py-2">{dateError}</div>
-                                )}
-                            </PopoverContent>
-                        </Popover>
-                        {errors.expectedReturnDate?.message && <span className="text-red-500 text-sm">{errors.expectedReturnDate.message}</span>}
-                    </div>
+                                {errors.responseAmount?.message && <span className="text-red-500 text-sm">{errors.responseAmount.message}</span>}
+                            </div>
+                            <div className="flex flex-col gap-1 flex-1/2">
+                                <Label className="">วันที่คาดว่าจะคืน</Label>
+                                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
+                                    <PopoverTrigger asChild>
+                                        <Button variant="outline" className="justify-start text-left font-normal" disabled={sharingMed.status === 're-confirm' || sharingMed.responseStatus === 'offered'} >
+                                            {expectedReturn
+                                                ?
+                                                format(new Date(Number(expectedReturn)), 'dd/MM/') + (new Date(Number(expectedReturn)).getFullYear() + 543)
+                                                : "เลือกวันที่"}
+                                            <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                        <Calendar
+                                            mode="single"
+                                            captionLayout="dropdown"
+                                            fromYear={2020}            // ปีเก่าสุดที่เลือกได้
+                                            toYear={new Date().getFullYear() + 20}  //  เลือกได้ถึง 20 ปีข้างหน้า
+                                            formatters={{
+                                                formatYearCaption: (year: Date) => (year.getFullYear() + 543).toString(), // แสดงปีเป็น พ.ศ.
+                                            }}
+                                            selected={expectedReturn ? new Date(Number(expectedReturn)) : undefined}
+                                            onSelect={(date) => {
+                                                if (date instanceof Date && !isNaN(date.getTime())) {
+                                                    const today = new Date();
+                                                    today.setHours(0, 0, 0, 0); // normalize time
+                                                    const stringDate = date.getTime().toString();
+                                                    //console.log('stringDate', stringDate)
 
-                    <div className="flex flex-col gap-1">
+                                                    if (date > today) {
+                                                        setValue("expectedReturnDate", stringDate, { shouldValidate: true, shouldDirty: true });
+                                                        setDateError(""); // clear error
+                                                        setIsCalendarOpen(false); // close popover
+                                                    } else {
+                                                        setDateError("กรุณาเลือกวันที่ในอนาคต");
+                                                    }
+                                                } else {
+                                                    setDateError("วันที่ไม่ถูกต้อง");
+                                                }
+                                            }}
+                                            initialFocus
+                                        />
+                                        {dateError && (
+                                            <div className="text-red-500 text-sm px-4 py-2">{dateError}</div>
+                                        )}
+                                    </PopoverContent>
+                                </Popover>
+                                {errors.expectedReturnDate?.message && <span className="text-red-500 text-sm">{errors.expectedReturnDate.message}</span>}
+                            </div>
+                        </div>
+
+
+                        {/* <div className="flex flex-col gap-1">
                         <Label>แผนการคืน</Label>
                         <div className="grid grid-cols-2 gap-2">
                             <div className="flex flex-row gap-1">
@@ -372,16 +453,230 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                                 )}
                             </div>
                         </div>
+                    </div> */}
+
+                        <div className="flex flex-col gap-1">
+                            <Label>เหตุผลการยืม</Label>
+                            <Input
+                                placeholder="ระบุเหตุผลการยืม"
+                                type="text"
+                                disabled={sharingMed.status === 're-confirm' || sharingMed.responseDetail.status === 'offered'}
+                                {...register("description")}
+                            />
+                            {errors.description?.message && <span className="text-red-500 text-sm">{errors.description.message}</span>}
+                        </div>
                     </div>
-                    <div className="flex flex-col gap-1">
-                        <Label>เหตุผลการยืม</Label>
-                        <Input
-                            placeholder="ระบุเหตุผลการยืม"
-                            type="text"
-                            disabled={sharingMed.status === 're-confirm' || sharingMed.responseStatus === 'offered'}
-                            {...register("description")}
-                        />
-                        {errors.description?.message && <span className="text-red-500 text-sm">{errors.description.message}</span>}
+                    <div className="flex flex-col ">
+                        <Label className="font-medium mt-2" hidden={sharingMed.responseDetail.status === 're-confirm'} >ประเภทรายการ <RequiredMark /></Label>
+                        <div className="flex flex-row items-center gap-4" hidden={sharingMed.responseDetail.status === 're-confirm'} >
+                            <Label className="mt-2 w-[190px]" >
+                                <input type="radio"
+                                    disabled={sharingMed.responseDetail.status === 're-confirm'}
+                                    value="supportReturn"
+                                    {...register("returnTerm.returnType")} />
+                                ขอสนับสนุน
+                            </Label>
+                            <Label className="mt-2 w-[120px]">
+                                <input type="radio"
+                                    disabled={sharingMed.responseDetail.status === 're-confirm'}
+                                    value="normalReturn"
+                                    {...register("returnTerm.returnType")} />
+                                ขอยืม
+                            </Label>
+                        </div>
+                        {
+                            sharingMed.responseDetail.status === 're-confirm' && sharingMed.responseDetail.returnTerm.returnType === 'supportReturn' && (
+                                <div>
+                                    <div>
+                                        <Label className="font-medium mt-2" >ประเภทรายการ <RequiredMark /></Label>
+                                        <Label>{sharingMed.responseDetail.returnTerm.returnType === 'supportReturn' ? "ขอสนับสนุน" : "ขอยืม"}</Label>
+                                    </div>
+                                    <div>
+                                        <Label className="font-medium mt-2" >เงื่อนไขการคืน </Label>
+                                        <Label> {sharingMed.responseDetail.returnTerm.returnType === 'supportReturn'
+                                            ? sharingMed.responseDetail.returnTerm.supportCondition === 'servicePlan'
+                                                ? "ตามสิทธิ์แผนบริการ"
+                                                : sharingMed.responseDetail.returnTerm.supportCondition === 'budgetPlan'
+                                                    ? "ตามงบประมาณสนับสนุน" : "สนับสนุนโดยไม่คิดค่าใช้จ่าย" : ""}
+                                        </Label>
+                                    </div>
+                                </div>
+                            )
+                        }
+                        {
+                            sharingMed.responseDetail.status === 're-confirm' && sharingMed.responseDetail.returnTerm.returnType === 'normalReturn' && (
+                                <div>
+                                    <div>
+                                        <Label className="font-medium mt-2" >ประเภทรายการ <RequiredMark /></Label>
+                                        <Label>{sharingMed.responseDetail.returnTerm.returnType === 'supportReturn' ? "ขอสนับสนุน" : "ขอยืม"}</Label>
+                                    </div>
+                                    <div>
+                                        <Label className="font-medium mt-2" >เงื่อนไขการคืน </Label>
+                                        <Label> {sharingMed.responseDetail.returnTerm.returnType === 'normalReturn'
+                                            ? sharingMed.responseDetail.returnTerm.returnConditions.condition === 'exactType'
+                                                ? "คืนเฉพาะยารายการนี้" : "คืนยารายการอื่น" : ""}
+                                        </Label>
+                                    </div>
+                                    <div hidden={ sharingMed.responseDetail.returnTerm.returnConditions.condition === 'exactType'}>
+                                        <Label>รายละเอียดยารายการอื่น</Label>
+                                        <Label>{sharingMed.responseDetail.returnTerm.returnConditions.otherTypeSpecification !== ""
+                                            ? sharingMed.responseDetail.returnTerm.returnConditions.otherTypeSpecification : ""
+                                        }
+                                        </Label>
+                                    </div>
+                                </div>
+                            )
+                        }
+                        <div>
+
+                        </div>
+                        {
+                            returnType === "all" && sharingMed.responseDetail.status !== 're-confirm' && (
+                                <div className="flex flex-row  mt-4 gap-4 " >
+
+                                    <div className="flex items-start w-[190px] ">
+                                        <div className="flex flex-col space-y-2 ">
+                                            <Label className="font-medium items-center">เงื่อนไขการสนับสนุน <RequiredMark /></Label>
+                                            <Label className="font-normal">
+                                                <input type="radio" value="servicePlan"  {...register("returnTerm.supportCondition")} />
+                                                ตามสิทธิ์แผนบริการ
+                                            </Label>
+                                            <Label className="font-normal">
+                                                <input type="radio" value="budgetPlan" {...register("returnTerm.supportCondition")} />
+                                                ตามงบประมาณสนับสนุน
+                                            </Label>
+                                            <Label className="font-normal">
+                                                <input type="radio" value="freePlan"  {...register("returnTerm.supportCondition")} />
+                                                สนับสนุนโดยไม่คิดค่าใช้จ่าย
+                                            </Label>
+                                            {errors.returnTerm?.supportCondition && (
+                                                <span className="text-red-500 text-xs">{String(errors.returnTerm.supportCondition.message)}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-2 items-start " >
+                                        <Label className="font-medium">เงื่อนไขการรับคืน <RequiredMark /></Label>
+                                        <div className="flex flex-col flex-wrap items-start gap-2">
+                                            <Label className="font-normal whitespace-nowrap">
+                                                <input type="radio" value="exactType"  {...register("returnTerm.returnConditions.condition")} />
+                                                คืนยารายการนี้
+                                            </Label>
+                                            <div >
+                                                <Label className="font-normal whitespace-nowrap">
+                                                    <input type="radio" value="otherType"  {...register("returnTerm.returnConditions.condition")} />
+                                                    คืนยารายการอื่น
+                                                </Label>
+                                                <Input type="text" placeholder="ระบุรายรายการยา/ผู้ผลิต/ราคาต่อหน่วย" disabled={returnConditions === "exactType"} className="w-[250px] mt-1" {...register("returnTerm.returnConditions.otherTypeSpecification")} />
+                                            </div>
+
+                                            {errors.returnTerm?.returnConditions?.condition && (
+                                                <span className="text-red-500 text-xs">{String(errors.returnTerm.returnConditions.condition.message)}</span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                </div>
+                            )
+                        }
+
+                        {
+                            returnType === "normalReturn" && sharingMed.responseDetail.status !== 're-confirm' && (
+                                <div className="flex flex-row  mt-4 gap-4 "  >
+
+                                    <div className="flex items-start w-[190px] ">
+                                        <div className="flex flex-col space-y-2 ">
+                                            <Label className="font-medium items-center">เงื่อนไขการสนับสนุน <RequiredMark /></Label>
+                                            <Label className="font-normal">
+                                                <input type="radio" value={returnType === "normalReturn" ? "servicePlan" : undefined} disabled={sharingMed.responseDetail.status === 're-confirm'} {...register("returnTerm.supportCondition")} />
+                                                ตามสิทธิ์แผนบริการ
+                                            </Label>
+                                            <Label className="font-normal">
+                                                <input type="radio" value={returnType === "normalReturn" ? "budgetPlan" : undefined} disabled={sharingMed.responseDetail.status === 're-confirm'} {...register("returnTerm.supportCondition")} />
+                                                ตามงบประมาณสนับสนุน
+                                            </Label>
+                                            <Label className="font-normal">
+                                                <input type="radio" value={returnType === "normalReturn" ? "freePlan" : undefined} disabled={sharingMed.responseDetail.status === 're-confirm'} {...register("returnTerm.supportCondition")} />
+                                                สนับสนุนโดยไม่คิดค่าใช้จ่าย
+                                            </Label>
+                                            {errors.returnTerm?.supportCondition && (
+                                                <span className="text-red-500 text-xs">{String(errors.returnTerm.supportCondition.message)}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-2 items-start " >
+                                        <Label className="font-medium">เงื่อนไขการรับคืน <RequiredMark /></Label>
+                                        <div className="flex flex-col flex-wrap items-start gap-2">
+                                            <Label className="font-normal whitespace-nowrap">
+                                                <input type="radio" value="exactType" disabled={sharingMed.responseDetail.status === 're-confirm' ? true : returnConditions === "exactType" ? true : false} {...register("returnTerm.returnConditions.condition")} />
+                                                คืนยารายการนี้
+                                            </Label>
+                                            <div >
+                                                <Label className="font-normal whitespace-nowrap">
+                                                    <input type="radio" value="otherType" disabled={sharingMed.responseDetail.status === 're-confirm' ? true : returnConditions === "exactType" ? true : false} {...register("returnTerm.returnConditions.condition")} />
+                                                    คืนยารายการอื่น
+                                                </Label>
+                                                <Input type="text" placeholder="ระบุรายรายการยา/ผู้ผลิต/ราคาต่อหน่วย" disabled={sharingMed.responseDetail.status === 're-confirm' ? true : returnConditions === "exactType" ? true : false}
+                                                    className="w-[250px] mt-1" {...register("returnTerm.returnConditions.otherTypeSpecification")} />
+                                            </div>
+
+                                            {errors.returnTerm?.returnConditions?.condition && (
+                                                <span className="text-red-500 text-xs">{String(errors.returnTerm.returnConditions.condition.message)}</span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                </div>
+                            )
+                        }
+                        {
+                            returnType === "supportReturn" && sharingMed.responseDetail.status !== 're-confirm' && (
+                                <div className="flex flex-row  mt-4 gap-4 " >
+
+                                    <div className="flex items-start w-[190px] ">
+                                        <div className="flex flex-col space-y-2 ">
+                                            <Label className="font-medium items-center">เงื่อนไขการสนับสนุน <RequiredMark /></Label>
+                                            <Label className="font-normal">
+                                                <input type="radio" value={returnType === "supportReturn" ? "servicePlan" : undefined} disabled={sharingMed.responseDetail.status === 're-confirm'} {...register("returnTerm.supportCondition")} />
+                                                ตามสิทธิ์แผนบริการ
+                                            </Label>
+                                            <Label className="font-normal">
+                                                <input type="radio" value={returnType === "supportReturn" ? "budgetPlan" : undefined} disabled={sharingMed.responseDetail.status === 're-confirm'}  {...register("returnTerm.supportCondition")} />
+                                                ตามงบประมาณสนับสนุน
+                                            </Label>
+                                            <Label className="font-normal">
+                                                <input type="radio" value={returnType === "supportReturn" ? "freePlan" : undefined} disabled={sharingMed.responseDetail.status === 're-confirm'}  {...register("returnTerm.supportCondition")} />
+                                                สนับสนุนโดยไม่คิดค่าใช้จ่าย
+                                            </Label>
+                                            {errors.returnTerm?.supportCondition && (
+                                                <span className="text-red-500 text-xs">{String(errors.returnTerm.supportCondition.message)}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-2 items-start " >
+                                        <Label className="font-medium">เงื่อนไขการรับคืน <RequiredMark /></Label>
+                                        <div className="flex flex-col flex-wrap items-start gap-2">
+                                            <Label className="font-normal whitespace-nowrap">
+                                                <input type="radio" value="exactType" disabled {...register("returnTerm.returnConditions.condition")} />
+                                                คืนยารายการนี้
+                                            </Label>
+                                            <div >
+                                                <Label className="font-normal whitespace-nowrap">
+                                                    <input type="radio" value="otherType" disabled {...register("returnTerm.returnConditions.condition")} />
+                                                    คืนยารายการอื่น
+                                                </Label>
+                                                <Input type="text" placeholder="ระบุรายรายการยา/ผู้ผลิต/ราคาต่อหน่วย" disabled className="w-[250px] mt-1" {...register("returnTerm.returnConditions.otherTypeSpecification")} />
+                                            </div>
+
+                                            {errors.returnTerm?.returnConditions?.condition && (
+                                                <span className="text-red-500 text-xs">{String(errors.returnTerm.returnConditions.condition.message)}</span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                </div>
+                            )
+                        }
+
                     </div>
 
                 </div>
@@ -403,7 +698,7 @@ export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChan
     const handleCancel = () => {
         // onOpenChange(false);
         setCancelDialogOpen(true);
-        console.log('sharingMed', sharingMed)
+        //console.log('sharingMed', sharingMed)
     }
 
     return (

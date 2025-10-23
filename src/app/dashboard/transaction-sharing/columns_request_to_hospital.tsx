@@ -240,7 +240,7 @@ export const columns = (
                 const status = getValue() as string
                 const postingHospitalNameTH = row.original.requestDetails.postingHospitalNameTH || "ไม่ระบุ"
                 const med = row.original
-                console.log("med sharing", med)
+                //console.log("med sharing", med)
                 const offerAmount = row.original.offeredMedicine.offerAmount as number
                 const returntype = row.original.requestDetails.requestTerm.returnType
                 return (

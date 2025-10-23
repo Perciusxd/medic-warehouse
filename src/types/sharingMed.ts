@@ -20,16 +20,16 @@ export type SharingAsset = {
       respondingHospitalNameTH: string;
       respondingHospitalAddress: string;
       status:
-        | "pending"
-        | "offered"
-        | "re-confirm"
-        | "to-transfer"
-        | "to-confirm"
-        | "in-return"
-        | "to-return"
-        | "confirm-return"
-        | "returned"
-        | "cancelled";
+      | "pending"
+      | "offered"
+      | "re-confirm"
+      | "to-transfer"
+      | "to-confirm"
+      | "in-return"
+      | "to-return"
+      | "confirm-return"
+      | "returned"
+      | "cancelled";
       updatedAt: string;
       returnTerm: {
         exactType: boolean;
@@ -52,14 +52,27 @@ export type SharingAsset = {
     unit: string;
     sharingAmount: number;
   };
+  // sharingReturnTerm: {
+  //   returnType: "normalReturn" | "supportReturn" | "all";
+  //   returnConditions: {
+  //     condition: "exactType" | "otherType";
+  //     otherTypeSpecification: string;
+  //   };
+  //   supportCondition: "servicePlan" | "budgetPlan" | "freePlan";
+  // };
   sharingReturnTerm: {
-    receiveConditions: {
-      exactType: boolean;
-      otherType: boolean;
-      subType: boolean;
-      supportType: boolean;
-      noReturn: boolean;
+    returnType: "normalReturn" | "supportReturn" | "all";
+    returnConditions: {
+      exactTypeCondition: boolean;
+      otherTypeCondition: boolean;
+      otherTypeSpecification: string;
     };
+    supportConditions: {
+      servicePlanCondition: boolean;
+      budgetPlanCondition: boolean;
+      freePlanCondition: boolean;
+    };
+
   };
   ticketType: "sharing" | "request";
   remainingAmount: number;
