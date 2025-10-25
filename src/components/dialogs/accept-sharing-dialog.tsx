@@ -251,11 +251,11 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                     : undefined),
             description: existingOffer?.description ?? sharingMed.acceptedOffer?.description ?? "",
             returnTerm: {
-                returnType: sharingMed?.responseStatus === 'offered' 
-                            ? sharingMed?.returnTerm?.returnType 
-                            : sharingMed?.responseStatus === 're-confirm'
-                            ? sharingMed?.returnTerm?.returnType 
-                            : sharingMed?.sharingDetails?.sharingReturnTerm?.returnType === "all"
+                returnType: sharingMed?.responseStatus === 'offered'
+                    ? sharingMed?.returnTerm?.returnType
+                    : sharingMed?.responseStatus === 're-confirm'
+                        ? sharingMed?.returnTerm?.returnType
+                        : sharingMed?.sharingDetails?.sharingReturnTerm?.returnType === "all"
                             ? "normalReturn"
                             : sharingMed?.responseDetails?.returnTerm?.returnType,
                 returnConditions: {
@@ -263,7 +263,7 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                     // ? sharingMed.responseDetails?.returnTerm?.returnConditions?.condition ,
                     otherTypeSpecification: sharingMed.responseStatus === 'offered' ? sharingMed?.returnTerm?.returnConditions?.otherTypeSpecification : "",
                 },
-                supportCondition: sharingMed?.sharingDetails?.sharingReturnTerm?.supportCondition ?? sharingMed.responseDetails?.returnTerm?.supportCondition ??sharingMed.returnTerm.supportCondition ??  undefined,
+                supportCondition: sharingMed?.sharingDetails?.sharingReturnTerm?.supportCondition ?? sharingMed.responseDetails?.returnTerm?.supportCondition ?? sharingMed.returnTerm.supportCondition ?? undefined,
                 // exactType: Boolean(existingReturnTerm?.exactType),
                 // otherType: Boolean(existingReturnTerm?.otherType),
                 // subType: Boolean(existingReturnTerm?.subType),
@@ -280,22 +280,22 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
         const updateId = isResponse ? sharingMed.id : sharingMed.responseId;
         const newStatus = existingOffer ? 're-confirm' : sharingMed.acceptedOffer ? 'to-transfer' : 'offered';
         // หาวิธีแก้ข้างล่างนี้ถ้่ ขก เอาของที่แก้แล้วขึ้น จบ
-        const pricePerUnit = sharingMed.sharingDetails?.sharingMedicine?.pricePerUnit 
-        ? sharingMed.sharingDetails?.sharingMedicine?.pricePerUnit 
-        : sharingMed?.offeredMedicine.pricePerUnit 
-        ? sharingMed?.offeredMedicine.pricePerUnit 
-        : sharingMed?.sharingMedicine?.sharingMedicine?.pricePerUnit 
-        ? sharingMed?.sharingMedicine?.sharingMedicine?.pricePerUnit 
-        :0;
+        const pricePerUnit = sharingMed.sharingDetails?.sharingMedicine?.pricePerUnit
+            ? sharingMed.sharingDetails?.sharingMedicine?.pricePerUnit
+            : sharingMed?.offeredMedicine.pricePerUnit
+                ? sharingMed?.offeredMedicine.pricePerUnit
+                : sharingMed?.sharingMedicine?.sharingMedicine?.pricePerUnit
+                    ? sharingMed?.sharingMedicine?.sharingMedicine?.pricePerUnit
+                    : 0;
         console.log('data', data)
-        console.log('sharingMed',sharingMed)
+        console.log('sharingMed', sharingMed)
         const responseBody = {
             sharingId: updateId,
             acceptOffer: {
                 responseAmount: data.responseAmount,
                 expectedReturnDate: data.expectedReturnDate,
                 description: data.description || "",
-                pricePerUnit : pricePerUnit
+                pricePerUnit: pricePerUnit
             },
             returnTerm: data.returnTerm,
             updatedAt: Date.now().toString(),
@@ -332,7 +332,7 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
     const returnType = watch("returnTerm.returnType")
     const sharingReturnTerm = watch("returnTerm")
     console.log("returnTerm", sharingReturnTerm)
-   
+
     const responseStatus = sharingMed.responseStatus
     const returnConditions = watch("returnTerm.returnConditions.condition")
     console.log("errors", errors)
@@ -498,22 +498,22 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                             sharingMed?.responseDetail?.status === 're-confirm' && sharingMed?.responseDetail?.returnTerm.returnType === 'supportReturn' && (
                                 <div className="gap-4">
                                     <Label className="font-medium mt-2" >ประเภทรายการ <RequiredMark /></Label>
-                                    <div className="flex gap-4 mt-2">
-                                        
+                                    <div className="flex gap-4 mt-2 text-">
+
                                         <input type="radio" checked
-                                        disabled
-                                        value={sharingMed?.responseDetail?.returnTerm.returnType}
-                                        {...register("returnTerm.returnType")}
+                                            className=""
+                                            value={sharingMed?.responseDetail?.returnTerm.returnType}
+                                            {...register("returnTerm.returnType")}
                                         />
                                         <Label>{sharingMed?.responseDetail?.returnTerm.returnType === 'supportReturn' ? "ขอสนับสนุน" : "ขอยืม"}</Label>
-                                        
+
                                     </div>
                                     <Label className="font-medium mt-2" >เงื่อนไขการคืน </Label>
                                     <div className="flex gap-4 mt-2">
-                                        
-                                        <input type="radio"  checked
-                                        value={sharingMed?.responseDetail?.returnTerm.supportCondition}
-                                         {...register("returnTerm.supportCondition")}
+
+                                        <input type="radio" checked
+                                            value={sharingMed?.responseDetail?.returnTerm.supportCondition}
+                                            {...register("returnTerm.supportCondition")}
                                         />
                                         <Label> {sharingMed?.responseDetail?.returnTerm.returnType === 'supportReturn'
                                             ? sharingMed?.responseDetail?.returnTerm.supportCondition === 'servicePlan'
@@ -531,21 +531,41 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                                 <div>
                                     <div>
                                         <Label className="font-medium mt-2" >ประเภทรายการ <RequiredMark /></Label>
-                                        <Label>{sharingMed?.responseDetail?.returnTerm.returnType === 'supportReturn' ? "ขอสนับสนุน" : "ขอยืม"}</Label>
+                                        <div className="flex gap-4 mt-2">
+                                            <input type="radio"
+                                                {...register("returnTerm.returnType")}
+                                                value={sharingMed?.responseDetail?.returnTerm.returnType}
+                                                checked
+                                            />
+                                             <Label>{sharingMed?.responseDetail?.returnTerm.returnType === 'supportReturn' ? "ขอสนับสนุน" : "ขอยืม"}</Label>
+                                        </div>
                                     </div>
                                     <div>
                                         <Label className="font-medium mt-2" >เงื่อนไขการคืน </Label>
-                                        <Label> {sharingMed?.responseDetail?.returnTerm.returnType === 'normalReturn'
-                                            ? sharingMed?.responseDetail?.returnTerm.returnConditions.condition === 'exactType'
-                                                ? "คืนเฉพาะยารายการนี้" : "คืนยารายการอื่น" : ""}
-                                        </Label>
+                                        <div className="flex gap-4 mt-2">
+                                            <input type="radio"
+                                                checked
+                                                value={sharingMed?.responseDetail?.returnTerm.returnConditions.condition}
+                                                {...register("returnTerm.returnConditions.condition")}
+                                            />
+                                            <Label> {sharingMed?.responseDetail?.returnTerm.returnType === 'normalReturn'
+                                                ? sharingMed?.responseDetail?.returnTerm.returnConditions.condition === 'exactType'
+                                                    ? "คืนเฉพาะยารายการนี้" : "คืนยารายการอื่น" : ""}
+                                            </Label>
+                                        </div>
                                     </div>
                                     <div hidden={sharingMed?.responseDetail?.returnTerm.returnConditions.condition === 'exactType'}>
-                                        <Label>รายละเอียดยารายการอื่น</Label>
-                                        <Label>{sharingMed?.responseDetail?.returnTerm.returnConditions.otherTypeSpecification !== ""
-                                            ? sharingMed?.responseDetail?.returnTerm.returnConditions.otherTypeSpecification : ""
-                                        }
-                                        </Label>
+                                        <div className="flex gap-4 mt-2">
+                                            <Label>ระบุ </Label>
+                                        <input type="text"
+                                         className="text-sm underline"
+                                            checked
+                                            value={sharingMed?.responseDetail?.returnTerm.returnConditions.otherTypeSpecification !== ""
+                                                ? sharingMed?.responseDetail?.returnTerm.returnConditions.otherTypeSpecification : "ไม่ได้ระบุ"}
+                                            {...register("returnTerm.returnConditions.otherTypeSpecification")}
+                                        />
+                                            </div>
+                                        
                                     </div>
                                 </div>
                             )
@@ -553,7 +573,7 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                         <div>
 
                         </div>
-                        
+
                         {
                             returnType === "all" && sharingMed?.responseDetail?.status !== 're-confirm' && (
                                 <div className="flex flex-row  mt-4 gap-4 " >
@@ -604,22 +624,22 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                         }
 
                         {
-                            returnType === "normalReturn"   && sharingMed?.responseDetail?.status !== 're-confirm' && (
+                            returnType === "normalReturn" && sharingMed?.responseDetail?.status !== 're-confirm' && (
                                 <div className="flex flex-row  mt-4 gap-4 "  >
 
                                     <div className="flex items-start w-[190px] ">
                                         <div className="flex flex-col space-y-2 ">
                                             <Label className="font-medium items-center">เงื่อนไขการสนับสนุน <RequiredMark /></Label>
                                             <Label className="font-normal">
-                                                <input type="radio" value={returnType === "normalReturn"? "servicePlan" : undefined} disabled {...register("returnTerm.supportCondition")} />
+                                                <input type="radio" value={returnType === "normalReturn" ? "servicePlan" : undefined} disabled {...register("returnTerm.supportCondition")} />
                                                 ตามสิทธิ์แผนบริการ
                                             </Label>
                                             <Label className="font-normal">
-                                                <input type="radio" value={returnType === "normalReturn"? "budgetPlan" : undefined} disabled {...register("returnTerm.supportCondition")} />
+                                                <input type="radio" value={returnType === "normalReturn" ? "budgetPlan" : undefined} disabled {...register("returnTerm.supportCondition")} />
                                                 ตามงบประมาณสนับสนุน
                                             </Label>
                                             <Label className="font-normal">
-                                                <input type="radio" value={returnType === "normalReturn"? "freePlan" : undefined} disabled {...register("returnTerm.supportCondition")} />
+                                                <input type="radio" value={returnType === "normalReturn" ? "freePlan" : undefined} disabled {...register("returnTerm.supportCondition")} />
                                                 สนับสนุนโดยไม่คิดค่าใช้จ่าย
                                             </Label>
                                             {errors.returnTerm?.supportCondition && (
@@ -631,21 +651,21 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                                         <Label className="font-medium">เงื่อนไขการรับคืน <RequiredMark /></Label>
                                         <div className="flex flex-col flex-wrap items-start gap-2">
                                             <Label className="font-normal whitespace-nowrap">
-                                                <input type="radio" value="exactType" disabled={sharingMed?.responseDetail?.status === 're-confirm' 
+                                                <input type="radio" value="exactType" disabled={sharingMed?.responseDetail?.status === 're-confirm'
                                                     // ? true : returnConditions === "exactType" ? true : false
-                                                    } {...register("returnTerm.returnConditions.condition")} />
+                                                } {...register("returnTerm.returnConditions.condition")} />
                                                 คืนยารายการนี้
                                             </Label>
                                             <div >
                                                 <Label className="font-normal whitespace-nowrap">
-                                                    <input type="radio" value="otherType" disabled={sharingMed?.responseDetail?.status === 're-confirm' 
+                                                    <input type="radio" value="otherType" disabled={sharingMed?.responseDetail?.status === 're-confirm'
                                                         // ? true : returnConditions === "exactType" ? true : false
-                                                        } {...register("returnTerm.returnConditions.condition")} />
+                                                    } {...register("returnTerm.returnConditions.condition")} />
                                                     คืนยารายการอื่น
                                                 </Label>
                                                 <Input type="text" placeholder="ระบุรายรายการยา/ผู้ผลิต/ราคาต่อหน่วย" disabled={sharingMed?.responseDetail?.status === 're-confirm' || returnConditions === "exactType"
-                                                // ? true : returnConditions === "exactType" ? true : false
-                                            }
+                                                    // ? true : returnConditions === "exactType" ? true : false
+                                                }
                                                     className="w-[250px] mt-1" {...register("returnTerm.returnConditions.otherTypeSpecification")} />
                                             </div>
 

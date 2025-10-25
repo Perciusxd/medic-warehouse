@@ -21,8 +21,12 @@ const ReturnPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/retur
 
 function SharingMedicineDetails({ sharingMedicine, receiveConditions, selectedMed, acceptedOffer }: any) {
     const { name, trademark, unit, quantity, manufacturer, sharingAmount } = sharingMedicine;
-    const { createdAt, postingHospitalNameTH, sharingDetails } = selectedMed;
+    const { createdAt, postingHospitalNameTH, sharingDetails ,  } = selectedMed;
     const { responseAmount } = acceptedOffer;
+    
+    const returnConditions = sharingDetails.sharingReturnTerm
+    const returnTerm = selectedMed.returnTerm
+    console.log('asdasd',returnTerm)
     const formattedDate = format(new Date(Number(createdAt)), 'dd/MM/') + (new Date(Number(createdAt)).getFullYear() + 543); // Format to dd/MM/yyyy in Thai Buddhist calendar
     return (
         <div className="flex flex-col gap-4 border p-4 rounded-lg">
@@ -68,23 +72,23 @@ function SharingMedicineDetails({ sharingMedicine, receiveConditions, selectedMe
                 <Label>เงื่อนไขการรับคืน</Label>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                     <div className="flex flex-row gap-2 items-center">
-                        <input type="checkbox" checked={!!receiveConditions?.exactType} disabled />
+                        <input type="checkbox" checked={returnConditions?.returnConditions?.exactTypeCondition} disabled />
                         <Label>รับคืนเฉพาะรายการนี้</Label>
                     </div>
                     <div className="flex flex-row gap-2 items-center">
-                        <input type="checkbox" checked={!!receiveConditions?.otherType} disabled />
+                        <input type="checkbox" checked={returnConditions?.returnConditions?.otherTypeCondition} disabled />
                         <Label>รับคืนรายการอื่นได้</Label>
                     </div>
                     <div className="flex flex-row gap-2 items-center">
-                        <input type="checkbox" checked={!!receiveConditions?.subType} disabled />
+                        <input type="checkbox" checked={returnConditions?.supportCondition?.servicePlan} disabled />
                         <Label>รับคืนรายการทดแทน</Label>
                     </div>
                     <div className="flex flex-row gap-2 items-center">
-                        <input type="checkbox" checked={!!receiveConditions?.supportType} disabled />
+                        <input type="checkbox" checked={returnConditions?.supportCondition?.budgetPlan} disabled />
                         <Label>สามารถสนับสนุนได้</Label>
                     </div>
                     <div className="flex flex-row gap-2 items-center col-span-2">
-                        <input type="checkbox" checked={!!receiveConditions?.noReturn} disabled />
+                        <input type="checkbox" checked={returnConditions?.supportCondition?.freePlan} disabled />
                         <Label>ไม่รับคืน</Label>
                     </div>
                 </div>
@@ -306,17 +310,14 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                     ) : (
                         <>
                             <div className="flex flex-row gap-2">
-                                <input type="radio" value="exactType" {...register("returnType")} disabled={!allowedReturnTypes.exactType || isSupportSelected} />
+                                <input type="radio" value="exactType" checked={returnTerm.returnConditions.condition==="exactType"} {...register("returnType")}  disabled={!allowedReturnTypes.exactType || isSupportSelected} />
                                 <Label>คืนรายการที่ยืม</Label>
                             </div>
                             <div className="flex flex-row gap-2">
-                                <input type="radio" value="subType" {...register("returnType")} disabled={!allowedReturnTypes.subType || isSupportSelected} />
+                                <input type="radio" value="subType" checked={returnTerm.returnConditions.condition==="otherType"}  {...register("returnType")} disabled={!allowedReturnTypes.otherType || isSupportSelected} />
                                 <Label>คืนรายการทดแทน</Label>
                             </div>
-                            <div className="flex flex-row gap-2">
-                                <input type="radio" value="otherType" {...register("returnType")} disabled={!allowedReturnTypes.otherType || isSupportSelected} />
-                                <Label>คืนรายการอื่น</Label>
-                            </div>
+                            
                         </>
                     )}
                 </div>
@@ -432,20 +433,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                         {errors.returnMedicine?.pricePerUnit?.message && <span className="text-red-500 text-xs">{String(errors.returnMedicine.pricePerUnit.message)}</span>}
                     </div>
                     <Separator className="col-span-3 my-1" />
-                    <div className="flex items-center gap-4 col-span-3 mb-2">
-                        {/* <div className="flex items-center gap-2">
-                            <input type="radio" value="none" {...register("supportRequest")} disabled={allowedReturnTypes.supportType} />
-                            <Label>ไม่ขอสนับสนุน</Label>
-                        </div> */}
-                        <div className="flex items-center gap-2">
-                            <input type="checkbox" value="support" checked={isSupportSelected} {...register("supportRequest")} disabled={!allowedReturnTypes.supportType} />
-                            <Label>ขอสนับสนุน</Label>
-                        </div>
-                    </div>
-                    <div className="flex flex-col gap-2 col-span-3">
-                        <Label>เหตุผล</Label>
-                        <Textarea placeholder="เหตุผล" {...register("returnMedicine.reason")} disabled={!isSupportSelected} />
-                    </div>
+                    
                 </div>
 
             </div>
