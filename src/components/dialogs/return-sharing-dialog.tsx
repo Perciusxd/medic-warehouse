@@ -310,11 +310,11 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                     ) : (
                         <>
                             <div className="flex flex-row gap-2">
-                                <input type="radio" value="exactType" checked={returnTerm.returnConditions.condition==="exactType"} {...register("returnType")}  disabled={!allowedReturnTypes.exactType || isSupportSelected} />
+                                <input type="radio" value="exactType" checked={returnTerm.returnConditions.condition==="exactType"} {...register("returnType")}  disabled={returnTerm.returnConditions.condition==="otherType"} />
                                 <Label>คืนรายการที่ยืม</Label>
                             </div>
                             <div className="flex flex-row gap-2">
-                                <input type="radio" value="subType" checked={returnTerm.returnConditions.condition==="otherType"}  {...register("returnType")} disabled={!allowedReturnTypes.otherType || isSupportSelected} />
+                                <input type="radio" value="subType" checked={returnTerm.returnConditions.condition==="otherType"}  {...register("returnType")} disabled={returnTerm.returnConditions.condition==="exactType"} />
                                 <Label>คืนรายการทดแทน</Label>
                             </div>
                             

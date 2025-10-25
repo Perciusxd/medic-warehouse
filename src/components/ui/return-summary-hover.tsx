@@ -48,7 +48,7 @@ export default function ReturnSummaryHover({ requestMedicine, offeredMedicine, a
     return (
         <HoverCard>
             <HoverCardTrigger>
-                <Button variant={"link"} className="p-0 h-auto"><Info className="cursor-pointer" /></Button>
+                <Button variant={"link"} className="p-0 h-auto flex items-center"><Info className="cursor-pointer" /></Button>
             </HoverCardTrigger>
             <HoverCardContent className="w-90">
                 <div className="text-sm">

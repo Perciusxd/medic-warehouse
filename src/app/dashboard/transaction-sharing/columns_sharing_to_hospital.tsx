@@ -17,7 +17,7 @@ import StatusIndicator, { getStatusColor, getTextStatusColor } from "@/component
 import ReturnConditionIndicator from "@/components/ui/return-condition-indicator"
 import { Progress } from "@/components/ui/progress"
 import ImageHoverPreview from "@/components/ui/image-hover-preview"
-
+import ReturnSummaryHover from "@/components/ui/return-summary-hover"
 export const columns = (
     handleApproveClick: (med: any) => void,
     handleReConfirmClick: (med: any) => void,
@@ -270,12 +270,12 @@ export const columns = (
                                                                 responseStatus: detail.status,
                                                                 returnTerm: detail.returnTerm,
                                                                 respondingHospitalNameTH: detail.respondingHospitalNameTH,
-                                                                
+
                                                             })}
-                                                            
+
                                                         >
                                                             รอยืนยันให้ยืม ({detail.acceptedOffer.responseAmount})
-                                                            <SquareCheck className="h-4 w-4" />
+                                                            {/* <SquareCheck className="h-4 w-4" /> */}
                                                         </Button>
                                                     </HoverCardTrigger>
                                                     {/* <HoverCardContent>
@@ -315,8 +315,33 @@ export const columns = (
                                                                     acceptedOffer: detail.acceptedOffer,
                                                                 })}
                                                             >
-                                                                ส่งมอบ ({detail.acceptedOffer.responseAmount})
-                                                                <SquareCheck className="h-4 w-4" />
+                                                                ส่งมอบ
+                                                                {/* {(() => {
+                                                                    const offeredAmount = Number(detail?.returnMedicine?.offerAmount ?? 0);
+                                                                    const offeredUnitPrice = Number(detail?.returnMedicine?.pricePerUnit ?? 0);
+                                                                    const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
+                                                                    const rm: any = (detail as any).returnMedicine;
+                                                                    const returnedPriceTotal = Array.isArray(rm)
+                                                                        ? rm.reduce((sum: number, item: any) => {
+                                                                            const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                            const amt = Number(nested?.returnAmount ?? 0);
+                                                                            const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                            const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                            return sum + lineTotal;
+                                                                        }, 0)
+                                                                        : (() => {
+                                                                            const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
+                                                                            const amt = Number(nested?.returnAmount ?? 0);
+                                                                            const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                            return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                        })();
+                                                                    const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
+                                                                    return (
+                                                                        <div className=" text-xs">({percent.toFixed(0)}%)</div>
+                                                                    );
+                                                                })()} */}
+                                                                ({detail.acceptedOffer.responseAmount})
+                                                                {/* <SquareCheck className="h-4 w-4" /> */}
                                                                 {/* <StatusIndicator status={detail.status} /> */}
                                                             </Button>
                                                         </HoverCardTrigger>
@@ -332,8 +357,32 @@ export const columns = (
                                                             getStatusColor(detail.status),
                                                             getTextStatusColor(detail.status)
                                                         )}
-                                                    >
+                                                    >รอรับคืน
                                                         {(() => {
+                                                            const offeredAmount = Number(detail?.acceptedOffer?.responseAmount ?? 0);
+                                                            const offeredUnitPrice = Number(detail?.acceptedOffer?.pricePerUnit ?? 0);
+                                                            const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
+                                                            const rm: any = (detail as any).returnMedicine;
+                                                            const returnedPriceTotal = Array.isArray(rm)
+                                                                ? rm.reduce((sum: number, item: any) => {
+                                                                    const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                    const amt = Number(nested?.returnAmount ?? 0);
+                                                                    const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                    const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                    return sum + lineTotal;
+                                                                }, 0)
+                                                                : (() => {
+                                                                    const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
+                                                                    const amt = Number(nested?.returnAmount ?? 0);
+                                                                    const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                    return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                })();
+                                                            const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
+                                                            return (
+                                                                <div className=" text-xs">({percent.toFixed(0)}%)</div>
+                                                            );
+                                                        })()}
+                                                        {/* {(() => {
                                                             const rm: any = detail.returnMedicine as any;
                                                             const returnedTotal = Array.isArray(rm)
                                                                 ? rm.reduce((sum: number, item: any) => {
@@ -345,7 +394,7 @@ export const columns = (
                                                             const offered = Number(detail.acceptedOffer?.responseAmount ?? 0);
                                                             const remaining = Math.max(0, offered - returnedTotal);
                                                             return `รอรับคืน (${Number(returnedTotal).toLocaleString()} เหลือ ${Number(remaining).toLocaleString()})`;
-                                                        })()}
+                                                        })()} */}
                                                         {/* <StatusIndicator status={detail.status} /> */}
                                                     </Badge>
                                                 ) : detail.status === 'to-confirm' ? (
@@ -358,6 +407,7 @@ export const columns = (
                                                         )}
                                                     >
                                                         รอยืนยันการรับของ ({detail.acceptedOffer.responseAmount})
+
                                                         {/* <StatusIndicator status={detail.status} /> */}
                                                     </Badge>
                                                 ) : detail.status === 'to-return' ? (
@@ -394,8 +444,32 @@ export const columns = (
                                                                     })(),
                                                                     displayHospitalName: detail.respondingHospitalNameTH,
                                                                 })}
-                                                            >
+                                                            >โปรดยืนยันการคืนยา
                                                                 {(() => {
+                                                                    const offeredAmount = Number(detail?.acceptedOffer?.responseAmount ?? 0);
+                                                                    const offeredUnitPrice = Number(detail?.acceptedOffer?.pricePerUnit ?? 0);
+                                                                    const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
+                                                                    const rm: any = (detail as any).returnMedicine;
+                                                                    const returnedPriceTotal = Array.isArray(rm)
+                                                                        ? rm.reduce((sum: number, item: any) => {
+                                                                            const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                            const amt = Number(nested?.returnAmount ?? 0);
+                                                                            const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                            const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                            return sum + lineTotal;
+                                                                        }, 0)
+                                                                        : (() => {
+                                                                            const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
+                                                                            const amt = Number(nested?.returnAmount ?? 0);
+                                                                            const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                            return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                        })();
+                                                                    const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
+                                                                    return (
+                                                                        <div className=" text-xs">({percent.toFixed(0)}%)</div>
+                                                                    );
+                                                                })()}
+                                                                {/* {(() => {
                                                                     const rm: any = detail.returnMedicine as any;
                                                                     const returnedTotal = Array.isArray(rm)
                                                                         ? rm.reduce((sum: number, item: any) => {
@@ -408,7 +482,7 @@ export const columns = (
                                                                     const offered = Number(detail.acceptedOffer?.responseAmount ?? 0);
                                                                     const remaining = Math.max(0, offered - returnedTotal);
                                                                     return `โปรดยืนยันการคืนยา (${Number(returnedTotal).toLocaleString()} เหลือ ${Number(remaining).toLocaleString()})`;
-                                                                })()}
+                                                                })()} */}
                                                                 <SquareCheck className="h-4 w-4" />
                                                                 {/* <StatusIndicator status={detail.status} /> */}
                                                             </Button>
@@ -429,7 +503,53 @@ export const columns = (
                                                                     "cursor-pointer"
                                                                 )}
                                                             >
-                                                                เสร็จสิ้น ({(() => {
+                                                                เสร็จสิ้น
+                                                                {
+                                                                    detail?.returnTerm?.returnType === 'normalReturn' ?
+                                                                    (<div className="flex gap-1"> 
+                                                                         {(() => {
+                                                                            const offeredAmount = Number(detail?.acceptedOffer?.responseAmount ?? 0);
+                                                                            const offeredUnitPrice = Number(detail?.acceptedOffer?.pricePerUnit ?? 0);
+                                                                            const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
+                                                                            const rm: any = (detail as any).returnMedicine;
+                                                                            console.log('asd', detail)
+                                                                            const returnedPriceTotal = Array.isArray(rm)
+                                                                                ? rm.reduce((sum: number, item: any) => {
+                                                                                    const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                                    const amt = Number(nested?.returnAmount ?? 0);
+                                                                                    const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                                    const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                                    return sum + lineTotal;
+                                                                                }, 0)
+                                                                                : (() => {
+                                                                                    const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
+                                                                                    const amt = Number(nested?.returnAmount ?? 0);
+                                                                                    const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                                    return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                                })();
+                                                                            const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
+                                                                            return (
+                                                                                <div className="flex  items-center">
+                                                                                    <div className=" text-xs">({percent.toFixed(0)}%)</div>
+                                                                                    <div className="flex items-center flex-row">
+                                                                                        <ReturnSummaryHover
+                                                                                            requestMedicine={row.original?.sharingMedicine}
+                                                                                            // offeredMedicine={row.original?.offeredMedicine}
+                                                                                            acceptedOffer={detail?.acceptedOffer}
+                                                                                            returnMedicine={detail?.returnMedicine}
+                                                                                        /></div>
+
+                                                                                </div>
+                                                                            );
+
+                                                                        })()}
+                                                                        </div>
+                                                                    ):" (ขอสนับสนุน)"
+                                                                }
+                                                                    
+                                                                       
+
+                                                                {/* ({(() => {
                                                                     const rm: any = detail.returnMedicine as any;
                                                                     const returnedTotal = Array.isArray(rm)
                                                                         ? rm.reduce((sum: number, item: any) => {
@@ -439,11 +559,11 @@ export const columns = (
                                                                         }, 0)
                                                                         : Number(rm?.returnMedicine?.returnAmount ?? 0);
                                                                     return Number(returnedTotal).toLocaleString();
-                                                                })()})
-                                                                {/* <StatusIndicator status={detail.status} */ }
+                                                                })()}) */}
+                                                                {/* <StatusIndicator status={detail.status} */}
                                                             </Badge>
                                                         </HoverCardTrigger>
-                                                        <HoverCardContent>
+                                                        {/* <HoverCardContent>
                                                             <div className="text-sm">
                                                                 <div className="font-semibold mb-2">รายละเอียดการคืนยา</div>
                                                                 {(() => {
@@ -453,10 +573,10 @@ export const columns = (
                                                                         const nested = item && item.returnMedicine ? item.returnMedicine : item;
                                                                         const returnAmount = Number(nested?.returnAmount ?? 0);
                                                                         const returnDate = nested?.returnDate ? new Date(Number(nested.returnDate)) : null;
-                                                                        const formattedDate = returnDate && !isNaN(returnDate.getTime()) 
+                                                                        const formattedDate = returnDate && !isNaN(returnDate.getTime())
                                                                             ? format(returnDate, 'dd/MM/') + (returnDate.getFullYear() + 543)
                                                                             : "ไม่ระบุวันที่";
-                                                                        
+
                                                                         return (
                                                                             <div key={index} className="flex justify-between py-1 border-b last:border-b-0">
                                                                                 <span className="text-xs text-muted-foreground">{formattedDate}</span>
@@ -466,7 +586,7 @@ export const columns = (
                                                                     });
                                                                 })()}
                                                             </div>
-                                                        </HoverCardContent>
+                                                        </HoverCardContent> */}
                                                     </HoverCard>
 
                                                 ) : detail.status === 'cancelled' ? (

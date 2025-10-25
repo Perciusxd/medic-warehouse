@@ -415,7 +415,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                     {returnConditions.condition === "otherType" && (
                         <>
                             <div className="flex flex-row gap-2">
-                                <input type="radio" value="exactType" {...register("returnType")} />
+                                <input type="radio" value="exactType" disabled {...register("returnType")} />
                                 <Label>คืนรายการที่ยืม</Label>
                             </div>
                             <div className="flex flex-row gap-2">
