@@ -246,8 +246,7 @@ export const columns = (
                                     </Badge>
                                 ) : status === 're-confirm'
                                     ? (
-                                        <HoverCard>
-                                            <HoverCardTrigger >
+                                       
                                                 <Button
                                                     variant={"text_status"}
                                                     size={"text_status"}
@@ -267,12 +266,7 @@ export const columns = (
                                                     <SquareCheck className="h-4 w-4" />
                                                     {/* <StatusIndicator status={status} /> */}
                                                 </Button>
-                                                {/* <div>( {responseAmount} )</div>  */}
-                                            </HoverCardTrigger>
-                                            {/* <HoverCardContent>
-                                                <div className="text-xs text-red-700 flex justify-center">โปรดยืนยันเมื่อได้รับยาแล้ว</div>
-                                            </HoverCardContent> */}
-                                        </HoverCard>
+                                               
                                     )
                                     : status === 'in-return'
                                         ? (

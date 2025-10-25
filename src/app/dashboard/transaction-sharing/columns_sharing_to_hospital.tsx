@@ -252,8 +252,7 @@ export const columns = (
                                             </Badge>
                                         ) : detail.status === 'offered'
                                             ? (
-                                                <HoverCard>
-                                                    <HoverCardTrigger >
+                                                
                                                         <Button
                                                             variant={"text_status"}
                                                             size={"text_status"}
@@ -277,11 +276,8 @@ export const columns = (
                                                             รอยืนยันให้ยืม ({detail.acceptedOffer.responseAmount})
                                                             {/* <SquareCheck className="h-4 w-4" /> */}
                                                         </Button>
-                                                    </HoverCardTrigger>
-                                                    {/* <HoverCardContent>
-                                                        <div className="text-xs text-red-700 flex justify-center">โปรดยืนยันเมื่อได้รับยาแล้ว</div>
-                                                    </HoverCardContent> */}
-                                                </HoverCard>
+                                                    
+                                                
                                             ) : detail.status === 're-confirm' ? (
                                                 <Badge
                                                     variant={'text_status'}

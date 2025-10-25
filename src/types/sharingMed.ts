@@ -32,11 +32,17 @@ export type SharingAsset = {
       | "cancelled";
       updatedAt: string;
       returnTerm: {
-        exactType: boolean;
-        otherType: boolean;
-        subType: boolean;
-        supportType: boolean;
-        noReturn: boolean;
+        returnType: "normalReturn" | "supportReturn";
+        returnConditions: {
+          condition: "exactType" | "otherType";
+          otherTypeSpecification: string;
+        };
+        supportCondition: "servicePlan" | "budgetPlan" | "freePlan";
+        // exactType: boolean;
+        // otherType: boolean;
+        // subType: boolean;
+        // supportType: boolean;
+        // noReturn: boolean;
       };
     },
   ];
