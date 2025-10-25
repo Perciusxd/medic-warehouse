@@ -153,8 +153,9 @@ export default function StatusDashboard() {
     const confirmReceiveDelivery = async (med: any) => {
         const responseBody = {
             sharingId: med.id,
-            status: "in-return",
+            status: med.returnTerm.returnType === "supportReturn" ? "returned" : "in-return"
         }
+        console.log('staup[dat',responseBody)
         setLoading(true)
         try {
             const response = await fetch("/api/updateSharingStatus", {

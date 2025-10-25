@@ -184,7 +184,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
     const { requestId, responseId, postingHospitalNameEN } = selectedMed;
     const { name, trademark, offerAmount, unit, manufacturer } = selectedMed.offeredMedicine;
     const { requestAmount } = selectedMed.requestDetails;
-    const { expectedReturnDate, returnConditions, receiveConditions, supportCondition } = selectedMed.requestTerm;
+    const { expectedReturnDate, returnConditions, receiveConditions, supportCondition } = selectedMed.requestTerm ?? selectedMed.returnTerm;
     const { postingHospitalNameTH } = selectedMed;
     const offeredPrice = selectedMed.offeredMedicine.pricePerUnit;
     const totalOfferedPrice = offerAmount * offeredPrice;

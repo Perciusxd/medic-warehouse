@@ -148,7 +148,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
 
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [dateError, setDateError] = useState("");
-
+  
     const {
         register,
         watch,
@@ -191,6 +191,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
         const returnData = {
             id: `RET-${Date.now()}`,
             sharingId: sharingId,
+            sharingMedicine : sharingDetails.sharingMedicine,
             responseId: id,
             fromHospitalId: respondingHospitalNameEN,
             toHospitalId: postingHospitalNameEN,
@@ -204,6 +205,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
             selectedHospital: respondingHospitalNameEN,
             responseId: id,
         }
+        console.log("returnBody",returnBody)
         try {
             const response = await fetch("/api/createReturn", {
                 method: "POST",

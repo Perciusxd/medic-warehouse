@@ -171,7 +171,7 @@ export const columns = (
             </div>,
             cell: ({ row }: { row: any }) => {
                 const med = row.original;
-                //console.log("med sharing", med)
+                console.log("med sharing", med)
                 const postingHospitalName = med.sharingDetails?.postingHospitalNameTH || "ไม่ระบุ";
                 const responseAmount = med.acceptedOffer?.responseAmount || "-";
                 const status = row.original.status;
@@ -288,7 +288,31 @@ export const columns = (
                                                         onClick={() => handleReturnSharingClick(med)}
                                                     >
                                                         ส่งคืนยา
-                                                        {(() => {
+                                                         {(() => {
+                                                                                const offeredAmount = Number(med?.offeredMedicine?.offerAmount ?? 0);
+                                                                                const offeredUnitPrice = Number(med?.offeredMedicine?.pricePerUnit ?? 0);
+                                                                                const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
+                                                                                const rm: any = (med as any).returnMedicine;
+                                                                                const returnedPriceTotal = Array.isArray(rm)
+                                                                                    ? rm.reduce((sum: number, item: any) => {
+                                                                                        const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                                        const amt = Number(nested?.returnAmount ?? 0);
+                                                                                        const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                                        const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                                        return sum + lineTotal;
+                                                                                    }, 0)
+                                                                                    : (() => {
+                                                                                        const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
+                                                                                        const amt = Number(nested?.returnAmount ?? 0);
+                                                                                        const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                                        return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                                    })();
+                                                                                const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
+                                                                                return (
+                                                                                    <div className=" text-xs">({percent.toFixed(0)}%)</div>
+                                                                                );
+                                                                            })()}
+                                                        {/* {(() => {
                                                             const offered = Number(med?.acceptedOffer?.responseAmount ?? 0);
                                                             const rm: any = (med as any).returnMedicine;
                                                             const returnedTotal = Array.isArray(rm)
@@ -301,7 +325,7 @@ export const columns = (
                                                             return (
                                                                 <div className=" text-xs">({Number(returnedTotal).toLocaleString()}/{Number(offered).toLocaleString()})</div>
                                                             );
-                                                        })()}
+                                                        })()} */}
                                                         <SquareCheck className="h-4 w-4" />
                                                         {/* <StatusIndicator status={status} /> */}
                                                     </Button>
