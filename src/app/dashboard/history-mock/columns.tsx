@@ -149,76 +149,76 @@ export const columns: ColumnDef<any>[] = [
       }
     }
   },
-  {
-    accessorKey: "amount",
-    size : 50,
-    header: "จำนวน",
-    cell: ({ row }) => {
-      if (row.original.ticketType === 'sharing') {
-        const amount = row.original.sharingMedicine.sharingAmount;
-        return (
-          <span className="text-sm font-medium text-gray-600">
-            {amount ? amount : "-"}
-          </span>
-        );
-      } else if (row.original.ticketType === 'request') {
-        const amount = row.original.requestMedicine.requestAmount;
-        return (
-          <span className="text-sm font-medium text-gray-600">
-            {amount ? amount : "-"}
-          </span>
-        );
-      }
-    }
-  },
-  {
-    accessorKey: "price",
-    size : 50,
-    header: "ราคา",
-    cell: ({ row }) => {
-      if (row.original.ticketType === 'sharing') {
-        const price = row.original.sharingMedicine.pricePerUnit;
-        return (
-          <span className="text-sm font-medium text-gray-600">
-            {price ? price + ' บาท' : "-"}
-          </span>
-        );
-      } else if (row.original.ticketType === 'request') {
-        const price = row.original.requestMedicine.pricePerUnit;
-        return (
-          <span className="text-sm font-medium text-gray-600">
-            {price ? price + ' บาท' : "-"}
-          </span>
-        );
-      }
-    }
-  },
-  {
-    accessorKey: "totalValue",
-    size : 80,
-    header: "มูลค่า",
-    cell: ({ row }) => {
-      if (row.original.ticketType === 'sharing') {
-        const price = row.original.sharingMedicine.pricePerUnit;
-        const amount = row.original.sharingMedicine.sharingAmount;
-        const totalValue = price * amount;
-        return (
-          <span className="text-sm font-medium text-gray-600">
-            {totalValue ? totalValue + ' บาท' : "-"}
-          </span>
-        );
-      } else if (row.original.ticketType === 'request') {
-        const price = row.original.requestMedicine.pricePerUnit;
-        const amount = row.original.requestMedicine.requestAmount;
-        const totalValue = price * amount;
-        return (
-          <span className="text-sm font-medium text-gray-600">
-            {totalValue ? totalValue + ' บาท' : "-"}
-          </span>
-        );
-      }
-    }
-  },
+  // {
+  //   accessorKey: "amount",
+  //   size : 50,
+  //   header: "จำนวน",
+  //   cell: ({ row }) => {
+  //     if (row.original.ticketType === 'sharing') {
+  //       const amount = row.original.sharingMedicine.sharingAmount;
+  //       return (
+  //         <span className="text-sm font-medium text-gray-600">
+  //           {amount ? amount : "-"}
+  //         </span>
+  //       );
+  //     } else if (row.original.ticketType === 'request') {
+  //       const amount = row.original.requestMedicine.requestAmount;
+  //       return (
+  //         <span className="text-sm font-medium text-gray-600">
+  //           {amount ? amount : "-"}
+  //         </span>
+  //       );
+  //     }
+  //   }
+  // },
+  // {
+  //   accessorKey: "price",
+  //   size : 50,
+  //   header: "ราคา",
+  //   cell: ({ row }) => {
+  //     if (row.original.ticketType === 'sharing') {
+  //       const price = row.original.sharingMedicine.pricePerUnit;
+  //       return (
+  //         <span className="text-sm font-medium text-gray-600">
+  //           {price ? price + ' บาท' : "-"}
+  //         </span>
+  //       );
+  //     } else if (row.original.ticketType === 'request') {
+  //       const price = row.original.requestMedicine.pricePerUnit;
+  //       return (
+  //         <span className="text-sm font-medium text-gray-600">
+  //           {price ? price + ' บาท' : "-"}
+  //         </span>
+  //       );
+  //     }
+  //   }
+  // },
+  // {
+  //   accessorKey: "totalValue",
+  //   size : 80,
+  //   header: "มูลค่า",
+  //   cell: ({ row }) => {
+  //     if (row.original.ticketType === 'sharing') {
+  //       const price = row.original.sharingMedicine.pricePerUnit;
+  //       const amount = row.original.sharingMedicine.sharingAmount;
+  //       const totalValue = price * amount;
+  //       return (
+  //         <span className="text-sm font-medium text-gray-600">
+  //           {totalValue ? totalValue + ' บาท' : "-"}
+  //         </span>
+  //       );
+  //     } else if (row.original.ticketType === 'request') {
+  //       const price = row.original.requestMedicine.pricePerUnit;
+  //       const amount = row.original.requestMedicine.requestAmount;
+  //       const totalValue = price * amount;
+  //       return (
+  //         <span className="text-sm font-medium text-gray-600">
+  //           {totalValue ? totalValue + ' บาท' : "-"}
+  //         </span>
+  //       );
+  //     }
+  //   }
+  // },
   {
     accessorKey: "expectedReturnDate",
     size : 100,
@@ -257,17 +257,17 @@ export const columns: ColumnDef<any>[] = [
       // return <span>{date.toLocaleDateString()}</span>;
     },
   },
-  {
-    accessorKey: "actualReturnDate",
-    size : 100,
-    header: "วันที่ได้รับคืน",
-    cell: ({ row }) => {
-      const date = new Date(row.original.responseDetails[0].actualReturnDate);
-      return <span>{date.toLocaleDateString("th-TH") !== 'Invalid Date' ? date.toLocaleDateString("th-TH") : '-'}</span>;
-      // const date = new Date(row.original.actualReturnDate);
-      // return <span>{date.toLocaleDateString()}</span>;
-    },
-  },
+  // {
+  //   accessorKey: "actualReturnDate",
+  //   size : 100,
+  //   header: "วันที่ได้รับคืน",
+  //   cell: ({ row }) => {
+  //     const date = new Date(row.original.responseDetails[0].actualReturnDate);
+  //     return <span>{date.toLocaleDateString("th-TH") !== 'Invalid Date' ? date.toLocaleDateString("th-TH") : '-'}</span>;
+  //     // const date = new Date(row.original.actualReturnDate);
+  //     // return <span>{date.toLocaleDateString()}</span>;
+  //   },
+  // },
   {
     accessorKey: "daysBorrowed",
     size : 100,

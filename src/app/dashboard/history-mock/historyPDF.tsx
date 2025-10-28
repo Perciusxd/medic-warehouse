@@ -28,13 +28,16 @@ import { Printer } from "lucide-react";
 
 Font.register({
     family: 'THSarabunNew',
-    src: '/fonts/Sarabun-Light.ttf',
+    src: '/fonts/ThSarabun.ttf',
 })
 
+const cm = (value: number) => value * 28.3464567;
+
+
 const styles = StyleSheet.create({
-    body: { fontFamily: 'THSarabunNew', fontSize: 10, padding: 28 },
-    image: { width: 80, height: 80, marginHorizontal: 240, marginVertical: 20 },
-    text: { marginBottom: 8 },
+    body: { fontFamily: 'THSarabunNew', fontSize: 16, paddingLeft: cm(2), paddingRight: cm(2), paddingTop: cm(1.5), paddingBottom: cm(1.5) },
+    image: { width: 80, height: 80, marginHorizontal: 200 },
+    text: { marginBottom: 8, fontFamily: 'THSarabunNew', fontSize: 16 },
     table: {
         display: 'flex',
         width: 'auto',
@@ -64,11 +67,49 @@ const styles = StyleSheet.create({
     },
     // section: { marginBottom: 10 }
 });
+
+const thaiMonths = [
+  "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+  "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+];
+
+const toThaiDigits = (input: string | number) =>
+  input.toString().replace(/\d/g, d => "๐๑๒๓๔๕๖๗๘๙"[Number(d)]);
+
 const todayFormat = new Date();
-const today = format(todayFormat, 'dd/MM/yyyy');
+const day = todayFormat.getDate();
+const month = thaiMonths[todayFormat.getMonth()];
+const buddhistYear = todayFormat.getFullYear() + 543;
+
+const today = `${toThaiDigits(day)} ${month} ${toThaiDigits(buddhistYear)}`;
+
+function toThaiDigits_(input: string | number): string {
+    const s = typeof input === 'number' ? String(input) : String(input ?? '');
+    return s.replace(/\d/g, (d) => "๐๑๒๓๔๕๖๗๘๙"[parseInt(d, 10)]);
+}
+
+// ฟังก์ชันสำหรับสร้างและเปิด PDF โดยตรง
+export async function generateAndOpenPDF(data: any[]) {
+  try {
+    // สร้าง PDF พร้อมหน้าสำเนา (isCopy = true)
+    const blob = await pdf(<MySimplePDF data={data} isCopy={true} />).toBlob();
+    const url = URL.createObjectURL(blob);
+    
+    // เปิด PDF ในแท็บใหม่
+    window.open(url, '_blank');
+    
+    // ทำความสะอาด URL หลังจาก 1 นาที
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    
+    return true;
+  } catch (error) {
+    alert('เกิดข้อผิดพลาดในการสร้างเอกสาร');
+    return false;
+  }
+}
+
 // ✅ รับ props: data
 export default function PDFPreviewButton({ data, disabled = false }: { data: any[], disabled?: boolean }) {
-    console.log("data === ",data)
     const [blobUrl, setBlobUrl] = useState<string | null>(null);
         
     const generatePDF = async () => {
@@ -103,7 +144,7 @@ export default function PDFPreviewButton({ data, disabled = false }: { data: any
       <Button disabled={disabled}
           className={`transition-opacity ${disabled ? "opacity-50" : "opacity-100"}`}><Printer/>พิมพ์เอกสารการเรียกคืนยา</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl w-full h-[90vh]">
+      <DialogContent className="max-w-fit w-full h-[90vh]">
       <DialogHeader>
         <DialogTitle>Preview PDF</DialogTitle>
       </DialogHeader>
@@ -115,7 +156,7 @@ export default function PDFPreviewButton({ data, disabled = false }: { data: any
           file={blobUrl}
           className="w-full h-full"
           >
-          <PDFPage pageNumber={1} width={800} renderTextLayer={false} renderAnnotationLayer={false} />
+          <PDFPage pageNumber={1} renderTextLayer={false} renderAnnotationLayer={false} />
           </PDFViewer>
         </div>
         )}
@@ -229,7 +270,7 @@ export default function PDFPreviewButton({ data, disabled = false }: { data: any
 
 const MySimplePDF = ({ data, isCopy }: { data: MyDocumentProps[], isCopy?: boolean }) => {
   // กำหนดว่า 1 หน้าอยากให้มีไม่เกินกี่แถว
-  const rowsPerPage = 5;
+  const rowsPerPage = 3;
   const pages = chunkArray(data, rowsPerPage);
 
   return (
@@ -243,15 +284,15 @@ const MySimplePDF = ({ data, isCopy }: { data: MyDocumentProps[], isCopy?: boole
           } */}
           <View style={[styles.table, { marginBottom: 10 }]} fixed>
               <View style={styles.tableRow}>
-                  <Text style={[styles.tableCell, { flex: 1 }]}>ที่ สข. 80231</Text>
-                  <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-                  <Text style={[styles.tableCell, { flex: 1 }]}>{data[0].hospitalName} </Text>
+                  <Text style={[ { flex: 1 }]}>ที่ สข. ๘๐๒๓๑</Text>
+                  <Text style={[ { flex: 1 }]}></Text>
+                  <Text style={[]}>{data[0].hospitalName} </Text>
               </View>
 
               <View style={styles.tableRow}>
-                  <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-                  <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-                  <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {data[0].address}  <span style={{ display: 'none' }}>hidden</span> </Text>
+                  <Text style={[ { flex: 1 }]}></Text>
+                  <Text style={[ { flex: 1 }]}></Text>
+                  <Text style={[ { flex: 1, flexWrap: 'wrap' }]}>ที่อยู่ {toThaiDigits_(data[0].address)} </Text>
               </View>
 
           </View>
@@ -260,55 +301,48 @@ const MySimplePDF = ({ data, isCopy }: { data: MyDocumentProps[], isCopy?: boole
           {/* <Text style={[styles.tableCell, { flex: 1 }]}>{} </Text> */}
           <Text style={styles.text}>เรื่อง    ขอเรียกคืนเวชภัณฑ์ยาที่ครบกำหนด </Text>
           <Text style={styles.text}>เรียน    ผู้อำนวยการ{data?.[0] ? data[0].hospitalName : ''}</Text>
-          <Text style={{ marginTop: 6, textIndent: 80 }}>เนื่องด้วย {data?.[0] ? data[0].hospitalName : ''} มีความประสงค์ที่จะขอเรียกคืนยาที่ครบกำหนดระยะเวลาการยืม ดังรายการต่อไปนี้ </Text>
+          <Text style={{ marginTop: 6, textIndent: 80 }}>เนื่องด้วย {data?.[0] ? data[0].hospitalName : ''} มีความประสงค์จะขอเรียกคืนยาที่ครบกำหนดระยะเวลาการยืม โดยมีรายละเอียดดังต่อไปนี้ </Text>
 
           {/* Table Header */}
           <View style={[styles.table, { marginTop: 14 }]} wrap={false}>
             <View style={styles.tableRow}>
+              <Text style={styles.tableHeader}>ลำดับ </Text>
               <Text style={styles.tableHeader}>รายการ </Text>
               <Text style={styles.tableHeader}>จำนวน </Text>
-              <Text style={styles.tableHeader}>ราคา </Text>
-              <Text style={styles.tableHeader}>มูลค่า </Text>
-              <Text style={styles.tableHeader}>วันที่ยืม </Text>
-              <Text style={styles.tableHeader}>กำหนดรับคืน </Text>
+              <Text style={styles.tableHeader}>ราคาต่อหน่วย </Text>
+              <Text style={styles.tableHeader}>ราคารวม </Text>
               <Text style={styles.tableHeader}>จำนวนวันที่ยืม </Text>
             </View>
 
             {/* Table Rows */}
             {pageData.map((item, index) => (
               <View key={index} style={styles.tableRow}>
-                <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.offeredMedicine?.name ?? '-' : item.sharingMedicine?.name + ` (${item.sharingMedicine?.quantity})`}</Text>
-                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? Number(item.offeredMedicine?.offerAmount).toLocaleString() : Number(item.sharingMedicine.sharingAmount).toLocaleString() + `(${item.sharingMedicine.unit})`}</Text>
-                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? Number(item.offeredMedicine?.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(item.sharingMedicine.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? (Number(item.offeredMedicine?.offerAmount) * Number(item.offeredMedicine?.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (Number(item.sharingMedicine.sharingAmount) * Number(item.sharingMedicine.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.responseDetails[0].updatedAt) : formatDate(item.responseDetails[0].createdAt)}</Text>
-                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.requestTerm?.expectedReturnDate) : formatDate(item.responseDetails[0].acceptedOffer?.expectedReturnDate)}</Text>
-                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.dayAmount : item.dayAmount} วัน</Text>
+                <Text style={[styles.tableCell, { textAlign: 'center' }]}>{toThaiDigits(pageIndex * rowsPerPage + index + 1)}</Text>
+                <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.offeredMedicine?.name ?? '-' : item.sharingMedicine?.name + ` (${toThaiDigits(Number(item.sharingMedicine.sharingAmount).toLocaleString())}/${item.sharingMedicine.unit})`}</Text>
+                {/* <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.offeredMedicine?.name ?? '-' : item.sharingMedicine?.name + ` (${item.sharingMedicine?.quantity})`}</Text> */}
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? Number(item.offeredMedicine?.offerAmount).toLocaleString() : Number(item.sharingMedicine.quantity).toLocaleString())}</Text>
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? Number(item.offeredMedicine?.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(item.sharingMedicine.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</Text>
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? (Number(item.offeredMedicine?.offerAmount) * Number(item.offeredMedicine?.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (Number(item.sharingMedicine.sharingAmount) * Number(item.sharingMedicine.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</Text>
+                    {/* <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.responseDetails[0].updatedAt) : formatDate(item.responseDetails[0].createdAt)}</Text> */}
+                    {/* <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.requestTerm?.expectedReturnDate) : formatDate(item.responseDetails[0].acceptedOffer?.expectedReturnDate)}</Text> */}
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? item.dayAmount : item.dayAmount)} วัน</Text>
                 </View> ))}
+            {/* <Text style={{ marginTop: 10, textIndent: 80 }}>จึงเรียนมาเพื่อโปรดดำเนินการ </Text>
+
+            <Text style={{ marginTop: 10, textIndent: 320 }}>ขอแสดงความนับถือ</Text>
+            <Text style={{ marginTop: 80, textIndent: 295 }}>{data[0]?.director}</Text>
+            <Text style={{ textIndent: 297 }}>ผู้อำนวยการ{data[0]?.hospitalName}</Text> */}
           </View>
 
-          {/* Footer ที่อยากให้โผล่ทุกหน้า */}
-          {/* <Text
-            style={{
-              position: "absolute",
-              bottom: 20,
-              left: 0,
-              right: 0,
-              textAlign: "center",
-              fontSize: 10,
-            }}
-          >
-
-          </Text> */}
-
-          
-          <Text style={{ marginTop: 30, textIndent: 80 }}>จึงเรียนมาเพื่อโปรดดำเนินการ </Text>
-
-          <Text style={{ marginTop: 30, textIndent: 320 }}>ขอแสดงความนับถือ</Text>
-          <Text style={{ marginTop: 100, textIndent: 305 }}>{data[0]?.director}</Text>
-          <Text style={{ textIndent: 297 }}>ผู้อำนวยการ{data[0]?.hospitalName}</Text>
-          <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
-          <Text>ติดต่อ {data[0]?.contact}</Text>
+          {/* Footer section - ชิดขอบล่างเสมอ (ห่าง 2 ซม. จากขอบ) */}
+          <View style={{ position: 'absolute', bottom: cm(1.5), left: 50, right: 50 }} fixed>
+            <Text style={{ marginTop: 20, textIndent: 80 }}>จึงเรียนมาเพื่อโปรดดำเนินการ </Text>
+            <Text style={{ marginTop: 10, textIndent: 320 }}>ขอแสดงความนับถือ</Text>
+            <Text style={{ marginTop: 80, textIndent: 295 }}>{data[0]?.director}</Text>
+            <Text style={{ marginBottom: 10, textIndent: 297 }}>ผู้อำนวยการ{data[0]?.hospitalName}</Text>
+            <Text>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
+            <Text>ติดต่อ {toThaiDigits_(data[0]?.contact)}</Text>
+          </View>
         </Page>
       ))}
 
@@ -321,72 +355,64 @@ const MySimplePDF = ({ data, isCopy }: { data: MyDocumentProps[], isCopy?: boole
           {/* Footer เหมือนเดิม */}
           <View style={[styles.table, { marginBottom: 10 }]} fixed>
               <View style={styles.tableRow}>
-                  <Text style={[styles.tableCell, { flex: 1 }]}>ที่ สข. 80231</Text>
-                  <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-                  <Text style={[styles.tableCell, { flex: 1 }]}>{data[0].hospitalName} </Text>
+                  <Text style={[ { flex: 1 }]}>ที่ สข. ๘๐๒๓๑</Text>
+                  <Text style={[ { flex: 1 }]}></Text>
+                  <Text style={[]}>{data[0].hospitalName} </Text>
               </View>
 
               <View style={styles.tableRow}>
-                  <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-                  <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-                  <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {data[0].address}  <span style={{ display: 'none' }}>hidden</span> </Text>
+                  <Text style={[ { flex: 1 }]}></Text>
+                  <Text style={[ { flex: 1 }]}></Text>
+                  <Text style={[ { flex: 1, flexWrap: 'wrap' }]}>ที่อยู่ {toThaiDigits_(data[0].address)} </Text>
               </View>
-
           </View>
   
           <Text style={{ textAlign: 'center' }} >{today}</Text>
           {/* <Text style={[styles.tableCell, { flex: 1 }]}>{} </Text> */}
           <Text style={styles.text}>เรื่อง    ขอเรียกคืนเวชภัณฑ์ยาที่ครบกำหนด </Text>
           <Text style={styles.text}>เรียน    ผู้อำนวยการ{data?.[0] ? data[0].hospitalName : ''}</Text>
-          <Text style={{ marginTop: 6, textIndent: 80 }}>เนื่องด้วย {data?.[0] ? data[0].hospitalName : ''} มีความประสงค์ที่จะขอเรียกคืนยาที่ครบกำหนดระยะเวลาการยืม ดังรายการต่อไปนี้ </Text>
+          <Text style={{ marginTop: 6, textIndent: 80 }}>เนื่องด้วย {data?.[0] ? data[0].hospitalName : ''} มีความประสงค์จะขอเรียกคืนยาที่ครบกำหนดระยะเวลาการยืม โดยมีรายละเอียดดังต่อไปนี้ </Text>
 
           {/* Table Header */}
           <View style={[styles.table, { marginTop: 14 }]} wrap={false}>
             <View style={styles.tableRow}>
+              <Text style={styles.tableHeader}>ลำดับ </Text>
               <Text style={styles.tableHeader}>รายการ </Text>
               <Text style={styles.tableHeader}>จำนวน </Text>
-              <Text style={styles.tableHeader}>ราคา </Text>
-              <Text style={styles.tableHeader}>มูลค่า </Text>
-              <Text style={styles.tableHeader}>วันที่ยืม </Text>
-              <Text style={styles.tableHeader}>กำหนดรับคืน </Text>
+              <Text style={styles.tableHeader}>ราคาต่อหน่วย </Text>
+              <Text style={styles.tableHeader}>ราคารวม </Text>
               <Text style={styles.tableHeader}>จำนวนวันที่ยืม </Text>
             </View>
 
             {/* Table Rows */}
             {pageData.map((item, index) => (
               <View key={index} style={styles.tableRow}>
-                <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.offeredMedicine?.name ?? '-' : item.sharingMedicine?.name + ` (${item.sharingMedicine?.quantity})`}</Text>
-                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? Number(item.offeredMedicine?.offerAmount).toLocaleString() : Number(item.sharingMedicine.sharingAmount).toLocaleString() + `(${item.sharingMedicine.unit})`}</Text>
-                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? Number(item.offeredMedicine?.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(item.sharingMedicine.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? (Number(item.offeredMedicine?.offerAmount) * Number(item.offeredMedicine?.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (Number(item.sharingMedicine.sharingAmount) * Number(item.sharingMedicine.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.responseDetails[0].updatedAt) : formatDate(item.responseDetails[0].createdAt)}</Text>
-                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.requestTerm?.expectedReturnDate) : formatDate(item.responseDetails[0].acceptedOffer?.expectedReturnDate)}</Text>
-                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.dayAmount : item.dayAmount} วัน</Text>
+                <Text style={[styles.tableCell, { textAlign: 'center' }]}>{toThaiDigits(pageIndex * rowsPerPage + index + 1)}</Text>
+                <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.offeredMedicine?.name ?? '-' : item.sharingMedicine?.name + ` (${toThaiDigits(Number(item.sharingMedicine.sharingAmount).toLocaleString())}/${item.sharingMedicine.unit})`}</Text>
+                {/* <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.offeredMedicine?.name ?? '-' : item.sharingMedicine?.name + ` (${item.sharingMedicine?.quantity})`}</Text> */}
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? Number(item.offeredMedicine?.offerAmount).toLocaleString() : Number(item.sharingMedicine.quantity).toLocaleString())}</Text>
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? Number(item.offeredMedicine?.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(item.sharingMedicine.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</Text>
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? (Number(item.offeredMedicine?.offerAmount) * Number(item.offeredMedicine?.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (Number(item.sharingMedicine.sharingAmount) * Number(item.sharingMedicine.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</Text>
+                    {/* <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.responseDetails[0].updatedAt) : formatDate(item.responseDetails[0].createdAt)}</Text> */}
+                    {/* <Text style={[styles.tableCell, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.requestTerm?.expectedReturnDate) : formatDate(item.responseDetails[0].acceptedOffer?.expectedReturnDate)}</Text> */}
+                    <Text style={[styles.tableCell, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? item.dayAmount : item.dayAmount)} วัน</Text>
                 </View> ))}
           </View>
 
-          {/* Footer ที่อยากให้โผล่ทุกหน้า */}
-          {/* <Text
-            style={{
-              position: "absolute",
-              bottom: 20,
-              left: 0,
-              right: 0,
-              textAlign: "center",
-              fontSize: 10,
-            }}
-          >
+          {/* <Text style={{ marginTop: 20, textIndent: 80 }}>จึงเรียนมาเพื่อโปรดดำเนินการ </Text>
+          <Text style={{ marginTop: 20, textIndent: 320 }}>ขอแสดงความนับถือ</Text>
+          <Text style={{ marginTop: 80, textIndent: 295 }}>{data[0]?.director}</Text>
+          <Text style={{ textIndent: 297 }}>ผู้อำนวยการ{data[0]?.hospitalName}</Text> */}
 
-          </Text> */}
-
-          
-          <Text style={{ marginTop: 30, textIndent: 80 }}>จึงเรียนมาเพื่อโปรดดำเนินการ </Text>
-
-          <Text style={{ marginTop: 30, textIndent: 320 }}>ขอแสดงความนับถือ</Text>
-          <Text style={{ marginTop: 100, textIndent: 305 }}>{data[0]?.director}</Text>
-          <Text style={{ textIndent: 297 }}>ผู้อำนวยการ{data[0]?.hospitalName}</Text>
-          <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
-          <Text>ติดต่อ {data[0]?.contact}</Text>
+          {/* Footer section - ชิดขอบล่างเสมอ (ห่าง 2 ซม. จากขอบ) */}
+          <View style={{ position: 'absolute', bottom: cm(1.5), left: 50, right: 50 }} fixed>
+            <Text style={{ marginTop: 20, textIndent: 80 }}>จึงเรียนมาเพื่อโปรดดำเนินการ </Text>
+            <Text style={{ marginTop: 10, textIndent: 320 }}>ขอแสดงความนับถือ</Text>
+            <Text style={{ marginTop: 80, textIndent: 295 }}>{data[0]?.director}</Text>
+            <Text style={{ marginBottom: 10, textIndent: 297 }}>ผู้อำนวยการ{data[0]?.hospitalName}</Text>
+            <Text>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
+            <Text>ติดต่อ {toThaiDigits_(data[0]?.contact)}</Text>
+          </View>
         </Page>
       ))}
     </PDFDocGen>

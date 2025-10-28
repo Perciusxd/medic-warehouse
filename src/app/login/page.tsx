@@ -65,10 +65,13 @@ export default function LoginPage() {
         setError("An error occurred during login");
         setIsLoading(false);
     } finally {
-        router.push('/dashboard');
         setTimeout(() => {
             setIsLoading(false);
         }, 1000);
+
+        setTimeout(() => {
+            router.push('/dashboard');
+        }, 2000);
     }
     };
 
