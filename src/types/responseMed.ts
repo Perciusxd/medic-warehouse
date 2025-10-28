@@ -28,6 +28,7 @@ export type ResponseAsset = {
       condition: "exactType" | "otherType";
       otherTypeSpecification?: string;
     };
+    returnTerm: any;
   };
   requestDetails: RequestAsset;
   /** populated when a return transaction is recorded */

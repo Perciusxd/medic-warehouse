@@ -1,4 +1,5 @@
 'use client';
+import '@/utils/polyfill';
 import { use, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "./data-table";

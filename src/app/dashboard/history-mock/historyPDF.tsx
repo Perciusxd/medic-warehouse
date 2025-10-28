@@ -1,5 +1,6 @@
 /* eslint-disable jsx-a11y/alt-text */
 "use client";
+import '@/utils/polyfill';
 import { useEffect, useState } from "react";
 import { pdf, Document as PDFDocGen, Page, Text, View, StyleSheet ,Font ,Image} from "@react-pdf/renderer";
 import { Document as PDFViewer, Page as PDFPage, pdfjs } from "react-pdf";

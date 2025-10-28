@@ -124,7 +124,7 @@ export const columns = (
                 const sharingDetails = row.original.sharingDetails
                 const postingHospitalNameTH: string = sharingDetails.postingHospitalNameTH
                 const postingHospitalNameEN: string = sharingDetails.postingHospitalNameEN
-                const sharingReturnTerm = row.original.sharingDetails.sharingReturnTerm
+                const sharingReturnTerm: any = row.original.sharingDetails.sharingReturnTerm
                 const returnType = sharingReturnTerm.returnType
                 return (
                     <div className="flex flex-row">
@@ -327,7 +327,7 @@ export const columns = (
                 </div>,
             cell: ({ row }) => {
                 const med = row.original
-                const sharingReturnTerm = row.original.sharingDetails.sharingReturnTerm
+                const sharingReturnTerm: any = row.original.sharingDetails.sharingReturnTerm
                 console.log("sharingReturnTerm", sharingReturnTerm)
                 const exactTypeCondition = sharingReturnTerm.returnConditions.exactTypeCondition
                 const otherTypeCondition = sharingReturnTerm.returnConditions.otherTypeCondition 
