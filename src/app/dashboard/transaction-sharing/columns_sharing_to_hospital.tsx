@@ -18,6 +18,7 @@ import ReturnConditionIndicator from "@/components/ui/return-condition-indicator
 import { Progress } from "@/components/ui/progress"
 import ImageHoverPreview from "@/components/ui/image-hover-preview"
 import ReturnSummaryHover from "@/components/ui/return-summary-hover"
+import ReturnPdfMultiButton from "@/components/ui/pdf_creator/ReturnPdfMultiButton"
 export const columns = (
     handleApproveClick: (med: any) => void,
     handleReConfirmClick: (med: any) => void,
@@ -87,19 +88,19 @@ export const columns = (
                 const med = row.original
                 const sharingReturnTerm = row.original.sharingReturnTerm
                 const returnType = sharingReturnTerm.returnType
-                console.log("med", med)
+                //console.log("med", med)
                 return (
                     <div className="flex flex-col">
                         <div className="text-sm font-medium text-gray-600">{medName}</div>
                         <div className="text-xs text-muted-foreground">{medTrademark}</div>
-                         <Badge variant="secondary" className="text-[10px] mt-1">
-                                {
-                                    returnType === "supportReturn" ? "สนับสนุน" :
-                                        returnType === "normalReturn" ? "แบ่งปัน" :
-                                            returnType === "all" ? "ทั้งสนับสนุนและแบ่งปันได้" :
-                                                ""
-                                }
-                            </Badge>
+                        <Badge variant="secondary" className="text-[10px] mt-1">
+                            {
+                                returnType === "supportReturn" ? "สนับสนุน" :
+                                    returnType === "normalReturn" ? "แบ่งปัน" :
+                                        returnType === "all" ? "ทั้งสนับสนุนและแบ่งปันได้" :
+                                            ""
+                            }
+                        </Badge>
                     </div>
                 )
             }
@@ -236,7 +237,7 @@ export const columns = (
                 const details = responseDetails.slice(0, maxDisplay);
                 const hasMore = responseDetails.length > maxDisplay;
 
-                // console.log('med', med)
+                //console.log('med sh', med)
 
 
                 return (
@@ -262,32 +263,32 @@ export const columns = (
                                             </Badge>
                                         ) : detail.status === 'offered'
                                             ? (
-                                                
-                                                        <Button
-                                                            variant={"text_status"}
-                                                            size={"text_status"}
-                                                            className={clsx(
-                                                                // "flex content-center h-6 font-bold text-xs",
-                                                                getStatusColor(detail.status),
-                                                                getTextStatusColor(detail.status)
-                                                            )}
-                                                            onClick={() => handleReConfirmClick({
-                                                                ...med,
-                                                                responseId: detail.id,
-                                                                offeredMedicine: detail.acceptedOffer,
-                                                                sharingDetails: med.sharingMedicine,
-                                                                responseStatus: detail.status,
-                                                                returnTerm: detail.returnTerm,
-                                                                respondingHospitalNameTH: detail.respondingHospitalNameTH,
 
-                                                            })}
+                                                <Button
+                                                    variant={"text_status"}
+                                                    size={"text_status"}
+                                                    className={clsx(
+                                                        // "flex content-center h-6 font-bold text-xs",
+                                                        getStatusColor(detail.status),
+                                                        getTextStatusColor(detail.status)
+                                                    )}
+                                                    onClick={() => handleReConfirmClick({
+                                                        ...med,
+                                                        responseId: detail.id,
+                                                        offeredMedicine: detail.acceptedOffer,
+                                                        sharingDetails: med.sharingMedicine,
+                                                        responseStatus: detail.status,
+                                                        returnTerm: detail.returnTerm,
+                                                        respondingHospitalNameTH: detail.respondingHospitalNameTH,
 
-                                                        >
-                                                            รอยืนยันให้ยืม ({detail.acceptedOffer.responseAmount})
-                                                            {/* <SquareCheck className="h-4 w-4" /> */}
-                                                        </Button>
-                                                    
-                                                
+                                                    })}
+
+                                                >
+                                                    รอยืนยันให้ยืม ({detail.acceptedOffer.responseAmount})
+                                                    {/* <SquareCheck className="h-4 w-4" /> */}
+                                                </Button>
+
+
                                             ) : detail.status === 're-confirm' ? (
                                                 <Badge
                                                     variant={'text_status'}
@@ -512,87 +513,54 @@ export const columns = (
                                                                 เสร็จสิ้น
                                                                 {
                                                                     detail?.returnTerm?.returnType === 'normalReturn' ?
-                                                                    (<div className="flex gap-1"> 
-                                                                         {(() => {
-                                                                            const offeredAmount = Number(detail?.acceptedOffer?.responseAmount ?? 0);
-                                                                            const offeredUnitPrice = Number(detail?.acceptedOffer?.pricePerUnit ?? 0);
-                                                                            const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
-                                                                            const rm: any = (detail as any).returnMedicine;
-                                                                            //console.log('asd', detail)
-                                                                            const returnedPriceTotal = Array.isArray(rm)
-                                                                                ? rm.reduce((sum: number, item: any) => {
-                                                                                    const nested = item && item.returnMedicine ? item.returnMedicine : item;
-                                                                                    const amt = Number(nested?.returnAmount ?? 0);
-                                                                                    const unitPrice = Number(nested?.pricePerUnit ?? 0);
-                                                                                    const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
-                                                                                    return sum + lineTotal;
-                                                                                }, 0)
-                                                                                : (() => {
-                                                                                    const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
-                                                                                    const amt = Number(nested?.returnAmount ?? 0);
-                                                                                    const unitPrice = Number(nested?.pricePerUnit ?? 0);
-                                                                                    return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
-                                                                                })();
-                                                                            const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
-                                                                            return (
-                                                                                <div className="flex  items-center">
-                                                                                    <div className=" text-xs">({percent.toFixed(0)}%)</div>
-                                                                                    <div className="flex items-center flex-row">
-                                                                                        <ReturnSummaryHover
-                                                                                            requestMedicine={row.original?.sharingMedicine}
-                                                                                            // offeredMedicine={row.original?.offeredMedicine}
-                                                                                            acceptedOffer={detail?.acceptedOffer}
-                                                                                            returnMedicine={detail?.returnMedicine}
-                                                                                        /></div>
+                                                                        (<div className="flex gap-1">
+                                                                            {(() => {
+                                                                                const offeredAmount = Number(detail?.acceptedOffer?.responseAmount ?? 0);
+                                                                                const offeredUnitPrice = Number(detail?.acceptedOffer?.pricePerUnit ?? 0);
+                                                                                const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
+                                                                                const rm: any = (detail as any).returnMedicine;
+                                                                                const returnedPriceTotal = Array.isArray(rm)
+                                                                                    ? rm.reduce((sum: number, item: any) => {
+                                                                                        const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                                        const amt = Number(nested?.returnAmount ?? 0);
+                                                                                        const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                                        const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                                        return sum + lineTotal;
+                                                                                    }, 0)
+                                                                                    : (() => {
+                                                                                        const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
+                                                                                        const amt = Number(nested?.returnAmount ?? 0);
+                                                                                        const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                                        return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                                    })();
+                                                                                const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
+                                                                                return (
+                                                                                    <div className="flex  items-center">
+                                                                                        <div className=" text-xs">({percent.toFixed(0)}%)</div>
+                                                                                        <div className="flex items-center ">
+                                                                                            <ReturnSummaryHover
+                                                                                                requestMedicine={row.original?.sharingMedicine}
+                                                                                                // offeredMedicine={row.original?.offeredMedicine}
+                                                                                                acceptedOffer={detail?.acceptedOffer}
+                                                                                                returnMedicine={detail?.returnMedicine}
+                                                                                            />
+                                                                                            <ReturnPdfMultiButton
+                                                                                                data={row.original}
+                                                                                                returnList={detail?.returnMedicine}
+                                                                                                
+                                                                                                buttonText="ออกเอกสาร PDF การคืนยา"
+                                                                                            />
+                                                                                        </div>
+                                                                                    </div>
+                                                                                );
 
-                                                                                </div>
-                                                                            );
-
-                                                                        })()}
+                                                                            })()}
                                                                         </div>
-                                                                    ):" (ขอสนับสนุน)"
+                                                                        ) : " (ขอสนับสนุน)"
                                                                 }
-                                                                    
-                                                                       
-
-                                                                {/* ({(() => {
-                                                                    const rm: any = detail.returnMedicine as any;
-                                                                    const returnedTotal = Array.isArray(rm)
-                                                                        ? rm.reduce((sum: number, item: any) => {
-                                                                            const nested = item && item.returnMedicine ? item.returnMedicine : item;
-                                                                            const amt = Number(nested?.returnAmount ?? 0);
-                                                                            return sum + (isNaN(amt) ? 0 : amt);
-                                                                        }, 0)
-                                                                        : Number(rm?.returnMedicine?.returnAmount ?? 0);
-                                                                    return Number(returnedTotal).toLocaleString();
-                                                                })()}) */}
-                                                                {/* <StatusIndicator status={detail.status} */}
+                                                       
                                                             </Badge>
                                                         </HoverCardTrigger>
-                                                        {/* <HoverCardContent>
-                                                            <div className="text-sm">
-                                                                <div className="font-semibold mb-2">รายละเอียดการคืนยา</div>
-                                                                {(() => {
-                                                                    const rm: any = detail.returnMedicine as any;
-                                                                    const returnList = Array.isArray(rm) ? rm : (rm ? [rm] : []);
-                                                                    return returnList.map((item: any, index: number) => {
-                                                                        const nested = item && item.returnMedicine ? item.returnMedicine : item;
-                                                                        const returnAmount = Number(nested?.returnAmount ?? 0);
-                                                                        const returnDate = nested?.returnDate ? new Date(Number(nested.returnDate)) : null;
-                                                                        const formattedDate = returnDate && !isNaN(returnDate.getTime())
-                                                                            ? format(returnDate, 'dd/MM/') + (returnDate.getFullYear() + 543)
-                                                                            : "ไม่ระบุวันที่";
-
-                                                                        return (
-                                                                            <div key={index} className="flex justify-between py-1 border-b last:border-b-0">
-                                                                                <span className="text-xs text-muted-foreground">{formattedDate}</span>
-                                                                                <span className="text-xs font-medium">{returnAmount.toLocaleString()} หน่วย</span>
-                                                                            </div>
-                                                                        );
-                                                                    });
-                                                                })()}
-                                                            </div>
-                                                        </HoverCardContent> */}
                                                     </HoverCard>
 
                                                 ) : detail.status === 'cancelled' ? (

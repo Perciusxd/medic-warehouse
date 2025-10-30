@@ -349,7 +349,7 @@ export const columns = (
                                         ) : status === 'returned' ? (
                                             <HoverCard>
                                                 <HoverCardTrigger>
-                                                    <div className="flex flex-row gap-x-2 items-center">
+                                                    <div className="flex gap-x-2 items-center">
                                                         <Badge
                                                             variant={'text_status'}
                                                             className={clsx(
@@ -395,8 +395,9 @@ export const columns = (
                                                             data={med}
                                                             returnList={(med as any).returnMedicine}
                                                             buttonText="ออกเอกสาร PDF การคืนยา"
-                                                        />
+                                                        /> 
                                                     </div>
+                                                     
                                                 </HoverCardTrigger>
                                                 {/* <HoverCardContent>
                                                     <div className="text-sm">

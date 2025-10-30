@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { text } from "stream/consumers"
 import textHover from "@/components/ui/text_hover"
 import ReturnSummaryHover from "@/components/ui/return-summary-hover"
+import ReturnPdfMultiButton from "@/components/ui/pdf_creator/ReturnPdfMultiButton"
 import {
     HoverCard,
     HoverCardContent,
@@ -116,24 +117,24 @@ export const columns = (
         //     header: () => <div className="font-medium text-muted-foreground text-left cursor-default">คืนแล้ว (%)</div>,
         //     cell: ({ row }) => {
         //         const rm: any = row.original.returnMedicine as any;
-                // const returnedPriceTotal = Array.isArray(rm)
-                //     ? rm.reduce((sum: number, item: any) => {
-                //         const nested = item && item.returnMedicine ? item.returnMedicine : item;
-                //         const amt = Number(nested?.returnAmount ?? 0);
-                //         const unitPrice = Number(nested?.pricePerUnit ?? 0);
-                //         const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
-                //         return sum + lineTotal;
-                //     }, 0)
-                //     : (() => {
-                //         const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
-                //         const amt = Number(nested?.returnAmount ?? 0);
-                //         const unitPrice = Number(nested?.pricePerUnit ?? 0);
-                //         return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
-                //     })();
-                // const offeredAmount = Number(row.original.offeredMedicine?.offerAmount ?? 0);
-                // const offeredUnitPrice = Number(row.original.offeredMedicine?.pricePerUnit ?? 0);
-                // const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
-                // const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
+        // const returnedPriceTotal = Array.isArray(rm)
+        //     ? rm.reduce((sum: number, item: any) => {
+        //         const nested = item && item.returnMedicine ? item.returnMedicine : item;
+        //         const amt = Number(nested?.returnAmount ?? 0);
+        //         const unitPrice = Number(nested?.pricePerUnit ?? 0);
+        //         const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+        //         return sum + lineTotal;
+        //     }, 0)
+        //     : (() => {
+        //         const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
+        //         const amt = Number(nested?.returnAmount ?? 0);
+        //         const unitPrice = Number(nested?.pricePerUnit ?? 0);
+        //         return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+        //     })();
+        // const offeredAmount = Number(row.original.offeredMedicine?.offerAmount ?? 0);
+        // const offeredUnitPrice = Number(row.original.offeredMedicine?.pricePerUnit ?? 0);
+        // const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
+        // const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
 
         //         return (
         //             <div className="flex items-center gap-2">
@@ -451,16 +452,31 @@ export const columns = (
                                                                     })();
                                                                 const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
                                                                 return (
-                                                                    <div className="flex  items-center"> 
+                                                                    <div className="flex  items-center">
                                                                         <div className=" text-xs">({percent.toFixed(0)}%)</div>
-                                                                        <div className="flex items-center flex-row"> 
+                                                                        <div className="flex items-center flex-row">
                                                                             <ReturnSummaryHover
-                                                                            requestMedicine={row.original?.requestDetails?.requestMedicine}
-                                                                            offeredMedicine={row.original?.offeredMedicine}
-                                                                            acceptedOffer={(row.original as any)?.acceptedOffer}
-                                                                            returnMedicine={row.original?.returnMedicine}
-                                                                        /></div>
-                                                                       
+                                                                                requestMedicine={row.original?.requestDetails?.requestMedicine}
+                                                                                offeredMedicine={row.original?.offeredMedicine}
+                                                                                acceptedOffer={(row.original as any)?.acceptedOffer}
+                                                                                returnMedicine={row.original?.returnMedicine}
+                                                                            />
+
+                                                                        </div>
+                                                                        <div>
+                                                                            <ReturnPdfMultiButton
+                                                                                data={{
+                                                                                    ...med,
+                                                                                    respondingHospitalNameTH: row.original?.respondingHospitalNameTH,
+                                                                                    offeredMedicine: row.original?.offeredMedicine,
+                                                                                }}
+                                                                                returnList={row.original?.returnMedicine}
+                                                                                buttonText="ออกเอกสาร PDF การคืนยา"
+                                                                            />
+
+
+                                                                        </div>
+
                                                                     </div>
 
                                                                 );

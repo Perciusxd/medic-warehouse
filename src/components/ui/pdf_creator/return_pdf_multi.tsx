@@ -73,8 +73,8 @@ function normalizeReturnList(raw: any): any[] {
     return list.map((item: any) => (item && item.returnMedicine ? item.returnMedicine : item));
 }
 
-function ContentPage({ pdfData, returnList, variant = 'original' }: any) {
-    //console.log('pdfData', pdfData);
+function ContentPage({ pdfData, returnList, acceptedOffer ,variant = 'original' }: any) {
+    
     const { userData } = pdfData;
     const { address } = userData;
     const baseMedicine = pdfData?.offeredMedicine
@@ -100,14 +100,17 @@ function ContentPage({ pdfData, returnList, variant = 'original' }: any) {
 
     const requestedQuantity = pdfData?.offeredMedicine?.offerAmount
         ?? pdfData?.acceptedOffer?.responseAmount
-        ?? 0;
+        ?? 0
+
+        
+    console.log('baseMedicine', pdfData?.offeredMedicine);
 
     const unit = baseMedicine?.unit ?? '';
     const quantity = baseMedicine?.quantity ?? '';
     const pricePerUnit = baseMedicine?.pricePerUnit ?? 0;
     const manufacturer = baseMedicine?.manufacturer ?? '';
     const createdAt = pdfData?.createdAt ?? '';
-
+    
     const todayDate = new Date();
     const today = toThaiDigits(`${format(todayDate, 'dd/MM')}/${todayDate.getFullYear() + 543}`);
 
@@ -235,11 +238,11 @@ function ContentPage({ pdfData, returnList, variant = 'original' }: any) {
     );
 }
 
-function MyDocument({ pdfData, returnList, variant = 'original' }: any) {
+function MyDocument({ pdfData, returnList, acceptedOffer,variant = 'original' }: any) {
     return (
         <PDFDocGen>
             <Page size="A4" style={styles.body}>
-                <ContentPage pdfData={pdfData} returnList={returnList} variant={variant} />
+                <ContentPage pdfData={pdfData} acceptedOffer={acceptedOffer} returnList={returnList} variant={variant} />
             </Page>
         </PDFDocGen>
     );
@@ -264,20 +267,29 @@ const ReturnPdfMultiPreview = forwardRef(({ data: pdfData, returnList: rawReturn
     const list = normalizeReturnList(rawReturnList);
 
     useEffect(() => {
+        if (!pdfData) return; // ถ้ายังไม่มีข้อมูล ให้ return ออก
+
         let cancelled = false;
+
         const generatePdf = async () => {
-            const generatedBlob = await pdf(<MyDocument pdfData={{ ...pdfData, userData }} returnList={list} />).toBlob();
+            const generatedBlob = await pdf(
+                <MyDocument pdfData={{ ...pdfData, userData }} returnList={list} />
+            ).toBlob();
+
             if (!cancelled) {
                 setBlob(generatedBlob);
                 setPdfUrl(URL.createObjectURL(generatedBlob));
             }
         };
+
         generatePdf();
-        return () => {
-            cancelled = true;
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [JSON.stringify(pdfData), JSON.stringify(list), JSON.stringify(userData)]);
+
+        return () => { cancelled = true; }
+    }, [pdfData, JSON.stringify(list), JSON.stringify(userData)]); // รอ pdfData มาแล้วถึง generate
+
+    if (!pdfData) {
+        return <div>กำลังโหลดข้อมูล PDF...</div>; // หรือ skeleton loader
+    }
 
     useImperativeHandle(ref, () => ({
         savePdf: () => {
@@ -285,7 +297,9 @@ const ReturnPdfMultiPreview = forwardRef(({ data: pdfData, returnList: rawReturn
                 try {
                     const currentDate = new Date();
                     const formattedDate = format(currentDate, 'ddMMyyyy');
-                    const combinedBlob = await pdf(<DualDocument pdfData={{ ...pdfData, userData }} returnList={list} />).toBlob();
+                    const combinedBlob = await pdf(
+                        <DualDocument pdfData={{ ...pdfData, userData }} returnList={list} />
+                    ).toBlob();
                     saveAs(combinedBlob, `return_document_${formattedDate}.pdf`);
                 } catch (error) {
                     console.error('Failed to generate return PDFs (multi):', error);
@@ -304,6 +318,7 @@ const ReturnPdfMultiPreview = forwardRef(({ data: pdfData, returnList: rawReturn
         </div>
     );
 });
+
 
 ReturnPdfMultiPreview.displayName = 'ReturnPdfMultiPreview';
 export default ReturnPdfMultiPreview;
