@@ -1,7 +1,8 @@
 'use client';
+import '@/utils/polyfill';
 import { use, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { DataTable } from "../request/data-table";
+import { DataTable } from "./data-table";
 import { columns } from "./columns";
 import DoughnutChart from "./DoughnutChart";
 // import PDFPreviewButton from "./historyPDF";
@@ -12,6 +13,8 @@ import { fetchAllStatusByTicketType } from "@/pages/api/statusService";
 import { useAuth } from "@/components/providers";
 import { useMedicineRequests, useMedicineRequestsStatus, useMedicineSharing, useMedicineSharingStatus } from "@/hooks/useMedicineAPI";
 import { Printer } from "lucide-react";
+import { SelectHospitalDialog } from "./select-hospital-dialog";
+import { generateAndOpenPDF } from "./historyPDF";
 const PDFPreviewButton = dynamic(() => import('./historyPDF'), { ssr: false });
 
 export default function HistoryDashboard() {
@@ -30,7 +33,6 @@ export default function HistoryDashboard() {
                   'pending','completed', 'to-return'], []);
   const { medicineRequests } = useMedicineRequestsStatus(loggedInHospital ?? '', statusFilter);
   const { medicineSharing } = useMedicineSharingStatus(loggedInHospital ?? '', statusFilter);
-  // console.log(loggedInHospital, 'loggedInHospital');
 
   // รวมข้อมูลทั้งสองแบบ (รอให้ทั้งคู่ไม่เป็น undefined ก่อนถึงจะรวมและแสดงผล)
   const allData = useMemo(() => {
@@ -49,7 +51,12 @@ export default function HistoryDashboard() {
   useEffect(() => {
     // console.log(loggedInHospital, 'loggedInHospital');    
     if (!loggedInHospital) return;
-    setFilteredData(allData);
+    
+    // กรองเฉพาะ status = 'to-return' เท่านั้น
+    const toReturnData = allData.filter((item: any) => 
+      (item.responseDetails?.[0]?.status === 'to-transfer' || item.responseDetails?.[0]?.status === 'to-confirm' || item.responseDetails?.[0]?.status === 'in-return') 
+    && item.ticketType === 'sharing');
+    setFilteredData(toReturnData);
     // const mapped = allData.map((item: any) => {
     //   if (item.ticketType === 'sharing') {
     //     const resp = item.responseDetails?.[0] ?? {};
@@ -81,7 +88,12 @@ export default function HistoryDashboard() {
     //   }
 
     const mapped = allData
-      .filter((item: any) => item.ticketType === 'sharing')
+      .filter((item: any) => 
+        item.ticketType === 'sharing' && 
+        (item.responseDetails?.[0]?.status === 'to-transfer' || 
+          item.responseDetails?.[0]?.status === 'to-confirm' || 
+          item.responseDetails?.[0]?.status === 'in-return')
+      )
       // copy in comment to condition if wanna close button that not have data
       // && item.responseDetails?.acceptedOffer
       .map((item: any) => {
@@ -140,7 +152,6 @@ export default function HistoryDashboard() {
       // }
       
     });
-
     setReportData(mapped);
     // console.log('mapped', mapped);
     
@@ -167,6 +178,27 @@ export default function HistoryDashboard() {
   // const [mockDataV1, setMockDataV1] = useState(mockMedicineTableData);
 
   const [queryFromChart, setQueryFromChart] = useState<string | any>(null);
+
+  // Handler สำหรับเมื่อผู้ใช้เลือกโรงพยาบาลและรายการจาก modal
+  const handleConfirmSelection = async (selectedHospital: string, selectedItems: any[]) => {
+    
+    // เตรียมข้อมูลสำหรับ PDF
+    const pdfData = selectedItems.map((item: any) => ({
+      ticketType: item.ticketType,
+      responseDetails: item.responseDetails,
+      sharingMedicine: item.sharingMedicine,
+      sharingReturnTerm: item.sharingReturnTerm,
+      dayAmount: item.dayAmount,
+      overDue: item.overDue,
+      address: item.address,
+      hospitalName: item.hospitalName,
+      director: item.director,
+      contact: item.contact
+    }));
+
+    // เปิด PDF โดยตรง
+    await generateAndOpenPDF(pdfData);
+  };
 
   const handleChartClick = (label: string) => {
     // console.log('label', label);
@@ -298,15 +330,17 @@ export default function HistoryDashboard() {
         </div>
       ) :
       <div className="max-w-full overflow-auto">
-        <div className="flex justify-center">
+        {/* <div className="flex justify-center">
           <DoughnutChart data={config.data} options={config.options} query={handleChartClick} />
-        </div>
+        </div> */}
         <div className="flex flex-col gap-4 mt-[30px] mx-auto max-w-[90%]">
           <div className="flex justify-start gap-2">
             <div className="flex">
-              {/* <Button disabled={reportData.length === 0} className={` transition-opacity ${reportData.length === 0 ? "opacity-50" : "opacity-100"}`}> */}
-                <PDFPreviewButton data={reportData} disabled={reportData.length === 0} />
-              {/* </Button> */}
+              <SelectHospitalDialog 
+                data={reportData} 
+                onConfirm={handleConfirmSelection}
+                disabled={reportData.length === 0}
+              />
             </div>
                 {/* <div className="flex gap-2">
                   <Button

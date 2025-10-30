@@ -447,7 +447,7 @@ export default function TransferDashboard() {
             <div className="flex items-center justify-between mb-4">
                 <div /> {/* Placeholder for alignment, can add search if needed */}
                 <div className="flex items-center space-x-2">
-                    <Button>
+                    <Button variant={'outline'}>
                         พิมพ์เอกสารส่งมอบยา
                     </Button>
                     <Button variant={"outline"} onClick={() => {

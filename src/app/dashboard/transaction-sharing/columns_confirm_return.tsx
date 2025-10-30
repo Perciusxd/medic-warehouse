@@ -130,7 +130,7 @@ export const columnsConfirmReturn = (
         accessorKey: "offeredMedicine.name",
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">สถานะการส่งคืน</div>,
         cell: ({ row }) => {
-            const status = row.original.status
+            const status:any = row.original.status
             let statusBadge;
             let statusText;
 
@@ -163,7 +163,7 @@ export const columnsConfirmReturn = (
         cell: ({ row }) => {
             const med = row.original
             const isLoading = loadingRowId === med.id
-            const status = med.status
+            const status: any = med.status
             
             if (status === "returned") {
                 return (
