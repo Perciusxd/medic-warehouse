@@ -56,6 +56,7 @@ export type SharingAsset = {
     quantity: number;
     trademark: string;
     unit: string;
+    packingSize: string;
     sharingAmount: number;
   };
   // sharingReturnTerm: {

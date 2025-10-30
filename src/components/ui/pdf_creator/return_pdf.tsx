@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
 
 function ContentPage({ pdfData, variant = 'original' }: any) {
     const { userData } = pdfData;
-    console.log('pdfData', pdfData);
+   // console.log('pdfData', pdfData);
     const baseMedicine = pdfData?.offeredMedicine
         ?? pdfData?.sharingDetails?.sharingMedicine
         ?? pdfData?.sharingMedicine

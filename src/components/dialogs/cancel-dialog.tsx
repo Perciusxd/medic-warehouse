@@ -51,7 +51,7 @@ export default function CancelDialog({
     getMedicineName = (med) => med?.displayMedicineName || med?.sharingMedicine?.name || med?.offeredMedicine?.name || med?.returnMedicine?.returnMedicine?.name || '',
     getMedicineAmount = (med) => med?.displayMedicineAmount || med?.offeredMedicine?.responseAmount || med?.offeredMedicine?.offerAmount || med?.acceptedOffer?.responseAmount || '',
 }: CancelDialogProps) {
-    console.log('selectedMed cancel dialog', selectedMed)
+    //console.log('selectedMed cancel dialog', selectedMed)
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const handleConfirm = async () => {
         setIsSubmitting(true);

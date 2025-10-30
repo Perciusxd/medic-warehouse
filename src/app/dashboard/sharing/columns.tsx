@@ -26,6 +26,7 @@ export const columns = (
             accessorKey: "sharingDetails.sharingMedicine.name",
             size: 200,
             header: ({ column }) => {
+                
                 return (
                     <div className="flex items-center text-muted-foreground">
                         รายการยา/ชื่อการค้า
@@ -45,10 +46,20 @@ export const columns = (
                 const sharingDetails = med.sharingDetails
                 const name = sharingDetails.sharingMedicine.name
                 const trademark = sharingDetails.sharingMedicine.trademark
+                const sharingReturnTerm = row.original.sharingDetails.sharingReturnTerm
+                const returnType = sharingReturnTerm.returnType
                 return (
                     <div className="flex flex-col">
                         <div className="text-md">{name}</div>
                         <div className="text-xs text-gray-600">{trademark}</div>
+                        <Badge variant="secondary" className="text-[10px] mt-1">
+                                {
+                                    returnType === "supportReturn" ? "สนับสนุน" :
+                                        returnType === "normalReturn" ? "แบ่งปัน" :
+                                            returnType === "all" ? "ทั้งสนับสนุนและแบ่งปันได้" :
+                                                ""
+                                }
+                            </Badge>
                     </div>
                 )
             },
@@ -124,20 +135,12 @@ export const columns = (
                 const sharingDetails = row.original.sharingDetails
                 const postingHospitalNameTH: string = sharingDetails.postingHospitalNameTH
                 const postingHospitalNameEN: string = sharingDetails.postingHospitalNameEN
-                const sharingReturnTerm = row.original.sharingDetails.sharingReturnTerm
-                const returnType = sharingReturnTerm.returnType
+                
                 return (
                     <div className="flex flex-row">
                         <div className="flex flex-col">
                             <div className="text-md">{postingHospitalNameTH}</div>
-                            <Badge variant="secondary" className="text-[10px] mt-1">
-                                {
-                                    returnType === "supportReturn" ? "สนับสนุน" :
-                                        returnType === "normalReturn" ? "แบ่งปัน" :
-                                            returnType === "all" ? "ทั้งสนับสนุนและแบ่งปันได้" :
-                                                ""
-                                }
-                            </Badge>
+                            
                         </div>
                         <div>
 

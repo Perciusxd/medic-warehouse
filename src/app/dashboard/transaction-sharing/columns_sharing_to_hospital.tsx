@@ -85,11 +85,21 @@ export const columns = (
                 const medName = row.original.sharingMedicine.name;
                 const medTrademark = row.original.sharingMedicine.trademark;
                 const med = row.original
-                //console.log("med", med)
+                const sharingReturnTerm = row.original.sharingReturnTerm
+                const returnType = sharingReturnTerm.returnType
+                console.log("med", med)
                 return (
                     <div className="flex flex-col">
                         <div className="text-sm font-medium text-gray-600">{medName}</div>
                         <div className="text-xs text-muted-foreground">{medTrademark}</div>
+                         <Badge variant="secondary" className="text-[10px] mt-1">
+                                {
+                                    returnType === "supportReturn" ? "สนับสนุน" :
+                                        returnType === "normalReturn" ? "แบ่งปัน" :
+                                            returnType === "all" ? "ทั้งสนับสนุนและแบ่งปันได้" :
+                                                ""
+                                }
+                            </Badge>
                     </div>
                 )
             }
@@ -97,7 +107,7 @@ export const columns = (
         {
             id: "sharingMedicineQuantity",
             accessorFn: (row) => row.sharingMedicine.quantity,
-            size: 100,
+            size: 150,
             header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ขนาด/หน่วย</div>,
             cell: ({ row }) => {
                 const quantity = row.original.sharingMedicine.quantity;
@@ -508,7 +518,7 @@ export const columns = (
                                                                             const offeredUnitPrice = Number(detail?.acceptedOffer?.pricePerUnit ?? 0);
                                                                             const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
                                                                             const rm: any = (detail as any).returnMedicine;
-                                                                            console.log('asd', detail)
+                                                                            //console.log('asd', detail)
                                                                             const returnedPriceTotal = Array.isArray(rm)
                                                                                 ? rm.reduce((sum: number, item: any) => {
                                                                                     const nested = item && item.returnMedicine ? item.returnMedicine : item;

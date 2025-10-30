@@ -155,7 +155,7 @@ export default function StatusDashboard() {
             sharingId: med.id,
             status: med.returnTerm.returnType === "supportReturn" ? "returned" : "in-return"
         }
-        console.log('staup[dat',responseBody)
+        //console.log('staup[dat',responseBody)
         setLoading(true)
         try {
             const response = await fetch("/api/updateSharingStatus", {
@@ -205,7 +205,7 @@ export default function StatusDashboard() {
     }
 
     const handleReturnClick = async (med: any) => {
-        console.log('handleReturnClick===', med);
+       // console.log('handleReturnClick===', med);
         setSelectedMed(med);
         setReturnDialogOpen(true);
     }
@@ -222,7 +222,7 @@ export default function StatusDashboard() {
             offeredMedicine: med.offeredMedicine,
             status: med.requestTerm.returnType === "supportReturn" ? "returned" : "in-return"
         }
-        console.log('confirReceiveDelivery', med)
+        //console.log('confirReceiveDelivery', med)
         setLoading(true)
         try {
             const response = await fetch("/api/updateRequest", {
@@ -295,17 +295,19 @@ export default function StatusDashboard() {
             .map((item) => ({
                 medicineRequests: item,
                 // เก็บเฉพาะ responseDetails ที่ offered
-                responseDetails: item.responseDetails,
-                // responseDetails: item.responseDetails.filter(
-                //     (res: any) => res.status === "offered"
-                // ),
+                // responseDetails: item.responseDetails,
+                responseDetails: item.responseDetails.filter(
+                    (res: any) => res.status !== "pending"  && res.status !== "cancelled"
+                ),
                 type: "request",
             })),
-
+            
         ...(medicineSharingInReturn as any[])
             // .filter((item) => item.status === "re-confirm")
             .map((item) => ({ item, type: "return" }))
+            
     ]
+    //console.log('combinedDataList',combinedDataList)
     const handleSelectMedicine = (item: any) => {
         //console.log("เลือก object:", item)
 

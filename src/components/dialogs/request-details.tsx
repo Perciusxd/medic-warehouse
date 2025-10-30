@@ -28,7 +28,7 @@ export default function RequestDetails({ requestData, responseForm }: any) {
     // Image preview state
     const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
 
-
+    
     const requestDetails = requestData ? {
         id: requestData.id,
         postingHospitalId: requestData.postingHospitalId,
@@ -50,7 +50,8 @@ export default function RequestDetails({ requestData, responseForm }: any) {
             manufactureDate: requestData.requestMedicine.manufactureDate,
             imageRef: requestData.requestMedicine.imageRef,
             description: requestData.requestMedicine.description,
-            requestMedicineImage: requestData.requestMedicine.requestMedicineImage
+            requestMedicineImage: requestData.requestMedicine.requestMedicineImage,
+            packingSize: requestData.requestMedicine.packingSize,
         },
         requestTerm: {
             returnType: requestData.requestTerm.returnType,
@@ -96,6 +97,7 @@ export default function RequestDetails({ requestData, responseForm }: any) {
             }
         }
     };
+    
     const total = (requestDetails.requestMedicine.pricePerUnit || 0) * (requestDetails.requestMedicine.requestAmount || 0);
     const imgUrl: string | null = requestDetails.requestMedicine.requestMedicineImage || requestDetails.requestMedicine?.imageRef || null;
     const [details, setDetails] = useState([
@@ -109,13 +111,13 @@ export default function RequestDetails({ requestData, responseForm }: any) {
         { label: "โรงพยาบาลที่ขอยืม", value: requestDetails.postingHospitalNameTH },
         { label: "รายการยา", value: requestDetails.requestMedicine.name },
         { label: "รูปแบบ/หน่วย", value: requestDetails.requestMedicine.unit },
-        { label: "ขนาดบรรจุ", value: requestDetails.requestMedicine.quantity },
+        { label: "ขนาด", value: requestDetails.requestMedicine.quantity },
         { label: "ชื่อการค้า", value: requestDetails.requestMedicine.trademark },
-        // { label: "ผู้ผลิต", value: requestDetails.requestMedicine.manufacturer },
+        //{ label: "ขนาดบรรจุ", value: requestDetails.requestMedicine.packingSize },
         // { label: "จำนวนที่ขอยืม", value: requestDetails.requestMedicine.requestAmount },
         // { label: "วันที่คาดว่าจะคืน", value: formatDate(requestDetails.requestTerm.expectedReturnDate) },
     ])
-    console.log("Request Details:", requestDetails);
+    
     return (
         <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -129,15 +131,7 @@ export default function RequestDetails({ requestData, responseForm }: any) {
                     <Label className="font-bold">ผู้ผลิต</Label>
                     <Input type="text" value={requestDetails.requestMedicine.manufacturer} disabled />
                 </div>
-                <div>
-                    <Label className="font-bold">ราคาต่อหน่วย</Label>
-                    <div className="flex flex-row gap-2 items-center">
-                        <Input type="text" className="max-w-[50%]" value={requestDetails.requestMedicine.pricePerUnit?.toLocaleString("th-TH")} disabled />
-                        <div className="font-extralight">
-                            รวม <span className="font-bold text text-gray-950"> {total?.toLocaleString("th-TH")} </span> บาท
-                        </div>
-                    </div>
-                </div>
+
                 <div>
                     <Label className="font-bold">จำนวนที่ขอยืม</Label>
                     <Input type="text" value={requestDetails.requestMedicine.requestAmount?.toLocaleString("th-TH")} disabled />
@@ -145,6 +139,10 @@ export default function RequestDetails({ requestData, responseForm }: any) {
                 <div>
                     <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
                     <Input type="text" value={format(new Date(Number(requestDetails.requestTerm.expectedReturnDate)), 'dd/MM/') + (new Date(Number(requestDetails.requestTerm.expectedReturnDate)).getFullYear() + 543)} disabled />
+                </div>
+                <div>
+                    <Label className="font-bold">ขนาดบรรจุ</Label>
+                     <Input type="text" value={requestDetails.requestMedicine.packingSize} disabled />
                 </div>
                 <div className="grid grid-cols-3 col-span-2 gap-2 items-center">
                     <div className="col-span-2">
@@ -155,21 +153,34 @@ export default function RequestDetails({ requestData, responseForm }: any) {
                         <Label className="font-bold">ภาพประกอบ</Label>
                         <div className="flex flex-row items-end gap-x-2">
                             {imgUrl &&
-                            <Button asChild variant="outline" className="">
-                                <a href={imgUrl} download="file.jpg">
-                                    <Download className="" /> ดาวน์โหลด
-                                </a>
-                            </Button>
+                                <Button asChild variant="outline" className="">
+                                    <a href={imgUrl} download="file.jpg">
+                                        <Download className="" /> ดาวน์โหลด
+                                    </a>
+                                </Button>
                             }
                             {
                                 !imgUrl &&
-                                <Input className="text-sm text-gray-500 italic" type="text" value={"ไม่มีภาพประกอบ"} disabled/>
+                                <Input className="text-sm text-gray-500 italic" type="text" value={"ไม่มีภาพประกอบ"} disabled />
                             }
                             {imgUrl &&
                                 <ImageHoverPreview previewUrl={imgUrl} />
                             }
                         </div>
                     </div>
+                    <div className="grid col-span-3">
+                        
+                            <Label className="font-bold">ราคาต่อหน่วย</Label>
+                            <div className="flex flex-row  gap-2 items-center">
+                                <Input type="text" className="max-w-[50%]" value={requestDetails.requestMedicine.pricePerUnit?.toLocaleString("th-TH")} disabled />
+                                <div className="font-extralight">
+                                    รวม <span className="font-bold text text-gray-950"> {total?.toLocaleString("th-TH")} </span> บาท
+                                </div>
+                            </div>
+                       
+
+                    </div>
+                   
                 </div>
             </div>
         </div>

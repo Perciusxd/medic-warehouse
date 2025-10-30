@@ -26,7 +26,7 @@ function SharingMedicineDetails({ sharingMedicine, receiveConditions, selectedMe
     
     const returnConditions = sharingDetails.sharingReturnTerm
     const returnTerm = selectedMed.returnTerm
-    console.log('asdasd',returnTerm)
+    //console.log('asdasd',returnTerm)
     const formattedDate = format(new Date(Number(createdAt)), 'dd/MM/') + (new Date(Number(createdAt)).getFullYear() + 543); // Format to dd/MM/yyyy in Thai Buddhist calendar
     return (
         <div className="flex flex-col gap-4 border p-4 rounded-lg">
@@ -255,7 +255,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
         subType: receiveConditions?.subType ?? true,
         supportType: receiveConditions?.supportType ?? false,
     } as const;
-    console.log('allowedReturnTypes', allowedReturnTypes)
+    //console.log('allowedReturnTypes', allowedReturnTypes)
 
     // Ensure selected returnType is allowed
     useEffect(() => {

@@ -131,7 +131,8 @@ const RequestSchema = z.object({
         requestAmount: z.coerce.number({ required_error: "กรุณากรอกจำนวนที่ต้องการยืม" })
             .min(1, "จำนวนที่ต้องการยืมต้องมากกว่า 0")
             .max(10000, "จำนวนที่ต้องการยืมต้องไม่เกิน 10000"),
-        quantity: z.string().optional(),
+        quantity: z.string().min(1,"กรุณาระบุขนาด"),
+        packingSize : z.string().optional(),
         pricePerUnit: z.coerce.number({ required_error: "กรุณากรอกราคาต่อหน่วย" })
             .min(1, "ราคาต่อหน่วยต้องมากกว่า 0")
             .max(100000, "ราคาต่อหน่วยต้องไม่เกิน 100,000"),
@@ -141,11 +142,10 @@ const RequestSchema = z.object({
         image: z.custom<File | undefined>((value) => value === undefined || value instanceof File, {
             message: "กรุณาอัปโหลดไฟล์ภาพที่ถูกต้อง",
         }).optional(),
-        packingSize: z.string().optional(), // จริงๆบังคับแต่ยังทำไม่เสร็จ
     }),
     requestTerm: z.object({
         // ทำให้เลือกได้ตามเงื่อนไข (ต้องกรอกเมื่อเป็น normalReturn เท่านั้น)
-        expectedReturnDate: z.string().optional(),
+        expectedReturnDate: z.string().min(1,"กรุณาระบุวันที่คิดว่าจะคืน"),
         returnType: z.enum(["normalReturn", "supportReturn"]),
         receiveConditions: z.object({
             condition: z.enum(["exactType", "subType"]).optional(),
@@ -355,7 +355,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
             requestData: requestData,
             selectedHospitals: filterHospital
         }
-        console.log('requestBody', requestBody)
+       // console.log('requestBody', requestBody)
         try {
             setLoading(true)
             const response = await fetch("/api/createRequest", {
@@ -410,7 +410,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
-                                <Label className="font-bold">ขนาด <OptionalMark /></Label>
+                                <Label className="font-bold">ขนาด <RequiredMark /></Label>
                                 <Input type="text" {...register("requestMedicine.quantity")} placeholder="10 mg/ 1 ml" />
                                 {errors.requestMedicine?.quantity && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.quantity.message}</span>
@@ -421,6 +421,13 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                 <Input type="text" {...register("requestMedicine.unit")} placeholder="AMP" />
                                 {errors.requestMedicine?.unit && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.unit.message}</span>
+                                )}
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <Label className="font-bold">ขนาดบรรจุ <OptionalMark /></Label>
+                                <Input type="text" {...register("requestMedicine.packingSize")} placeholder="ขวด 60 ซีซี" />
+                                {errors.requestMedicine?.packingSize && (
+                                    <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.packingSize.message}</span>
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
@@ -485,8 +492,8 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                             if (raw === "" || isNaN(Number(raw))) return;
                                             const rounded = Math.round(Number(raw) * 1000) / 1000;
                                             e.target.value = rounded.toLocaleString("th-TH", {
-                                                minimumFractionDigits: 3,
-                                                maximumFractionDigits: 3,
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
                                             });
                                         }
                                     })} className={errors.requestMedicine?.requestAmount ? "border-red-500" : ""}

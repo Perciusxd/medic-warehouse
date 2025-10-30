@@ -34,7 +34,7 @@ function RequestDetails({ sharingMed }: any) {
     const formattedDate = format(new Date(Number(date)), 'dd/MM/') + (new Date(Number(date)).getFullYear() + 543)
     const sharingDetails = sharingMed.sharingDetails
     const sharingMedicine = sharingMed.offeredMedicine ? sharingMed.sharingMedicine : sharingDetails.sharingMedicine
-    const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber, sharingAmount, pricePerUnit } = sharingMedicine
+    const { name, trademark, quantity, unit, manufacturer, expiryDate, batchNumber, sharingAmount, pricePerUnit , packingSize } = sharingMedicine
     const sharingReturnTerm = sharingMed.offeredMedicine ? sharingMed.sharingReturnTerm.returnConditions : sharingMed.sharingDetails.sharingReturnTerm
     const imgUrl: string | null = sharingMed.sharingDetails.sharingMedicineImage || sharingMed.sharingMedicineImage || null;
     const responseStatus = sharingMed.responseStatus
@@ -46,7 +46,7 @@ function RequestDetails({ sharingMed }: any) {
     /* const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/yyyy'); */
     // const formattedExpiryDate = format(sharingDetails.sharingMedicine.expiryDate, 'dd/MM/yyyy'); //ดึงมาก่อนนะอิงจากที่มี ดึงไว้ใน columns.tsx
     const formattedExpiryDate = format(new Date(Number(expiryDate)), 'dd/MM/') + (new Date(Number(expiryDate)).getFullYear() + 543)
-    console.log('returnConditions', sharingMed.sharingReturnTerm)
+    //console.log('returnConditions', sharingMed.sharingReturnTerm)
     return (
         <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-2">
@@ -77,7 +77,7 @@ function RequestDetails({ sharingMed }: any) {
                     <Input disabled value={batchNumber} />
                 </div>
 
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col  gap-1">
                     <Label>จำนวน</Label>
                     <Input disabled value={sharingAmount.toLocaleString()} />
                 </div>
@@ -87,14 +87,19 @@ function RequestDetails({ sharingMed }: any) {
                         <Input disabled value={unit} />
                     </div>
                     <div className="flex flex-col col-span-1 gap-1">
-                        <Label>ขนาดบรรจุ</Label>
+                        <Label>ขนาด</Label>
                         <Input disabled value={quantity} />
                     </div>
+
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>ราคาต่อหน่วย (รวม)</Label>
                     <Input disabled value={sharingMedicine.pricePerUnit ? sharingMedicine.pricePerUnit.toLocaleString('en-US', { style: 'currency', currency: 'THB' }) + " ( " + totalAmount.toLocaleString() + " )" : '-'} />
                 </div>
+                 <div className="flex flex-col col-span-1 gap-1">
+                        <Label>ขนาดบรรจุ</Label>
+                        <Input disabled value={packingSize} />
+                    </div>
                 <div className="grid grid-cols-2 gap-1">
                     <div className="flex flex-col col-span-1 gap-1">
                         <Label className="">ภาพประกอบ</Label>
@@ -215,9 +220,9 @@ function ResponseFormSchema(sharingMedicine: any) {
 }
 
 function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) {
-    console.log('sharingMedsssss', sharingMed)
-    console.log('responseStatus', sharingMed?.responseDetails?.returnTerm?.returnType)
-    console.log('responseDetails', sharingMed?.responseDetails)
+    //console.log('sharingMedsssss', sharingMed)
+    //console.log('responseStatus', sharingMed?.responseDetails?.returnTerm?.returnType)
+    //console.log('responseDetails', sharingMed?.responseDetails)
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [dateError, setDateError] = useState(""); // for error message
     const [loading, setLoading] = useState(false);
@@ -287,8 +292,8 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                 : sharingMed?.sharingMedicine?.sharingMedicine?.pricePerUnit
                     ? sharingMed?.sharingMedicine?.sharingMedicine?.pricePerUnit
                     : 0;
-        console.log('data', data)
-        console.log('sharingMed', sharingMed)
+        //console.log('data', data)
+        //console.log('sharingMed', sharingMed)
         const responseBody = {
             sharingId: updateId,
             acceptOffer: {
@@ -301,7 +306,7 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
             updatedAt: Date.now().toString(),
             status: newStatus
         }
-        console.log('accept offer responseBody', responseBody)
+        //console.log('accept offer responseBody', responseBody)
 
         try {
             setLoading(true);

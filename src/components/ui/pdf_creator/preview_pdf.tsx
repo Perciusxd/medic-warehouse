@@ -4,7 +4,7 @@ import React, { useEffect, useState, forwardRef, useImperativeHandle, useRef } f
 import { Document as PDFDocGen, Page, Text, View, StyleSheet, pdf, Font, Image } from '@react-pdf/renderer';
 import { Document as PDFViewer, Page as PDFPage } from 'react-pdf';
 import { saveAs } from 'file-saver';
-
+import { format } from 'date-fns';
 import { pdfjs } from 'react-pdf';
 import { useAuth } from '@/components/providers';
 // Thai date formatting helper (Buddhist calendar)
@@ -27,8 +27,8 @@ const formatThaiDate = (input: string | number | Date | undefined): string => {
 };
 
 Font.register({
-    family: 'THSarabunNew',
-    src: '/fonts/Sarabun-Light.ttf',
+    family: 'TH SarabunPSK',
+    src: '/fonts/thsarabun.ttf',
 })
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -36,13 +36,104 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
     import.meta.url,
 ).toString();
 
+function toThaiNumerals(num: number): string {
+    return String(num).replace(/\d/g, (d) => "๐๑๒๓๔๕๖๗๘๙"[parseInt(d, 10)]);
+}
+
+function toThaiDigits(input: string | number): string {
+    const s = typeof input === 'number' ? String(input) : String(input ?? '');
+    return s.replace(/\d/g, (d) => "๐๑๒๓๔๕๖๗๘๙"[parseInt(d, 10)]);
+}
+
+function formatThaiNumber(n: number): string {
+    try {
+        return new Intl.NumberFormat('th-TH-u-nu-thai').format(n);
+    } catch {
+        return toThaiDigits(Number(n).toLocaleString('th-TH'));
+    }
+}
+
+function formatThaiDateFromAny(input: any): string {
+    if (!input && input !== 0) return '';
+    const n = Number(input);
+    const d = new Date(isNaN(n) ? input : n);
+    if (isNaN(d.getTime())) return '';
+    return toThaiDigits(`${format(d, 'dd/MM')}/${d.getFullYear() + 543}`);
+}
+
+const cm = (value: number) => value * 28.3464567;
 const styles = StyleSheet.create({
-    body: { fontFamily: 'THSarabunNew', fontSize: 10, padding: 28 },
-    image: { width: 80, height: 80, marginHorizontal: 240, marginVertical: 20 },
-    text: { marginBottom: 8 },
+    // body: { fontFamily: 'THSarabunNew', fontSize: 10, padding: 28 },
+    // image: { width: 80, height: 80, marginHorizontal: 240, marginVertical: 20 },
+    // text: { marginBottom: 8 },
+    // table: {
+    //     display: 'flex',
+    //     width: 'auto',
+    //     // borderStyle: 'solid',
+    //     // borderWidth: 1,
+    //     // borderRightWidth: 0,
+    //     // borderBottomWidth: 0,
+    // },
+    // tableRow: {
+    //     flexDirection: 'row',
+    // },
+    // tableHeader: {
+    //     width: '25%',
+    //     // borderStyle: 'solid',
+    //     // borderBottomWidth: 1,
+    //     // borderRightWidth: 1,
+    //     padding: 4,
+    //     fontWeight: 'bold',
+    // },
+    // tableCell: {
+    //     width: '25%',
+    //     // borderStyle: 'solid',
+    //     // borderBottomWidth: 1,
+    //     // borderRightWidth: 1,
+    //     padding: 4,
+    //     flexWrap: 'wrap',
+    //     maxWidth: '100%',
+    // },
+    // // section: { marginBottom: 10 }
+    body: {},
+    image: { width: 80, height: 80, alignSelf: 'center' },
+    page: {
+        fontFamily: 'TH SarabunPSK',
+        fontSize: 16,
+        size: 'A4',
+        paddingTop: cm(1.5),
+        paddingLeft: cm(3),
+        paddingRight: cm(2),
+        paddingBottom: cm(2),
+
+    },
+    coppy_page: {
+        fontFamily: 'TH SarabunPSK',
+        fontSize: 16,
+        size: 'A4',
+        paddingTop: cm(1.5),
+        paddingLeft: cm(3),
+        paddingRight: cm(2),
+        paddingBottom: cm(2),
+    },
+    title: {
+        // fontSize: 18,
+        marginBottom: 15,
+        textAlign: "center",
+    },
+    section: {
+        marginBottom: 10,
+    },
+    row: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginBottom: 2,
+    },
     table: {
         display: 'flex',
         width: 'auto',
+        justifyContent: 'center'
+        // fontSize: 14,
         // borderStyle: 'solid',
         // borderWidth: 1,
         // borderRightWidth: 0,
@@ -50,29 +141,34 @@ const styles = StyleSheet.create({
     },
     tableRow: {
         flexDirection: 'row',
+        // fontSize: 14,
     },
     tableHeader: {
         width: '25%',
         // borderStyle: 'solid',
         // borderBottomWidth: 1,
         // borderRightWidth: 1,
-        padding: 4,
+        padding: 2,
         fontWeight: 'bold',
+        // fontSize: 14,
     },
     tableCell: {
         width: '25%',
         // borderStyle: 'solid',
         // borderBottomWidth: 1,
         // borderRightWidth: 1,
-        padding: 4,
+        padding: 2,
         flexWrap: 'wrap',
         maxWidth: '100%',
+        // fontSize: 14,
     },
-    // section: { marginBottom: 10 }
+    text: {
+        marginBottom: 2
+    },
 });
 
 function ContentPage({ pdfData, variant = 'original' }: any) {
-    console.log('pdfData', pdfData)
+    //console.log('pdfData', pdfData)
     const { userData } = pdfData;
     const { address, director, contact } = userData;
 
@@ -86,85 +182,210 @@ function ContentPage({ pdfData, variant = 'original' }: any) {
     if (!selectedResponseDetail) return null;
 
     const isRequestType = pdfData.ticketType === "request";
-
-    const requestedMedicineName = isRequestType 
+    const requestedMedicineName = isRequestType
         ? pdfData.requestDetails?.name || pdfData.requestMedicine?.name
         : pdfData.sharingDetails?.name || pdfData.sharingMedicine?.name;
 
-    const requestedQuantity = isRequestType 
+    const requestedAmount = isRequestType
         ? pdfData.requestDetails?.requestAmount || pdfData.requestMedicine?.requestAmount
         : pdfData.sharingDetails?.sharingAmount || pdfData.sharingMedicine?.sharingAmount;
+
+    const requestedQuantity = isRequestType
+        ? pdfData.requestDetails?.quantity || pdfData.requestMedicine?.quantity
+        : pdfData.sharingDetails?.quantity || pdfData.sharingMedicine?.quantity;
 
     const requestUnit = isRequestType
         ? pdfData.requestDetails?.unit || pdfData.requestMedicine?.unit
         : pdfData.sharingDetails?.unit || pdfData.sharingMedicine?.unit;
 
+    const requestdescription = isRequestType
+        ? pdfData.requestDetails?.description || pdfData.requestMedicine?.description
+        : pdfData.sharingDetails?.description || pdfData.sharingMedicine?.description;
+
     const lendingHospitalNameTH = pdfData.postingHospitalNameTH;
     const lendingHospitalAddress = address;
     const borrowingHospitalNameTH = selectedResponseDetail.respondingHospitalNameTH;
 
-    const expectedReturnDate = isRequestType 
+    const expectedReturnDate = isRequestType
         ? formatThaiDate(pdfData.requestTerm?.expectedReturnDate)
         : formatThaiDate(selectedResponseDetail.acceptedOffer?.expectedReturnDate || pdfData.sharingReturnTerm?.expectedReturnDate);
 
-    const documentType = isRequestType ? "ขอยืมเวชภัณฑ์ยา" : "ขอรับแบ่งปันเวชภัณฑ์ยา";
-    const actionText = isRequestType ? "ขอยืมยา" : "ขอรับแบ่งปันยา";
-    const mockNote = "รอการส่งมอบจากตัวแทนจำหน่าย";
-
+    const documentType = pdfData.requestTerm.returnType ==="normalReturn" ? "ขอยืมเวชภัณฑ์ยา" : "ขอสนับสนุนเวชภัณฑ์ยา";
+    // const actionText = isRequestType ? "ขอยืมยา" : "ขอรับแบ่งปันยา";
+    // const mockNote = "รอการส่งมอบจากตัวแทนจำหน่าย";
+    // const datacount = pdfData.length
+   
+    
     const today = formatThaiDate(new Date());
-
+    const docType = pdfData.requestTerm.returnType
+  
     return (
+        // <>
+        //     {variant === 'original' ? (
+        //         <Image style={styles.image} src="/krut_mark.jpg"/>
+        //     ) : (
+        //         <Text style={{ textAlign: 'center', fontSize: 28, fontWeight: 'bold', marginBottom: 40 }}>สำเนา </Text>
+        //     )}
+        //     <View style={[styles.table, { marginBottom: 10 }]}>
+        //         <View style={styles.tableRow}>
+        //             <Text style={[styles.tableCell, { flex: 1 }]}>ที่ สข. 80231</Text>
+        //             <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+        //             <Text style={[styles.tableCell, { flex: 1 }]}>{lendingHospitalNameTH} </Text>
+        //         </View>
+
+        //         <View style={styles.tableRow}>
+        //             <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+        //             <Text style={[styles.tableCell, { flex: 1 }]}></Text>
+        //             <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {lendingHospitalAddress} <span style={{ display: 'none' }}>hidden</span></Text>
+        //         </View>
+        //     </View>
+
+        //     <Text style={{ textAlign: 'center' }} >{today}</Text>
+        //     <Text style={styles.text}>เรื่อง    {documentType}</Text>
+        //     <Text style={styles.text}>เรียน    ผู้อำนวยการ {borrowingHospitalNameTH}</Text>
+        //     <Text style={{ marginTop: 6, textIndent: 80 }}>
+        //         ตามที่{lendingHospitalNameTH} มีความประสงค์ที่จะ{actionText} ดังรายการต่อไปนี้
+        //     </Text>
+
+        //     <View style={[styles.table, { marginTop: 14 }]}> 
+        //         <View style={styles.tableRow}>
+        //             <Text style={styles.tableHeader}>รายการ</Text>
+        //             <Text style={styles.tableHeader}>จำนวน </Text>
+        //             <Text style={styles.tableHeader}>วันกำหนดคืน </Text>
+        //             <Text style={styles.tableHeader}>หมายเหตุ</Text>
+        //         </View>
+        //         <View style={styles.tableRow}>
+        //             <Text style={styles.tableCell}>{requestedMedicineName }</Text>
+        //             <Text style={styles.tableCell}>{offeredMedicine.offerAmount} ({requestUnit})</Text>
+        //             <Text style={styles.tableCell}>{expectedReturnDate}</Text>
+        //             <Text style={styles.tableCell}>{mockNote}</Text>
+        //         </View>
+        //     </View>
+
+        //     <Text style={{ marginTop: 30, textIndent: 80 }}>
+        //         ทั้งนี้ {lendingHospitalNameTH} จะส่งคืนยาให้แก่{borrowingHospitalNameTH} ภายในวันที่ {expectedReturnDate} และหากมีการเปลี่ยนแปลงจะต้องแจ้งให้ทราบล่วงหน้า
+        //     </Text>
+
+        //     <Text style={{ marginTop: 30, textIndent: 310 }}>ขอแสดงความนับถือ</Text>
+        //     <Text style={{ marginTop: 100, textIndent: 280 }}>{director} </Text>
+        //     <Text style={{ textIndent: 280 }}>ผู้อำนวยการ {lendingHospitalNameTH}</Text>
+        //     <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
+        //     <Text>ติดต่อ {contact}</Text>
+        // </>
+
+
         <>
             {variant === 'original' ? (
-                <Image style={styles.image} src="/krut_mark.jpg"/>
+                <Image style={styles.image} src="/krut_mark.jpg" />
             ) : (
-                <Text style={{ textAlign: 'center', fontSize: 28, fontWeight: 'bold', marginBottom: 40 }}>สำเนา </Text>
+                <Text style={{ textAlign: 'center', fontSize: 28, fontWeight: 'bold', marginBottom: 43 }}>สำเนา </Text>
             )}
+
             <View style={[styles.table, { marginBottom: 10 }]}>
                 <View style={styles.tableRow}>
-                    <Text style={[styles.tableCell, { flex: 1 }]}>ที่ สข. 80231</Text>
+                    <Text style={[styles.tableCell, { flex: 1 }]}>{toThaiDigits('ที่ สข. 80231')}</Text>
                     <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-                    <Text style={[styles.tableCell, { flex: 1 }]}>{lendingHospitalNameTH} </Text>
+                    <Text style={[styles.tableCell, { flex: 1 }]}>โรงพยาบาล{lendingHospitalNameTH} </Text>
                 </View>
 
                 <View style={styles.tableRow}>
                     <Text style={[styles.tableCell, { flex: 1 }]}></Text>
                     <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-                    <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่ {lendingHospitalAddress} <span style={{ display: 'none' }}>hidden</span></Text>
+                    <Text style={[styles.tableCell, { flex: 1, flexWrap: 'wrap', maxWidth: '100%' }]}>ที่อยู่  {toThaiDigits(lendingHospitalAddress ?? '')} <span style={{ display: 'none' }}>hidden</span></Text>
                 </View>
             </View>
 
-            <Text style={{ textAlign: 'center' }} >{today}</Text>
+            <Text style={{ textAlign: 'center' }} >{toThaiDigits(today)}</Text>
             <Text style={styles.text}>เรื่อง    {documentType}</Text>
             <Text style={styles.text}>เรียน    ผู้อำนวยการ {borrowingHospitalNameTH}</Text>
-            <Text style={{ marginTop: 6, textIndent: 80 }}>
-                ตามที่{lendingHospitalNameTH} มีความประสงค์ที่จะ{actionText} ดังรายการต่อไปนี้
-            </Text>
+            {docType === "normalReturn" && (
+                <div>
 
-            <View style={[styles.table, { marginTop: 14 }]}> 
-                <View style={styles.tableRow}>
-                    <Text style={styles.tableHeader}>รายการ</Text>
-                    <Text style={styles.tableHeader}>จำนวน </Text>
-                    <Text style={styles.tableHeader}>วันกำหนดคืน </Text>
-                    <Text style={styles.tableHeader}>หมายเหตุ</Text>
-                </View>
-                <View style={styles.tableRow}>
-                    <Text style={styles.tableCell}>{requestedMedicineName }</Text>
-                    <Text style={styles.tableCell}>{offeredMedicine.offerAmount} ({requestUnit})</Text>
-                    <Text style={styles.tableCell}>{expectedReturnDate}</Text>
-                    <Text style={styles.tableCell}>{mockNote}</Text>
-                </View>
+
+                    <Text style={{ marginTop: 5, textIndent: 80 }}>
+
+                        เนื่องด้วย {lendingHospitalNameTH} มีความประสงค์จะขอยืมเวชภัณฑ์ยา จำนวน ๑ รายการ เนื่องจาก {requestdescription} โดยมีรายละเอียดดังต่อไปนี้
+                    </Text>
+                    <View style={[styles.table, { marginTop: 14 }]} >
+                        <View style={[styles.tableRow, { justifyContent: 'space-between' }]}>
+                            <Text style={[styles.tableHeader, { width: 20 }]}>ลำดับ</Text>
+                            <Text style={[styles.tableHeader, { width: '50%', }]}>รายการ</Text>
+                            <Text style={styles.tableHeader}>จำนวน </Text>
+                            {/* <Text style={styles.tableHeader}>วันกำหนดคืน </Text> */}
+                            {/* <Text style={styles.tableHeader}>หมายเหตุ</Text> */}
+                        </View>
+
+                        <View style={[styles.tableRow, { justifyContent: 'space-between' }]}  >
+                            <Text style={[styles.tableCell, { width: 20 }]}>๑</Text>
+                            <Text style={[styles.tableCell, { width: '50%', }]}>{requestedMedicineName} {toThaiDigits(requestedQuantity ? toThaiDigits(requestedQuantity) : '')} </Text>
+                            <Text style={styles.tableCell}>{formatThaiNumber(Number(requestedAmount))} {requestUnit ? toThaiDigits(requestUnit) : ''}</Text>
+                            {/* <Text style={styles.tableCell}>{item.ExpectedReturnDate}</Text>
+                                <Text style={styles.tableCell}>{item.Description || "—"}</Text> */}
+                        </View>
+
+                    </View>
+                    <Text style={{ marginTop: 14, textIndent: 80 }}>
+                        ทั้งนี้ {lendingHospitalNameTH} จะส่งคืนเวชภัณฑ์ยาตามรายการข้างต้น ภายในเวลาที่ {toThaiDigits(expectedReturnDate)}
+                    </Text>
+                    <Text style={{textIndent: 80 }}>
+                        จึงเรียนมาเพื่อโปรดพิจารณา และ{borrowingHospitalNameTH}ขอขอบคุณมา ณ โอกาสนี้
+                    </Text>
+                </div>
+            )}
+            {docType === "supportReturn" && (
+                <div>
+                    <Text style={{ marginTop: 5, textIndent: 80 }}>
+
+                        เนื่องด้วย โรงพยาบาล{lendingHospitalNameTH} มีความประสงค์จะขอสนับสนุนเวชภัณฑ์ยา จำนวน ๑ รายการ โดยการ {requestdescription} โดยมีรายละเอียดดังต่อไปนี้
+                    </Text>
+                    <View style={[styles.table, { marginTop: 14 }]} >
+                        <View style={[styles.tableRow, { justifyContent: 'space-between' }]}>
+                            <Text style={[styles.tableHeader, { width: 20 }]}>ลำดับ</Text>
+                            <Text style={[styles.tableHeader, { width: '50%', }]}>รายการ</Text>
+                            <Text style={styles.tableHeader}>จำนวน </Text>
+                            {/* <Text style={styles.tableHeader}>วันกำหนดคืน </Text> */}
+                            {/* <Text style={styles.tableHeader}>หมายเหตุ</Text> */}
+                        </View>
+                        <View style={[styles.tableRow, { justifyContent: 'space-between' }]}  >
+                            <Text style={[styles.tableCell, { width: 20 }]}>๑</Text>
+                            <Text style={[styles.tableCell, { width: '50%', }]}>{requestedMedicineName} {toThaiDigits(requestedQuantity ? toThaiDigits(requestedQuantity) : '')} </Text>
+                            <Text style={styles.tableCell}>{formatThaiNumber(Number(requestedAmount))} {requestUnit ? toThaiDigits(requestUnit) : ''}</Text>
+                            {/* <Text style={styles.tableCell}>{item.ExpectedReturnDate}</Text>
+                                <Text style={styles.tableCell}>{item.Description || "—"}</Text> */}
+                        </View>
+                    </View>
+                    <Text style={{ marginTop: 14, textIndent: 80 }}>
+                        จึงเรียนมาเพื่อโปรดพิจารณา และโรงพยาบาล{lendingHospitalNameTH} ขอขอบคุณมา ณ โอกาสนี้
+                    </Text>
+
+
+                </div>
+            )}
+            <View style={{
+                alignSelf: 'flex-end',
+                width: '50%',
+                maxWidth: 200,
+                flexDirection: 'column',
+                textAlign: 'center',
+                marginTop: 20,
+            }}>
+                <Text>ขอแสดงความนับถือ</Text>
+                <Text style={{ marginTop: 50 }}>.......................................................................</Text>
+                <Text>( {director} ) </Text>
+                <Text>ตำแหน่งผู้มีอำนาจลงนาม โรงพยาบาล{lendingHospitalNameTH}</Text>
             </View>
 
-            <Text style={{ marginTop: 30, textIndent: 80 }}>
-                ทั้งนี้ {lendingHospitalNameTH} จะส่งคืนยาให้แก่{borrowingHospitalNameTH} ภายในวันที่ {expectedReturnDate} และหากมีการเปลี่ยนแปลงจะต้องแจ้งให้ทราบล่วงหน้า
-            </Text>
+            <View style={{
+                position: 'absolute',
+                bottom: cm(2),
+                left: cm(3),
+                width: '100%',
+                textAlign: 'left',
+            }}>
+                <Text >กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
+                <Text>ติดต่อ {contact}</Text>
+            </View>
 
-            <Text style={{ marginTop: 30, textIndent: 310 }}>ขอแสดงความนับถือ</Text>
-            <Text style={{ marginTop: 100, textIndent: 280 }}>{director} </Text>
-            <Text style={{ textIndent: 280 }}>ผู้อำนวยการ {lendingHospitalNameTH}</Text>
-            <Text style={{ marginTop: 120 }}>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
-            <Text>ติดต่อ {contact}</Text>
         </>
     );
 }
@@ -172,7 +393,7 @@ function ContentPage({ pdfData, variant = 'original' }: any) {
 function MyDocument({ pdfData, variant = 'original' }: any) {
     return (
         <PDFDocGen>
-            <Page size="A4" style={styles.body}>
+            <Page size="A4" style={styles.page}>
                 <ContentPage pdfData={pdfData} variant={variant} />
             </Page>
         </PDFDocGen>
@@ -182,10 +403,10 @@ function MyDocument({ pdfData, variant = 'original' }: any) {
 function DualDocument({ pdfData }: any) {
     return (
         <PDFDocGen>
-            <Page size="A4" style={styles.body}>
+            <Page size="A4" style={styles.page}>
                 <ContentPage pdfData={pdfData} variant="original" />
             </Page>
-            <Page size="A4" style={styles.body}>
+            <Page size="A4" style={styles.coppy_page}>
                 <ContentPage pdfData={pdfData} variant="copy" />
             </Page>
         </PDFDocGen>
@@ -201,7 +422,7 @@ const PdfPreview = forwardRef(({ data: pdfData, userData }: any, ref) => {
     useEffect(() => {
         let cancelled = false;
         const generatePdf = async () => {
-            const generatedBlob = await pdf(<MyDocument pdfData={{...pdfData, userData}} variant="original" />).toBlob();
+            const generatedBlob = await pdf(<MyDocument pdfData={{ ...pdfData, userData }} variant="original" />).toBlob();
             if (!cancelled) {
                 setBlob(generatedBlob);
                 setPdfUrl(URL.createObjectURL(generatedBlob));

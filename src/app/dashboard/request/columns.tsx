@@ -307,7 +307,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
         },
         cell: ({ row }) => {
             const med = row.original
-            console.log("med:", med)
+            //console.log("med:", med)
             const status = med.requestDetails.urgent
             const label = status === "urgent" ? "ด่วนที่สุด" : status === "immediate" ? "ด่วน" : "ปกติ"
             const badgeClass = status === "urgent"

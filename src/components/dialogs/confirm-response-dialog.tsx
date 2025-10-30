@@ -38,11 +38,12 @@ import { useAuth } from "@/components/providers";
 import CancelDialog from "./cancel-dialog";
 
 function RequestDetailPanel({ data }: any) {
-    console.log('requestdetailpanel', data)
+    //console.log('requestdetailpanel', data)
     const { updatedAt, postingHospitalNameTH, requestDetails, requestTerm } = data;
-    const { name, requestAmount, unit, pricePerUnit, manufacturer } = requestDetails || {};
+    const { name, requestAmount, unit, pricePerUnit, manufacturer,packingSize ,quantity } = requestDetails || {};
+    //console.log('requestDetails',requestDetails)
     const totalPrice = requestAmount * pricePerUnit;
-
+    const doctype = data.requestTerm.returnType
     return (
         <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-2">
@@ -61,6 +62,14 @@ function RequestDetailPanel({ data }: any) {
                 <div className="flex flex-col gap-1">
                     <Label>รูปแบบ/หน่วย</Label>
                     <Input disabled value={unit} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>ขนาดบรรจุ</Label>
+                    <Input disabled value={packingSize || ""} />
+                </div>
+                 <div className="flex flex-col gap-1">
+                    <Label>ขนาด</Label>
+                    <Input disabled value={quantity} />
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>ผู้ผลิต</Label>
@@ -105,7 +114,7 @@ function ResponseDetailPanel({ responseData }: any) {
     const responseDetail = responseDetails.find((item: any) => item.id === responseId);
     const respondingHospitalNameTH = responseDetail?.respondingHospitalNameTH || "-";
     const { returnConditions } = requestTerm;
-    console.log("returnConditions", returnConditions)
+    //console.log("offeredMedicine", offeredMedicine)
 
     return (
         <div className="flex flex-col gap-4">
@@ -145,11 +154,12 @@ function ResponseDetailPanel({ responseData }: any) {
                 </div>
             </div>
             <div className="flex flex-col gap-2">
-                <Label>เงื่อนไขการส่งคืน</Label>
-                {returnConditions.condition === "exactType" && (
+                <Label>{offeredMedicine.returnType === "normalReturn"?"เงื่อนไขการส่งคืน" : "ขอสนับสนุน"}</Label>
+                
+                {offeredMedicine.returnConditions.condition === "exactType" && offeredMedicine.returnType === "normalReturn" && (
                     <Badge variant="outline">ส่งคืนรายการนี้</Badge>
                 )}
-                {returnConditions.condition === "otherType" && (
+                {offeredMedicine.returnConditions.condition === "otherType" &&  offeredMedicine.returnType === "normalReturn" && (
                     <div>
                         <Badge variant="outline">ส่งคืนรายการอื่น
 
@@ -157,6 +167,14 @@ function ResponseDetailPanel({ responseData }: any) {
                         </Badge>
                     </div>
                 )}
+                {offeredMedicine.returnType === "supportReturn" && (
+                    <div>
+                        <Badge variant="outline">{offeredMedicine.supportCondition==="budgetPlan" ? "ตามงบประมาณสนับสนุน" : offeredMedicine.supportCondition==="servicePlan" ? "ตามสิทธิ์แผนบริการ":"สนับสนุนโดยไม่คิดค่าใช้จ่าย" }</Badge>
+
+                        </div>
+                )
+
+                }
             </div>
         </div>
     );

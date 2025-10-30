@@ -19,6 +19,7 @@ export type RequestAsset = {
     manufacturer: string;
     manufactureDate: string;
     imageRef: string;
+    packingSize : string;
   };
   requestMedicineImage: string;
   requestTerm: {

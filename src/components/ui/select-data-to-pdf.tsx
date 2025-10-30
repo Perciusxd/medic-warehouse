@@ -70,7 +70,7 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
 
   const userdata = useAuth();
   console.log("data", dataList)
-  const [docType, setDocType] = useState<string>('nomalReturn');
+  const [docType, setDocType] = useState<string>('normalReturn');
   const handleDocTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setDocType(event.target.value);
   };
@@ -85,127 +85,119 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-fit   max-w-full  overflow-x-auto">
         <DialogHeader>
           <DialogTitle> พิมพ์เอกสารขอยืมยา/สนับสนุน</DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="h-[400px] w-full rounded-md border p-2">
+        <ScrollArea className="h-[400px] w-full rounded-md border p-4 space-y-4">
+  <div className="space-y-4">
+    <select
+      className="border p-2 w-full rounded text-sm"
+      value={selectedHospital}
+      onChange={(e) => setSelectedHospital(e.target.value)}
+    >
+      <option value="">-- รายการทั้งหมด --</option>
+      {HospitalListNamesTH.map((hospital, idx) => (
+        <option key={idx} value={hospital}>
+          {hospital}
+        </option>
+      ))}
+    </select>
 
-          <select
-            className="border p-2 mb-4 w-full rounded"
-            value={selectedHospital}
-            onChange={(e) => setSelectedHospital(e.target.value)}
-          >
-            <option value="">-- รายการทั้งหมด --</option>
-            {HospitalListNamesTH.map((hospital, idx) => (
-              <option key={idx} value={hospital}>
-                {hospital}
-              </option>
-            ))}
-          </select>
-          <fieldset>
-      <legend>รูปแบบเอกสาร</legend>
-      <div className="flex gap-4 mt-1 mb-1">
-        
-        {/* --- ตัวเลือกที่ 1 --- */}
-        <div className="flex items-center">
-          <input 
-            type="radio" 
-            id="nomalReturnRadio" // เพิ่ม id เพื่อเชื่อมกับ label
-            name="documentType"   // เพิ่ม name เพื่อจัดกลุ่ม
-            value="nomalReturn"
-            checked={docType === 'nomalReturn'} // ควบคุมการ checked จาก state
-            onChange={handleDocTypeChange}      // เรียกใช้ฟังก์ชันเมื่อมีการเปลี่ยนแปลง
+    <fieldset className="border rounded-md p-3">
+      <legend className="text-sm font-semibold px-2">รูปแบบเอกสาร</legend>
+      <div className="flex gap-6 mt-1 mb-1">
+        <label className="flex items-center gap-1 cursor-pointer">
+          <input
+            type="radio"
+            name="documentType"
+            value="normalReturn"
+            checked={docType === 'normalReturn'}
+            onChange={handleDocTypeChange}
           />
-          <label htmlFor="nomalReturnRadio" className="ml-1 cursor-pointer">
-            เอกสารขอยืม
-          </label>
-        </div>
+          <span>เอกสารขอยืม</span>
+        </label>
 
-        {/* --- ตัวเลือกที่ 2 --- */}
-        <div className="flex items-center">
-          <input 
-            type="radio" 
-            id="supportReturnRadio" // เพิ่ม id เพื่อเชื่อมกับ label
-            name="documentType"     // name ต้องเหมือนกับตัวแรก
+        <label className="flex items-center gap-1 cursor-pointer">
+          <input
+            type="radio"
+            name="documentType"
             value="supportReturn"
-            checked={docType === 'supportReturn'} // ควบคุมการ checked จาก state
-            onChange={handleDocTypeChange}        // เรียกใช้ฟังก์ชันเมื่อมีการเปลี่ยนแปลง
+            checked={docType === 'supportReturn'}
+            onChange={handleDocTypeChange}
           />
-          <label htmlFor="supportReturnRadio" className="ml-1 cursor-pointer">
-            เอกสารสนับสนุน
-          </label>
-        </div>
+          <span>เอกสารสนับสนุน</span>
+        </label>
       </div>
 
-       {/* (ส่วนนี้ไว้ทดสอบ) แสดงค่าที่กำลังถูกเลือก */}
-       <p className="mt-2 text-xs text-gray-500">
+      {/* <p className="mt-2 text-xs text-gray-500">
         ค่าที่เลือก: <strong>{docType}</strong>
-      </p>
+      </p> */}
     </fieldset>
 
-          <h4 className="font-bold mb-2">ขอยืม (ขาดแคลน)</h4>
-          {dataList
-            .filter((item) => item.type === "request")
-            .filter((item) => {
-              if (!selectedHospital) return true // ยังไม่เลือก → แสดงทั้งหมด
-              return item.responseDetails?.[0]?.respondingHospitalNameTH === selectedHospital
-            })
-            .map((item, index) => {
-              const globalIndex = dataList.indexOf(item)
-              // console.log("item", item, globalIndex)
-              //console.log("responseDetails?.offeredMedicine?.name", item)
-              return (
-                <div key={item.id ?? globalIndex}>
-                  <Button
-                    variant={selectedIndices.includes(globalIndex) ? "default" : "ghost"}
-                    className="w-full justify-start"
-                    onClick={() => handleSelect(globalIndex)}
-                  >
-                    {item.responseDetails[0]?.offeredMedicine?.name ?? "ผิด"} จาก {item.responseDetails[0].respondingHospitalNameTH} จำนวน {item.responseDetails[0]?.offeredMedicine?.offerAmount ?? "ผิด"}{item.responseDetails[0]?.offeredMedicine?.unit ?? "ผิด"}
+    <div>
+      <h4 className="font-bold mb-2">ขอยืม (ขาดแคลน)</h4>
+      {dataList
+        .filter((item) => item.type === "request")
+        .filter((item) => !selectedHospital || item.responseDetails?.[0]?.respondingHospitalNameTH === selectedHospital)
+        .filter((item) => item.medicineRequests?.requestTerm?.returnType === docType)
+        .map((item, index) => {
+          const globalIndex = dataList.indexOf(item)
+          return (
+            <div key={item.id ?? globalIndex} className="mb-2 overflow-hidden">
+              <Button
+                variant={selectedIndices.includes(globalIndex) ? "default" : "ghost"}
+                className="w-full justify-start truncate"
+                onClick={() => handleSelect(globalIndex)}
+              >
+                {item.responseDetails[0]?.offeredMedicine?.name ?? "ผิด"} จาก{" "}
+                {item.responseDetails[0].respondingHospitalNameTH} จำนวน{" "}
+                {item.responseDetails[0]?.offeredMedicine?.offerAmount ?? "ผิด"}
+                {item.responseDetails[0]?.offeredMedicine?.unit ?? "ผิด"}
+                {selectedIndices.includes(globalIndex) && (
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    (ลำดับ {selectedIndices.indexOf(globalIndex) + 1})
+                  </span>
+                )}
+              </Button>
+            </div>
+          )
+        })}
+    </div>
 
-                    {selectedIndices.includes(globalIndex) && (
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        (ลำดับ {selectedIndices.indexOf(globalIndex) + 1})
-                      </span>
-                    )}
-                  </Button>
-                  <Separator className="my-1" />
-                </div>
-              )
-            })}
+    <div>
+      <h4 className="font-bold mt-4 mb-2">ขอยืม (แบ่งปัน)</h4>
+      {dataList
+        .filter((item) => item.type === "return")
+        .filter((item) => !selectedHospital || item.item.sharingDetails?.postingHospitalNameTH === selectedHospital)
+        .filter((item) => item.item.returnTerm.returnType === docType)
+        .map((item, index) => {
+          const globalIndex = dataList.indexOf(item)
+          return (
+            <div key={item.id ?? globalIndex} className="mb-2">
+              <Button
+                variant={selectedIndices.includes(globalIndex) ? "default" : "ghost"}
+                className="w-full justify-start truncate"
+                onClick={() => handleSelect(globalIndex)}
+              >
+                {item.item.sharingDetails?.sharingMedicine?.name ?? "ไม่มีชื่อ"} จาก{" "}
+                {item.item.sharingDetails?.postingHospitalNameTH ?? "ไม่มีชื่อ"} จำนวน{" "}
+                {item.item.acceptedOffer?.responseAmount ?? "ไม่มีจำนวน"}
+                {item.item.sharingDetails?.sharingMedicine?.unit ?? "ไม่มีหน่วย"}
+                {selectedIndices.includes(globalIndex) && (
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    (ลำดับ {selectedIndices.indexOf(globalIndex) + 1})
+                  </span>
+                )}
+              </Button>
+            </div>
+          )
+        })}
+    </div>
+  </div>
+</ScrollArea>
 
-          <h4 className="font-bold mt-4 mb-2">ขอยืม (แบ่งปัน)</h4>
-          {dataList
-            .filter((item) => item.type === "return")
-            .filter((item) => {
-              if (!selectedHospital) return true
-              return item.item.sharingDetails?.postingHospitalNameTH === selectedHospital
-            })
-            .map((item, index) => {
-              const globalIndex = dataList.indexOf(item)
-              // console.log("item sh", item, globalIndex)
-              return (
-                <div key={item.id ?? globalIndex}>
-                  <Button
-                    variant={selectedIndices.includes(globalIndex) ? "default" : "ghost"}
-                    className="w-full justify-start"
-                    onClick={() => handleSelect(globalIndex)}
-                  >
-                    {item.item.sharingDetails?.sharingMedicine?.name ?? "ไม่มีชื่อ"} จาก {item.item.sharingDetails?.postingHospitalNameTH ?? "ไม่มีชื่อ"} จำนวน {item.item.acceptedOffer?.responseAmount ?? "ไม่มีจำนวน"}{item.item.sharingDetails?.sharingMedicine?.unit ?? "ไม่มีหน่วย"}
-
-                    {selectedIndices.includes(globalIndex) && (
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        (ลำดับ {selectedIndices.indexOf(globalIndex) + 1})
-                      </span>
-                    )}
-                  </Button>
-                  <Separator className="my-1" />
-                </div>
-              )
-            })}
-        </ScrollArea>
         <Button
           onClick={() => {
             if (selectedObjects.length === 0) {
@@ -260,10 +252,10 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
               }
               return null
             })
-            generatePdf(documentData, userdata.user);
+            generatePdf(documentData, userdata.user,docType);
 
             console.log("สร้างเอกสาร:", documentData)
-            Pdfcontent({ documentData, userdata: userdata.user })
+            Pdfcontent({ documentData, userdata: userdata.user ,docType})
             // เอา documentData ไปใช้สร้าง PDF ต่อ
 
           }}

@@ -74,7 +74,7 @@ function normalizeReturnList(raw: any): any[] {
 }
 
 function ContentPage({ pdfData, returnList, variant = 'original' }: any) {
-    console.log('pdfData', pdfData);
+    //console.log('pdfData', pdfData);
     const { userData } = pdfData;
     const { address } = userData;
     const baseMedicine = pdfData?.offeredMedicine

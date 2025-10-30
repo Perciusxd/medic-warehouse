@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 // import { format } from "date-fns"
 import { useAuth } from "../providers"
-
+import { RequiredMark, OptionalMark } from "@/components/ui/field-indicator"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,7 +18,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar"
 import { HospitalList } from "@/context/HospitalList"
 import { toast } from "sonner"
-
+import { format } from "date-fns"
+import * as React from "react"
+import { th, tr } from "date-fns/locale" // ใช้ locale ภาษาไทย
+import { Calendar as CalendarIcon } from "lucide-react"
 const RequestSchema = z.object({
     urgent: z.enum(["urgent", "immediate", "normal"]),
     requestMedicine: z.object({
@@ -30,14 +33,22 @@ const RequestSchema = z.object({
         pricePerUnit: z.number().min(1, "Price per unit must be greater than 0").max(100000, "Price per unit must be less than 100000"),
         unit: z.string().min(1, "Unit is required"),
         manufacturer: z.string().min(1, "Manufacturer is required"),
+        packingSize: z.string().optional(),
 
     }),
     requestTerm: z.object({
-        expectedReturnDate: z.coerce.string({ invalid_type_error: "Expected return date must be a valid date" }),
+        // ทำให้เลือกได้ตามเงื่อนไข (ต้องกรอกเมื่อเป็น normalReturn เท่านั้น)
+        expectedReturnDate: z.string().optional(),
+        returnType: z.enum(["normalReturn", "supportReturn"]),
         receiveConditions: z.object({
-            condition: z.enum(["exactType", "subType"]),
-            supportType: z.boolean().optional(),
-        })
+            condition: z.enum(["exactType", "subType"]).optional(),
+        }).optional(),
+        // อนุญาตให้เป็น null ได้เมื่อเป็น supportReturn
+        returnConditions: z.object({
+            condition: z.enum(["exactType", "otherType"]).optional(),
+            otherTypeSpecification: z.string().optional(),
+        }).optional(),
+        supportCondition: z.enum(["servicePlan", "budgetPlan", "freePlan"]).optional(),
     }),
     selectedHospitals: z.array(z.number()).min(1, "กรุณาเลือกโรงพยาบาลอย่างน้อย 1 แห่ง"),
 })
@@ -52,7 +63,7 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
     const { urgent, requestMedicine, requestTerm, responseDetails } = selectedMed;
     const prevSelectedHospitals = responseDetails.map((item: any) => item.respondingHospitalNameEN);
 
-    const { register, handleSubmit, watch, setValue, getValues, resetField, formState: { errors , isSubmitted  } } = useForm<z.infer<typeof RequestSchema>>({
+    const { register, handleSubmit, watch, setValue, getValues, resetField, formState: { errors, isSubmitted, isValid } } = useForm<z.infer<typeof RequestSchema>>({
         resolver: zodResolver(RequestSchema),
         defaultValues: {
             urgent: urgent,
@@ -62,13 +73,22 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
                 description: requestMedicine.description,
                 requestAmount: requestMedicine.requestAmount,
                 quantity: requestMedicine.quantity,
+                unit: requestMedicine.unit,
+                manufacturer: requestMedicine.manufacturer,
+                pricePerUnit: requestMedicine.pricePerUnit,
+                packingSize: requestMedicine.packingSize,
             },
             requestTerm: {
-                expectedReturnDate: requestTerm.expectedReturnDate,
+                expectedReturnDate: selectedMed.requestTerm.expectedReturnDate,
+                returnType: selectedMed.requestTerm.returnType,
                 receiveConditions: {
-                    condition: requestTerm.receiveConditions.condition,
-                    supportType: requestTerm.receiveConditions.supportType,
+                    condition: selectedMed.requestTerm.receiveConditions.condition,
                 },
+                returnConditions: {
+                    condition: selectedMed.requestTerm.returnConditions.condition,
+                    otherTypeSpecification: selectedMed.requestTerm.returnConditions.otherTypeSpecification ?? "",
+                },
+                supportCondition: selectedMed.requestTerm.supportCondition ?? undefined,
             },
             selectedHospitals: [],
         }
@@ -76,15 +96,17 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
     const quantity = watch("requestMedicine.requestAmount");
     const pricePerUnit = watch("requestMedicine.pricePerUnit");
     const expectedReturnDate = watch("requestTerm.expectedReturnDate");
+    const returnType = watch("requestTerm.returnType")
     const selectedHospitals = watch("selectedHospitals");
     const allSelected = selectedHospitals.length === allHospitals.length
-
+    const packingSize = watch("requestMedicine.packingSize");
+    //console.log('expectedReturnDate sss',returnType)
     const toggleAllHospitals = () => {
         if (allSelected) {
-            setValue("selectedHospitals", [],{ shouldValidate: true })
+            setValue("selectedHospitals", [], { shouldValidate: true })
         }
         else {
-            setValue("selectedHospitals", allHospitals,{ shouldValidate: true })
+            setValue("selectedHospitals", allHospitals, { shouldValidate: true })
         }
     }
 
@@ -93,7 +115,7 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
         const updated = current.includes(hospitalId)
             ? current.filter((id) => id !== hospitalId)
             : [...current, hospitalId]
-        setValue("selectedHospitals", updated ,{ shouldValidate: true })
+        setValue("selectedHospitals", updated, { shouldValidate: true })
     }
 
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -172,12 +194,17 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
             toast.error("เกิดข้อผิดพลาดในการแก้ไขข้อมูลยา")
         }
     }
-
+    const [isOpen, setIsOpen] = React.useState(false)
+    const [date, setDate] = React.useState<Date | undefined>(undefined)
+    const returnConditions = watch("requestTerm.returnConditions")
+    //console.log('dataasdasdasdasd', selectedMed)
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[1200px]">
                 <DialogTitle>แจ้งขอยืม</DialogTitle>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit, (invalid) => {
+                    console.log("invalid:", invalid)
+                })} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="col-span-2 flex flex-col gap-2">
@@ -188,7 +215,7 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
-                                <Label className="font-bold">ขนาดบรรจุ</Label>
+                                <Label className="font-bold">ขนาด</Label>
                                 <Input type="text" {...register("requestMedicine.quantity")} placeholder="10 mg/ 1 ml" />
                                 {errors.requestMedicine?.quantity && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.requestMedicine.quantity.message}</span>
@@ -236,10 +263,10 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
                                 <Label className="font-bold">ภาพประกอบ</Label>
                                 <Input type="file" placeholder="Image" />
                             </div>
-                            <div className="col-span-2 flex flex-col gap-2">
+                            {/* <div className="col-span-2 flex flex-col gap-2">
                                 <Label className="font-bold">เหตุผลการยืม</Label>
                                 <Input type="text" {...register("requestMedicine.description")} placeholder="รอการส่งมอบจากตัวแทนจำหน่าย" />
-                            </div>
+                            </div> */}
                             <div className="flex flex-col gap-2">
                                 <Label className="font-bold">ราคาต่อหน่วย</Label>
                                 <Input
@@ -262,8 +289,9 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
                                 </div>
                             </div>
 
-
-                            <div className="flex flex-col gap-2">
+                            {/* {
+                                returnType === "supportReturn" &&(
+                                     <div className="flex flex-col gap-2">
                                 <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
                                 <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                                     <PopoverTrigger asChild>
@@ -307,6 +335,15 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
                                         )}
                                     </PopoverContent>
                                 </Popover>
+                            </div>
+
+                                )
+                            } */}
+
+                            <div className="flex flex-col gap-2">
+                                <Label className="font-bold">ขนาดบรรจุ</Label>
+                                <Input type="text"  {...register("requestMedicine.packingSize")} placeholder="10 mg/ 1 ml" />
+
                             </div>
 
                         </div>
@@ -368,28 +405,145 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
                                 <p className="text-red-500 text-sm">{errors.selectedHospitals.message}</p>
                             )}
 
-                            <Label className="mb-2 mt-4">เงื่อนไขการรับยา</Label>
-                            <div className="flex flex-col items-start space-y-2">
-                                <div className="flex items-start gap-4">
-                                    <div className="flex flex-col space-y-2">
-                                        <Label className="font-normal">
-                                            <input type="radio" value="exactType" {...register("requestTerm.receiveConditions.condition")} />
-                                            ยืมรายการที่ต้องการ
-                                        </Label>
-                                        <Label className="font-normal">
-                                            <input type="radio" value="subType" {...register("requestTerm.receiveConditions.condition")} />
-                                            ยืมรายการทดแทนได้
-                                        </Label>
-                                    </div>
-                                    <div className="flex items-center gap-2 ml-8">
-                                        <input
-                                            type="checkbox"
-                                            id="supportType"
-                                            {...register("requestTerm.receiveConditions.supportType")}
-                                        />
-                                        <Label htmlFor="supportType" className="font-normal">ขอสนับสนุน</Label>
-                                    </div>
+                            <div className="flex flex-col">
+                                <div className="flex flex-row items-center gap-4">
+                                    <Label className="mt-2">
+                                        <input type="radio" value="normalReturn" {...register("requestTerm.returnType")} />
+                                        ขอยืม
+                                    </Label>
+                                    <Label className="mt-2">
+                                        <input type="radio" value="supportReturn" {...register("requestTerm.returnType")} />
+                                        ขอสนับสนุน
+                                    </Label>
                                 </div>
+
+                                {
+                                    returnType === "normalReturn" && (
+                                        <div className="grid grid-cols-2 gap-4 mt-4">
+                                            <div className="flex flex-col gap-2">
+                                                <Label className="font-bold">เหตุผลการยืม <OptionalMark /></Label>
+                                                <Input type="text" {...register("requestMedicine.description")} placeholder="รอการส่งมอบจากตัวแทนจำหน่าย" />
+                                            </div>
+
+
+                                            <div className="flex flex-col gap-2">
+                                                <Label className="font-medium">เงื่อนไขการรับ <RequiredMark /></Label>
+                                                <div className="flex flex-row gap-2 mt-2">
+                                                    <Label className="font-normal">
+                                                        <input type="radio" value="exactType" {...register("requestTerm.receiveConditions.condition")} />
+                                                        ยาจากผู้ผลิตรายนี้
+                                                    </Label>
+                                                    <Label className="font-normal">
+                                                        <input type="radio" value="subType" {...register("requestTerm.receiveConditions.condition")} />
+                                                        ยาจากผู้ผลิตรายอื่น
+                                                    </Label>
+                                                    {errors.requestTerm?.receiveConditions?.condition && (
+                                                        <span className="text-red-500 text-xs">{String(errors.requestTerm.receiveConditions.condition.message)}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col gap-2">
+                                                <Label className="font-bold">วันที่คาดว่าจะคืน</Label>
+                                                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
+                                                    <PopoverTrigger asChild>
+                                                        <Button variant="outline" className="justify-start text-left font-normal">
+                                                            {expectedReturnDate
+                                                                ? new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+                                                                    day: '2-digit',
+                                                                    month: '2-digit',
+                                                                    year: '2-digit',
+                                                                }).format(new Date(Number(expectedReturnDate)))
+                                                                : "เลือกวันที่"}
+                                                            <Calendar1 className="ml-auto h-4 w-4 opacity-50 hover:opacity-100" />
+                                                        </Button>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className="w-auto p-0">
+                                                        <Calendar
+                                                            mode="single"
+                                                            captionLayout="dropdown"
+                                                            selected={expectedReturnDate ? new Date(expectedReturnDate) : undefined}
+                                                            onSelect={(date) => {
+                                                                if (date instanceof Date && !isNaN(date.getTime())) {
+                                                                    const today = new Date();
+                                                                    today.setHours(0, 0, 0, 0); // normalize time
+                                                                    const dateString = date.getTime().toString()
+
+                                                                    if (date > today) {
+                                                                        setValue("requestTerm.expectedReturnDate", dateString, { shouldValidate: true });
+                                                                        setDateError(""); // clear error
+                                                                        setIsCalendarOpen(false); // close popover
+                                                                    } else {
+                                                                        setDateError("กรุณาเลือกวันที่ในอนาคต");
+                                                                    }
+                                                                } else {
+                                                                    setDateError("Invalid date selected.");
+                                                                }
+                                                            }}
+                                                            initialFocus
+                                                        />
+                                                        {dateError && (
+                                                            <div className="text-red-500 text-sm px-4 py-2">{dateError}</div>
+                                                        )}
+                                                    </PopoverContent>
+                                                </Popover>
+                                            </div>
+
+                                            <div className="flex flex-col gap-2 items-start">
+                                                <Label className="font-medium">ข้อเสนอการคืน <RequiredMark /></Label>
+                                                <div className="flex flex-row flex-wrap items-start gap-3 mt-2">
+                                                    <Label className="font-normal whitespace-nowrap">
+                                                        <input type="radio" value="exactType" {...register("requestTerm.returnConditions.condition")} />
+                                                        คืนยารายการนี้
+                                                    </Label>
+
+                                                    <Label className="font-normal whitespace-nowrap">
+                                                        <input type="radio" value="otherType" {...register("requestTerm.returnConditions.condition")} />
+                                                        คืนยารายการอื่น
+                                                    </Label>
+                                                    {errors.requestTerm?.returnConditions?.condition && (
+                                                        <span className="text-red-500 text-xs">{String(errors.requestTerm.returnConditions.condition.message)}</span>
+                                                    )}
+                                                    <div className="basis-full mt-1">
+                                                        {returnConditions?.condition === "otherType" && (
+                                                            <Input type="text" placeholder="ระบุรายรายการยา/ผู้ผลิต/ราคาต่อหน่วย" {...register("requestTerm.returnConditions.otherTypeSpecification")} />
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    )
+                                }
+                            </div>
+
+                            <div className="flex flex-col">
+                                {
+                                    returnType === "supportReturn" && (
+                                        <div className="flex flex-col items-start space-y-2 mt-4">
+                                            <div className="flex items-start ">
+                                                <div className="flex flex-row space-x-4">
+                                                    <Label className="font-medium">เงื่อนไขการสนับสนุน <RequiredMark /></Label>
+                                                    <Label className="font-normal">
+                                                        <input type="radio" value="servicePlan" {...register("requestTerm.supportCondition")} />
+                                                        ตามสิทธิ์แผนบริการ
+                                                    </Label>
+                                                    <Label className="font-normal">
+                                                        <input type="radio" value="budgetPlan" {...register("requestTerm.supportCondition")} />
+                                                        ตามงบประมาณสนับสนุน
+                                                    </Label>
+                                                    <Label className="font-normal">
+                                                        <input type="radio" value="freePlan" {...register("requestTerm.supportCondition")} />
+                                                        สนับสนุนโดยไม่คิดค่าใช้จ่าย
+                                                    </Label>
+                                                    {errors.requestTerm?.supportCondition && (
+                                                        <span className="text-red-500 text-xs">{String(errors.requestTerm.supportCondition.message)}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )
+                                }
                             </div>
                         </div>
                     </div>

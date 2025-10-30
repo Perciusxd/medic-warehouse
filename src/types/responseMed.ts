@@ -20,6 +20,7 @@ export type ResponseAsset = {
     batchNumber: string;
     manufacturer: string;
     expiryDate: string;
+    packingSize : string;
     /** exactType = same item, subType = substitute allowed */
     recieveCondition: "exactType" | "subType";
     /** optional image reference if present */
@@ -28,6 +29,8 @@ export type ResponseAsset = {
       condition: "exactType" | "otherType";
       otherTypeSpecification?: string;
     };
+    supportCondition: "servicePlan" | "budgetPlan" | "freePlan";
+    returnType: "normalReturn" | "supportReturn";
   };
   requestDetails: RequestAsset;
   /** populated when a return transaction is recorded */

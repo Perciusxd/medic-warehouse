@@ -40,9 +40,12 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
             // imageRef: z.string(),
             recieveCondition: z.string(),
             returnConditions: z.object({
-                condition: z.string(),
+                condition: z.string().optional(),
                 otherTypeSpecification: z.string().optional(),
-            })
+            }),
+            supportCondition: z.string().optional(),
+            returnType: z.string().optional(),
+            
         })
     })
     //     .superRefine((data, ctx) => {
@@ -95,7 +98,9 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                 returnConditions: {
                     condition: returnConditions?.condition ?? undefined,
                     otherTypeSpecification: returnConditions?.otherTypeSpecification ?? undefined
-                }
+                },
+                returnType: requestTerm.returnType,
+                supportCondition : requestTerm.supportCondition
             }
         }
     })
@@ -168,6 +173,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
             status: status
         }
         console.log("responseBody sssss:", responseBody)
+        console.log("data sssss:", data)
         try {
             setLoading(true)
             const response = await fetch("/api/updateRequest", {
@@ -216,6 +222,8 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
     }
     const priority: UrgentType = requestData.urgent || "normal"
     const config = URGENT_CONFIG[priority]
+    const supportConditionValue = requestTerm.supportCondition === "budgetPlan" ? "ตามงบประมาณสนับสนุน"  : requestTerm.supportCondition === "servicePlan" ? "ตามสิทธิ์แผนบริการ" : "สนับสนุนโดยไม่คิดค่าใช้จ่าย"
+    //console.log('requestTerm.supportCondition',requestTerm.supportCondition)
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[1200px]">
@@ -225,9 +233,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                     </div>
 
                 </DialogTitle>
-                <form onSubmit={handleSubmit(onSubmit, (invalid) => {
-                    console.log("invalid:", invalid)
-                })} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <RequestDetails requestData={requestData} responseForm={true} />
                         <div className="ml-15">
@@ -243,20 +249,35 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                     variant={"outline"}
                                     className="flex gap-1 px-1.5 [&_svg]:size-3 mb-4">
                                     <div className="text-sm text-gray-600 text-wrap">
-                                        {requestData.requestTerm.receiveConditions.condition === "exactType" ? "ยืมรายการที่ต้องการ" : "ให้ยืมรายการที่ต้องการหรือยืมรายการทดแทนได้"}
+                                        {requestData.requestTerm.returnType === "supportReturn" ? "ขอสนับสนุน" : requestData.requestTerm.receiveConditions.condition === "exactType" && requestData.requestTerm.returnType === "normalReturn" ? "ยืมรายการที่ต้องการ" : "ให้ยืมรายการที่ต้องการหรือยืมรายการทดแทนได้"}
                                     </div>
                                 </Badge>
                             </div>
 
                             <div className="flex items-center space-x-4">
-                                <Label>
-                                    <input type="radio" value="exactType" {...register("offeredMedicine.recieveCondition")} disabled={requestTerm.receiveConditions.condition === "exactType"} />
-                                    ให้ยืมรายการที่ต้องการ
-                                </Label>
-                                <Label>
-                                    <input type="radio" value="subType" {...register("offeredMedicine.recieveCondition")} disabled={requestTerm.receiveConditions.condition === "exactType"} />
-                                    ให้ยืมรายการที่ต้องการหรือยืมรายการทดแทนได้
-                                </Label>
+                                {requestData.requestTerm.receiveConditions.condition === "exactType" && requestData.requestTerm.returnType === "normalReturn" &&(
+                                    <div>
+                                        <Label>
+                                            <input type="radio" value="exactType" {...register("offeredMedicine.recieveCondition")} disabled={requestTerm.receiveConditions.condition === "exactType"} />
+                                            ให้ยืมรายการที่ต้องการ
+                                        </Label>
+                                        <Label>
+                                            <input type="radio" value="subType" {...register("offeredMedicine.recieveCondition")} disabled={requestTerm.receiveConditions.condition === "exactType"} />
+                                            ให้ยืมรายการที่ต้องการหรือยืมรายการทดแทนได้
+                                        </Label>
+                                    </div>
+                                )}
+                                {requestData.offeredMedicine.requestTerm.returnType === "supportReturn" &&(
+                                    <div>
+                                         <Label>
+                                            <input type="radio" checked value={String(requestTerm.supportCondition)}  disabled />
+                                            {supportConditionValue}
+                                        </Label>
+                                    </div>
+                                )}
+
+
+
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mt-6">
@@ -450,7 +471,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
 
 
                     <DialogFooter>
-                        <Button type="submit" disabled={loading }>
+                        <Button type="submit" disabled={loading}>
                             {loading ? <div className="flex flex-row items-center gap-2 text-muted-foreground"><LoadingSpinner /> <span className="text-gray-500">ยืนยันการให้ยืม</span></div> : "ยืนยันการให้ยืม"}
                         </Button>
 

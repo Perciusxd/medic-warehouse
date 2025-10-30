@@ -25,6 +25,7 @@ export type RequestResponseDetail = {
     unit: string;
     trademark?: string;
     manufacturer?: string;
+    packingSize : string;
   };
   returnMedicine?: any;
 };
@@ -43,6 +44,7 @@ export type RequestTicketRow = {
     pricePerUnit: number;
     unit: string;
     manufacturer: string;
+    packingSize : string;
   };
   requestTerm: {
     expectedReturnDate?: string;
@@ -88,6 +90,7 @@ export type SharingDetailsSummary = {
       expiryDate: string;
       pricePerUnit: number;
       sharingAmount: number;
+      packingSize : string;
     };
     sharingReturnTerm: { receiveConditions: SharingReceiveConditions };
   };

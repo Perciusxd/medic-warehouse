@@ -106,6 +106,7 @@ const SharingFormSchema = z.object({
         batchNumber: z.string().min(1, "กรุณาระบุหมายเลขกลุ่มยา"),
         manufacturer: z.string().min(1, "กรุณาระบุผู้ผลิต"),
         expiryDate: z.string().min(1, "กรุณาระบุวันที่หมดอายุ"),
+        packingSize : z.string().optional(),
         // เก็บไฟล์ภาพที่อัปโหลดไว้ในฟอร์ม (ไม่บังคับ)
         image: z.custom<File | undefined>((value) => value === undefined || value instanceof File, {
             message: "กรุณาอัปโหลดไฟล์ภาพที่ถูกต้อง",
@@ -285,7 +286,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
             sharingMedicine: sharingMedicine,
             selectedHospitals: filterHospital
         }
-        console.log('sharingMedicine', sharingBody)
+        //console.log('sharingMedicine', sharingBody)
         try {
             setLoading(true)
             const response = await fetch("/api/createSharing", {
@@ -359,42 +360,42 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="col-span-2 flex flex-col gap-2">
-                                <Label className="font-bold">รายการยา</Label>
+                                <Label className="font-bold">รายการยา <RequiredMark/></Label>
                                 <Input type="text" {...register("sharingMedicine.name")} placeholder="Chlorpheniramine (CPM)" />
                                 {errors.sharingMedicine?.name && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.name.message}</span>
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
-                                <Label className="font-bold">ขนาดบรรจุ</Label>
+                                <Label className="font-bold">ขนาด <RequiredMark/></Label>
                                 <Input type="text" {...register("sharingMedicine.quantity")} placeholder="10 mg/ 1 ml" />
                                 {errors.sharingMedicine?.quantity && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.quantity.message}</span>
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
-                                <Label className="font-bold">รูปแบบ/หน่วย</Label>
+                                <Label className="font-bold">รูปแบบ/หน่วย <RequiredMark/></Label>
                                 <Input type="text" {...register("sharingMedicine.unit")} placeholder="AMP" />
                                 {errors.sharingMedicine?.unit && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.unit.message}</span>
                                 )}
                             </div>
                             <div className="col-span-2 flex flex-col gap-2">
-                                <Label className="font-bold">ชื่อการค้า</Label>
+                                <Label className="font-bold">ชื่อการค้า <RequiredMark/></Label>
                                 <Input type="text" {...register("sharingMedicine.trademark")} placeholder="Chlorpheno" />
                                 {errors.sharingMedicine?.trademark && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.trademark.message}</span>
                                 )}
                             </div>
                             <div className="col-span-2 flex flex-col gap-2">
-                                <Label className="font-bold">ผู้ผลิต</Label>
+                                <Label className="font-bold">ผู้ผลิต <RequiredMark/></Label>
                                 <Input type="text" {...register("sharingMedicine.manufacturer")} placeholder="ที.แมน. ฟาร์มาซูติคอล" />
                                 {errors.sharingMedicine?.manufacturer && (
                                     <span className="text-red-500 text-xs -mt-1">{errors.sharingMedicine.manufacturer.message}</span>
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
-                                <Label className="font-bold">จำนวน</Label>
+                                <Label className="font-bold">จำนวน <RequiredMark/></Label>
                                 <Input
                                     inputMode="numeric"
                                     placeholder="10"
@@ -408,11 +409,11 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                     {...register("sharingMedicine.sharingAmount", { valueAsNumber: true })} className={errors.sharingMedicine?.sharingAmount ? "border-red-500" : ""}
                                 />
                                 {errors.sharingMedicine?.sharingAmount && (
-                                    <span className="text-red-500 text-xs -mt-1">กรุณาระบุจำนวนยา</span>
+                                    <span className="text-red-500 text-xs -mt-1">กรุณาระบุจำนวนยา </span>
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
-                                <Label className="font-bold">ภาพประกอบ</Label>
+                                <Label className="font-bold">ภาพประกอบ <OptionalMark/></Label>
                                 <div className="flex items-center gap-2">
                                     <Input
                                         type="file"
@@ -432,12 +433,16 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                     <span className="text-red-500 text-xs -mt-1">{String(errors.sharingMedicine.image.message)}</span>
                                 )}
                             </div>
-                            <div className="col-span-2 flex flex-col gap-2">
-                                <Label className="font-bold">หมายเลขล็อต</Label>
+                            <div className=" flex flex-col gap-2">
+                                <Label className="font-bold">หมายเลขล็อต <RequiredMark/></Label>
                                 <Input type="text" {...register("sharingMedicine.batchNumber")} placeholder="LOT-135270" />
                             </div>
+                             <div className=" flex flex-col gap-2">
+                                <Label className="font-bold">ขนาดบรรจุ <OptionalMark/> </Label>
+                                <Input type="text" {...register("sharingMedicine.packingSize")} placeholder="ขวดละ 60 ซีซี" />
+                            </div>
                             <div className="flex flex-col gap-2">
-                                <Label className="font-bold">ราคาต่อหน่วย</Label>
+                                <Label className="font-bold">ราคาต่อหน่วย <RequiredMark/></Label>
                                 <Input
                                     inputMode="decimal"
                                     placeholder="10"
@@ -480,7 +485,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
 
 
                             <div className="flex flex-col gap-2">
-                                <Label className="font-bold">วันหมดอายุ</Label>
+                                <Label className="font-bold">วันหมดอายุ <RequiredMark/></Label>
                                 <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                                     <PopoverTrigger asChild>
                                         <Button variant="outline" className="justify-start text-left font-normal">

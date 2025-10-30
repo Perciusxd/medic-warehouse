@@ -62,10 +62,26 @@ export const columns = (
                 const med = row.original;
                 const name = med.sharingDetails?.sharingMedicine?.name || "-";
                 const trademark = med.sharingDetails?.sharingMedicine?.trademark || "-";
+                const returnType = med.returnTerm.returnType
+                const condition = med.returnTerm.returnConditions.condition
+                const conditionLabel = condition === 'exactType' ? 'ยืมจากผู้ผลิตรายนี้' : 'ยืมจากผู้ผลิตรายอื่น';
+                console.log('med sha',med)
                 return (
                     <div className="flex flex-col">
                         <div className="text-md font-medium ">{name}</div>
                         <div className="text-xs text-muted-foreground">{trademark}</div>
+                         <div className="flex item-center gap-2 flex-wrap mt-2">
+                        <Badge variant="outline" className="text-xs text-gray-600">{returnType === "supportReturn" ? "ขอสนับสนุน" : "ขอยืม"}
+                            {returnType === "supportReturn" && returnType.supportCondition && (
+                                <Badge variant="secondary" className="text-[10px] text-gray-600">
+                                    {returnType.supportCondition === "servicePlan" ? "ตามแผนบริการ" : returnType.supportCondition === "budgetPlan" ? "ตามงบประมาณ" : "ให้ฟรี"}
+                                </Badge>
+                            )}
+                            {returnType === "normalReturn" && conditionLabel && (
+                                <Badge variant="secondary" className="text-[10px] text-gray-600">{conditionLabel}</Badge>
+                            )}
+                        </Badge>
+                        </div>
                     </div>
                 )
             },
@@ -92,7 +108,7 @@ export const columns = (
         },
         {
             accessorKey: "sharingDetails.sharingMedicine.quantity",
-            size: 100,
+            size: 150,
             header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ขนาด/หน่วย</div>,
             cell: ({ row }: { row: any }) => {
                 const med = row.original;
