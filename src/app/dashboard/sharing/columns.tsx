@@ -135,12 +135,7 @@ export const columns = (
                 const sharingDetails = row.original.sharingDetails
                 const postingHospitalNameTH: string = sharingDetails.postingHospitalNameTH
                 const postingHospitalNameEN: string = sharingDetails.postingHospitalNameEN
-<<<<<<< HEAD
                 
-=======
-                const sharingReturnTerm: any = row.original.sharingDetails.sharingReturnTerm
-                const returnType = sharingReturnTerm.returnType
->>>>>>> eb9a5c90910eb678a9b7879bdc9cedf5bd63d2a7
                 return (
                     <div className="flex flex-row">
                         <div className="flex flex-col">
