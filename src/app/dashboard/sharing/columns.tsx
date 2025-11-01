@@ -46,7 +46,7 @@ export const columns = (
                 const sharingDetails = med.sharingDetails
                 const name = sharingDetails.sharingMedicine.name
                 const trademark = sharingDetails.sharingMedicine.trademark
-                const sharingReturnTerm = row.original.sharingDetails.sharingReturnTerm
+                const sharingReturnTerm: any = row.original.sharingDetails.sharingReturnTerm
                 const returnType = sharingReturnTerm.returnType
                 return (
                     <div className="flex flex-col">

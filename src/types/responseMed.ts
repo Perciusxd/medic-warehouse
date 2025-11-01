@@ -31,6 +31,7 @@ export type ResponseAsset = {
     };
     supportCondition: "servicePlan" | "budgetPlan" | "freePlan";
     returnType: "normalReturn" | "supportReturn";
+    returnTerm: any;
   };
   requestDetails: RequestAsset;
   /** populated when a return transaction is recorded */

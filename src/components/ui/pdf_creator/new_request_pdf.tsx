@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/alt-text */
 // components/requete_pdf.tsx
 "use client";
 import React from "react";

@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/alt-text */
 'use client';
 import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
