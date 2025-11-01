@@ -267,7 +267,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                         </Label>
                                     </div>
                                 )}
-                                {requestData.offeredMedicine.requestTerm.returnType === "supportReturn" &&(
+                                {requestData.offeredMedicine?.requestTerm.returnType === "supportReturn" &&(
                                     <div>
                                          <Label>
                                             <input type="radio" checked value={String(requestTerm.supportCondition)}  disabled />

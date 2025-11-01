@@ -88,7 +88,7 @@ export function Sidebar() {
         <div className="hidden md:flex">
         <div
           className={cn(
-          "flex h-screen flex-col border-r bg-gray-50/50 transition-all duration-300",
+          "flex h-screen flex-col border-r bg-gray-50/50 transition-all duration-300 sticky top-0",
           isCollapsed ? "w-[60px]" : "w-[240px]"
           )}
         >

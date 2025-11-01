@@ -238,25 +238,25 @@ export const columns: ColumnDef<any>[] = [
       // return <span>{date.toLocaleDateString()}</span>;
     },
   },
-  {
-    accessorKey: "deliveryDate",
-    size : 100,
-    header: "วันที่ส่งมอบยา",
-    cell: ({ row }) => {
-      if (row.original.ticketType === 'sharing') {
-        const deliveryDate = row.original.sharingMedicine.deliveryDate;
-        const date = new Date(deliveryDate);
-        return <span>{!isNaN(date.getTime()) ? date.toLocaleDateString("th-TH") : '-'}</span>;
-      }
-      else if (row.original.ticketType === 'request') {
-        const deliveryDate = row.original.requestMedicine.deliveryDate;
-        const date = new Date(deliveryDate);
-        return <span>{!isNaN(date.getTime()) ? date.toLocaleDateString("th-TH") : '-'}</span>;
-      }
-      // const date = new Date(row.original.deliveryDate);
-      // return <span>{date.toLocaleDateString()}</span>;
-    },
-  },
+  // {
+  //   accessorKey: "deliveryDate",
+  //   size : 100,
+  //   header: "วันที่ส่งมอบยา",
+  //   cell: ({ row }) => {
+  //     if (row.original.ticketType === 'sharing') {
+  //       const deliveryDate = row.original.sharingMedicine.deliveryDate;
+  //       const date = new Date(deliveryDate);
+  //       return <span>{!isNaN(date.getTime()) ? date.toLocaleDateString("th-TH") : '-'}</span>;
+  //     }
+  //     else if (row.original.ticketType === 'request') {
+  //       const deliveryDate = row.original.requestMedicine.deliveryDate;
+  //       const date = new Date(deliveryDate);
+  //       return <span>{!isNaN(date.getTime()) ? date.toLocaleDateString("th-TH") : '-'}</span>;
+  //     }
+  //     // const date = new Date(row.original.deliveryDate);
+  //     // return <span>{date.toLocaleDateString()}</span>;
+  //   },
+  // },
   // {
   //   accessorKey: "actualReturnDate",
   //   size : 100,
@@ -273,10 +273,29 @@ export const columns: ColumnDef<any>[] = [
     size : 100,
     header: "จำนวนวันที่ยืม",
     cell: ({ row }) => {
-      const borrowedDate = new Date(row.original.createdAt);
-      const actualReturnDate = new Date(row.original.responseDetails[0].actualReturnDate);
-      const daysBorrowed = Math.ceil((actualReturnDate.getTime() - borrowedDate.getTime()) / (1000 * 3600 * 24));
-      return <span>{daysBorrowed >= 0 ? daysBorrowed + ' วัน' : '-'}</span>;
+      const responseDetail = row.original.responseDetails?.[0];
+      if (!responseDetail) {
+        return <span>-</span>;
+      }
+      
+      const expectedReturnDate = new Date(Number(responseDetail.acceptedOffer?.expectedReturnDate));
+      const today = new Date();
+      
+      if (isNaN(expectedReturnDate.getTime())) {
+        return <span>-</span>;
+      }
+      
+      // คำนวณจำนวนวันจากวันที่คาดว่าจะคืนถึงวันนี้
+      const daysOverdue = Math.ceil((today.getTime() - expectedReturnDate.getTime()) / (1000 * 3600 * 24));
+      
+      // ถ้าเป็นค่าบวก = เลยกำหนด, ถ้าเป็นค่าลบ = ยังไม่ถึงกำหนด
+      if (daysOverdue > 0) {
+        return <span className="text-red-600 font-semibold">{daysOverdue} วัน (เลยกำหนด)</span>;
+      } else if (daysOverdue === 0) {
+        return <span className="text-yellow-600 font-semibold">วันนี้ (ครบกำหนด)</span>;
+      } else {
+        return <span className="text-green-600">อีก {Math.abs(daysOverdue)} วัน</span>;
+      }
     },
   },
 ];

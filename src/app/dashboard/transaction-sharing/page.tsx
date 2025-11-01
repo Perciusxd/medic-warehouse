@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useMemo } from 'react';
-import { RefreshCcwIcon } from "lucide-react";
+import { RefreshCcwIcon, Printer } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 import { DataTable } from "../request/data-table";
@@ -23,6 +23,7 @@ import ReturnSharingDialog from '@/components/dialogs/return-sharing-dialog';
 import EditSharingDialog from '@/components/dialogs/edit-sharing-dialog';
 import { MultiSelect } from "@/components/ui/multi-select";
 import { th } from 'date-fns/locale';
+import { SelectDeliveryDataDialog } from "@/components/ui/select-delivery-data-dialog";
 
 const sharingStatusOptions = [
     { value: "all", label: "All Statuses" },
@@ -402,6 +403,24 @@ export default function TransferDashboard() {
         setReturnSharingDialogOpen(true);
     }
 
+    // รวมข้อมูลทั้งสองประเภท (requests และ sharing) และกรองเฉพาะสถานะ to-transfer
+    const allTransferData = useMemo(() => {
+        if (!medicineRequests || !medicineSharing) return [];
+        console.log("All transfer data:", [...medicineRequests, ...medicineSharing]);
+        
+        // กรองเฉพาะสถานะ to-transfer
+        const filteredRequests = medicineRequests.filter((item: any) => item.status === 'to-transfer');
+        const filteredSharing = medicineSharing.filter((item: any) => item.responseDetails[0].status === 'to-transfer');
+        
+        // รวมข้อมูลทั้งสองประเภท
+        return [...filteredRequests, ...filteredSharing];
+    }, [medicineRequests, medicineSharing]);
+
+    // Handler สำหรับเมื่อผู้ใช้เลือกรายการจาก modal
+    const handleSelectDeliveryItems = (selectedItems: any[]) => {
+        console.log("เลือกรายการส่งมอบ:", selectedItems);
+    };
+
     // const handleConfirmReturn = async (med: ResponseAsset) => {
     //     setLoadingRowId(med.id);
     //     setSelectedMed(med);
@@ -447,9 +466,10 @@ export default function TransferDashboard() {
             <div className="flex items-center justify-between mb-4">
                 <div /> {/* Placeholder for alignment, can add search if needed */}
                 <div className="flex items-center space-x-2">
-                    <Button variant={'outline'}>
-                        พิมพ์เอกสารส่งมอบยา
-                    </Button>
+                    <SelectDeliveryDataDialog
+                        dataList={allTransferData}
+                        onSelect={handleSelectDeliveryItems}
+                    />
                     <Button variant={"outline"} onClick={() => {
                         fetchMedicineRequests();
                         fetchMedicineSharing();
