@@ -344,7 +344,41 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
     const handleSavePdf = async () => {
         const valid = await trigger();
         if (!valid) {
-            toast.error("กรุณากรอกข้อมูลให้ครบถ้วนก่อนสร้างเอกสาร");
+            // Check which specific fields are invalid
+            const missingFields: string[] = [];
+            const formValues = getValues();
+            const isSupport = supportSelection === 'support';
+            
+            if (isSupport) {
+                if (!formValues?.returnMedicine?.reason?.trim()) {
+                    missingFields.push("เหตุผล");
+                }
+            } else {
+                if (errors.returnMedicine?.name) missingFields.push("รายการยา");
+                if (errors.returnMedicine?.trademark) missingFields.push("ชื่อการค้า");
+                if (errors.returnMedicine?.manufacturer) missingFields.push("ผู้ผลิต");
+                if (errors.returnMedicine?.batchNumber) missingFields.push("หมายเลขล็อต");
+                if (errors.returnMedicine?.quantity) missingFields.push("ขนาดบรรจุ");
+                if (errors.returnMedicine?.unit) missingFields.push("รูปแบบ/หน่วย");
+                if (errors.returnMedicine?.expiryDate) missingFields.push("วันหมดอายุ");
+                if (errors.returnMedicine?.returnAmount) missingFields.push("จำนวนที่ให้คืน");
+                if (errors.returnMedicine?.pricePerUnit) missingFields.push("ราคาต่อหน่วย");
+            }
+            
+            if (missingFields.length > 0) {
+                const fieldList = missingFields.join(", ");
+                toast.error(
+                    `กรุณากรอกข้อมูลให้ครบถ้วนก่อนสร้างเอกสาร\n\nฟิลด์ที่ยังไม่ครบ: ${fieldList}`,
+                    {
+                        duration: 5000,
+                        style: {
+                            whiteSpace: 'pre-line'
+                        }
+                    }
+                );
+            } else {
+                toast.error("กรุณากรอกข้อมูลให้ครบถ้วนก่อนสร้างเอกสาร");
+            }
             return;
         }
         if (pdfRef.current && typeof pdfRef.current.savePdf === 'function') {

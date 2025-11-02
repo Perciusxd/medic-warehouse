@@ -212,7 +212,7 @@ export function Pdfcontent({ documentData, userdata, docType, variant = 'origina
                         </View>
                         {documentData.map((item, index) => (
                             <View style={[styles.tableRow, { justifyContent: 'space-between' }]} key={index} >
-                                <Text style={[styles.tableCell, { width: 20 }]}>{index + 1}</Text>
+                                <Text style={[styles.tableCell, { width: 20 }]}>{formatThaiNumber(index + 1)}</Text>
                                 <Text style={[styles.tableCell, { width: '50%', }]}>{item.Medname} {toThaiDigits(item.Quantity)} </Text>
                                 <Text style={styles.tableCell}>{formatThaiNumber(Number(item.Amount))} {item.unit ? toThaiDigits(item.unit) : ''}</Text>
                                 {/* <Text style={styles.tableCell}>{item.ExpectedReturnDate}</Text>
@@ -244,7 +244,7 @@ export function Pdfcontent({ documentData, userdata, docType, variant = 'origina
                         </View>
                         {documentData.map((item, index) => (
                             <View style={[styles.tableRow, { justifyContent: 'space-between' }]} key={index} >
-                                <Text style={[styles.tableCell, { width: 20 }]}>{index + 1}</Text>
+                                <Text style={[styles.tableCell, { width: 20 }]}>{formatThaiNumber(index + 1)}</Text>
                                 <Text style={[styles.tableCell, { width: '50%', }]}>{item.Medname} {toThaiDigits(item.Quantity)} </Text>
                                 <Text style={styles.tableCell}>{formatThaiNumber(Number(item.Amount))} {item.unit ? toThaiDigits(item.unit) : ''}</Text>
                                 {/* <Text style={styles.tableCell}>{item.ExpectedReturnDate}</Text>
