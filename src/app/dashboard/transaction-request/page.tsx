@@ -29,6 +29,7 @@ import { formatDistanceToNow } from "date-fns";
 import { th } from "date-fns/locale";
 import EditRequestDialog from "@/components/dialogs/edit-request-dialog";
 import { SelectDataMedDialog } from "@/components/ui/select-data-to-pdf";
+import { SelectReturnDataDialog } from "@/components/ui/select-return-data-to-pdf";
 export default function StatusDashboard() {
     const statusFilterSharing = useMemo(() => ["to-confirm", "in-return", "returned", "to-transfer", "confirm-return", "re-confirm", "offered", "to-return"], []);
     const statusFilterRequest = useMemo(() => ["pending", "cancelled"], []);
@@ -320,7 +321,7 @@ export default function StatusDashboard() {
                 <div className="flex items-center space-x-2">
 
                     <SelectDataMedDialog dataList={combinedDataList} onSelect={handleSelectMedicine} />
-                    <Button>เอกสารส่งคืน Mock Button</Button>
+                    <SelectReturnDataDialog dataList={combinedDataList} onSelect={handleSelectMedicine} />
 
                     {/* <SelectDataMedDialog dataList={medicineSharingInReturn} onSelect={handleSelectMedicine} /> */}
 

@@ -33,9 +33,8 @@ import { z } from "zod"
 import { toast } from "sonner"
 import { saveAs } from "file-saver";
 import { pdf } from "@react-pdf/renderer";
-import MyDocument from "@/components/ui/pdf_creator/return_pdf";
 import { useAuth } from "../providers";
-const ReturnPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/return_pdf'), { ssr: false });
+const ReturnPdfMultiPreview = dynamic(() => import('@/components/ui/pdf_creator/return_pdf_multi'), { ssr: false });
 
 interface ReturnDialogProps {
     open: boolean;
@@ -178,7 +177,7 @@ const ReturnFormSchema = z.discriminatedUnion('supportRequest', [
 
 function ReturnDetails({ selectedMed, onOpenChange }: any) {
     console.log("selectedMed", selectedMed)
-    const pdfRef = useRef<{ savePdf?: () => void }>(null);
+    const pdfRef = useRef<any>(null);
     const { user } = useAuth();
     const { loggedInHospital } = useHospital();
     const { requestId, responseId, postingHospitalNameEN } = selectedMed;
@@ -348,8 +347,10 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
             toast.error("กรุณากรอกข้อมูลให้ครบถ้วนก่อนสร้างเอกสาร");
             return;
         }
-        pdfRef.current?.savePdf?.();
-        toast.success("สร้างเอกสารคืนยาแล้ว")
+        if (pdfRef.current && typeof pdfRef.current.savePdf === 'function') {
+            pdfRef.current.savePdf();
+            toast.success("สร้างเอกสารคืนยาแล้ว");
+        }
     };
 
     return (
@@ -458,7 +459,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                         {errors.returnMedicine?.quantity && <span className="text-red-500 text-xs">{errors.returnMedicine.quantity.message}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
-                        <Label>รูปแบบ/หน่วย</Label>
+                        <Label>รูปแบบ/หน่วย <RequiredMark /></Label>
                         <Input placeholder="Tablet" {...register("returnMedicine.unit")} disabled={isSupportSelected} />
                         {errors.returnMedicine?.unit && <span className="text-red-500 text-xs">{errors.returnMedicine.unit.message}</span>}
                     </div>
@@ -548,7 +549,12 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                 </div> */}
 
                 <div style={{ display: 'none' }}>
-                    <ReturnPdfPreview data={selectedMed} returnData={watchAllFields} userData={user} ref={pdfRef} />
+                    <ReturnPdfMultiPreview 
+                        data={selectedMed} 
+                        returnList={watchAllFields.returnMedicine ? [watchAllFields.returnMedicine] : []} 
+                        userData={user} 
+                        ref={pdfRef} 
+                    />
                 </div>
 
             </div>
