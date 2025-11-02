@@ -204,19 +204,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               const respondingHospitalNameEN = responseDetail.respondingHospitalNameEN;
               
               // ใช้ test email สำหรับทดสอบ
-              const email = testEmail;
+              // const email = testEmail;
               
               // ค้นหา email จากฐานข้อมูลโดยใช้ชื่อโรงพยาบาล (ปิดการใช้งานชั่วคราว)
-              // const email = await findHospitalEmail(db, respondingHospitalNameTH, respondingHospitalNameEN);
+              const email = await findHospitalEmail(db, respondingHospitalNameTH, respondingHospitalNameEN);
               
-              // if (!email) {
+              if (!email) {
 
-              //   errors.push({
-              //     ticketId: ticket._id,
-              //     error: `No email found for hospital: ${respondingHospitalNameTH || respondingHospitalNameEN || 'Unknown'}`
-              //   });
-              //   continue;
-              // }
+                errors.push({
+                  ticketId: ticket._id,
+                  error: `No email found for hospital: ${respondingHospitalNameTH || respondingHospitalNameEN || 'Unknown'}`
+                });
+                continue;
+              }
 
               // ใช้ชื่อโรงพยาบาลสำหรับแสดงในอีเมล์
               const hospitalName = respondingHospitalNameTH || respondingHospitalNameEN || 'Unknown';
