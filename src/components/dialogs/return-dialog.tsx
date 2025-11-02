@@ -33,9 +33,8 @@ import { z } from "zod"
 import { toast } from "sonner"
 import { saveAs } from "file-saver";
 import { pdf } from "@react-pdf/renderer";
-import MyDocument from "@/components/ui/pdf_creator/return_pdf";
 import { useAuth } from "../providers";
-const ReturnPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/return_pdf'), { ssr: false });
+const ReturnPdfMultiPreview = dynamic(() => import('@/components/ui/pdf_creator/return_pdf_multi'), { ssr: false });
 
 interface ReturnDialogProps {
     open: boolean;
@@ -178,7 +177,7 @@ const ReturnFormSchema = z.discriminatedUnion('supportRequest', [
 
 function ReturnDetails({ selectedMed, onOpenChange }: any) {
     console.log("selectedMed", selectedMed)
-    const pdfRef = useRef<{ savePdf?: () => void }>(null);
+    const pdfRef = useRef<any>(null);
     const { user } = useAuth();
     const { loggedInHospital } = useHospital();
     const { requestId, responseId, postingHospitalNameEN } = selectedMed;
@@ -345,11 +344,47 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
     const handleSavePdf = async () => {
         const valid = await trigger();
         if (!valid) {
-            toast.error("กรุณากรอกข้อมูลให้ครบถ้วนก่อนสร้างเอกสาร");
+            // Check which specific fields are invalid
+            const missingFields: string[] = [];
+            const formValues = getValues();
+            const isSupport = supportSelection === 'support';
+            
+            if (isSupport) {
+                if (!formValues?.returnMedicine?.reason?.trim()) {
+                    missingFields.push("เหตุผล");
+                }
+            } else {
+                if (errors.returnMedicine?.name) missingFields.push("รายการยา");
+                if (errors.returnMedicine?.trademark) missingFields.push("ชื่อการค้า");
+                if (errors.returnMedicine?.manufacturer) missingFields.push("ผู้ผลิต");
+                if (errors.returnMedicine?.batchNumber) missingFields.push("หมายเลขล็อต");
+                if (errors.returnMedicine?.quantity) missingFields.push("ขนาดบรรจุ");
+                if (errors.returnMedicine?.unit) missingFields.push("รูปแบบ/หน่วย");
+                if (errors.returnMedicine?.expiryDate) missingFields.push("วันหมดอายุ");
+                if (errors.returnMedicine?.returnAmount) missingFields.push("จำนวนที่ให้คืน");
+                if (errors.returnMedicine?.pricePerUnit) missingFields.push("ราคาต่อหน่วย");
+            }
+            
+            if (missingFields.length > 0) {
+                const fieldList = missingFields.join(", ");
+                toast.error(
+                    `กรุณากรอกข้อมูลให้ครบถ้วนก่อนสร้างเอกสาร\n\nฟิลด์ที่ยังไม่ครบ: ${fieldList}`,
+                    {
+                        duration: 5000,
+                        style: {
+                            whiteSpace: 'pre-line'
+                        }
+                    }
+                );
+            } else {
+                toast.error("กรุณากรอกข้อมูลให้ครบถ้วนก่อนสร้างเอกสาร");
+            }
             return;
         }
-        pdfRef.current?.savePdf?.();
-        toast.success("สร้างเอกสารคืนยาแล้ว")
+        if (pdfRef.current && typeof pdfRef.current.savePdf === 'function') {
+            pdfRef.current.savePdf();
+            toast.success("สร้างเอกสารคืนยาแล้ว");
+        }
     };
 
     return (
@@ -458,7 +493,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                         {errors.returnMedicine?.quantity && <span className="text-red-500 text-xs">{errors.returnMedicine.quantity.message}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
-                        <Label>รูปแบบ/หน่วย</Label>
+                        <Label>รูปแบบ/หน่วย <RequiredMark /></Label>
                         <Input placeholder="Tablet" {...register("returnMedicine.unit")} disabled={isSupportSelected} />
                         {errors.returnMedicine?.unit && <span className="text-red-500 text-xs">{errors.returnMedicine.unit.message}</span>}
                     </div>
@@ -548,7 +583,12 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                 </div> */}
 
                 <div style={{ display: 'none' }}>
-                    <ReturnPdfPreview data={selectedMed} returnData={watchAllFields} userData={user} ref={pdfRef} />
+                    <ReturnPdfMultiPreview 
+                        data={selectedMed} 
+                        returnList={watchAllFields.returnMedicine ? [watchAllFields.returnMedicine] : []} 
+                        userData={user} 
+                        ref={pdfRef} 
+                    />
                 </div>
 
             </div>

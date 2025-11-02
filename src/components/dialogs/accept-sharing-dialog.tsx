@@ -22,7 +22,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useState, useRef, useEffect } from "react"
 import { RequiredMark, OptionalMark } from "@/components/ui/field-indicator"
 import dynamic from 'next/dynamic';
-const SharingPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/sharing_pdf'), { ssr: false });
+const NewRequestPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/new_request_pdf_preview'), { ssr: false });
 import { useAuth } from "@/components/providers";
 import clsx from "clsx"
 
@@ -785,7 +785,7 @@ export default function AcceptSharingDialog({ sharingMed, openDialog, onOpenChan
                                             </h3>
                                         </div>
                                         <div className="p-2">
-                                            <SharingPdfPreview data={sharingMed} userData={user} ref={pdfRef} />
+                                            <NewRequestPdfPreview data={sharingMed} userData={user} ref={pdfRef} />
                                         </div>
                                     </div>
                                 </div>

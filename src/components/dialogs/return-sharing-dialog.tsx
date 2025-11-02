@@ -10,66 +10,75 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useEffect, useState, useRef } from "react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar1, RotateCcw, Package } from "lucide-react";
+import { Calendar1, RotateCcw } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
+import { RequiredMark } from "@/components/ui/field-indicator";
 import dynamic from 'next/dynamic';
 import { toast } from "sonner";
 import { useAuth } from "../providers";
 
-const ReturnPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/return_pdf'), { ssr: false });
+const ReturnPdfMultiPreview = dynamic(() => import('@/components/ui/pdf_creator/return_pdf_multi'), { ssr: false });
 
 function SharingMedicineDetails({ sharingMedicine, receiveConditions, selectedMed, acceptedOffer }: any) {
-    const { name, trademark, unit, quantity, manufacturer, sharingAmount } = sharingMedicine;
+    const { name, trademark, unit, quantity, manufacturer, sharingAmount, pricePerUnit } = sharingMedicine;
     const { createdAt, postingHospitalNameTH, sharingDetails ,  } = selectedMed;
     const { responseAmount } = acceptedOffer;
     
     const returnConditions = sharingDetails.sharingReturnTerm
     const returnTerm = selectedMed.returnTerm
-    //console.log('asdasd',returnTerm)
-    const formattedDate = format(new Date(Number(createdAt)), 'dd/MM/') + (new Date(Number(createdAt)).getFullYear() + 543); // Format to dd/MM/yyyy in Thai Buddhist calendar
+    const totalPrice = responseAmount * pricePerUnit;
+    const formattedDate = format(new Date(Number(createdAt)), 'dd/MM/') + (new Date(Number(createdAt)).getFullYear() + 543);
     return (
-        <div className="flex flex-col gap-4 border p-4 rounded-lg">
-            <h2 className="text-lg font-semibold flex items-center gap-2 text-blue-700">
-                <Package className="h-5 w-5" />
-                รายละเอียดรายการยืม
-            </h2>
+        <div className="flex flex-col gap-6 border p-4 rounded-lg">
+            <h2 className="text-lg font-semibold">รายละเอียดรายการยืม</h2>
             <div className="grid grid-cols-2 gap-2 font-light">
                 <div className="flex flex-col gap-1">
-                    <Label>วันที่แจ้งขอยืม</Label>
-                    <Input disabled value={formattedDate || ''} />
+                    <Label>วันที่ยืม</Label>
+                    <Input disabled value={formattedDate} />
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>โรงพยาบาลที่ให้ยืม</Label>
-                    <Input disabled value={sharingDetails.postingHospitalNameTH || ''} />
+                    <Input disabled value={sharingDetails.postingHospitalNameTH} />
                 </div>
-                <div className="flex flex-col gap-1 ">
+                <div className="flex flex-col gap-1">
                     <Label>รายการยา</Label>
-                    <Input disabled value={name || ''} />
-                </div>
-                <div className="flex flex-col gap-1 ">
-                    <Label>จำนวนที่ขอยืม</Label>
-                    <Input disabled value={responseAmount || ''} />
+                    <Input disabled value={name} />
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>รูปแบบ/หน่วย</Label>
-                    <Input disabled value={unit || ''} />
-                </div>
-                <div className="flex flex-col gap-1">
-                    <Label>ขนาดบรรจุ</Label>
-                    <Input disabled value={quantity || ''} />
+                    <Input disabled value={unit} />
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>ชื่อการค้า</Label>
-                    <Input disabled value={trademark || ''} />
+                    <Input disabled value={trademark} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>ขนาดบรรจุ</Label>
+                    <Input disabled value={quantity} />
                 </div>
                 <div className="flex flex-col gap-1">
                     <Label>ผู้ผลิต</Label>
-                    <Input disabled value={manufacturer || ''} />
+                    <Input disabled value={manufacturer} />
                 </div>
             </div>
-            <div className="flex flex-col gap-2">
-                <Label>เงื่อนไขการรับคืน</Label>
+            <div className="flex flex-row col-span-2 gap-2 flex-wrap">
+                <div className="flex flex-col gap-1">
+                    <Label>จำนวนที่ขอยืม</Label>
+                    <Input disabled value={responseAmount} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>ราคาต่อหน่วย</Label>
+                    <Input disabled value={pricePerUnit} />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <Label>รวม</Label>
+                    <span className="font-bold text-sm text-gray-600"> {totalPrice.toFixed(2)} บาท</span>
+                </div>
+            </div>
+            <div className="flex flex-col gap-2 mt-2">
+                <Label>เงื่อนไขการคืน</Label>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                     <div className="flex flex-row gap-2 items-center">
                         <input type="checkbox" checked={returnConditions?.returnConditions?.exactTypeCondition} disabled />
@@ -144,11 +153,46 @@ function ReturnFormSchema({ selectedMed }: any) {
 }
 
 function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading, formId = "return-sharing-form", onFormChange, onSavePdf }: any) {
-    const { id, respondingHospitalNameEN, sharingId, sharingDetails, returnTerm } = selectedMed;
-    const { postingHospitalNameEN } = sharingDetails;
-    // const receiveConditions = sharingDetails?.sharingReturnTerm?.receiveConditions || {};
+    const { id, respondingHospitalNameEN, sharingId, sharingDetails, returnTerm, acceptedOffer } = selectedMed;
+    const { postingHospitalNameEN, sharingMedicine } = sharingDetails;
+    const { responseAmount } = acceptedOffer;
     const receiveConditions = returnTerm || {};
     const returnFormSchema = ReturnFormSchema({ selectedMed });
+
+    // Calculate offered price - using responseAmount as the amount borrowed
+    const offeredPrice = sharingMedicine?.pricePerUnit || 0;
+    const totalOfferedPrice = responseAmount * offeredPrice;
+
+    // Compute previously returned totals from existing return list
+    const existingReturnList: any = (selectedMed as any)?.returnMedicine;
+    const previousReturnsArray: any[] = Array.isArray(existingReturnList)
+        ? existingReturnList
+        : (existingReturnList ? [existingReturnList] : []);
+    const returnedAmountSum: number = previousReturnsArray.reduce((sum: number, item: any) => {
+        try {
+            const nested = item && item.returnMedicine ? item.returnMedicine : item;
+            const rawAmt = nested && nested.returnAmount !== undefined && nested.returnAmount !== null ? nested.returnAmount : 0;
+            const amt = Number(rawAmt);
+            return sum + (isNaN(amt) ? 0 : amt);
+        } catch {
+            return sum;
+        }
+    }, 0);
+    const returnedPriceSum: number = previousReturnsArray.reduce((sum: number, item: any) => {
+        try {
+            const nested = item && item.returnMedicine ? item.returnMedicine : item;
+            const rawAmt = nested && nested.returnAmount !== undefined && nested.returnAmount !== null ? nested.returnAmount : 0;
+            const rawPrice = nested && nested.pricePerUnit !== undefined && nested.pricePerUnit !== null ? nested.pricePerUnit : 0;
+            const amt = Number(rawAmt);
+            const unitPrice = Number(rawPrice);
+            const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+            return sum + lineTotal;
+        } catch {
+            return sum;
+        }
+    }, 0);
+    const previousReturnPercent = totalOfferedPrice > 0 ? Math.min(100, Math.max(0, (returnedPriceSum / totalOfferedPrice) * 100)) : 0;
+    const remainingReturnPrice = Math.max(0, (Number(totalOfferedPrice) || 0) - (Number(returnedPriceSum) || 0));
 
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [dateError, setDateError] = useState("");
@@ -230,8 +274,16 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
     const watchReturnType = watch("returnType");
     const supportSelection = watch("supportRequest") || "none";
     const isSupportSelected = supportSelection === "support";
+    const returnAmount = watch("returnMedicine.returnAmount");
+    const pricePerUnit = watch("returnMedicine.pricePerUnit");
     const watchedValues = useWatch({ control });
     const watchedValuesKey = JSON.stringify(watchedValues);
+
+    // Calculate user input total and comparison against offered total price
+    const inputTotal = (Number(returnAmount) || 0) * (Number(pricePerUnit) || 0);
+    const ratioPercent = totalOfferedPrice > 0 ? (inputTotal / totalOfferedPrice) * 100 : 0;
+    const clampedPercent = Math.max(0, Math.min(100, ratioPercent));
+    const differenceAmount = inputTotal - totalOfferedPrice;
 
     useEffect(() => {
         onFormChange?.(watchedValues);
@@ -285,11 +337,20 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
     }, [allowedReturnTypes.supportType]);
 
     return (
-        <form id={formId} onSubmit={handleSubmit(onSubmit, onError)} className="flex flex-col col-span-2 gap-6 border p-4 rounded-lg">
-            <h2 className="text-lg font-semibold flex items-center gap-2 text-green-700">
-                <RotateCcw className="h-5 w-5" />
-                รายการคืน
-            </h2>
+        <form id={formId} onSubmit={handleSubmit(onSubmit, onError)} className="flex flex-col gap-6 border p-4 rounded-lg">
+            <h2 className="text-lg font-semibold">รายการคืน</h2>
+            <div className="flex flex-col gap-2 border rounded-md p-3 bg-muted/20">
+                <Label>สรุปการคืนก่อนหน้า</Label>
+                <div className="text-sm text-gray-700">คืนแล้ว: {returnedAmountSum} หน่วย ({returnedPriceSum.toFixed(2)} บาท)</div>
+                <div className="text-sm text-gray-700">เหลือคืน (ตามราคา): {remainingReturnPrice.toFixed(2)} บาท</div>
+                <div className="mt-1">
+                    <Progress value={previousReturnPercent} />
+                    <div className="flex justify-between text-xs mt-1">
+                        <span>{previousReturnPercent.toFixed(0)}% ของราคาที่ต้องคืน</span>
+                        <span>รวมที่ต้องคืน: {totalOfferedPrice.toFixed(2)} บาท</span>
+                    </div>
+                </div>
+            </div>
             <div className="flex flex-col gap-3">
                 <div className="grid grid-cols-4 gap-2">
                     {allowedReturnTypes.supportType ? (
@@ -328,40 +389,37 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                         <Input placeholder="รายการยา" {...register("returnMedicine.name")} disabled={isSupportSelected || watchReturnType === "exactType"} />
                         {errors.returnMedicine?.name && <span className="text-red-500 text-xs">{errors.returnMedicine.name.message}</span>}
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                        <div className="flex flex-col gap-1">
-                            <Label>ขนาดบรรจุ</Label>
-                            <Input placeholder="1mg" {...register("returnMedicine.quantity")} disabled={isSupportSelected} />
-                            {errors.returnMedicine?.quantity && <span className="text-red-500 text-xs">{errors.returnMedicine.quantity.message}</span>}
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            <Label>รูปแบบ/หน่วย</Label>
-                            <Input placeholder="Tablet" {...register("returnMedicine.unit")} disabled={isSupportSelected} />
-                            {errors.returnMedicine?.unit && <span className="text-red-500 text-xs">{errors.returnMedicine.unit.message}</span>}
-                        </div>
-                    </div>
                     <div className="flex flex-col gap-1">
                         <Label>ชื่อการค้า</Label>
                         <Input placeholder="ชื่อการค้า" {...register("returnMedicine.trademark")} disabled={isSupportSelected || watchReturnType === "exactType"} />
                         {errors.returnMedicine?.trademark && <span className="text-red-500 text-xs">{errors.returnMedicine.trademark.message}</span>}
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                        <div className="flex flex-col gap-1">
-                            <Label>ผู้ผลิต</Label>
-                            <Input placeholder="ผู้ผลิต" {...register("returnMedicine.manufacturer")} disabled={isSupportSelected || watchReturnType === "exactType"} />
-                            {errors.returnMedicine?.manufacturer && <span className="text-red-500 text-xs">{errors.returnMedicine.manufacturer.message}</span>}
-                        </div>
-                        <div className="flex flex-col gap-1">
-                            <Label>หมายเลขล็อต</Label>
-                            <Input placeholder="B234" {...register("returnMedicine.batchNumber")} disabled={isSupportSelected} />
-                            {errors.returnMedicine?.batchNumber && <span className="text-red-500 text-xs">{errors.returnMedicine.batchNumber.message}</span>}
-                        </div>
-                    </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-col col-span-2 gap-1">
+                        <Label>ผู้ผลิต</Label>
+                        <Input placeholder="ผู้ผลิต" {...register("returnMedicine.manufacturer")} disabled={isSupportSelected || watchReturnType === "exactType"} />
+                        {errors.returnMedicine?.manufacturer && <span className="text-red-500 text-xs">{errors.returnMedicine.manufacturer.message}</span>}
+                    </div>
                     <div className="flex flex-col gap-1">
-                        <Label className="font-bold">วันหมดอายุ</Label>
+                        <Label>หมายเลขล็อต <RequiredMark /></Label>
+                        <Input placeholder="B234" {...register("returnMedicine.batchNumber")} disabled={isSupportSelected} />
+                        {errors.returnMedicine?.batchNumber && <span className="text-red-500 text-xs">{errors.returnMedicine.batchNumber.message}</span>}
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <Label>ขนาดบรรจุ <RequiredMark /></Label>
+                        <Input placeholder="1mg" {...register("returnMedicine.quantity")} disabled={isSupportSelected} />
+                        {errors.returnMedicine?.quantity && <span className="text-red-500 text-xs">{errors.returnMedicine.quantity.message}</span>}
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <Label>รูปแบบ/หน่วย <RequiredMark /></Label>
+                        <Input placeholder="Tablet" {...register("returnMedicine.unit")} disabled={isSupportSelected} />
+                        {errors.returnMedicine?.unit && <span className="text-red-500 text-xs">{errors.returnMedicine.unit.message}</span>}
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                        <Label className="font-bold">วันที่หมดอายุ <RequiredMark /></Label>
                         <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className="justify-start text-left font-normal" disabled={isSupportSelected}>
@@ -376,10 +434,10 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                                     mode="single"
                                     selected={expiredDate ? new Date(Number(expiredDate)) : undefined}
                                     captionLayout="dropdown"
-                                    fromYear={2020}            // ปีเก่าสุดที่เลือกได้
-                                    toYear={new Date().getFullYear() + 20}  //  เลือกได้ถึง 20 ปีข้างหน้า
+                                    fromYear={2020}
+                                    toYear={new Date().getFullYear() + 20}
                                     formatters={{
-                                        formatYearCaption: (year: Date) => (year.getFullYear() + 543).toString(), // แสดงปีเป็น พ.ศ.
+                                        formatYearCaption: (year: Date) => (year.getFullYear() + 543).toString(),
                                     }}
                                     onSelect={(date) => {
                                         if (date instanceof Date && !isNaN(date.getTime())) {
@@ -406,42 +464,32 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                         </Popover>
                         {errors.returnMedicine?.expiryDate && <span className="text-red-500 text-xs">{errors.returnMedicine.expiryDate.message}</span>}
                     </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">    
                     <div className="flex flex-col gap-1">
-                        <Label>จำนวนที่ให้คืน</Label>
+                        <Label>จำนวนที่ให้คืน <RequiredMark /></Label>
                         <Input placeholder="500" type="number" {...register("returnMedicine.returnAmount", { valueAsNumber: true })} disabled={isSupportSelected} />
                         {errors.returnMedicine?.returnAmount?.message && <span className="text-red-500 text-xs">{String(errors.returnMedicine.returnAmount.message)}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
-                        <Label>ราคาต่อหน่วย</Label>
-                        <Input
-                            placeholder="20"
-                            type="number"
-                            step="0.01"
-                            {...register("returnMedicine.pricePerUnit", { valueAsNumber: true })}
-                            disabled={isSupportSelected}
-                            onChange={(e) => {
-                                let value = e.target.value;
-                                if (value.includes(".")) {
-                                    const [intPart, decPart] = value.split(".");
-                                    if (decPart.length > 2) {
-                                        value = `${intPart}.${decPart.slice(0, 2)}`;
-                                    }
-                                }
-                                e.target.value = value;
-                            }}
-                        />
+                        <Label>ราคาต่อหน่วย <RequiredMark /></Label>
+                        <Input placeholder="20" type="number" {...register("returnMedicine.pricePerUnit", { valueAsNumber: true })} disabled={isSupportSelected} />
                         {errors.returnMedicine?.pricePerUnit?.message && <span className="text-red-500 text-xs">{String(errors.returnMedicine.pricePerUnit.message)}</span>}
                     </div>
-                    <Separator className="col-span-3 my-1" />
-                    
+                    <div className="flex flex-col gap-1">
+                        <Label>รวม</Label>
+                        <span className="font-bold text-sm text-gray-600"> {inputTotal.toFixed(2)} บาท</span>
+                        <span className="text-xs text-gray-500">จากราคา {totalOfferedPrice.toFixed(2)} บาท</span>
+                    </div>
                 </div>
 
             </div>
 
             <div className="flex flex-row gap-2 items-center justify-center">
-                <Button type="submit" disabled={loading}>
+                <Button type="submit" disabled={!isValid}>
                     {loading
-                        ? <div className="flex flex-row items-center gap-2"><LoadingSpinner className="h-4 w-4" /><span className="text-gray-500">กำลังบันทึก...</span></div>
+                        ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500">สร้าง</span></div>
                         : "ตกลง"}
                 </Button>
                 <Button
@@ -454,7 +502,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                             : !isValid
                     }
                 >
-                    สร้างเอกสาร
+                    ออกเอกสาร PDF การคืนยา
                 </Button>
             </div>
         </form>
@@ -463,7 +511,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
 
 export default function ReturnSharingDialog({ open, onOpenChange, selectedMed }: any) {
     const { user } = useAuth();
-    const { sharingDetails, acceptedOffer } = selectedMed;
+    const { sharingDetails, acceptedOffer, respondingHospitalNameTH } = selectedMed;
     const { sharingMedicine } = sharingDetails;
     const receiveConditions = sharingDetails?.sharingReturnTerm?.receiveConditions || {};
     const [loading, setLoading] = useState(false);
@@ -471,57 +519,81 @@ export default function ReturnSharingDialog({ open, onOpenChange, selectedMed }:
     const pdfRef = useRef<{ savePdf?: () => void }>(null);
     const [returnFormValues, setReturnFormValues] = useState<any>(null);
 
+    // Prepare data structure for PDF matching columns.tsx format
+    const pdfData = {
+        ...selectedMed,
+        respondingHospitalNameTH: respondingHospitalNameTH || sharingDetails?.postingHospitalNameTH,
+        offeredMedicine: {
+            ...sharingMedicine,
+            offerAmount: acceptedOffer?.responseAmount,
+        }
+    };
+
     const handleSavePdf = async () => {
         const formEl = document.getElementById(formId) as HTMLFormElement | null;
         if (!formEl) return;
-        const invalid = formEl.querySelector(':invalid');
+        
         const isSupport = returnFormValues?.supportRequest === 'support' || returnFormValues?.supportRequest === true;
-        const hasReason = !!returnFormValues?.returnMedicine?.reason && String(returnFormValues?.returnMedicine?.reason).trim().length > 0;
-        const requiredOk = isSupport
-            ? hasReason
-            : !!(returnFormValues?.returnMedicine?.name
-                && returnFormValues?.returnMedicine?.quantity
-                && returnFormValues?.returnMedicine?.unit
-                && returnFormValues?.returnMedicine?.manufacturer
-                && returnFormValues?.returnMedicine?.batchNumber
-                && returnFormValues?.returnMedicine?.returnDate
-                && (returnFormValues?.returnMedicine?.returnAmount ?? 0) > 0
-                && typeof returnFormValues?.returnMedicine?.pricePerUnit === "number"
-                && !isNaN(returnFormValues?.returnMedicine?.pricePerUnit));
+        
+        // Check for missing fields
+        const missingFields: string[] = [];
+        
+        if (isSupport) {
+            const hasReason = !!returnFormValues?.returnMedicine?.reason && String(returnFormValues?.returnMedicine?.reason).trim().length > 0;
+            if (!hasReason) {
+                missingFields.push("เหตุผล");
+            }
+        } else {
+            if (!returnFormValues?.returnMedicine?.name) missingFields.push("รายการยา");
+            if (!returnFormValues?.returnMedicine?.trademark) missingFields.push("ชื่อการค้า");
+            if (!returnFormValues?.returnMedicine?.manufacturer) missingFields.push("ผู้ผลิต");
+            if (!returnFormValues?.returnMedicine?.batchNumber) missingFields.push("หมายเลขล็อต");
+            if (!returnFormValues?.returnMedicine?.quantity) missingFields.push("ขนาดบรรจุ");
+            if (!returnFormValues?.returnMedicine?.unit) missingFields.push("รูปแบบ/หน่วย");
+            if (!returnFormValues?.returnMedicine?.expiryDate) missingFields.push("วันหมดอายุ");
+            if (!(returnFormValues?.returnMedicine?.returnAmount > 0)) missingFields.push("จำนวนที่ให้คืน");
+            if (typeof returnFormValues?.returnMedicine?.pricePerUnit !== "number" || 
+                isNaN(returnFormValues?.returnMedicine?.pricePerUnit) ||
+                returnFormValues?.returnMedicine?.pricePerUnit <= 0) {
+                missingFields.push("ราคาต่อหน่วย");
+            }
+        }
 
-        if (invalid || !requiredOk) {
-            toast.error("กรุณากรอกข้อมูลให้ครบถ้วนก่อนสร้างเอกสาร");
+        if (missingFields.length > 0) {
+            const fieldList = missingFields.join(", ");
+            toast.error(
+                `กรุณากรอกข้อมูลให้ครบถ้วนก่อนสร้างเอกสาร\n\nฟิลด์ที่ยังไม่ครบ: ${fieldList}`,
+                {
+                    duration: 5000,
+                    style: {
+                        whiteSpace: 'pre-line'
+                    }
+                }
+            );
             return;
         }
+        
         pdfRef.current?.savePdf?.();
         toast.success("สร้างเอกสารคืนยาแล้ว");
     };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="p-0 max-w-[1400px]">
-                <div className="flex flex-col max-h-[90vh]">
-                    <div className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 rounded-t-xl">
-                        <div className="px-6 py-4">
-                            <DialogTitle className="flex items-center gap-2 text-xl font-semibold text-foreground">
-                                <RotateCcw className="h-5 w-5 text-green-600" />
-                                <span>ส่งคืน</span>
-                            </DialogTitle>
-                        </div>
-                    </div>
-
-                    <div className="overflow-y-auto px-6 py-5">
-                        <div className="grid grid-cols-3 gap-2">
-                            <SharingMedicineDetails sharingMedicine={sharingMedicine} receiveConditions={receiveConditions} selectedMed={selectedMed} acceptedOffer={acceptedOffer} />
-                            <ReturnMedicineDetails selectedMed={selectedMed} onOpenChange={onOpenChange} loading={loading} setLoading={setLoading} formId={formId} onFormChange={setReturnFormValues} onSavePdf={handleSavePdf} />
-                        </div>
-                    </div>
-
-                    <div style={{ display: 'none' }}>
-                        <ReturnPdfPreview data={selectedMed} returnData={returnFormValues} userData={user} ref={pdfRef} />
-                    </div>
-
-                    {/* Footer removed to match return-dialog; actions moved into the form */}
+            <DialogContent className="sm:max-w-[1100px]">
+                <DialogHeader>
+                    <DialogTitle>ส่งคืน</DialogTitle>
+                </DialogHeader>
+                <div className="grid grid-cols-2 gap-2">
+                    <SharingMedicineDetails sharingMedicine={sharingMedicine} receiveConditions={receiveConditions} selectedMed={selectedMed} acceptedOffer={acceptedOffer} />
+                    <ReturnMedicineDetails selectedMed={selectedMed} onOpenChange={onOpenChange} loading={loading} setLoading={setLoading} formId={formId} onFormChange={setReturnFormValues} onSavePdf={handleSavePdf} />
+                </div>
+                <div style={{ display: 'none' }}>
+                    <ReturnPdfMultiPreview 
+                        ref={pdfRef} 
+                        data={pdfData}
+                        returnList={returnFormValues?.returnMedicine ? [returnFormValues.returnMedicine] : []} 
+                        userData={user ?? {}} 
+                    />
                 </div>
             </DialogContent>
         </Dialog>
