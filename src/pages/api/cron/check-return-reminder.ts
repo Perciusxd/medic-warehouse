@@ -4,10 +4,10 @@ import { Resend } from 'resend';
 
 const MONGODB_URI = process.env.NEXT_PUBLIC_API_MONGODB_URI || 'mongodb://127.0.0.1:27017/borrow-app?directConnection=true';
 const resend = new Resend(process.env.NEXT_PUBLIC_API_RESEND_API_KEY);
-const fromEmail = process.env.NEXT_PUBLIC_API_RESEND_FROM_EMAIL?.toString() || 'no-reply@bcmed.online';
-// const fromEmail = 'no-reply@bcmed.online';
+// const fromEmail = process.env.NEXT_PUBLIC_API_RESEND_FROM_EMAIL?.toString() || 'no-reply@bcmed.online';
+const fromEmail = 'no-reply@bcmed.online';
 
-const testEmail = 'pupzaporjict@gmail.com'
+// const testEmail = 'pupzaporjict@gmail.com'
 const hospitalList = ['Songkla Hospital','Hatyai Hospital', 'Jana Hospital', 'Na Mom Hospital', 'Bang Klam Hospital', 'Khuanniang Hospital', 'Ranot Hospital', 'Krasae Sin Hospital', 'Sadao Hospital', 'Somdejpraboromrachineenart Na Thawi Hospital']
 
 // ฟังก์ชันสำหรับค้นหา email จากฐานข้อมูลโดยใช้ชื่อโรงพยาบาล
