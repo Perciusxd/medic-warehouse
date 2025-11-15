@@ -15,7 +15,6 @@ export const columns: ColumnDef<any>[] = [
     header: "วันที่ให้ยืม",
     cell: ({ row }) => {
       const date = new Date(Number(row.original.createdAt));
-
       return <span>{!isNaN(date.getTime()) ? date.toLocaleDateString("th-TH") : '-'}</span>;
       // const date = new Date(row.original.createdAt);
       // return <span>{date.toLocaleDateString()}</span>;
@@ -26,7 +25,7 @@ export const columns: ColumnDef<any>[] = [
     size : 100,
     header: "ร.พ. ให้ยืม",
     cell: ({ row }) => {
-      const hospitalName = row.original.responseDetails[0].respondingHospitalNameTH;
+      const hospitalName = row.original.responseDetails ? row.original.responseDetails[0].respondingHospitalNameTH : row.original.requestDetails.postingHospitalNameTH;
       return (
         <span className="text-sm font-medium text-gray-600">
           {hospitalName ? hospitalName : "-"}
@@ -47,7 +46,7 @@ export const columns: ColumnDef<any>[] = [
           </span>
         );
       } else if (row.original.ticketType === 'request') {
-        const item = row.original.requestMedicine.name;
+        const item = row.original.offeredMedicine.name;
         return (
           <span className="text-sm font-medium text-gray-600">
             {item ? item : "-"}
@@ -72,8 +71,8 @@ export const columns: ColumnDef<any>[] = [
           </span>
         );
       } else if (row.original.ticketType === 'request') {
-        const size = row.original.requestMedicine.quantity;
-        const unit = row.original.requestMedicine.unit;
+        const size = row.original.offeredMedicine.quantity;
+        const unit = row.original.offeredMedicine.unit;
         return (
           <span className="text-sm font-medium text-gray-600">
             {size && unit ? size + '/' + unit : "-"}
@@ -96,7 +95,7 @@ export const columns: ColumnDef<any>[] = [
   //         </span>
   //       );
   //     } else if (row.original.ticketType === 'request') {
-  //       const unit = row.original.requestMedicine.unit;
+  //       const unit = row.original.offeredMedicine.unit;
   //       return (
   //         <span className="text-sm font-medium text-gray-600">
   //           {unit ? unit : "-"}
@@ -118,7 +117,7 @@ export const columns: ColumnDef<any>[] = [
           </span>
         );
       } else if (row.original.ticketType === 'request') {
-        const trademark = row.original.requestMedicine.trademark;
+        const trademark = row.original.offeredMedicine.trademark;
         return (
           <span className="text-sm font-medium text-gray-600">
             {trademark ? trademark : "-"}
@@ -140,7 +139,7 @@ export const columns: ColumnDef<any>[] = [
           </span>
         );
       } else if (row.original.ticketType === 'request') {
-        const manufacturer = row.original.requestMedicine.manufacturer;
+        const manufacturer = row.original.offeredMedicine.manufacturer;
         return (
           <span className="text-sm font-medium text-gray-600">
             {manufacturer ? manufacturer : "-"}
@@ -162,7 +161,7 @@ export const columns: ColumnDef<any>[] = [
   //         </span>
   //       );
   //     } else if (row.original.ticketType === 'request') {
-  //       const amount = row.original.requestMedicine.requestAmount;
+  //       const amount = row.original.offeredMedicine.requestAmount;
   //       return (
   //         <span className="text-sm font-medium text-gray-600">
   //           {amount ? amount : "-"}
@@ -184,7 +183,7 @@ export const columns: ColumnDef<any>[] = [
   //         </span>
   //       );
   //     } else if (row.original.ticketType === 'request') {
-  //       const price = row.original.requestMedicine.pricePerUnit;
+  //       const price = row.original.offeredMedicine.pricePerUnit;
   //       return (
   //         <span className="text-sm font-medium text-gray-600">
   //           {price ? price + ' บาท' : "-"}
@@ -208,8 +207,8 @@ export const columns: ColumnDef<any>[] = [
   //         </span>
   //       );
   //     } else if (row.original.ticketType === 'request') {
-  //       const price = row.original.requestMedicine.pricePerUnit;
-  //       const amount = row.original.requestMedicine.requestAmount;
+  //       const price = row.original.offeredMedicine.pricePerUnit;
+  //       const amount = row.original.offeredMedicine.requestAmount;
   //       const totalValue = price * amount;
   //       return (
   //         <span className="text-sm font-medium text-gray-600">
@@ -230,7 +229,7 @@ export const columns: ColumnDef<any>[] = [
         return <span>{!isNaN(date.getTime()) ? date.toLocaleDateString("th-TH") : '-'}</span>;
       }
       else if (row.original.ticketType === 'request') {
-        const expectedReturnDate = Number(row.original.requestTerm.expectedReturnDate);
+        const expectedReturnDate = Number(row.original.requestDetails.requestTerm.expectedReturnDate);
         const date = new Date(expectedReturnDate);
         return <span>{!isNaN(date.getTime()) ? date.toLocaleDateString("th-TH") : '-'}</span>;
       }
@@ -273,12 +272,14 @@ export const columns: ColumnDef<any>[] = [
     size : 100,
     header: "จำนวนวันที่ยืม",
     cell: ({ row }) => {
-      const responseDetail = row.original.responseDetails?.[0];
-      if (!responseDetail) {
+      let responseDetail = row.original.responseDetails?.[0];
+      if (!responseDetail && row.original.requestDetails) {
+        responseDetail = row.original.requestDetails;
+      } else if (!responseDetail) {
         return <span>-</span>;
       }
       
-      const expectedReturnDate = new Date(Number(responseDetail.acceptedOffer?.expectedReturnDate));
+      const expectedReturnDate = responseDetail.acceptedOffer ? new Date(Number(responseDetail.acceptedOffer?.expectedReturnDate)) : new Date(Number(responseDetail.requestTerm?.expectedReturnDate));
       const today = new Date();
       
       if (isNaN(expectedReturnDate.getTime())) {

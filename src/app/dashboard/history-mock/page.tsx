@@ -31,7 +31,7 @@ export default function HistoryDashboard() {
                     'returned',
                     'confirm-return',
                   'pending','completed', 'to-return'], []);
-  const { medicineRequests } = useMedicineRequestsStatus(loggedInHospital ?? '', statusFilter);
+  const { medicineRequests } = useMedicineRequests(loggedInHospital ?? '', statusFilter);
   const { medicineSharing } = useMedicineSharingStatus(loggedInHospital ?? '', statusFilter);
 
   // รวมข้อมูลทั้งสองแบบ (รอให้ทั้งคู่ไม่เป็น undefined ก่อนถึงจะรวมและแสดงผล)
@@ -49,16 +49,13 @@ export default function HistoryDashboard() {
   const [reportData, setReportData] = useState<any[]>([]);
 
   useEffect(() => {
-    // console.log(loggedInHospital, 'loggedInHospital');    
     if (!loggedInHospital) return;
-    console.log('All data history :%o', allData);
-    console.log('Medicine Requests:%o', medicineRequests, 'Medicine Sharing:%o', medicineSharing);
-    
     
     // กรองเฉพาะ status = 'to-return' เท่านั้น
     const toReturnData = allData.filter((item: any) => 
       (item.responseDetails?.[0]?.status === 'to-transfer' || item.responseDetails?.[0]?.status === 'to-confirm' || item.responseDetails?.[0]?.status === 'in-return') 
-    && item.ticketType === 'sharing');
+    || ((item.status === 'to-transfer' || item.status === 'to-confirm' || item.status === 'in-return') && item.ticketType === 'request')
+    );
     setFilteredData(toReturnData);
     // const mapped = allData.map((item: any) => {
     //   if (item.ticketType === 'sharing') {
@@ -92,30 +89,30 @@ export default function HistoryDashboard() {
 
     const mapped = allData
       .filter((item: any) => 
-        item.ticketType === 'sharing' && 
-        (item.responseDetails?.[0]?.status === 'to-transfer' || 
-          item.responseDetails?.[0]?.status === 'to-confirm' || 
-          item.responseDetails?.[0]?.status === 'in-return')
+        // item.ticketType === 'sharing' && 
+        (item.responseDetails?.[0]?.status === 'to-transfer' || item.responseDetails?.[0]?.status === 'to-confirm' || item.responseDetails?.[0]?.status === 'in-return') 
+    || ((item.status === 'to-transfer' || item.status === 'to-confirm' || item.status === 'in-return') && item.ticketType === 'request')
       )
       // copy in comment to condition if wanna close button that not have data
       // && item.responseDetails?.acceptedOffer
       .map((item: any) => {
-        const resp = item.responseDetails?.[0] ?? {};
+        const resp = item.responseDetails?.[0] ?? item.requestDetails;
         const medsArr = user?.address;
-        const hospitalName = item.postingHospitalNameTH;
+        const hospitalName = item.postingHospitalNameTH ? item.postingHospitalNameTH : item.requestDetails.postingHospitalNameTH;
         const director = user?.director;
         const now = Date.now();
         const contact = user?.contact;
-        const expectedReturnDate = resp.acceptedOffer?.expectedReturnDate;
+        const expectedReturnDate = resp.acceptedOffer ? resp.acceptedOffer.expectedReturnDate : resp.requestTerm?.expectedReturnDate;
         const diff = Number(expectedReturnDate) - now;
         let diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
         if (diffDays < 0) diffDays = Math.abs(diffDays);
 
         return {
           ticketType: item.ticketType,
-          responseDetails: item.responseDetails,
-          sharingMedicine: item.sharingMedicine,
-          sharingReturnTerm: item.sharingReturnTerm,
+          status: item.ticketType === 'sharing' ? item.responseDetails?.[0]?.status : item.status,
+          responseDetails: item.responseDetails ? item.responseDetails : item.requestDetails,
+          sharingMedicine: item.sharingMedicine ? item.sharingMedicine : item.offeredMedicine,
+          sharingReturnTerm: item.sharingReturnTerm ? item.sharingReturnTerm : item.requestTerm,
           dayAmount: diffDays,
           overDue: diffDays > 90,
           address: medsArr,
@@ -188,9 +185,9 @@ export default function HistoryDashboard() {
     // เตรียมข้อมูลสำหรับ PDF
     const pdfData = selectedItems.map((item: any) => ({
       ticketType: item.ticketType,
-      responseDetails: item.responseDetails,
-      sharingMedicine: item.sharingMedicine,
-      sharingReturnTerm: item.sharingReturnTerm,
+      responseDetails: item.responseDetails ? item.responseDetails : item.requestDetails,
+      sharingMedicine: item.sharingMedicine ? item.sharingMedicine : item.offeredMedicine,
+      sharingReturnTerm: item.sharingReturnTerm ? item.sharingReturnTerm : item.requestTerm,
       dayAmount: item.dayAmount,
       overDue: item.overDue,
       address: item.address,
@@ -216,46 +213,46 @@ export default function HistoryDashboard() {
       
     } else {
       let filterData: any;
-      console.log(label, 'label');
-      console.log('all', filteredData);
+      // console.log(label, 'label');
+      // console.log('all', filteredData);
       
       
-      switch (label) {
-        case 'แจ้งแบ่งปัน':
-          filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'offered');
-          break;
-        case 'รอยืนยันให้ยืม':
-          filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'pending');
-          break;
-        case 'รอส่งมอบ':
-          filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'to-transfer');
-          break;
-        case 'รอรับคืน':
-          filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'to-return');
-          break;
-        case 'เสร็จสิ้น':
-          filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'completed' || item.responseDetails[0].status === 'returned');
-          break;
-        case 'รอยืนยันการส่งคืน':
-          filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'to-confirm');
-          break;
-        case 'รอยืนยันการรับคืน':
-          filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 're-confirm');
-          break;
-        case 'ต้องส่งคืน':
-          filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'in-return');
-          break;
-        case 'ยืนยันการส่งคืน':
-          filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'confirm-return');
-          break;
-        default:
-          filterData = allData;
-      }
+      // switch (label) {
+      //   case 'แจ้งแบ่งปัน':
+      //     filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'offered');
+      //     break;
+      //   case 'รอยืนยันให้ยืม':
+      //     filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'pending');
+      //     break;
+      //   case 'รอส่งมอบ':
+      //     filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'to-transfer');
+      //     break;
+      //   case 'รอรับคืน':
+      //     filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'to-return');
+      //     break;
+      //   case 'เสร็จสิ้น':
+      //     filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'completed' || item.responseDetails[0].status === 'returned');
+      //     break;
+      //   case 'รอยืนยันการส่งคืน':
+      //     filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'to-confirm');
+      //     break;
+      //   case 'รอยืนยันการรับคืน':
+      //     filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 're-confirm');
+      //     break;
+      //   case 'ต้องส่งคืน':
+      //     filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'in-return');
+      //     break;
+      //   case 'ยืนยันการส่งคืน':
+      //     filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'confirm-return');
+      //     break;
+      //   default:
+      //     filterData = allData;
+      // }
       // console.log(filterData, 'filterData');
       
       // setMockDataV1(filterData);
-      setFilteredData(filterData);
-      setQueryFromChart(label);
+      // setFilteredData(filterData);
+      // setQueryFromChart(label);
     }
   };
 
@@ -263,49 +260,49 @@ export default function HistoryDashboard() {
   // console.log('filteredData', filteredData);
   // let config: any;
   // เสร็จสิ้น
-  const statusCompleted = filteredData.filter(item => item.responseDetails[0].status === 'completed' || item.responseDetails[0].status === 'returned').length;
+  // const statusCompleted = filteredData.filter(item => item.responseDetails[0].status === 'completed' || item.responseDetails[0].status === 'returned').length;
   // รอยืนยันให้ยืม
-  const statusPending = filteredData.filter(item => item.responseDetails[0].status === 'pending').length;
+  // const statusPending = filteredData.filter(item => item.responseDetails[0].status === 'pending').length;
   // แจ้งแบ่งปัน
-  const statusOffered = filteredData.filter(item => item.responseDetails[0].status === 'offered').length;
+  // const statusOffered = filteredData.filter(item => item.responseDetails[0].status === 'offered').length;
   // รอส่งมอบ
-  const statusToTransfer = filteredData.filter(item => item.responseDetails[0].status === 'to-transfer').length;
+  // const statusToTransfer = filteredData.filter(item => item.responseDetails[0].status === 'to-transfer').length;
   // รอรับคืน
-  const statusToReturn = filteredData.filter(item => item.responseDetails[0].status === 'to-return').length;
+  // const statusToReturn = filteredData.filter(item => item.responseDetails[0].status === 'to-return').length;
   // ต้องส่งคืน
-  const statusInReturn = filteredData.filter(item => item.responseDetails[0].status === 'in-return').length;
+  // const statusInReturn = filteredData.filter(item => item.responseDetails[0].status === 'in-return').length;
   // รอยืนยันการส่งคืน
-  const statusToConfirm = filteredData.filter(item => item.responseDetails[0].status === 'to-confirm').length;
+  // const statusToConfirm = filteredData.filter(item => item.responseDetails[0].status === 'to-confirm').length;
   // รอยืนยันการรับคืน
-  const statusReConfirm = filteredData.filter(item => item.responseDetails[0].status === 're-confirm').length;
+  // const statusReConfirm = filteredData.filter(item => item.responseDetails[0].status === 're-confirm').length;
   // ยืนยันการส่งคืน
-  const statusConfirmReturn = filteredData.filter(item => item.responseDetails[0].status === 'confirm-return').length;
+  // const statusConfirmReturn = filteredData.filter(item => item.responseDetails[0].status === 'confirm-return').length;
   // ส่งคืนเสร็จสิ้น
   
-  const config = {
-    type: 'doughnut',
-    data: {
-      labels: ["แจ้งแบ่งปัน", "รอยืนยันให้ยืม", "รอส่งมอบ", "รอรับคืน", "เสร็จสิ้น", "รอยืนยันการส่งคืน", "รอยืนยันการรับคืน", "ต้องส่งคืน", "ยืนยันการส่งคืน"],
-      datasets: [{
-        data: [statusOffered,statusPending,statusToTransfer,statusToReturn, statusCompleted, statusToConfirm, statusReConfirm, statusInReturn, statusConfirmReturn],
-        backgroundColor: ['#4CAF50', '#FF9800', '#2196F3', '#9C27B0', '#F44336', '#FFEB3B', '#00BCD4', '#E91E63', '#8BC34A'],
-        hoverOffset: 4,
-      }],
-    },
-    options: {
-      events: ['click'],
-      responsive: true,
-      plugins: {
-        legend: {
-          position: 'top',
-        },
-        title: {
-          display: false,
-          text: 'Medicine Request Status Overview',
-        },
-      },
-    },
-  }
+  // const config = {
+  //   type: 'doughnut',
+  //   data: {
+  //     labels: ["แจ้งแบ่งปัน", "รอยืนยันให้ยืม", "รอส่งมอบ", "รอรับคืน", "เสร็จสิ้น", "รอยืนยันการส่งคืน", "รอยืนยันการรับคืน", "ต้องส่งคืน", "ยืนยันการส่งคืน"],
+  //     datasets: [{
+  //       data: [statusOffered,statusPending,statusToTransfer,statusToReturn, statusCompleted, statusToConfirm, statusReConfirm, statusInReturn, statusConfirmReturn],
+  //       backgroundColor: ['#4CAF50', '#FF9800', '#2196F3', '#9C27B0', '#F44336', '#FFEB3B', '#00BCD4', '#E91E63', '#8BC34A'],
+  //       hoverOffset: 4,
+  //     }],
+  //   },
+  //   options: {
+  //     events: ['click'],
+  //     responsive: true,
+  //     plugins: {
+  //       legend: {
+  //         position: 'top',
+  //       },
+  //       title: {
+  //         display: false,
+  //         text: 'Medicine Request Status Overview',
+  //       },
+  //     },
+  //   },
+  // }
 
   if (isLoading) {
     return (

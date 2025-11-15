@@ -143,7 +143,7 @@ export function SelectHospitalDialog({ data, onConfirm, disabled }: SelectHospit
                   {filteredItems.map((item) => {
                     const isSelected = selectedIndices.includes(item.originalIndex)
                     const medicineName = item.sharingMedicine?.name || 'ไม่ระบุชื่อยา'
-                    const status = item.responseDetails?.[0]?.status || 'unknown'
+                    const status = item.responseDetails?.[0]?.status || item.status || 'unknown'
                     const statusText = 
                       status === 'to-transfer' ? 'รอส่งมอบ' :
                       status === 'to-confirm' ? 'รอยืนยันการส่งคืน' :

@@ -312,7 +312,7 @@ const MySimplePDF = ({ data, isCopy }: { data: MyDocumentProps[], isCopy?: boole
               <View style={styles.tableRow}>
                   <Text style={[ { flex: 1 }]}>ที่ สข. ๘๐๒๓๑</Text>
                   <Text style={[ { flex: 1 }]}></Text>
-                  <Text style={[{ marginRight: cm(2.5)}]}>{data[0].hospitalName} </Text>
+                  <Text style={[ { flex: 1, flexWrap: 'wrap' }]}>{data[0].hospitalName} </Text>
               </View>
 
               <View style={styles.tableRow}>
@@ -344,14 +344,14 @@ const MySimplePDF = ({ data, isCopy }: { data: MyDocumentProps[], isCopy?: boole
             {pageData.map((item, index) => (
               <View key={index} style={styles.tableRow}>
                 <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{toThaiDigits(pageIndex * rowsPerPage + index + 1)}</Text>
-                <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.offeredMedicine?.name ?? '-' : item.sharingMedicine?.name + ` (${toThaiDigits(Number(item.sharingMedicine.sharingAmount).toLocaleString())}/${item.sharingMedicine.unit})`}</Text>
+                <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.responseDetails.requestMedicine?.name + ` (${toThaiDigits(Number(item.responseDetails.requestMedicine.requestAmount).toLocaleString())}/${item.responseDetails.requestMedicine.unit})` : item.sharingMedicine?.name + ` (${toThaiDigits(Number(item.sharingMedicine.sharingAmount).toLocaleString())}/${item.sharingMedicine.unit})`}</Text>
                 {/* <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.offeredMedicine?.name ?? '-' : item.sharingMedicine?.name + ` (${item.sharingMedicine?.quantity})`}</Text> */}
-                    <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? Number(item.offeredMedicine?.offerAmount).toLocaleString() : Number(item.sharingMedicine.quantity).toLocaleString())}</Text>
-                    <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? Number(item.offeredMedicine?.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(item.sharingMedicine.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</Text>
-                    <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? (Number(item.offeredMedicine?.offerAmount) * Number(item.offeredMedicine?.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (Number(item.sharingMedicine.sharingAmount) * Number(item.sharingMedicine.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</Text>
+                    <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? Number(item.responseDetails.requestMedicine?.quantity).toLocaleString() : Number(item.sharingMedicine.quantity).toLocaleString())}</Text>
+                    <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? Number(item.responseDetails.requestMedicine?.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(item.sharingMedicine.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</Text>
+                    <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? (Number(item.responseDetails.requestMedicine.requestAmount) * Number(item.responseDetails.requestMedicine.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (Number(item.sharingMedicine.sharingAmount) * Number(item.sharingMedicine.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</Text>
                     {/* <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.responseDetails[0].updatedAt) : formatDate(item.responseDetails[0].createdAt)}</Text> */}
                     {/* <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.requestTerm?.expectedReturnDate) : formatDate(item.responseDetails[0].acceptedOffer?.expectedReturnDate)}</Text> */}
-                    <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? item.dayAmount : item.dayAmount)} วัน</Text>
+                    <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? item.dayAmount === 0 ? 1 : item.dayAmount : item.dayAmount === 0 ? item.dayAmount : 1)} วัน</Text>
                 </View> ))}
             {/* <Text style={{ marginTop: 10, textIndent: 80 }}>จึงเรียนมาเพื่อโปรดดำเนินการ </Text>
 
@@ -364,7 +364,7 @@ const MySimplePDF = ({ data, isCopy }: { data: MyDocumentProps[], isCopy?: boole
           <View style={{ position: 'absolute', bottom: cm(1.5), left: 50, right: 50 }} fixed>
             <Text style={{ marginTop: 20, textIndent: 80 }}>จึงเรียนมาเพื่อโปรดดำเนินการ </Text>
             <Text style={{ marginTop: 10, textIndent: 320 }}>ขอแสดงความนับถือ</Text>
-            <Text style={{ marginTop: 80, textIndent: 295 }}>{data[0]?.director}</Text>
+            <Text style={{ marginTop: 80, textIndent: 0, textAlign: 'right', marginRight: 85 }}>{data[0]?.director}</Text>
             <Text style={{ marginBottom: 10, textIndent: 297 }}>ผู้อำนวยการ{data[0]?.hospitalName}</Text>
             <Text>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
             <Text>ติดต่อ {toThaiDigits_(data[0]?.contact)}</Text>
@@ -383,7 +383,7 @@ const MySimplePDF = ({ data, isCopy }: { data: MyDocumentProps[], isCopy?: boole
               <View style={styles.tableRow}>
                   <Text style={[ { flex: 1 }]}>ที่ สข. ๘๐๒๓๑</Text>
                   <Text style={[ { flex: 1 }]}></Text>
-                  <Text style={[]}>{data[0].hospitalName} </Text>
+                  <Text style={[ { flex: 1, flexWrap: 'wrap' }]}>{data[0].hospitalName} </Text>
               </View>
 
               <View style={styles.tableRow}>
@@ -414,14 +414,14 @@ const MySimplePDF = ({ data, isCopy }: { data: MyDocumentProps[], isCopy?: boole
             {pageData.map((item, index) => (
               <View key={index} style={styles.tableRow}>
                 <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{toThaiDigits(pageIndex * rowsPerPage + index + 1)}</Text>
-                <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.offeredMedicine?.name ?? '-' : item.sharingMedicine?.name + ` (${toThaiDigits(Number(item.sharingMedicine.sharingAmount).toLocaleString())}/${item.sharingMedicine.unit})`}</Text>
+                <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.responseDetails.requestMedicine?.name + ` (${toThaiDigits(Number(item.responseDetails.requestMedicine.requestAmount).toLocaleString())}/${item.responseDetails.requestMedicine.unit})` : item.sharingMedicine?.name + ` (${toThaiDigits(Number(item.sharingMedicine.sharingAmount).toLocaleString())}/${item.sharingMedicine.unit})`}</Text>
                 {/* <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{item.ticketType === 'request' ? item.offeredMedicine?.name ?? '-' : item.sharingMedicine?.name + ` (${item.sharingMedicine?.quantity})`}</Text> */}
-                    <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? Number(item.offeredMedicine?.offerAmount).toLocaleString() : Number(item.sharingMedicine.quantity).toLocaleString())}</Text>
-                    <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? Number(item.offeredMedicine?.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(item.sharingMedicine.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</Text>
-                    <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? (Number(item.offeredMedicine?.offerAmount) * Number(item.offeredMedicine?.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (Number(item.sharingMedicine.sharingAmount) * Number(item.sharingMedicine.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</Text>
+                    <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? Number(item.responseDetails.requestMedicine?.quantity).toLocaleString() : Number(item.sharingMedicine.quantity).toLocaleString())}</Text>
+                    <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? Number(item.responseDetails.requestMedicine?.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : Number(item.sharingMedicine.pricePerUnit).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</Text>
+                    <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? (Number(item.responseDetails.requestMedicine?.quantity) * Number(item.responseDetails.requestMedicine?.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : (Number(item.sharingMedicine.sharingAmount) * Number(item.sharingMedicine.pricePerUnit)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }))}</Text>
                     {/* <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.responseDetails[0].updatedAt) : formatDate(item.responseDetails[0].createdAt)}</Text> */}
                     {/* <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{item.ticketType === 'request' ? formatDate(item.requestTerm?.expectedReturnDate) : formatDate(item.responseDetails[0].acceptedOffer?.expectedReturnDate)}</Text> */}
-                    <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? item.dayAmount : item.dayAmount)} วัน</Text>
+                    <Text style={[styles.tableCellWithBorder, { textAlign: 'center' }]}>{toThaiDigits(item.ticketType === 'request' ? item.dayAmount === 0 ? 1 : item.dayAmount : item.dayAmount === 0 ? item.dayAmount : 1)} วัน</Text>
                 </View> ))}
           </View>
 
@@ -434,7 +434,7 @@ const MySimplePDF = ({ data, isCopy }: { data: MyDocumentProps[], isCopy?: boole
           <View style={{ position: 'absolute', bottom: cm(1.5), left: 50, right: 50 }} fixed>
             <Text style={{ marginTop: 20, textIndent: 80 }}>จึงเรียนมาเพื่อโปรดดำเนินการ </Text>
             <Text style={{ marginTop: 10, textIndent: 320 }}>ขอแสดงความนับถือ</Text>
-            <Text style={{ marginTop: 80, textIndent: 295 }}>{data[0]?.director}</Text>
+            <Text style={{ marginTop: 80, textIndent: 0, textAlign: 'right', marginRight: 85 }}>{data[0]?.director}</Text>
             <Text style={{ marginBottom: 10, textIndent: 297 }}>ผู้อำนวยการ{data[0]?.hospitalName}</Text>
             <Text>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
             <Text>ติดต่อ {toThaiDigits_(data[0]?.contact)}</Text>
