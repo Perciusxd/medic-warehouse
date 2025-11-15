@@ -25,14 +25,14 @@ import { Calendar as CalendarIcon } from "lucide-react"
 const RequestSchema = z.object({
     urgent: z.enum(["urgent", "immediate", "normal"]),
     requestMedicine: z.object({
-        name: z.string().min(1, "Name is required"),
-        trademark: z.string().min(1, "Trademark is required"),
+        name: z.string().min(1, "กรุณากรอกชื่อยา"),
+        trademark: z.string().min(1, "กรุณากรอกชื่อการค้า"),
         description: z.string().optional(),
-        requestAmount: z.number().min(1, "Request amount must be greater than 0").max(1000, "Request amount must be less than 1000"),
+        requestAmount: z.number().min(1, "จำนวนที่ต้องการยืมต้องมากกว่า 0").max(10000, "จำนวนที่ต้องการยืมต้องไม่เกิน 10000"),
         quantity: z.string().optional(),
-        pricePerUnit: z.number().min(1, "Price per unit must be greater than 0").max(100000, "Price per unit must be less than 100000"),
-        unit: z.string().min(1, "Unit is required"),
-        manufacturer: z.string().min(1, "Manufacturer is required"),
+        pricePerUnit: z.number().min(0.01, "ราคาต่อหน่วยต้องมากกว่าหรือเท่ากับ 0.01").max(100000, "ราคาต่อหน่วยต้องไม่เกิน 100000"),
+        unit: z.string().min(1, "กรุณากรอกรูปแบบ/หน่วย"),
+        manufacturer: z.string().min(1, "กรุณากรอกผู้ผลิต"),
         packingSize: z.string().optional(),
 
     }),

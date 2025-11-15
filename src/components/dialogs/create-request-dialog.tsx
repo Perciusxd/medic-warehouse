@@ -134,7 +134,7 @@ const RequestSchema = z.object({
         quantity: z.string().min(1,"กรุณาระบุขนาด"),
         packingSize : z.string().optional(),
         pricePerUnit: z.coerce.number({ required_error: "กรุณากรอกราคาต่อหน่วย" })
-            .min(1, "ราคาต่อหน่วยต้องมากกว่า 0")
+            .min(0.01, "ราคาต่อหน่วยต้องมากกว่าหรือเท่ากับ 0.01")
             .max(100000, "ราคาต่อหน่วยต้องไม่เกิน 100,000"),
         unit: z.string().min(1, "กรุณากรอกรูปแบบ/หน่วย"),
         manufacturer: z.string().min(1, "กรุณากรอกผู้ผลิต"),

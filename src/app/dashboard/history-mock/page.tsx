@@ -51,6 +51,7 @@ export default function HistoryDashboard() {
   useEffect(() => {
     // console.log(loggedInHospital, 'loggedInHospital');    
     if (!loggedInHospital) return;
+    console.log('All data history :%o', allData);
     
     // กรองเฉพาะ status = 'to-return' เท่านั้น
     const toReturnData = allData.filter((item: any) => 
