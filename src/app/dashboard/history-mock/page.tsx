@@ -52,6 +52,8 @@ export default function HistoryDashboard() {
     // console.log(loggedInHospital, 'loggedInHospital');    
     if (!loggedInHospital) return;
     console.log('All data history :%o', allData);
+    console.log('Medicine Requests:%o', medicineRequests, 'Medicine Sharing:%o', medicineSharing);
+    
     
     // กรองเฉพาะ status = 'to-return' เท่านั้น
     const toReturnData = allData.filter((item: any) => 
