@@ -169,7 +169,7 @@ function ResponseDetailPanel({ responseData }: any) {
                 )}
                 {offeredMedicine.returnType === "supportReturn" && (
                     <div>
-                        <Badge variant="outline">{offeredMedicine.supportCondition==="budgetPlan" ? "ตามงบประมาณสนับสนุน" : offeredMedicine.supportCondition==="servicePlan" ? "ตามสิทธิ์แผนบริการ":"สนับสนุนโดยไม่คิดค่าใช้จ่าย" }</Badge>
+                        <Badge variant="outline">{offeredMedicine.supportCondition==="budgetPlan" ? "หักงบประมาณบำรุงโรงพยาบาล" : offeredMedicine.supportCondition==="servicePlan" ? "หักงบประมาณ Service plan":"ให้เปล่า" }</Badge>
 
                         </div>
                 )

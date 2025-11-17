@@ -4,7 +4,7 @@ import { SharingAsset } from "@/types/sharingMed"
 import { ColumnDef } from "@tanstack/react-table"
 // import { formatDate } from "@/lib/utils"
 import { format, differenceInCalendarDays } from "date-fns"
-import { History, Edit, Pencil, SquareCheck } from "lucide-react"
+import { History, Edit, Pencil, SquareCheck, ArrowUpDown } from "lucide-react"
 import {
     HoverCard,
     HoverCardContent,
@@ -26,6 +26,7 @@ export const columns = (
     handleReturnClick: (med: any) => void,
     handleReturnConfirm: (med: any) => void,
     handleEditClick: (med: any) => void,
+    handleDeliveryConfirm:(med:any)=> void,
 ): ColumnDef<SharingAsset>[] => [
         {
             id: "edit",
@@ -182,32 +183,67 @@ export const columns = (
         //         )
         //     }
         // },
-        {
-            accessorKey: "updatedAt",
-            size: 80,
-            header: () => <div className="font-medium text-muted-foreground text-left cursor-default">อัพเดทล่าสุด</div>,
-            cell: ({ row }) => {
-                const responseDetails = row.original.responseDetails
-                // console.log("responseDetails", responseDetails)
-                return (
-                    <div className="flex flex-col ">
-                        {responseDetails.map((item: any, index: number) => {
-                            const date = new Date(Number(item.updatedAt));
-                            const isValid = !isNaN(date.getTime());
-                            const formattedDate = isValid ? format(date, 'dd/MM/yyyy') : "-";
-                            const timeOnly = isValid ? format(date, 'HH:mm:ss') : "-";
-                            // //console.log("responseDetailsaaaaaa",date)
-                            return (
-                                <div key={index}>
-                                    <div className="flex flex-row  items-center  justify-between mt-1">{formattedDate}</div>
-                                    {/* <div className="text-xs text-muted-foreground">{item.updatedAt}</div> */}
-                                </div>
-                            );
-                        })}
-                    </div>
-                );
-            }
-        },
+        // {
+        //     id: "updatedAt", // ใช้อะไรก็ได้ที่ไม่ซ้ำ
+        //     size: 150,
+        //     header: ({ column }) => (
+        //         <div className="font-medium text-muted-foreground text-left cursor-default">
+        //             อัพเดทล่าสุด
+        //             <Button
+        //                 className="font-medium text-muted-foreground text-left cursor-pointer"
+        //                 variant="ghost"
+        //                 onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        //             >
+        //                 <ArrowUpDown className="h-4 w-4" />
+        //             </Button>
+        //         </div>
+        //     ),
+        //     cell: ({ row, column }) => {
+        //         const responseDetails = row.original.responseDetails;
+
+
+        //         const sortDir = column.getIsSorted();
+
+        //         const getSortedDetails = () => {
+
+        //             const detailsCopy = [...responseDetails];
+
+        //             if (sortDir === 'asc') {
+
+        //                 return detailsCopy.sort((a, b) => Number(a.updatedAt) - Number(b.updatedAt));
+        //             }
+        //             if (sortDir === 'desc') {
+
+        //                 return detailsCopy.sort((a, b) => Number(b.updatedAt) - Number(a.updatedAt));
+        //             }
+
+
+        //             return responseDetails;
+        //         };
+
+        //         const sortedDetails = getSortedDetails(); // ได้ Array ที่เรียงแล้ว
+
+        //         return (
+        //             <div className="flex flex-col ">
+
+        //                 {sortedDetails.map((item: any, index: number) => {
+        //                     const date = new Date(Number(item.updatedAt));
+        //                     const isValid = !isNaN(date.getTime());
+        //                     const formattedDate = isValid ? format(date, 'dd/MM/yyyy') : "-";
+        //                     const timeOnly = isValid ? format(date, 'HH:mm:ss') : "-";
+
+        //                     return (
+        //                         <div key={index} className="flex flex-row place-self-auto h-[29.79px] items-center">
+        //                             <div className="ml-1">{formattedDate}:</div>
+        //                             <div className="text-xs text-muted-foreground">{timeOnly}</div>
+        //                         </div>
+        //                     );
+        //                 })}
+        //             </div>
+        //         );
+        //     },
+        //     enableSorting: false,
+        // },
         // {
         //     id: "ticketStatus",
         //     accessorFn: (row) => row.status,
@@ -225,365 +261,324 @@ export const columns = (
         // },
         {
             id: "responseDetailsHospitalName",
-            size: 350,
-            header: () => <div className="flex font-medium text-muted-foreground text-left cursor-default">
-                <div className="basis-1/2">ผู้ตอบกลับ</div>
-                <div className="basis-1/2">สถานะ</div>
+            size: 400,
+            header: ({ column }) => <div className="flex font-medium text-muted-foreground text-left cursor-default items-center">
+                <div className="basis-1/3 mr-1">
+                    อัพเดทล่าสุด
+                    <Button
+                        className="font-medium text-muted-foreground text-left cursor-pointer"
+                        variant="ghost"
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                    >
+                        <ArrowUpDown className="h-4 w-4" />
+                    </Button>
+                </div>
+                <div className="basis-1/3">ผู้ตอบกลับ</div>
+                <div className="basis-1/3">สถานะ</div>
             </div>,
-            cell: ({ row }) => {
+            cell: ({ row, column }) => {
                 const med = row.original;
                 const responseDetails = row.original.responseDetails;
-                const maxDisplay = 3;
-                const details = responseDetails.slice(0, maxDisplay);
-                const hasMore = responseDetails.length > maxDisplay;
 
-                //console.log('med sh', med)
+                // --- ส่วน Logic การเรียง (ของคุณถูกต้องแล้ว) ---
+                const sortDir = column.getIsSorted();
+                const getSortedDetails = () => {
+                    const detailsCopy = [...responseDetails];
+                    if (sortDir === 'asc') {
+                        return detailsCopy.sort((a, b) => Number(a.updatedAt) - Number(b.updatedAt));
+                    }
+                    if (sortDir === 'desc') {
+                        return detailsCopy.sort((a, b) => Number(b.updatedAt) - Number(a.updatedAt));
+                    }
+                    return responseDetails;
+                };
+                const sortedDetails = getSortedDetails();
+                // --- จบส่วน Logic การเรียง ---
 
 
                 return (
-                    <div className="flex flex-col  ">
-                        {med.responseDetails.map((detail, index) => (
-                            <div key={index} className="flex flex-row  items-center  justify-between ">
-                                <div className="basis-1/2 text-wrap w-[120px] truncate overflow-hidden text-ellipsis whitespace-nowrap" title={detail.respondingHospitalNameTH}>
-                                    <span>{detail.respondingHospitalNameTH}</span>
-                                </div>
-                                <div className="basis-1/2 mt-1">
-                                    {detail.status === 'pending'
-                                        ? (
-                                            <Badge
-                                                variant={'text_status'}
-                                                className={clsx(
-                                                    // "flex content-center h-6 font-bold",
-                                                    getStatusColor(detail.status),
-                                                    getTextStatusColor(detail.status)
-                                                )}
-                                            >
-                                                แจ้งแบ่งปัน
-                                                {/* <StatusIndicator status={detail.status} /> */}
-                                            </Badge>
-                                        ) : detail.status === 'offered'
+                    <div className="flex flex-col">
+
+                        {/* 1. แก้เป็น sortedDetails.map (ใช้ Array ที่เรียงแล้ว) */}
+                        {sortedDetails.map((detail, index) => {
+
+                            // 2. เพิ่มโค้ดคำนวณวันที่/เวลา (ที่ยกมาจากคอลัมน์เดิม)
+                            const date = new Date(Number(detail.updatedAt));
+                            const isValid = !isNaN(date.getTime());
+                            const formattedDate = isValid ? format(date, 'dd/MM/yyyy') : "-";
+                            const timeOnly = isValid ? format(date, 'HH:mm:ss') : "-";
+
+                            return (
+                                // 3. จัด Layout ให้เป็น 3 ส่วน (basis-1/3)
+                                <div key={index} className="flex flex-row items-center justify-between ">
+
+                                    {/* ส่วนที่ 1: วันที่ (โค้ดที่นำมาใส่) */}
+                                    <div className="basis-1/3 mr-1">
+                                        <div className="flex flex-row place-self-auto items-center">
+                                            <div className="ml-1">{formattedDate}:</div>
+                                            <div className="text-xs text-muted-foreground">{timeOnly}</div>
+                                        </div>
+                                    </div>
+
+                                    {/* ส่วนที่ 2: ผู้ตอบกลับ */}
+                                    <div className="basis-1/3 text-wrap w-[120px] truncate overflow-hidden text-ellipsis whitespace-nowrap" title={detail.respondingHospitalNameTH}>
+                                        <span>{detail.respondingHospitalNameTH}</span>
+                                    </div>
+
+                                    {/* ส่วนที่ 3: สถานะ (นำโค้ดเดิมกลับมา) */}
+                                    <div className="basis-1/3 mt-1">
+                                        {detail.status === 'pending'
                                             ? (
-
-                                                <Button
-                                                    variant={"text_status"}
-                                                    size={"text_status"}
-                                                    className={clsx(
-                                                        // "flex content-center h-6 font-bold text-xs",
-                                                        getStatusColor(detail.status),
-                                                        getTextStatusColor(detail.status)
-                                                    )}
-                                                    onClick={() => handleReConfirmClick({
-                                                        ...med,
-                                                        responseId: detail.id,
-                                                        offeredMedicine: detail.acceptedOffer,
-                                                        sharingDetails: med.sharingMedicine,
-                                                        responseStatus: detail.status,
-                                                        returnTerm: detail.returnTerm,
-                                                        respondingHospitalNameTH: detail.respondingHospitalNameTH,
-
-                                                    })}
-
-                                                >
-                                                    รอยืนยันให้ยืม ({detail.acceptedOffer.responseAmount})
-                                                    {/* <SquareCheck className="h-4 w-4" /> */}
-                                                </Button>
-
-
-                                            ) : detail.status === 're-confirm' ? (
                                                 <Badge
                                                     variant={'text_status'}
                                                     className={clsx(
-                                                        // "flex content-center h-6 font-bold",
                                                         getStatusColor(detail.status),
                                                         getTextStatusColor(detail.status)
                                                     )}
                                                 >
-                                                    รอยืนยันการขอยืม ({detail.acceptedOffer.responseAmount})
-                                                    {/* <StatusIndicator status={detail.status} />  */}
+                                                    แจ้งแบ่งปัน
                                                 </Badge>
-                                            ) : detail.status === 'to-transfer'
+                                            ) : detail.status === 'offered'
                                                 ? (
-                                                    <HoverCard>
-                                                        <HoverCardTrigger >
-                                                            <Button
-                                                                variant={"text_status"}
-                                                                size={"text_status"}
-                                                                className={clsx(
-                                                                    // "flex content-center h-6 font-bold text-xs",
-                                                                    getStatusColor(detail.status),
-                                                                    getTextStatusColor(detail.status)
-                                                                )}
-                                                                onClick={() => handleDeliveryClick({
-                                                                    ...med,
-                                                                    responseId: detail.id,
-                                                                    // offeredMedicine: detail.acceptedOffer,
-                                                                    // sharingDetails: med.sharingMedicine,
-                                                                    responseDetail: detail,
-                                                                    acceptedOffer: detail.acceptedOffer,
-                                                                })}
-                                                            >
-                                                                ส่งมอบ
-                                                                {/* {(() => {
-                                                                    const offeredAmount = Number(detail?.returnMedicine?.offerAmount ?? 0);
-                                                                    const offeredUnitPrice = Number(detail?.returnMedicine?.pricePerUnit ?? 0);
-                                                                    const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
-                                                                    const rm: any = (detail as any).returnMedicine;
-                                                                    const returnedPriceTotal = Array.isArray(rm)
-                                                                        ? rm.reduce((sum: number, item: any) => {
-                                                                            const nested = item && item.returnMedicine ? item.returnMedicine : item;
-                                                                            const amt = Number(nested?.returnAmount ?? 0);
-                                                                            const unitPrice = Number(nested?.pricePerUnit ?? 0);
-                                                                            const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
-                                                                            return sum + lineTotal;
-                                                                        }, 0)
-                                                                        : (() => {
-                                                                            const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
-                                                                            const amt = Number(nested?.returnAmount ?? 0);
-                                                                            const unitPrice = Number(nested?.pricePerUnit ?? 0);
-                                                                            return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
-                                                                        })();
-                                                                    const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
-                                                                    return (
-                                                                        <div className=" text-xs">({percent.toFixed(0)}%)</div>
-                                                                    );
-                                                                })()} */}
-                                                                ({detail.acceptedOffer.responseAmount})
-                                                                {/* <SquareCheck className="h-4 w-4" /> */}
-                                                                {/* <StatusIndicator status={detail.status} /> */}
-                                                            </Button>
-                                                        </HoverCardTrigger>
-                                                        {/* <HoverCardContent>
-                                                        <div className="text-xs text-red-700 flex justify-center">โปรดยืนยันเมื่อได้รับยาแล้ว</div>
-                                                    </HoverCardContent> */}
-                                                    </HoverCard>
-                                                ) : detail.status === 'in-return' ? (
-                                                    <Badge
-                                                        variant={'text_status'}
+                                                    <Button
+                                                        variant={"text_status"}
+                                                        size={"text_status"}
                                                         className={clsx(
-                                                            // "flex content-center h-6 font-bold",
                                                             getStatusColor(detail.status),
                                                             getTextStatusColor(detail.status)
                                                         )}
-                                                    >รอรับคืน
-                                                        {(() => {
-                                                            const offeredAmount = Number(detail?.acceptedOffer?.responseAmount ?? 0);
-                                                            const offeredUnitPrice = Number(detail?.acceptedOffer?.pricePerUnit ?? 0);
-                                                            const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
-                                                            const rm: any = (detail as any).returnMedicine;
-                                                            const returnedPriceTotal = Array.isArray(rm)
-                                                                ? rm.reduce((sum: number, item: any) => {
-                                                                    const nested = item && item.returnMedicine ? item.returnMedicine : item;
-                                                                    const amt = Number(nested?.returnAmount ?? 0);
-                                                                    const unitPrice = Number(nested?.pricePerUnit ?? 0);
-                                                                    const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
-                                                                    return sum + lineTotal;
-                                                                }, 0)
-                                                                : (() => {
-                                                                    const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
-                                                                    const amt = Number(nested?.returnAmount ?? 0);
-                                                                    const unitPrice = Number(nested?.pricePerUnit ?? 0);
-                                                                    return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
-                                                                })();
-                                                            const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
-                                                            return (
-                                                                <div className=" text-xs">({percent.toFixed(0)}%)</div>
-                                                            );
-                                                        })()}
-                                                        {/* {(() => {
-                                                            const rm: any = detail.returnMedicine as any;
-                                                            const returnedTotal = Array.isArray(rm)
-                                                                ? rm.reduce((sum: number, item: any) => {
-                                                                    const nested = item && item.returnMedicine ? item.returnMedicine : item;
-                                                                    const amt = Number(nested?.returnAmount ?? 0);
-                                                                    return sum + (isNaN(amt) ? 0 : amt);
-                                                                }, 0)
-                                                                : Number(rm?.returnMedicine?.returnAmount ?? 0);
-                                                            const offered = Number(detail.acceptedOffer?.responseAmount ?? 0);
-                                                            const remaining = Math.max(0, offered - returnedTotal);
-                                                            return `รอรับคืน (${Number(returnedTotal).toLocaleString()} เหลือ ${Number(remaining).toLocaleString()})`;
-                                                        })()} */}
-                                                        {/* <StatusIndicator status={detail.status} /> */}
-                                                    </Badge>
-                                                ) : detail.status === 'to-confirm' ? (
+                                                        onClick={() => handleReConfirmClick({
+                                                            ...med,
+                                                            responseId: detail.id,
+                                                            offeredMedicine: detail.acceptedOffer,
+                                                            sharingDetails: med.sharingMedicine,
+                                                            responseStatus: detail.status,
+                                                            returnTerm: detail.returnTerm,
+                                                            respondingHospitalNameTH: detail.respondingHospitalNameTH,
+                                                        })}
+                                                    >
+                                                        รอยืนยันให้ยืม ({detail.acceptedOffer.responseAmount})
+                                                    </Button>
+                                                ) : detail.status === 're-confirm' ? (
                                                     <Badge
                                                         variant={'text_status'}
                                                         className={clsx(
-                                                            // "flex content-center h-6 font-bold",
                                                             getStatusColor(detail.status),
                                                             getTextStatusColor(detail.status)
                                                         )}
                                                     >
-                                                        รอยืนยันการรับของ ({detail.acceptedOffer.responseAmount})
-
-                                                        {/* <StatusIndicator status={detail.status} /> */}
+                                                        รอยืนยันการขอยืม ({detail.acceptedOffer.responseAmount})
                                                     </Badge>
-                                                ) : detail.status === 'to-return' ? (
-                                                    <div className="flex gap-x-2">รอรับคืน ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></div>
-                                                ) : detail.status === 'confirm-return' ? (
-                                                    <HoverCard>
-                                                        <HoverCardTrigger >
-                                                            <Button
-                                                                variant={"text_status"}
-                                                                size={"text_status"}
-                                                                className={clsx(
-                                                                    // "flex content-center h-6 font-bold text-xs",
-                                                                    getStatusColor(detail.status),
-                                                                    getTextStatusColor(detail.status)
-                                                                )}
-
-                                                                onClick={() => handleReturnConfirm({
-                                                                    ...med,
-                                                                    responseId: detail.id,
-                                                                    offeredMedicine: detail.acceptedOffer,
-                                                                    sharingDetails: med.sharingMedicine,
-                                                                    responseStatus: detail.status,
-                                                                    displayMedicineName: (() => {
-                                                                        const r: any = detail.returnMedicine as any;
-                                                                        const last = Array.isArray(r) ? r[r.length - 1] : r;
-                                                                        const nested = last && last.returnMedicine ? last.returnMedicine : last;
-                                                                        return nested?.name;
-                                                                    })(),
-                                                                    displayMedicineAmount: (() => {
-                                                                        const r: any = detail.returnMedicine as any;
-                                                                        const last = Array.isArray(r) ? r[r.length - 1] : r;
-                                                                        const nested = last && last.returnMedicine ? last.returnMedicine : last;
-                                                                        return r?.returnType === 'supportType' ? "ขอสนับสนุน" : nested?.returnAmount;
-                                                                    })(),
-                                                                    displayHospitalName: detail.respondingHospitalNameTH,
-                                                                })}
-                                                            >โปรดยืนยันการคืนยา
-                                                                {(() => {
-                                                                    const offeredAmount = Number(detail?.acceptedOffer?.responseAmount ?? 0);
-                                                                    const offeredUnitPrice = Number(detail?.acceptedOffer?.pricePerUnit ?? 0);
-                                                                    const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
-                                                                    const rm: any = (detail as any).returnMedicine;
-                                                                    const returnedPriceTotal = Array.isArray(rm)
-                                                                        ? rm.reduce((sum: number, item: any) => {
-                                                                            const nested = item && item.returnMedicine ? item.returnMedicine : item;
-                                                                            const amt = Number(nested?.returnAmount ?? 0);
-                                                                            const unitPrice = Number(nested?.pricePerUnit ?? 0);
-                                                                            const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
-                                                                            return sum + lineTotal;
-                                                                        }, 0)
-                                                                        : (() => {
-                                                                            const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
-                                                                            const amt = Number(nested?.returnAmount ?? 0);
-                                                                            const unitPrice = Number(nested?.pricePerUnit ?? 0);
-                                                                            return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
-                                                                        })();
-                                                                    const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
-                                                                    return (
-                                                                        <div className=" text-xs">({percent.toFixed(0)}%)</div>
-                                                                    );
-                                                                })()}
-                                                                {/* {(() => {
-                                                                    const rm: any = detail.returnMedicine as any;
-                                                                    const returnedTotal = Array.isArray(rm)
-                                                                        ? rm.reduce((sum: number, item: any) => {
-                                                                            console.log("nested", item)
-                                                                            const nested = item && item.returnMedicine ? item.returnMedicine : item;
-                                                                            const amt = Number(nested?.returnAmount ?? 0);
-                                                                            return sum + (isNaN(amt) ? 0 : amt);
-                                                                        }, 0)
-                                                                        : Number(rm?.returnMedicine?.returnAmount ?? 0);
-                                                                    const offered = Number(detail.acceptedOffer?.responseAmount ?? 0);
-                                                                    const remaining = Math.max(0, offered - returnedTotal);
-                                                                    return `โปรดยืนยันการคืนยา (${Number(returnedTotal).toLocaleString()} เหลือ ${Number(remaining).toLocaleString()})`;
-                                                                })()} */}
-                                                                <SquareCheck className="h-4 w-4" />
-                                                                {/* <StatusIndicator status={detail.status} /> */}
-                                                            </Button>
-                                                        </HoverCardTrigger>
-                                                        {/* <HoverCardContent>
-                                                        <div className="text-xs text-red-700 flex justify-center">โปรดยืนยันเมื่อได้รับยาแล้ว</div>
-                                                    </HoverCardContent> */}
-                                                    </HoverCard>
-                                                ) : detail.status === 'returned' ? (
-                                                    <HoverCard>
-                                                        <HoverCardTrigger>
-                                                            <Badge
-                                                                variant={'text_status'}
-                                                                className={clsx(
-                                                                    // "flex content-center h-6 font-bold",
-                                                                    getStatusColor(detail.status),
-                                                                    getTextStatusColor(detail.status),
-                                                                    "cursor-pointer"
-                                                                )}
-                                                            >
-                                                                เสร็จสิ้น
-                                                                {
-                                                                    detail?.returnTerm?.returnType === 'normalReturn' ?
-                                                                        (<div className="flex gap-1">
-                                                                            {(() => {
-                                                                                const offeredAmount = Number(detail?.acceptedOffer?.responseAmount ?? 0);
-                                                                                const offeredUnitPrice = Number(detail?.acceptedOffer?.pricePerUnit ?? 0);
-                                                                                const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
-                                                                                const rm: any = (detail as any).returnMedicine;
-                                                                                const returnedPriceTotal = Array.isArray(rm)
-                                                                                    ? rm.reduce((sum: number, item: any) => {
-                                                                                        const nested = item && item.returnMedicine ? item.returnMedicine : item;
-                                                                                        const amt = Number(nested?.returnAmount ?? 0);
-                                                                                        const unitPrice = Number(nested?.pricePerUnit ?? 0);
-                                                                                        const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
-                                                                                        return sum + lineTotal;
-                                                                                    }, 0)
-                                                                                    : (() => {
-                                                                                        const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
-                                                                                        const amt = Number(nested?.returnAmount ?? 0);
-                                                                                        const unitPrice = Number(nested?.pricePerUnit ?? 0);
-                                                                                        return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
-                                                                                    })();
-                                                                                const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
-                                                                                return (
-                                                                                    <div className="flex  items-center">
-                                                                                        <div className=" text-xs">({percent.toFixed(0)}%)</div>
-                                                                                        <div className="flex items-center ">
-                                                                                            <ReturnSummaryHover
-                                                                                                requestMedicine={row.original?.sharingMedicine}
-                                                                                                // offeredMedicine={row.original?.offeredMedicine}
-                                                                                                acceptedOffer={detail?.acceptedOffer}
-                                                                                                returnMedicine={detail?.returnMedicine}
-                                                                                            />
-                                                                                            <ReturnPdfMultiButton
-                                                                                                data={row.original}
-                                                                                                returnList={detail?.returnMedicine}
-                                                                                                
-                                                                                                buttonText="ออกเอกสาร PDF การคืนยา"
-                                                                                            />
+                                                ) : detail.status === 'to-transfer'
+                                                    ? (
+                                                        <HoverCard>
+                                                            <HoverCardTrigger >
+                                                                <Button
+                                                                    variant={"text_status"}
+                                                                    size={"text_status"}
+                                                                    className={clsx(
+                                                                        getStatusColor(detail.status),
+                                                                        getTextStatusColor(detail.status)
+                                                                    )}
+                                                                    onClick={() => handleDeliveryConfirm({
+                                                                        ...med,
+                                                                        responseId: detail.id,
+                                                                        responseDetail: detail,
+                                                                        acceptedOffer: detail.acceptedOffer,
+                                                                    })}
+                                                                >
+                                                                    ส่งมอบ
+                                                                    ({detail.acceptedOffer.responseAmount})
+                                                                </Button>
+                                                            </HoverCardTrigger>
+                                                        </HoverCard>
+                                                    ) : detail.status === 'in-return' ? (
+                                                        <Badge
+                                                            variant={'text_status'}
+                                                            className={clsx(
+                                                                getStatusColor(detail.status),
+                                                                getTextStatusColor(detail.status)
+                                                            )}
+                                                        >รอรับคืน
+                                                            {(() => {
+                                                                const offeredAmount = Number(detail?.acceptedOffer?.responseAmount ?? 0);
+                                                                const offeredUnitPrice = Number(detail?.acceptedOffer?.pricePerUnit ?? 0);
+                                                                const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
+                                                                const rm: any = (detail as any).returnMedicine;
+                                                                const returnedPriceTotal = Array.isArray(rm)
+                                                                    ? rm.reduce((sum: number, item: any) => {
+                                                                        const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                        const amt = Number(nested?.returnAmount ?? 0);
+                                                                        const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                        const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                        return sum + lineTotal;
+                                                                    }, 0)
+                                                                    : (() => {
+                                                                        const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
+                                                                        const amt = Number(nested?.returnAmount ?? 0);
+                                                                        const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                        return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                    })();
+                                                                const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
+                                                                return (
+                                                                    <div className=" text-xs">({percent.toFixed(0)}%)</div>
+                                                                );
+                                                            })()}
+                                                        </Badge>
+                                                    ) : detail.status === 'to-confirm' ? (
+                                                        <Badge
+                                                            variant={'text_status'}
+                                                            className={clsx(
+                                                                getStatusColor(detail.status),
+                                                                getTextStatusColor(detail.status)
+                                                            )}
+                                                        >
+                                                            รอยืนยันการรับยา ({detail.acceptedOffer.responseAmount})
+                                                        </Badge>
+                                                    ) : detail.status === 'to-return' ? (
+                                                        <div className="flex gap-x-2">รอรับคืน ({detail.acceptedOffer.responseAmount})<StatusIndicator status={detail.status} /></div>
+                                                    ) : detail.status === 'confirm-return' ? (
+                                                        <HoverCard>
+                                                            <HoverCardTrigger >
+                                                                <Button
+                                                                    variant={"text_status"}
+                                                                    size={"text_status"}
+                                                                    className={clsx(
+                                                                        getStatusColor(detail.status),
+                                                                        getTextStatusColor(detail.status)
+                                                                    )}
+                                                                    onClick={() => handleReturnConfirm({
+                                                                        ...med,
+                                                                        responseId: detail.id,
+                                                                        offeredMedicine: detail.acceptedOffer,
+                                                                        sharingDetails: med.sharingMedicine,
+                                                                        responseStatus: detail.status,
+                                                                        displayMedicineName: (() => {
+                                                                            const r: any = detail.returnMedicine as any;
+                                                                            const last = Array.isArray(r) ? r[r.length - 1] : r;
+                                                                            const nested = last && last.returnMedicine ? last.returnMedicine : last;
+                                                                            return nested?.name;
+                                                                        })(),
+                                                                        displayMedicineAmount: (() => {
+                                                                            const r: any = detail.returnMedicine as any;
+                                                                            const last = Array.isArray(r) ? r[r.length - 1] : r;
+                                                                            const nested = last && last.returnMedicine ? last.returnMedicine : last;
+                                                                            return r?.returnType === 'supportType' ? "ขอสนับสนุน" : nested?.returnAmount;
+                                                                        })(),
+                                                                        displayHospitalName: detail.respondingHospitalNameTH,
+                                                                    })}
+                                                                >โปรดยืนยันการคืนยา
+                                                                    {(() => {
+                                                                        const offeredAmount = Number(detail?.acceptedOffer?.responseAmount ?? 0);
+                                                                        const offeredUnitPrice = Number(detail?.acceptedOffer?.pricePerUnit ?? 0);
+                                                                        const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
+                                                                        const rm: any = (detail as any).returnMedicine;
+                                                                        const returnedPriceTotal = Array.isArray(rm)
+                                                                            ? rm.reduce((sum: number, item: any) => {
+                                                                                const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                                const amt = Number(nested?.returnAmount ?? 0);
+                                                                                const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                                const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                                return sum + lineTotal;
+                                                                            }, 0)
+                                                                            : (() => {
+                                                                                const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
+                                                                                const amt = Number(nested?.returnAmount ?? 0);
+                                                                                const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                                return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                            })();
+                                                                        const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
+                                                                        return (
+                                                                            <div className=" text-xs">({percent.toFixed(0)}%)</div>
+                                                                        );
+                                                                    })()}
+                                                                    <SquareCheck className="h-4 w-4" />
+                                                                </Button>
+                                                            </HoverCardTrigger>
+                                                        </HoverCard>
+                                                    ) : detail.status === 'returned' ? (
+                                                        <HoverCard>
+                                                            <HoverCardTrigger>
+                                                                <Badge
+                                                                    variant={'text_status'}
+                                                                    className={clsx(
+                                                                        getStatusColor(detail.status),
+                                                                        getTextStatusColor(detail.status),
+                                                                        "cursor-pointer"
+                                                                    )}
+                                                                >
+                                                                    เสร็จสิ้น
+                                                                    {
+                                                                        detail?.returnTerm?.returnType === 'normalReturn' ?
+                                                                            (<div className="flex gap-1">
+                                                                                {(() => {
+                                                                                    const offeredAmount = Number(detail?.acceptedOffer?.responseAmount ?? 0);
+                                                                                    const offeredUnitPrice = Number(detail?.acceptedOffer?.pricePerUnit ?? 0);
+                                                                                    const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
+                                                                                    const rm: any = (detail as any).returnMedicine;
+                                                                                    const returnedPriceTotal = Array.isArray(rm)
+                                                                                        ? rm.reduce((sum: number, item: any) => {
+                                                                                            const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                                            const amt = Number(nested?.returnAmount ?? 0);
+                                                                                            const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                                            const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                                            return sum + lineTotal;
+                                                                                        }, 0)
+                                                                                        : (() => {
+                                                                                            const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
+                                                                                            const amt = Number(nested?.returnAmount ?? 0);
+                                                                                            const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                                            return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                                        })();
+                                                                                    const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
+                                                                                    return (
+                                                                                        <div className="flex  items-center">
+                                                                                            <div className=" text-xs">({percent.toFixed(0)}%)</div>
+                                                                                            <div className="flex items-center ">
+                                                                                                <ReturnSummaryHover
+                                                                                                    requestMedicine={row.original?.sharingMedicine}
+                                                                                                    acceptedOffer={detail?.acceptedOffer}
+                                                                                                    returnMedicine={detail?.returnMedicine}
+                                                                                                />
+                                                                                                <ReturnPdfMultiButton
+                                                                                                    data={row.original}
+                                                                                                    returnList={detail?.returnMedicine}
+                                                                                                    buttonText="ออกเอกสาร PDF การคืนยา"
+                                                                                                />
+                                                                                            </div>
                                                                                         </div>
-                                                                                    </div>
-                                                                                );
+                                                                                    );
 
-                                                                            })()}
-                                                                        </div>
-                                                                        ) : " (ขอสนับสนุน)"
-                                                                }
-                                                       
-                                                            </Badge>
-                                                        </HoverCardTrigger>
-                                                    </HoverCard>
+                                                                                })()}
+                                                                            </div>
+                                                                            ) : "(ขอสนับสนุน)"
+                                                                    }
+                                                                </Badge>
+                                                            </HoverCardTrigger>
+                                                        </HoverCard>
+                                                    ) : detail.status === 'cancelled' ? (
+                                                        <Badge
+                                                            variant={'text_status'}
+                                                            className={clsx(
+                                                                getStatusColor(detail.status),
+                                                                getTextStatusColor(detail.status)
+                                                            )}
+                                                        >
+                                                            ยกเลิก
+                                                        </Badge>
+                                                    ) : null}
+                                    </div>
 
-                                                ) : detail.status === 'cancelled' ? (
-                                                    <Badge
-                                                        variant={'text_status'}
-                                                        className={clsx(
-                                                            // "flex content-center h-6 font-bold",
-                                                            getStatusColor(detail.status),
-                                                            getTextStatusColor(detail.status)
-                                                        )}
-                                                    >
-                                                        ยกเลิก
-                                                        {/* <StatusIndicator status={detail.status} /> */}
-                                                    </Badge>
-                                                ) : null}
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
-                )
-            }
+                );
+            },
+
+            // 4. เพิ่ม enableSorting: false
+            enableSorting: false,
         },
-        // {
         //     id: "history",
         //     size: 150,
         //     header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ประวัติ</div>,

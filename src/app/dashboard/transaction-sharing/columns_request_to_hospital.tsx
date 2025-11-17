@@ -61,7 +61,7 @@ export const columns = (
                         <Badge variant="outline" className="text-xs text-gray-600">{returnType === "supportReturn" ? "ขอสนับสนุน" : "ขอยืม"}
                             {returnType === "supportReturn" && supportCondition && (
                                 <Badge variant="secondary" className="text-[10px] text-gray-600">
-                                    {supportCondition === "servicePlan" ? "ตามแผนบริการ" : supportCondition === "budgetPlan" ? "ตามงบประมาณ" : "ให้ฟรี"}
+                                    {supportCondition === "servicePlan" ? "หักงบประมาณ Service plan" : supportCondition === "budgetPlan" ? "ตามงบประมาณ" : "ให้ฟรี"}
                                 </Badge>
                             )}
                             {returnType === "normalReturn" && conditionLabel && (
@@ -464,7 +464,7 @@ export const columns = (
 
                                                                         </div>
                                                                         <div>
-                                                                            <ReturnPdfMultiButton
+                                                                            <ReturnPdfMultiButton className=""
                                                                                 data={{
                                                                                     ...med,
                                                                                     respondingHospitalNameTH: row.original?.respondingHospitalNameTH,

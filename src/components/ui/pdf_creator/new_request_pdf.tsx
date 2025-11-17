@@ -60,6 +60,7 @@ const styles = StyleSheet.create({
     },
     tableRow: {
         flexDirection: 'row',
+       
         // fontSize: 14,
     },
     tableHeader: {
@@ -200,8 +201,9 @@ export function Pdfcontent({ documentData, userdata, docType, variant = 'origina
 
                     <Text style={{ marginTop: 5, textIndent: 80 }}>
 
-                        เนื่องด้วย โรงพยาบาล{lendingHospitalNameTH} มีความประสงค์จะขอยืมเวชภัณฑ์ยา จำนวน {formatThaiNumber(Number(datacount))} รายการ เนื่องจาก {description} ดังรายละเอียดต่อไปนี้
+                        เนื่องด้วย โรงพยาบาล{lendingHospitalNameTH} มีความประสงค์จะขอยืมเวชภัณฑ์ยา จำนวน {formatThaiNumber(Number(datacount))} รายการ {description ? `เนื่องจาก${description}` : ''} ดังรายละเอียดต่อไปนี้
                     </Text>
+                    {/* description ไม่ได้บังคับให้กรอกใช่เช็คไว้นะว่าไม่กรอกให้ซ่อน */}
                     <View style={[styles.table, { marginTop: 14 }]} >
                         <View style={[styles.tableRow, { justifyContent: 'space-between' }]}>
                             <Text style={[styles.tableHeader, { width: 20 }]}>ลำดับ</Text>
@@ -221,10 +223,10 @@ export function Pdfcontent({ documentData, userdata, docType, variant = 'origina
                         ))}
                     </View>
                     <Text style={{ marginTop: 20, textIndent: 80 }}>
-                        ทั้งนี้ โรงพยาบาล{lendingHospitalNameTH} จะส่งคืนเวชภัณฑ์ยาตามรายการข้างต้น ภายในเวลาที่ {toThaiDigits(expectedReturnDate)}
+                        ทั้งนี้ โรงพยาบาล{lendingHospitalNameTH} จะส่งคืนเวชภัณฑ์ยาตามรายการข้างต้น ภายในวันที่ {toThaiDigits(expectedReturnDate)}
                     </Text>
                     <Text style={{ marginTop: 5, textIndent: 80 }}>
-                        จึงเรียนมาเพื่อโปรดพิจารณา และ{borrowingHospitalNameTH}ขอขอบคุณมา ณ โอกาสนี้
+                        จึงเรียนมาเพื่อโปรดพิจารณา และ{lendingHospitalNameTH}ขอขอบคุณมา ณ โอกาสนี้
                     </Text>
                 </div>
             )}
@@ -232,8 +234,9 @@ export function Pdfcontent({ documentData, userdata, docType, variant = 'origina
                 <div>
                     <Text style={{ marginTop: 5, textIndent: 80 }}>
 
-                        เนื่องด้วย โรงพยาบาล{lendingHospitalNameTH} มีความประสงค์จะขอสนับสนุนเวชภัณฑ์ยา จำนวน {formatThaiNumber(Number(datacount))}รายการ โดยการ {description} โดยมีรายละเอียดดังต่อไปนี้
-                    </Text>
+                        เนื่องด้วย โรงพยาบาล{lendingHospitalNameTH} มีความประสงค์จะขอสนับสนุนเวชภัณฑ์ยา จำนวน {formatThaiNumber(Number(datacount))}รายการ  {description ? `โดยการ${description}` : ''} โดยมีรายละเอียดดังต่อไปนี้
+                    </Text> 
+                    {/* description ไม่ได้บังคับให้กรอกใช่เช็คไว้นะว่าไม่กรอกให้ซ่อน */}
                     <View style={[styles.table, { marginTop: 14 }]} >
                         <View style={[styles.tableRow, { justifyContent: 'space-between' }]}>
                             <Text style={[styles.tableHeader, { width: 20 }]}>ลำดับ</Text>
@@ -252,11 +255,11 @@ export function Pdfcontent({ documentData, userdata, docType, variant = 'origina
                             </View>
                         ))}
                     </View>
-                         <Text style={{ marginTop: 20, textIndent: 80 }}>
+                    <Text style={{ marginTop: 20, textIndent: 80 }}>
                         จึงเรียนมาเพื่อโปรดพิจารณา และโรงพยาบาล{lendingHospitalNameTH} ขอขอบคุณมา ณ โอกาสนี้
                     </Text>
-                   
-                    
+
+
                 </div>
             )}
             <View style={{
@@ -273,11 +276,17 @@ export function Pdfcontent({ documentData, userdata, docType, variant = 'origina
                 <Text>ตำแหน่งผู้มีอำนาจลงนาม โรงพยาบาล{lendingHospitalNameTH}</Text>
             </View>
 
-            <div>
-            <Text >กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
-            <Text>ติดต่อ {contact}</Text>
-            </div>
-           
+            <View style={{
+                position: 'absolute',
+                bottom: cm(2),
+                left: cm(3),
+                width: '100%',
+                textAlign: 'left',
+            }}>
+                <Text >กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
+                <Text>ติดต่อ {contact}</Text>
+            </View>
+
         </>
     );
 };

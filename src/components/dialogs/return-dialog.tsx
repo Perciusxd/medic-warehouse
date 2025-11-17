@@ -166,7 +166,9 @@ const ReturnFormSchema = z.discriminatedUnion('supportRequest', [
             quantity: z.string().optional(),
             unit: z.string().min(1, "กรุณาระบุรูปแบบ/หน่วยของยา"),
             manufacturer: z.string().min(1, "กรุณาระบุผู้ผลิตของยา"),
-            pricePerUnit: z.number().min(1, "ราคาต่อหน่วยควรมากกว่า 0").max(100000, "ราคาต่อหน่วยควรน้อยกว่า 100000"),
+            pricePerUnit: z.coerce.number({ required_error: "กรุณากรอกราคาต่อหน่วย" })
+                .min(0.01, "ราคาต่อหน่วยต้องมีค่าอย่างน้อย 0.01")
+                .max(100000, "ราคาต่อหน่วยควรน้อยกว่า 100000"),
             batchNumber: z.string().min(1, "กรุณาระบุหมายเลขล็อตของยา"),
             expiryDate: z.coerce.string({ invalid_type_error: "กรุณาระบุวันหมดอายุ" }),
             returnDate: z.coerce.string().optional(),
@@ -253,7 +255,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
             }
         }
     })
-
+    
     const returnDate = watch("returnMedicine.returnDate");
     const expiryDate = watch("returnMedicine.expiryDate");
     const watchReturnType = watch("returnType");
@@ -348,7 +350,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
             const missingFields: string[] = [];
             const formValues = getValues();
             const isSupport = supportSelection === 'support';
-            
+
             if (isSupport) {
                 if (!formValues?.returnMedicine?.reason?.trim()) {
                     missingFields.push("เหตุผล");
@@ -364,7 +366,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                 if (errors.returnMedicine?.returnAmount) missingFields.push("จำนวนที่ให้คืน");
                 if (errors.returnMedicine?.pricePerUnit) missingFields.push("ราคาต่อหน่วย");
             }
-            
+
             if (missingFields.length > 0) {
                 const fieldList = missingFields.join(", ");
                 toast.error(
@@ -551,7 +553,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
 
                 </div>
 
-                <div className="grid grid-cols-3 gap-2">    
+                <div className="grid grid-cols-3 gap-2">
                     <div className="flex flex-col gap-1">
                         <Label>จำนวนที่ให้คืน <RequiredMark /></Label>
                         <Input placeholder="500" type="number" {...register("returnMedicine.returnAmount", { valueAsNumber: true })} disabled={isSupportSelected} />
@@ -559,7 +561,7 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                     </div>
                     <div className="flex flex-col gap-1">
                         <Label>ราคาต่อหน่วย <RequiredMark /></Label>
-                        <Input placeholder="20" type="number" {...register("returnMedicine.pricePerUnit", { valueAsNumber: true })} disabled={isSupportSelected} />
+                        <Input placeholder="20"  type="text" {...register("returnMedicine.pricePerUnit", { valueAsNumber: true })} disabled={isSupportSelected} />
                         {errors.returnMedicine?.pricePerUnit?.message && <span className="text-red-500 text-xs">{String(errors.returnMedicine.pricePerUnit.message)}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
@@ -583,11 +585,11 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                 </div> */}
 
                 <div style={{ display: 'none' }}>
-                    <ReturnPdfMultiPreview 
-                        data={selectedMed} 
-                        returnList={watchAllFields.returnMedicine ? [watchAllFields.returnMedicine] : []} 
-                        userData={user} 
-                        ref={pdfRef} 
+                    <ReturnPdfMultiPreview
+                        data={selectedMed}
+                        returnList={watchAllFields.returnMedicine ? [watchAllFields.returnMedicine] : []}
+                        userData={user}
+                        ref={pdfRef}
                     />
                 </div>
 

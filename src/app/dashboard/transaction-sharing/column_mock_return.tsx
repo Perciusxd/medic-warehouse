@@ -32,7 +32,7 @@ export const columns = (
                                     displayMedicineName: med.sharingDetails.sharingMedicine.name,
                                     displayMedicineAmount: med.acceptedOffer.responseAmount,
                                     // displayHospi
-                                })}>ยืนยันการรับของ<StatusIndicator status={status} /></Button>
+                                })}>ยืนยันการรับยา<StatusIndicator status={status} /></Button>
                         </div>
                     ) : status === 'in-return' ? (
                         <div>

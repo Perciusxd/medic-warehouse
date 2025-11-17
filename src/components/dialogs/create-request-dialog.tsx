@@ -131,26 +131,25 @@ const RequestSchema = z.object({
         requestAmount: z.coerce.number({ required_error: "กรุณากรอกจำนวนที่ต้องการยืม" })
             .min(1, "จำนวนที่ต้องการยืมต้องมากกว่า 0")
             .max(10000, "จำนวนที่ต้องการยืมต้องไม่เกิน 10000"),
-        quantity: z.string().min(1,"กรุณาระบุขนาด"),
-        packingSize : z.string().optional(),
+        quantity: z.string().min(1, "กรุณาระบุขนาด"),
+        packingSize: z.string().optional(),
         pricePerUnit: z.coerce.number({ required_error: "กรุณากรอกราคาต่อหน่วย" })
             .min(0.01, "ราคาต่อหน่วยต้องมากกว่าหรือเท่ากับ 0.01")
             .max(100000, "ราคาต่อหน่วยต้องไม่เกิน 100,000"),
         unit: z.string().min(1, "กรุณากรอกรูปแบบ/หน่วย"),
         manufacturer: z.string().min(1, "กรุณากรอกผู้ผลิต"),
-        // เก็บไฟล์ภาพที่อัปโหลดไว้ในฟอร์ม (ไม่บังคับ)
         image: z.custom<File | undefined>((value) => value === undefined || value instanceof File, {
             message: "กรุณาอัปโหลดไฟล์ภาพที่ถูกต้อง",
         }).optional(),
     }),
     requestTerm: z.object({
-        // ทำให้เลือกได้ตามเงื่อนไข (ต้องกรอกเมื่อเป็น normalReturn เท่านั้น)
-        expectedReturnDate: z.string().min(1,"กรุณาระบุวันที่คิดว่าจะคืน"),
+        // 1. (แก้ไข) ทำให้เป็น optional เพื่อให้ .superRefine จัดการ
+        expectedReturnDate: z.string().optional(), 
+        
         returnType: z.enum(["normalReturn", "supportReturn"]),
         receiveConditions: z.object({
             condition: z.enum(["exactType", "subType"]).optional(),
         }).optional(),
-        // อนุญาตให้เป็น null ได้เมื่อเป็น supportReturn
         returnConditions: z.object({
             condition: z.enum(["exactType", "otherType"]).optional(),
             otherTypeSpecification: z.string().optional(),
@@ -158,9 +157,13 @@ const RequestSchema = z.object({
         supportCondition: z.enum(["servicePlan", "budgetPlan", "freePlan"]).optional(),
     }),
     selectedHospitals: z.array(z.number()).min(1, "กรุณาเลือกโรงพยาบาลอย่างน้อย 1 แห่ง"),
+
+// 2. (เหมือนเดิม) .superRefine ของคุณจัดการ Logic นี้อยู่แล้ว
 }).superRefine((data, ctx) => {
     const term = data.requestTerm;
+    
     if (term.returnType === "supportReturn") {
+        // (ส่วนนี้สำหรับ supportReturn)
         if (!term.supportCondition) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
@@ -168,24 +171,37 @@ const RequestSchema = z.object({
                 message: "กรุณาเลือกเงื่อนไขการสนับสนุน",
             });
         }
-        // if (term.returnConditions && term.returnConditions.condition) {
-        //     ctx.addIssue({
-        //         code: z.ZodIssueCode.custom,
-        //         path: ["requestTerm", "returnConditions"],
-        //         message: "เมื่อเลือกขอสนับสนุน ไม่ต้องระบุข้อเสนอการคืน",
-        //     });
-        // }
+        // ไม่ต้องเช็ค expectedReturnDate ที่นี่
+        
     } else {
-        // normalReturn
+        // (ส่วนนี้สำหรับ normalReturn)
+        // 3. (เหมือนเดิม) Logic นี้ถูกต้องแล้วสำหรับการบังคับกรอก
         if (!term.expectedReturnDate || String(term.expectedReturnDate).trim() === "") {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ["requestTerm", "expectedReturnDate"],
                 message: "กรุณาเลือกวันที่คาดว่าจะคืน",
             });
+        } else {
+            // (แนะนำ) เพิ่มการตรวจสอบว่าเป็นวันที่ในอนาคตที่นี่
+            try {
+                const returnDate = new Date(term.expectedReturnDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); 
+                
+                if (returnDate < today) {
+                     ctx.addIssue({
+                        code: z.ZodIssueCode.custom,
+                        path: ["requestTerm", "expectedReturnDate"],
+                        message: "วันที่คาดว่าจะคืนต้องไม่ใช่วันที่ในอดีต",
+                    });
+                }
+            } catch(e) {
+                // (จัดการกรณี format วันที่ผิด)
+            }
         }
     }
-})
+});
 
 // removed unused defaultHospital
 
@@ -398,7 +414,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[1200px]">
-                <DialogTitle>แจ้งขอยืม</DialogTitle>
+                <DialogTitle>แจ้งยาขาดแคลน</DialogTitle>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid grid-cols-2 gap-4">
@@ -760,15 +776,15 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                                             <Label className="font-medium">เงื่อนไขการสนับสนุน <RequiredMark /></Label>
                                             <Label className="font-normal">
                                                 <input type="radio" value="servicePlan" {...register("requestTerm.supportCondition")} />
-                                                ตามสิทธิ์แผนบริการ
+                                                หักงบประมาณ Service plan
                                             </Label>
                                             <Label className="font-normal">
                                                 <input type="radio" value="budgetPlan" {...register("requestTerm.supportCondition")} />
-                                                ตามงบประมาณสนับสนุน
+                                                หักงบประมาณบำรุงโรงพยาบาล
                                             </Label>
                                             <Label className="font-normal">
                                                 <input type="radio" value="freePlan" {...register("requestTerm.supportCondition")} />
-                                                สนับสนุนโดยไม่คิดค่าใช้จ่าย
+                                                ให้เปล่า
                                             </Label>
                                             {errors.requestTerm?.supportCondition && (
                                                 <span className="text-red-500 text-xs">{String(errors.requestTerm.supportCondition.message)}</span>
@@ -784,7 +800,7 @@ export default function CreateRequestDialog({ requestData, loggedInHospital, ope
                         <Button type="submit" className="" disabled={loading}>
                             {loading
                                 ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500">สร้าง</span></div>
-                                : "ส่งคำขอ"}
+                                : "ยืนยันการแจ้ง"}
                         </Button>
                     </DialogFooter>
                 </form>

@@ -154,18 +154,18 @@ export default function TransferDashboard() {
             })
             setLoading(false)
         }
-    }
-
+    }   
+   
     // Helper function to configure dialog for different actions
     const openConfirmationDialog = (med: any, actionType: 'receive-delivery' | 'delivery' | 'confirm-return' | 'to-transfer') => {
         setSelectedMed(med);
 
         const configs = {
             'receive-delivery': {
-                title: "ยืนยันการรับของ",
-                description: "คุณต้องการยืนยันการรับของจาก {hospitalName} หรือไม่?",
-                confirmButtonText: "ยืนยันการรับของ",
-                successMessage: "ยืนยันการรับของเรียบร้อยแล้ว",
+                title: "ยืนยันการรับยา",
+                description: "คุณต้องการยืนยันการรับยาจาก {hospitalName} หรือไม่?",
+                confirmButtonText: "ยืนยันการรับยา",
+                successMessage: "ยืนยันการรับยาเรียบร้อยแล้ว",
                 errorMessage: "เกิดข้อผิดพลาดในการยืนยัน",
                 onConfirm: confirmReceiveDelivery,
                 refetchFunction: fetchMedicineSharingInReturn,
@@ -209,7 +209,7 @@ export default function TransferDashboard() {
     }
 
     const handleDeliveryConfirm = async (med: any) => {
-        //console.log('handleDeliveryConfirm', med);
+        console.log('handleDeliveryConfirm', med);
         openConfirmationDialog(med, 'delivery');
     }
 
@@ -484,7 +484,7 @@ export default function TransferDashboard() {
 
             <div>
                 <div className="flex items-center justify-between mb-4">
-                    <h1>ให้ยืมยา (ขาดแคลน)</h1>
+                    <h1>ให้ยืม (ขาดแคลน)</h1>
                     <div className="w-auto">
                         <MultiSelect
                             options={requestStatusFilterOptions}
@@ -522,7 +522,7 @@ export default function TransferDashboard() {
                     </div>
                 </div>
                 <div className="bg-white shadow rounded">
-                    <DataTable columns={columnSharing(handleApproveClick, handleReConfirmClick, handleDeliveryClick, handleReturnClick, handleReturnConfirm, handleEditClick)} data={medicineSharing} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} loading={loadingShare} />
+                    <DataTable columns={columnSharing(handleApproveClick, handleReConfirmClick, handleDeliveryClick, handleReturnClick, handleReturnConfirm, handleEditClick,handleDeliveryConfirm)} data={medicineSharing} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} loading={loadingShare} />
                 </div>
             </div>
 
@@ -615,8 +615,9 @@ export default function TransferDashboard() {
                         }
                     }}
                     selectedMed={selectedMed}
-                    title="ยืนยันการจัดส่ง"
-                    description="คุณต้องการยืนยันการจัดส่งของไปยัง {hospitalName} หรือไม่?"
+                    title="ยืนยันการจัดส่ง ปปปป"
+                    // description="คุณต้องการยืนยันการจัดส่งของไปยัง {hospitalName} หรือไม่?"
+                    description={`คุณต้องการยืนยันการจัดส่งของไปยัง ${selectedMed?.respondingHospitalNameTH || 'หห'} หรือไม่?`}
                     confirmButtonText="ยืนยันการจัดส่ง"
                     successMessage="ยืนยันการจัดส่งเรียบร้อยแล้ว"
                     errorMessage="เกิดข้อผิดพลาดในการยืนยัน"

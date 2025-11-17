@@ -45,7 +45,7 @@ export default function ConfirmationDialog({
     errorMessage,
     loading,
     onConfirm,
-    getHospitalName = (med) => med?.displayHospitalName || med?.responseDetails?.respondingHospitalNameTH || med?.respondingHospitalNameTH || '',
+    getHospitalName = (med) => med?.displayHospitalName || med?.responseDetails?.respondingHospitalNameTH || med?.respondingHospitalNameTH ||med?.responseDetail?.respondingHospitalNameTH ||'',
     getMedicineName = (med) => med?.displayMedicineName || med?.sharingMedicine?.name || '',
     getMedicineAmount = (med) => med?.displayMedicineAmount || med?.offeredMedicine?.responseAmount || med?.acceptedOffer?.responseAmount || '',
 }: ConfirmationDialogProps) {

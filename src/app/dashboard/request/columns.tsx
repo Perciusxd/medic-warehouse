@@ -19,7 +19,7 @@ import { ArrowUpDown, MoreHorizontal, Check, Trash2, Copy ,SquareX, SquareCheck,
 export const columns = (handleApproveClick: (med: ResponseAsset) => void, handleCancelClick: (med: ResponseAsset) => void): ColumnDef<ResponseAsset>[] => [
     {
         accessorKey: "requestDetails.name",
-        size: 200,
+        size: 250,
         header: ({ column }) => {
             return (
                 <div className="font-medium text-muted-foreground text-left cursor-default">
@@ -45,7 +45,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
                         <Badge variant="outline" className="text-xs text-gray-600">{returnType === "supportReturn" ? "ขอสนับสนุน" : "ขอยืม"}
                             {returnType === "supportReturn" && supportCondition && (
                                 <Badge variant="secondary" className="text-[10px] text-gray-600">
-                                    {supportCondition === "servicePlan" ? "ตามแผนบริการ" : supportCondition === "budgetPlan" ? "ตามงบประมาณ" : "ให้ฟรี"}
+                                    {supportCondition === "servicePlan" ? "หักงบประมาณ Service plan" : supportCondition === "budgetPlan" ? "ตามงบประมาณ" : "ให้ฟรี"}
                                 </Badge>
                             )}
                             {returnType === "normalReturn" && conditionLabel && (
@@ -159,7 +159,7 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
     },
     {
         accessorKey: "requestDetails.requestMedicine.quantity",
-        size: 100,
+        size: 120,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวน</div>,
         cell: ({ row }) => {
             const med = row.original
@@ -184,15 +184,17 @@ export const columns = (handleApproveClick: (med: ResponseAsset) => void, handle
     },
     {
         accessorKey: "manufacturer",
-        size: 100,
+        size: 200,
         header: () => <div className="font-medium text-muted-foreground text-left cursor-default">ผู้ผลิต</div>,
         cell: ({ row }) => {
             const manufacturer: string = row.original.requestDetails.requestMedicine.manufacturer
             ////console.log("Posting Hospital Name:", postingHospitalNameTH)
             return (
                 <div className="flex flex-row">
-                    <div className="flex flex-col justify-start">
-                        <div className="text-md  ">{manufacturer}</div>
+                    <div className="flex flex-col justify-start white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;">
+                        <div className="text-md overflow-hidden">{manufacturer}</div>
                         {/* <div className="text-xs text-gray-600">คุณ xxx xxx</div>
                         <div className="text-xs text-gray-600">ติดต่อ 080xxxxx</div> */}
                     </div>

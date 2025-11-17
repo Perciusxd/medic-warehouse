@@ -77,10 +77,10 @@ export default function StatusDashboard() {
 
         const configs = {
             'receive-delivery': {
-                title: "ยืนยันการรับของ",
-                description: "คุณต้องการยืนยันการรับของจาก {hospitalName} หรือไม่?",
-                confirmButtonText: "ยืนยันการรับของ",
-                successMessage: "ยืนยันการรับของเรียบร้อยแล้ว",
+                title: "ยืนยันการรับยา",
+                description: "คุณต้องการยืนยันการรับยาจาก {hospitalName} หรือไม่?",
+                confirmButtonText: "ยืนยันการรับยา",
+                successMessage: "ยืนยันการรับยาเรียบร้อยแล้ว",
                 errorMessage: "เกิดข้อผิดพลาดในการยืนยัน",
                 onConfirm: confirmReceiveDelivery,
                 refetchFunction: fetchMedicineSharingInReturn,
@@ -291,7 +291,7 @@ export default function StatusDashboard() {
     const combinedDataList = [
         ...(medicineRequests as any[])
             .filter((item) =>
-                item.responseDetails?.some((res: any) => res.status !== "pending" && res.status !== "cancelled")
+                item.responseDetails?.some((res: any) => res.status !== "cancelled")
             )
             .map((item) => ({
                 medicineRequests: item,
@@ -471,7 +471,7 @@ export default function StatusDashboard() {
             <AlertDialog open={deliveryDialogOpen} onOpenChange={setDeliveryDialogOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>ยืนยันการรับของ</AlertDialogTitle>
+                        <AlertDialogTitle>ยืนยันการรับยา</AlertDialogTitle>
                         <AlertDialogDescription>
                             คุณต้องการยืนยันการจัดส่งของจาก {selectedMed?.responseDetails?.respondingHospitalNameTH} หรือไม่?
 

@@ -31,7 +31,7 @@ function EditSharingFormSchema({selectedMed}: any) {
             trademark: z.string().min(1, "กรุณาระบุยี่ห้อยา"),
             quantity: z.string().optional(),
             sharingAmount: z.number().min(1, "กรุณาระบุจำนวนยา"),
-            pricePerUnit: z.number().min(1, "กรุณาระบุราคาต่อหน่วย"),
+            pricePerUnit: z.number().min(0.01, "กรุณาระบุราคาต่อหน่วย"),
             unit: z.string().min(1, "กรุณาระบุหน่วยยา"),
             batchNumber: z.string().min(1, "กรุณาระบุหมายเลขกลุ่มยา"),
             manufacturer: z.string().min(1, "กรุณาระบุผู้ผลิต"),
@@ -294,7 +294,7 @@ export default function EditSharingDialog({ selectedMed, openDialog, onOpenChang
                                     inputMode="numeric"
                                     placeholder="10"
                                     onKeyDown={(e) => {
-                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
+                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight" , "."];
                                         if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
                                             e.preventDefault();
                                         }
@@ -429,19 +429,19 @@ export default function EditSharingDialog({ selectedMed, openDialog, onOpenChang
                                                                                     <input type="checkbox"
                                                                                         // value="servicePlan"  
                                                                                         {...register("sharingReturnTerm.supportCondition.servicePlan")} />
-                                                                                    ตามสิทธิ์แผนบริการ
+                                                                                    หักงบประมาณ Service plan
                                                                                 </Label>
                                                                                 <Label className="font-normal">
                                                                                     <input type="checkbox"
                                                                                         // value="budgetPlan" 
                                                                                         {...register("sharingReturnTerm.supportCondition.budgetPlan")} />
-                                                                                    ตามงบประมาณสนับสนุน
+                                                                                    หักงบประมาณบำรุงโรงพยาบาล
                                                                                 </Label>
                                                                                 <Label className="font-normal">
                                                                                     <input type="checkbox"
                                                                                         // value="freePlan"  
                                                                                         {...register("sharingReturnTerm.supportCondition.freePlan")} />
-                                                                                    สนับสนุนโดยไม่คิดค่าใช้จ่าย
+                                                                                    ให้เปล่า
                                                                                 </Label>
                                                                                 {errors.sharingReturnTerm?.supportCondition && (
                                                                                     <span className="text-red-500 text-xs">{String(errors.sharingReturnTerm.supportCondition.message)}</span>
@@ -485,15 +485,15 @@ export default function EditSharingDialog({ selectedMed, openDialog, onOpenChang
                                                                                 <Label className="font-medium items-center">เงื่อนไขการสนับสนุน <RequiredMark /></Label>
                                                                                 <Label className="font-normal">
                                                                                     <input type="checkbox" disabled {...register("sharingReturnTerm.supportCondition.servicePlan")} />
-                                                                                    ตามสิทธิ์แผนบริการ
+                                                                                    หักงบประมาณ Service plan
                                                                                 </Label>
                                                                                 <Label className="font-normal">
                                                                                     <input type="checkbox" disabled {...register("sharingReturnTerm.supportCondition.budgetPlan")} />
-                                                                                    ตามงบประมาณสนับสนุน
+                                                                                    หักงบประมาณบำรุงโรงพยาบาล
                                                                                 </Label>
                                                                                 <Label className="font-normal">
                                                                                     <input type="checkbox" disabled {...register("sharingReturnTerm.supportCondition.freePlan")} />
-                                                                                    สนับสนุนโดยไม่คิดค่าใช้จ่าย
+                                                                                    ให้เปล่า
                                                                                 </Label>
                                                                                 {errors.sharingReturnTerm?.supportCondition && (
                                                                                     <span className="text-red-500 text-xs">{String(errors.sharingReturnTerm.supportCondition.message)}</span>
@@ -538,15 +538,15 @@ export default function EditSharingDialog({ selectedMed, openDialog, onOpenChang
                                                                                 <Label className="font-medium items-center">เงื่อนไขการสนับสนุน <RequiredMark /></Label>
                                                                                 <Label className="font-normal">
                                                                                     <input type="checkbox" {...register("sharingReturnTerm.supportCondition.servicePlan")} />
-                                                                                    ตามสิทธิ์แผนบริการ
+                                                                                    หักงบประมาณ Service plan
                                                                                 </Label>
                                                                                 <Label className="font-normal">
                                                                                     <input type="checkbox"  {...register("sharingReturnTerm.supportCondition.budgetPlan")} />
-                                                                                    ตามงบประมาณสนับสนุน
+                                                                                    หักงบประมาณบำรุงโรงพยาบาล
                                                                                 </Label>
                                                                                 <Label className="font-normal">
                                                                                     <input type="checkbox"   {...register("sharingReturnTerm.supportCondition.freePlan")} />
-                                                                                    สนับสนุนโดยไม่คิดค่าใช้จ่าย
+                                                                                    ให้เปล่า
                                                                                 </Label>
                                                                                 {errors.sharingReturnTerm?.supportCondition && (
                                                                                     <span className="text-red-500 text-xs">{String(errors.sharingReturnTerm.supportCondition.message)}</span>
@@ -589,15 +589,15 @@ export default function EditSharingDialog({ selectedMed, openDialog, onOpenChang
                                                                         <Label className="font-medium items-center">เงื่อนไขการสนับสนุน <RequiredMark /></Label>
                                                                         <Label className="font-normal">
                                                                             <input type="radio" value="servicePlan" disabled={returnType === "normalReturn"} {...register("sharingReturnTerm.supportCondition")} />
-                                                                            ตามสิทธิ์แผนบริการ
+                                                                            หักงบประมาณ Service plan
                                                                         </Label>
                                                                         <Label className="font-normal">
                                                                             <input type="radio" value="budgetPlan" disabled={returnType === "normalReturn"}{...register("sharingReturnTerm.supportCondition")} />
-                                                                            ตามงบประมาณสนับสนุน
+                                                                            หักงบประมาณบำรุงโรงพยาบาล
                                                                         </Label>
                                                                         <Label className="font-normal">
                                                                             <input type="radio" value="freePlan" disabled={returnType === "normalReturn"} {...register("sharingReturnTerm.supportCondition")} />
-                                                                            สนับสนุนโดยไม่คิดค่าใช้จ่าย
+                                                                            ให้เปล่า
                                                                         </Label>
                                                                         {errors.sharingReturnTerm?.supportCondition && (
                                                                             <span className="text-red-500 text-xs">{String(errors.sharingReturnTerm.supportCondition.message)}</span>

@@ -201,7 +201,7 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[1200px]">
-                <DialogTitle>แจ้งขอยืม</DialogTitle>
+                <DialogTitle>แจ้งยาขาดแคลน</DialogTitle>
                 <form onSubmit={handleSubmit(onSubmit, (invalid) => {
                     console.log("invalid:", invalid)
                 })} className="space-y-4">
@@ -248,7 +248,7 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
                                     inputMode="numeric"
                                     placeholder="10"
                                     onKeyDown={(e) => {
-                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
+                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight" ,"."];
                                         if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
                                             e.preventDefault();
                                         }
@@ -273,7 +273,7 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
                                     inputMode="numeric"
                                     placeholder="10"
                                     onKeyDown={(e) => {
-                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight"];
+                                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight" , "."];
                                         if (!/^[0-9]$/.test(e.key) && !allowedKeys.includes(e.key)) {
                                             e.preventDefault();
                                         }
@@ -526,15 +526,15 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
                                                     <Label className="font-medium">เงื่อนไขการสนับสนุน <RequiredMark /></Label>
                                                     <Label className="font-normal">
                                                         <input type="radio" value="servicePlan" {...register("requestTerm.supportCondition")} />
-                                                        ตามสิทธิ์แผนบริการ
+                                                        หักงบประมาณ Service plan
                                                     </Label>
                                                     <Label className="font-normal">
                                                         <input type="radio" value="budgetPlan" {...register("requestTerm.supportCondition")} />
-                                                        ตามงบประมาณสนับสนุน
+                                                        หักงบประมาณบำรุงโรงพยาบาล
                                                     </Label>
                                                     <Label className="font-normal">
                                                         <input type="radio" value="freePlan" {...register("requestTerm.supportCondition")} />
-                                                        สนับสนุนโดยไม่คิดค่าใช้จ่าย
+                                                        ให้เปล่า
                                                     </Label>
                                                     {errors.requestTerm?.supportCondition && (
                                                         <span className="text-red-500 text-xs">{String(errors.requestTerm.supportCondition.message)}</span>
@@ -552,7 +552,7 @@ export default function EditRequestDialog({ selectedMed, openDialog, onOpenChang
                         <Button type="submit" className="">
                             {loading
                                 ? <div className="flex flex-row items-center gap-2"><LoadingSpinner /><span className="text-gray-500">สร้าง</span></div>
-                                : "ส่งคำขอ"}
+                                : "ยืนยันการแจ้ง"}
                         </Button>
                     </DialogFooter>
                 </form>

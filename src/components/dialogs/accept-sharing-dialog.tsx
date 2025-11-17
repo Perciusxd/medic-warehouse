@@ -162,7 +162,7 @@ function RequestDetails({ sharingMed }: any) {
                                 sharingMed?.sharingReturnTerm?.supportCondition?.servicePlan
                                     ? sharingMed?.sharingReturnTerm?.supportCondition?.servicePlan
                                     : sharingMed?.sharingDetails.sharingReturnTerm?.supportCondition?.servicePlan} disabled />
-                            <Label>ตามสิทธิ์แผนบริการ</Label>
+                            <Label>หักงบประมาณ Service plan</Label>
                         </div>
                         <div className="flex flex-row gap-1">
                             <input type="checkbox" checked={
@@ -170,14 +170,14 @@ function RequestDetails({ sharingMed }: any) {
                                     ? sharingMed?.sharingReturnTerm?.supportCondition?.budgetPlan
                                     : sharingMed?.sharingDetails.sharingReturnTerm?.supportCondition?.budgetPlan
                             } disabled />
-                            <Label>ตามงบประมาณสนับสนุน</Label>
+                            <Label>หักงบประมาณบำรุงโรงพยาบาล</Label>
                         </div>
                         <div className="flex flex-row gap-1">
                             <input type="checkbox" checked={sharingMed?.sharingReturnTerm?.supportCondition?.freePlan
                                 ? sharingMed?.sharingReturnTerm?.supportCondition?.freePlan
                                 : sharingMed?.sharingDetails.sharingReturnTerm?.supportCondition?.freePlan
                             } disabled />
-                            <Label>สนับสนุนโดยไม่คิดค่าใช้จ่าย</Label>
+                            <Label>ให้เปล่า</Label>
                         </div>
                     </div>
 
@@ -190,18 +190,16 @@ function RequestDetails({ sharingMed }: any) {
 
 function ResponseFormSchema(sharingMedicine: any) {
     const maxAmount = sharingMedicine?.sharingAmount ?? Infinity;
+    
     return z.object({
         responseAmount: z.coerce.number({ required_error: "กรุณากรอกจำนวนที่ต้องการรับ" })
             .min(1, { message: "จำนวนที่ยืมต้องมีค่ามากกว่า 0" })
             .max(maxAmount, { message: `จำนวนที่ยืมต้องไม่เกิน ${maxAmount}` }),
-        expectedReturnDate: z.string().min(1, { message: "วันที่ยืมต้องเป็นวันที่ในอนาคต" }),
+        
+        // 1. ทำให้ field นี้เป็น optional ในเบื้องต้น
+        expectedReturnDate: z.string().optional(), 
         description: z.string().optional(),
         returnTerm: z.object({
-            // exactType: z.boolean(),
-            // otherType: z.boolean(),
-            // subType: z.boolean(),
-            // supportType: z.boolean(),
-            // noReturn: z.boolean(),
             returnType: z.enum(["normalReturn", "supportReturn", "all"]).optional(),
             returnConditions: z.object({
                 condition: z.enum(["exactType", "otherType"]).optional(),
@@ -209,14 +207,38 @@ function ResponseFormSchema(sharingMedicine: any) {
             }).optional(),
             supportCondition: z.enum(["servicePlan", "budgetPlan", "freePlan"]).optional(),
         })
-        // .refine((data) =>
-        //     Object.values(data).some(value => value === true),
-        //     {
-        //         message: "กรุณาเลือกอย่างน้อย 1 เงื่อนไข",
-        //         path: []
-        //     }
-        // )
     })
+    .refine((data) => {
+        // ถ้า returnType เป็น 'supportReturn' ให้ผ่าน (true) เสมอ
+        // (ไม่ว่า expectedReturnDate จะถูกกรอกหรือไม่)
+        if (data.returnTerm?.returnType === "supportReturn") {
+            return true;
+        }
+
+        // ถ้าไม่ใช่ 'supportReturn' (เช่นเป็น 'normalReturn' หรือยังไม่เลือก)
+        // เราจะบังคับว่า expectedReturnDate ต้องมีค่า 
+        // และควรเป็นวันที่ในอนาคต
+        
+        if (!data.expectedReturnDate || data.expectedReturnDate.length === 0) {
+            return false; 
+        }
+        // ตรวจสอบว่าเป็นวันที่ในอนาคต (หรือวันนี้)
+        try {
+            const returnDate = new Date(data.expectedReturnDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // ตั้งค่าเวลาเป็นเที่ยงคืน
+
+            // ตรวจสอบว่าวันที่ถูกต้อง และไม่ใช่อดีต
+            return returnDate.getTime() ? returnDate >= today : false;
+        } catch (e) {
+            return false; 
+        }
+
+    }, {
+        // ถ้า refine() คืนค่า false ให้แสดง message นี้ที่ field 'expectedReturnDate'
+        message: "วันที่ยืมต้องเป็นวันที่ในอนาคต",
+        path: ["expectedReturnDate"], 
+    });
 }
 
 function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) {
@@ -384,11 +406,11 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                                 />
                                 {errors.responseAmount?.message && <span className="text-red-500 text-sm">{errors.responseAmount.message}</span>}
                             </div>
-                            <div className="flex flex-col gap-1 flex-1/2">
+                            <div className="flex flex-col gap-1 flex-1/2 " hidden={returnType=== "supportReturn"}>
                                 <Label className="">วันที่คาดว่าจะคืน</Label>
                                 <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen} modal={true}>
                                     <PopoverTrigger asChild>
-                                        <Button variant="outline" className="justify-start text-left font-normal" disabled={sharingMed.status === 're-confirm' || sharingMed.responseStatus === 'offered'} >
+                                        <Button variant="outline" className="justify-start text-left font-normal" disabled={sharingMed.status === 're-confirm' || sharingMed.responseStatus === 'offered'}  >
                                             {expectedReturn
                                                 ?
                                                 format(new Date(Number(expectedReturn)), 'dd/MM/') + (new Date(Number(expectedReturn)).getFullYear() + 543)
@@ -470,7 +492,7 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                         </div>
                     </div> */}
 
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1" hidden={returnType=== "supportReturn"}>
                             <Label>เหตุผลการยืม</Label>
                             <Input
                                 placeholder="ระบุเหตุผลการยืม"
@@ -489,14 +511,14 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                                     disabled={sharingMed?.responseDetail?.status === 're-confirm'}
                                     value="supportReturn"
                                     {...register("returnTerm.returnType")} />
-                                ขอสนับสนุน
+                                สนับสนุน
                             </Label>
                             <Label className="mt-2 w-[120px]">
                                 <input type="radio"
                                     disabled={sharingMed?.responseDetail?.status === 're-confirm'}
                                     value="normalReturn"
                                     {...register("returnTerm.returnType")} />
-                                ขอยืม
+                                แจ้งขาดแคลน
                             </Label>
                         </div>
                         {
@@ -522,9 +544,9 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                                         />
                                         <Label> {sharingMed?.responseDetail?.returnTerm.returnType === 'supportReturn'
                                             ? sharingMed?.responseDetail?.returnTerm.supportCondition === 'servicePlan'
-                                                ? "ตามสิทธิ์แผนบริการ"
+                                                ? "หักงบประมาณ Service plan"
                                                 : sharingMed?.responseDetail?.returnTerm.supportCondition === 'budgetPlan'
-                                                    ? "ตามงบประมาณสนับสนุน" : "สนับสนุนโดยไม่คิดค่าใช้จ่าย" : ""}
+                                                    ? "หักงบประมาณบำรุงโรงพยาบาล" : "ให้เปล่า" : ""}
                                         </Label>
 
                                     </div>
@@ -588,15 +610,15 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                                             <Label className="font-medium items-center">เงื่อนไขการสนับสนุน <RequiredMark /></Label>
                                             <Label className="font-normal">
                                                 <input type="radio" value="servicePlan"  {...register("returnTerm.supportCondition")} />
-                                                ตามสิทธิ์แผนบริการ
+                                                หักงบประมาณ Service plan
                                             </Label>
                                             <Label className="font-normal">
                                                 <input type="radio" value="budgetPlan" {...register("returnTerm.supportCondition")} />
-                                                ตามงบประมาณสนับสนุน
+                                                หักงบประมาณบำรุงโรงพยาบาล
                                             </Label>
                                             <Label className="font-normal">
                                                 <input type="radio" value="freePlan"  {...register("returnTerm.supportCondition")} />
-                                                สนับสนุนโดยไม่คิดค่าใช้จ่าย
+                                                ให้เปล่า
                                             </Label>
                                             {errors.returnTerm?.supportCondition && (
                                                 <span className="text-red-500 text-xs">{String(errors.returnTerm.supportCondition.message)}</span>
@@ -637,15 +659,15 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                                             <Label className="font-medium items-center">เงื่อนไขการสนับสนุน <RequiredMark /></Label>
                                             <Label className="font-normal">
                                                 <input type="radio" value={returnType === "normalReturn" ? "servicePlan" : undefined} disabled {...register("returnTerm.supportCondition")} />
-                                                ตามสิทธิ์แผนบริการ
+                                                หักงบประมาณ Service plan
                                             </Label>
                                             <Label className="font-normal">
                                                 <input type="radio" value={returnType === "normalReturn" ? "budgetPlan" : undefined} disabled {...register("returnTerm.supportCondition")} />
-                                                ตามงบประมาณสนับสนุน
+                                                หักงบประมาณบำรุงโรงพยาบาล
                                             </Label>
                                             <Label className="font-normal">
                                                 <input type="radio" value={returnType === "normalReturn" ? "freePlan" : undefined} disabled {...register("returnTerm.supportCondition")} />
-                                                สนับสนุนโดยไม่คิดค่าใช้จ่าย
+                                                ให้เปล่า
                                             </Label>
                                             {errors.returnTerm?.supportCondition && (
                                                 <span className="text-red-500 text-xs">{String(errors.returnTerm.supportCondition.message)}</span>
@@ -692,15 +714,15 @@ function ResponseDetails({ sharingMed, onOpenChange, onSubmittingChange }: any) 
                                             <Label className="font-medium items-center">เงื่อนไขการสนับสนุน <RequiredMark /></Label>
                                             <Label className="font-normal">
                                                 <input type="radio" value={returnType === "supportReturn" ? "servicePlan" : undefined} disabled={sharingMed?.responseDetail?.status === 're-confirm'} {...register("returnTerm.supportCondition")} />
-                                                ตามสิทธิ์แผนบริการ
+                                                หักงบประมาณ Service plan
                                             </Label>
                                             <Label className="font-normal">
                                                 <input type="radio" value={returnType === "supportReturn" ? "budgetPlan" : undefined} disabled={sharingMed?.responseDetail?.status === 're-confirm'}  {...register("returnTerm.supportCondition")} />
-                                                ตามงบประมาณสนับสนุน
+                                                หักงบประมาณบำรุงโรงพยาบาล
                                             </Label>
                                             <Label className="font-normal">
                                                 <input type="radio" value={returnType === "supportReturn" ? "freePlan" : undefined} disabled={sharingMed?.responseDetail?.status === 're-confirm'}  {...register("returnTerm.supportCondition")} />
-                                                สนับสนุนโดยไม่คิดค่าใช้จ่าย
+                                                ให้เปล่า
                                             </Label>
                                             {errors.returnTerm?.supportCondition && (
                                                 <span className="text-red-500 text-xs">{String(errors.returnTerm.supportCondition.message)}</span>

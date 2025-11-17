@@ -28,7 +28,7 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
 
   const handleSelect = (index: number) => {
     const obj = dataList[index]
-
+    
     // ดึงชื่อโรงพยาบาลผู้ให้ยืม
     let hospitalName: string | null = null
     if (obj.type === "request") {
@@ -69,7 +69,7 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
 
 
   const userdata = useAuth();
-  console.log("data", dataList)
+  console.log("dataList", dataList)
   const [docType, setDocType] = useState<string>('normalReturn');
   const handleDocTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setDocType(event.target.value);
@@ -151,10 +151,11 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
                 className="w-full justify-start truncate"
                 onClick={() => handleSelect(globalIndex)}
               >
-                {item.responseDetails[0]?.offeredMedicine?.name ?? "ผิด"} จาก{" "}
-                {item.responseDetails[0].respondingHospitalNameTH} จำนวน{" "}
-                {item.responseDetails[0]?.offeredMedicine?.offerAmount ?? "ผิด"}
-                {item.responseDetails[0]?.offeredMedicine?.unit ?? "ผิด"}
+                {/* {item.responseDetails[0]?.offeredMedicine?.name ?? "ผิด"} จาก{" "} */}
+                {item.responseDetails[0]?.offeredMedicine?.name ? item.responseDetails[0]?.offeredMedicine?.name : item.medicineRequests?.requestMedicine?.name ?? "ข้อมูลชื่อยาผิดพลาด"} จาก{" "}
+                {item.responseDetails[0]?.respondingHospitalNameTH ? item.responseDetails[0]?.respondingHospitalNameTH : item.medicineRequests?.responseDetails[0].respondingHospitalNameTH ?? "ข้อมูลโรงพยาบาลผิดพลาด"} จำนวน{" "}
+                {item.responseDetails[0]?.offeredMedicine?.offerAmount ? item.responseDetails[0]?.offeredMedicine?.offerAmount : item.medicineRequests?.requestMedicine?.requestAmount ?? "ข้อมูลจำนวนที่แจ้งขาดแคลนผิดพลาด"}
+                {item.responseDetails[0]?.offeredMedicine?.unit ? item.responseDetails[0]?.offeredMedicine?.unit : item.medicineRequests?.requestMedicine?.unit ?? "ข้อมูลหน่วยยาผิดพลาด"}
                 {selectedIndices.includes(globalIndex) && (
                   <span className="ml-2 text-xs text-muted-foreground">
                     (ลำดับ {selectedIndices.indexOf(globalIndex) + 1})
@@ -210,17 +211,17 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
               if (obj.type === "request") {
                 return {
                   SharingHospital:
-                    obj.responseDetails?.[0]?.respondingHospitalNameTH ?? "ไม่ทราบโรงพยาบาล",
+                    obj.responseDetails?.[0]?.respondingHospitalNameTH ? obj.responseDetails?.[0]?.respondingHospitalNameTH : obj.medicineRequests?.responseDetails[0].respondingHospitalNameTH ?? "ไม่ทราบโรงพยาบาล",
                   Medname:
-                    obj.responseDetails?.[0]?.offeredMedicine?.name ?? "ไม่ทราบชื่อยา",
+                    obj.responseDetails?.[0]?.offeredMedicine?.name ? obj.responseDetails?.[0]?.offeredMedicine?.name : obj.medicineRequests?.requestMedicine?.name ?? "ไม่ทราบชื่อยา",
                   Amount:
-                    obj.responseDetails?.[0]?.offeredMedicine?.offerAmount ?? "ไม่ทราบจำนวน",
+                    obj.responseDetails?.[0]?.offeredMedicine?.offerAmount ? obj.responseDetails?.[0]?.offeredMedicine?.offerAmount : obj.medicineRequests?.requestMedicine?.requestAmount ?? "ไม่ทราบจำนวน",
                   ExpectedReturnDate
                     : obj.medicineRequests?.requestTerm.expectedReturnDate ?? "ไม่ทราบวันที่คืน",
                   Unit:
-                    obj.responseDetails?.[0]?.offeredMedicine?.unit ?? "ไม่ทราบรูปแบบ/หน่วย",
+                    obj.responseDetails?.[0]?.offeredMedicine?.unit ? obj.responseDetails?.[0]?.offeredMedicine?.unit : obj.medicineRequests?.requestMedicine?.unit ?? "ไม่ทราบรูปแบบ/หน่วย",
                   Quantity:
-                    obj.responseDetails?.[0]?.offeredMedicine?.quantity ?? "ไม่ทราบขนาด",
+                    obj.responseDetails?.[0]?.offeredMedicine?.quantity ? obj.responseDetails?.[0]?.offeredMedicine?.quantity : obj.medicineRequests?.requestMedicine?.quantity ?? "ไม่ทราบขนาด",
                   Description: obj.medicineRequests.requestMedicine.description ?? "ไม่ทราบเหตุผล",
                   SupportType:
                     obj.medicineRequests.requestTerm.supportType ?? "ไม่ทราบประเภท",

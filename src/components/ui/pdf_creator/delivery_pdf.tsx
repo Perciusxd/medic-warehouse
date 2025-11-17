@@ -251,7 +251,7 @@ const MyDocument: React.FC<DeliveryPdfcontent & { isCopy?: boolean }> = ({ docum
                         <Text style={{ textIndent: 295 }}>(................................................)</Text>
                         <Text style={{ textIndent: 340 }}>ตำแหน่ง</Text>
                         <Text style={{ textIndent: 300 }}>..............................................</Text>
-                        <Text style={{ marginTop: 5, textIndent: 320 }}>ได้รับของถูกต้องแล้ว</Text>
+                        <Text style={{ marginTop: 5, textIndent: 320 }}>ได้รับยาถูกต้องแล้ว</Text>
                         <Text style={{ textIndent: 295 }}>(................................................)</Text>
                         <Text style={{ textIndent: 295 }}>วันที่..........................................</Text>
 
@@ -346,7 +346,7 @@ const MyDocument: React.FC<DeliveryPdfcontent & { isCopy?: boolean }> = ({ docum
                         <Text style={{ textIndent: 295 }}>(................................................)</Text>
                         <Text style={{ textIndent: 340 }}>ตำแหน่ง</Text>
                         <Text style={{ textIndent: 300 }}>..............................................</Text>
-                        <Text style={{ marginTop: 5, textIndent: 320 }}>ได้รับของถูกต้องแล้ว</Text>
+                        <Text style={{ marginTop: 5, textIndent: 320 }}>ได้รับยาถูกต้องแล้ว</Text>
                         <Text style={{ textIndent: 295 }}>(................................................)</Text>
                         <Text style={{ textIndent: 295 }}>วันที่..........................................</Text>
 

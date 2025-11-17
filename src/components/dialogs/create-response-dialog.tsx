@@ -169,11 +169,14 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                 batchNumber: data.offeredMedicine.batchNumber,
                 expiryDate: data.offeredMedicine.expiryDate,
             },
+            returnConditions:{
+                returnTerm: requestData.offeredMedicine?.requestTerm.returnType
+            },
             responseId: responseId,
             status: status
         }
-        console.log("responseBody sssss:", responseBody)
-        console.log("data sssss:", data)
+        // console.log("responseBody sssss:", responseBody)
+        // console.log("data sssss:", data)
         try {
             setLoading(true)
             const response = await fetch("/api/updateRequest", {
@@ -222,7 +225,7 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
     }
     const priority: UrgentType = requestData.urgent || "normal"
     const config = URGENT_CONFIG[priority]
-    const supportConditionValue = requestTerm.supportCondition === "budgetPlan" ? "ตามงบประมาณสนับสนุน"  : requestTerm.supportCondition === "servicePlan" ? "ตามสิทธิ์แผนบริการ" : "สนับสนุนโดยไม่คิดค่าใช้จ่าย"
+    const supportConditionValue = requestTerm.supportCondition === "budgetPlan" ? "หักงบประมาณบำรุงโรงพยาบาล"  : requestTerm.supportCondition === "servicePlan" ? "หักงบประมาณ Service plan" : "ให้เปล่า"
     //console.log('requestTerm.supportCondition',requestTerm.supportCondition)
     return (
         <Dialog open={openDialog} onOpenChange={onOpenChange}>
@@ -250,6 +253,9 @@ export default function CreateResponseDialog({ requestData, responseId, dialogTi
                                     className="flex gap-1 px-1.5 [&_svg]:size-3 mb-4">
                                     <div className="text-sm text-gray-600 text-wrap">
                                         {requestData.requestTerm.returnType === "supportReturn" ? "ขอสนับสนุน" : requestData.requestTerm.receiveConditions.condition === "exactType" && requestData.requestTerm.returnType === "normalReturn" ? "ยืมรายการที่ต้องการ" : "ให้ยืมรายการที่ต้องการหรือยืมรายการทดแทนได้"}
+                                    </div>
+                                    <div className="text-sm text-gray-600 text-wrap">
+                                        {requestData.requestTerm.returnType === "supportReturn" ? (requestData.requestTerm.supportCondition === "budgetPlan" ? "( หักงบประมาณบำรุงโรงพยาบาล )"  : requestData.requestTerm.supportCondition === "servicePlan" ? "( หักงบประมาณ Service plan )" : "( ให้เปล่า ") : ""}
                                     </div>
                                 </Badge>
                             </div>

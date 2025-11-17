@@ -45,18 +45,18 @@ export function EditPopover(props: any) {
             });
 
             if (response.ok) {
-                toast("ยืนยันการขอยืมยาเรียบร้อยแล้ว");
+                toast("ยืนยันการแจ้งยาขาดแคลนเรียบร้อยแล้ว");
                 if (props.onClose) {
                     props.onClose(e);
                 }
             } else {
                 //console.log("Response not ok:", response);
-                toast.error("เกิดข้อผิดพลาดในการขอยืมยา");
+                toast.error("เกิดข้อผิดพลาดในการแจ้งยาขาดแคลน");
             }
             props.fetchData();
         } catch (error) {
             //console.error("Error:", error);
-            toast.error("เกิดข้อผิดพลาดในการขอยืมยา");
+            toast.error("เกิดข้อผิดพลาดในการแจ้งยาขาดแคลน");
         } finally {
             setLoading(false);
         }

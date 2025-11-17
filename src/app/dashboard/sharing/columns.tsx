@@ -50,8 +50,8 @@ export const columns = (
                 const returnType = sharingReturnTerm.returnType
                 return (
                     <div className="flex flex-col">
-                        <div className="text-md">{name}</div>
-                        <div className="text-xs text-gray-600">{trademark}</div>
+                        <div className="text-md overflow-hidden">{name}</div>
+                        <div className="text-xs text-gray-600 overflow-hidden">{trademark}</div>
                         <Badge variant="secondary" className="text-[10px] mt-1">
                                 {
                                     returnType === "supportReturn" ? "สนับสนุน" :
@@ -180,8 +180,8 @@ export const columns = (
                 const batchNumber = sharingDetails.sharingMedicine.batchNumber
                 return (
                     <div className="flex flex-col">
-                        <div className="text-md">{manufacturer}</div>
-                        <div className="text-xs text-muted-foreground">{batchNumber}</div>
+                        <div className="text-md overflow-hidden">{manufacturer}</div>
+                        <div className="text-xs text-muted-foreground overflow-hidden">{batchNumber}</div>
                     </div>
                 )
             }
@@ -400,7 +400,7 @@ export const columns = (
                     // {/* 
                     //             {returnType === "supportReturn" && supportCondition && (
                     //                 <Badge variant="secondary" className="text-[10px] text-gray-600">
-                    //                     {supportCondition === "servicePlan" ? "ตามแผนบริการ" : supportCondition === "budgetPlan" ? "ตามงบประมาณ" : "ให้ฟรี"}
+                    //                     {supportCondition === "servicePlan" ? "หักงบประมาณ Service plan" : supportCondition === "budgetPlan" ? "ตามงบประมาณ" : "ให้ฟรี"}
                     //                 </Badge>
                     //             )}
                     //             {returnType === "normalReturn" && conditionLabel && (

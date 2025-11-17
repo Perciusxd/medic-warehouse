@@ -65,22 +65,22 @@ export const columns = (
                 const returnType = med.returnTerm.returnType
                 const condition = med.returnTerm.returnConditions.condition
                 const conditionLabel = condition === 'exactType' ? 'ยืมจากผู้ผลิตรายนี้' : 'ยืมจากผู้ผลิตรายอื่น';
-                console.log('med sha',med)
+                console.log('med sha', med)
                 return (
                     <div className="flex flex-col">
                         <div className="text-md font-medium ">{name}</div>
                         <div className="text-xs text-muted-foreground">{trademark}</div>
-                         <div className="flex item-center gap-2 flex-wrap mt-2">
-                        <Badge variant="outline" className="text-xs text-gray-600">{returnType === "supportReturn" ? "ขอสนับสนุน" : "ขอยืม"}
-                            {returnType === "supportReturn" && returnType.supportCondition && (
-                                <Badge variant="secondary" className="text-[10px] text-gray-600">
-                                    {returnType.supportCondition === "servicePlan" ? "ตามแผนบริการ" : returnType.supportCondition === "budgetPlan" ? "ตามงบประมาณ" : "ให้ฟรี"}
-                                </Badge>
-                            )}
-                            {returnType === "normalReturn" && conditionLabel && (
-                                <Badge variant="secondary" className="text-[10px] text-gray-600">{conditionLabel}</Badge>
-                            )}
-                        </Badge>
+                        <div className="flex item-center gap-2 flex-wrap mt-2">
+                            <Badge variant="outline" className="text-xs text-gray-600">{returnType === "supportReturn" ? "ขอสนับสนุน" : "ขอยืม"}
+                                {returnType === "supportReturn" && returnType.supportCondition && (
+                                    <Badge variant="secondary" className="text-[10px] text-gray-600">
+                                        {returnType.supportCondition === "servicePlan" ? "หักงบประมาณ Service plan" : returnType.supportCondition === "budgetPlan" ? "ตามงบประมาณ" : "ให้ฟรี"}
+                                    </Badge>
+                                )}
+                                {returnType === "normalReturn" && conditionLabel && (
+                                    <Badge variant="secondary" className="text-[10px] text-gray-600">{conditionLabel}</Badge>
+                                )}
+                            </Badge>
                         </div>
                     </div>
                 )
@@ -149,12 +149,12 @@ export const columns = (
                             {renderCondition("คืนรายการทดแทน", sharingReturnTerm.returnConditions.otherTypeCondition)}
                         </div>
                         <div className="basis-1/2 flex flex-col">
-                            {renderCondition("ตามสิทธิ์แผนบริการ", sharingReturnTerm.supportCondition.servicePlan)}
-                            {renderCondition("ตามงบประมาณสนับสนุน", sharingReturnTerm.supportCondition.budgetPlan)}
-                            {renderCondition("สนับสนุนโดยไม่คิดค่าใช้จ่าย", sharingReturnTerm.supportCondition.freePlan)}
+                            {renderCondition("หักงบประมาณ Service plan", sharingReturnTerm.supportCondition.servicePlan)}
+                            {renderCondition("หักงบประมาณบำรุงโรงพยาบาล", sharingReturnTerm.supportCondition.budgetPlan)}
+                            {renderCondition("ให้เปล่า", sharingReturnTerm.supportCondition.freePlan)}
                         </div>
                         {/* <div>
-                                {renderCondition("สนับสนุนโดยไม่คิดค่าใช้จ่าย", sharingReturnTerm.returnConditions.freePlan)}
+                                {renderCondition("ให้เปล่า", sharingReturnTerm.returnConditions.freePlan)}
                             </div> */}
                     </div>
                 );
@@ -235,7 +235,7 @@ export const columns = (
                                                         // displayHospi
                                                     })}
                                             >
-                                                ยืนยันการรับของ
+                                                ยืนยันการรับยา
                                                 <SquareCheck className="h-4 w-4" />
                                                 {/* <StatusIndicator status={status} /> */}
                                             </Button>
@@ -257,32 +257,32 @@ export const columns = (
                                             getTextStatusColor(status)
                                         )}
                                     >
-                                        แจ้งขอยืม
+                                        แจ้งขาดแคลน
                                         {/* <div className=" text-xs">{(responseAmount) ? "(" + (responseAmount) + ")" : "(-)"}</div> */}
                                     </Badge>
                                 ) : status === 're-confirm'
                                     ? (
-                                       
-                                                <Button
-                                                    variant={"text_status"}
-                                                    size={"text_status"}
-                                                    className={clsx(
-                                                        // "flex content-center h-6 font-bold text-xs",
-                                                        getStatusColor(status),
-                                                        getTextStatusColor(status)
-                                                    )}
-                                                    onClick={() =>
-                                                        handleReconfirmClickSharingTicket({
-                                                            sharingMedicineDetail: med.sharingDetails,
-                                                            responseDetail: med,
-                                                            ...med
-                                                        })
-                                                    }>
-                                                    ยืนยันการขอยืม
-                                                    <SquareCheck className="h-4 w-4" />
-                                                    {/* <StatusIndicator status={status} /> */}
-                                                </Button>
-                                               
+
+                                        <Button
+                                            variant={"text_status"}
+                                            size={"text_status"}
+                                            className={clsx(
+                                                // "flex content-center h-6 font-bold text-xs",
+                                                getStatusColor(status),
+                                                getTextStatusColor(status)
+                                            )}
+                                            onClick={() =>
+                                                handleReconfirmClickSharingTicket({
+                                                    sharingMedicineDetail: med.sharingDetails,
+                                                    responseDetail: med,
+                                                    ...med
+                                                })
+                                            }>
+                                            ยืนยันการขอยืม
+                                            <SquareCheck className="h-4 w-4" />
+                                            {/* <StatusIndicator status={status} /> */}
+                                        </Button>
+
                                     )
                                     : status === 'in-return'
                                         ? (
@@ -360,44 +360,52 @@ export const columns = (
                                                             )}
                                                         >
                                                             เสร็จสิ้น
-                                                            {(() => {
-                                                                const offeredAmount = Number(med?.acceptedOffer?.responseAmount ?? 0);
-                                                                const offeredUnitPrice = Number(med?.acceptedOffer?.pricePerUnit ?? 0);
-                                                                const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
-                                                                const rm: any = (med as any).returnMedicine;
-                                                                const returnedPriceTotal = Array.isArray(rm)
-                                                                    ? rm.reduce((sum: number, item: any) => {
-                                                                        const nested = item && item.returnMedicine ? item.returnMedicine : item;
-                                                                        const amt = Number(nested?.returnAmount ?? 0);
-                                                                        const unitPrice = Number(nested?.pricePerUnit ?? 0);
-                                                                        const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
-                                                                        return sum + lineTotal;
-                                                                    }, 0)
-                                                                    : (() => {
-                                                                        const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
-                                                                        const amt = Number(nested?.returnAmount ?? 0);
-                                                                        const unitPrice = Number(nested?.pricePerUnit ?? 0);
-                                                                        return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
-                                                                    })();
-                                                                const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
-                                                                return (
-                                                                    <div className=" text-xs">({percent.toFixed(0)}%)</div>
-                                                                );
-                                                            })()}
-                                                        </Badge>
-                                                        <ReturnSummaryHover
-                                                            requestMedicine={med?.sharingDetails?.sharingMedicine}
-                                                            // offeredMedicine={med?.offeredMedicine}
-                                                            acceptedOffer={(med as any)?.acceptedOffer}
-                                                            returnMedicine={med?.returnMedicine}
-                                                        />
-                                                        <ReturnPdfMultiButton
-                                                            data={med}
-                                                            returnList={(med as any).returnMedicine}
-                                                            buttonText="ออกเอกสาร PDF การคืนยา"
-                                                        /> 
+                                                            {med?.returnTerm?.returnType === 'normalReturn' ? (
+
+                                                                (() => {
+                                                                    const offeredAmount = Number(med?.acceptedOffer?.responseAmount ?? 0);
+                                                                    const offeredUnitPrice = Number(med?.acceptedOffer?.pricePerUnit ?? 0);
+                                                                    const originalTotalPrice = (isNaN(offeredAmount) || isNaN(offeredUnitPrice)) ? 0 : (offeredAmount * offeredUnitPrice);
+                                                                    const rm: any = (med as any).returnMedicine;
+                                                                    const returnedPriceTotal = Array.isArray(rm)
+                                                                        ? rm.reduce((sum: number, item: any) => {
+                                                                            const nested = item && item.returnMedicine ? item.returnMedicine : item;
+                                                                            const amt = Number(nested?.returnAmount ?? 0);
+                                                                            const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                            const lineTotal = (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                            return sum + lineTotal;
+                                                                        }, 0)
+                                                                        : (() => {
+                                                                            const nested = rm && rm.returnMedicine ? rm.returnMedicine : rm;
+                                                                            const amt = Number(nested?.returnAmount ?? 0);
+                                                                            const unitPrice = Number(nested?.pricePerUnit ?? 0);
+                                                                            return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
+                                                                        })();
+                                                                    const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
+                                                                    return (
+                                                                        <div className=" text-xs">({percent.toFixed(0)}%)</div>
+                                                                    );
+                                                                })()
+                                                            ) : " (สนับสนุน)"
+                                                            }
+                                                        </Badge >
+                                                        {med?.returnTerm?.returnType === 'normalReturn' ? (
+                                                            // (เราใช้ Fragment <></> เพื่อจัดกลุ่ม Component 2 ตัวนี้)
+                                                            <>
+                                                                <ReturnSummaryHover
+                                                                    requestMedicine={med?.sharingDetails?.sharingMedicine}
+                                                                    acceptedOffer={(med as any)?.acceptedOffer}
+                                                                    returnMedicine={med?.returnMedicine}
+                                                                />
+                                                                <ReturnPdfMultiButton
+                                                                    data={med}
+                                                                    returnList={(med as any).returnMedicine}
+                                                                    buttonText="ออกเอกสาร PDF การคืนยา"
+                                                                />
+                                                            </>
+                                                        ):""}
                                                     </div>
-                                                     
+
                                                 </HoverCardTrigger>
                                                 {/* <HoverCardContent>
                                                     <div className="text-sm">

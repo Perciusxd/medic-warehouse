@@ -98,7 +98,7 @@ export const columns = (
         },
         {
             accessorKey: "requestMedicine.name",
-            size: 180,
+            size: 220,
             header: ({ column }) => {
                 return (
                     <div className="flex justify-start items-center text-gray-600">
@@ -131,7 +131,7 @@ export const columns = (
                         <Badge variant="outline" className="text-xs text-gray-600">{returnType === "supportReturn" ? "ขอสนับสนุน" : "ขอยืม"}
                             {returnType === "supportReturn" && supportCondition && (
                                 <Badge variant="secondary" className="text-[10px] text-gray-600">
-                                    {supportCondition === "servicePlan" ? "ตามแผนบริการ" : supportCondition === "budgetPlan" ? "ตามงบประมาณ" : "ให้ฟรี"}
+                                    {supportCondition === "servicePlan" ? "หักงบประมาณ Service plan" : supportCondition === "budgetPlan" ? "ตามงบประมาณ" : "ให้ฟรี"}
                                 </Badge>
                             )}
                             {returnType === "normalReturn" && conditionLabel && (
@@ -151,6 +151,7 @@ export const columns = (
             header: () => <div className="font-medium text-muted-foreground text-left cursor-default">จำนวนที่ขอยืม (ยืนยัน)</div>,
             cell: ({ row }) => {
                 const med = row.original;
+                console.log("med sharing in col", med)
                 const requestAmount = med.requestMedicine.requestAmount;
                 const offeredAmount = med.remainingAmount;
                 const remainingAmount = requestAmount - offeredAmount
@@ -561,6 +562,7 @@ export const columns = (
                                                                         <HoverCard>
                                                                             <HoverCardTrigger>
                                                                                 <div className="flex flex-row gap-x-2 items-center">
+                                                                            
                                                                                 <Badge
                                                                                     variant={'text_status'}
                                                                                     className={clsx(
@@ -569,6 +571,7 @@ export const columns = (
                                                                                         "cursor-pointer"
                                                                                     )}
                                                                                 >
+
                                                                                     {(() => {
                                                                                         const offeredAmount = Number(detail?.offeredMedicine?.offerAmount ?? 0);
                                                                                         const offeredUnitPrice = Number(detail?.offeredMedicine?.pricePerUnit ?? 0);
@@ -589,9 +592,10 @@ export const columns = (
                                                                                                 return (isNaN(amt) || isNaN(unitPrice)) ? 0 : (amt * unitPrice);
                                                                                             })();
                                                                                         const percent = originalTotalPrice > 0 ? Math.max(0, Math.min(100, (returnedPriceTotal / originalTotalPrice) * 100)) : 0;
-                                                                                        return `เสร็จสิ้น (${percent.toFixed(0)}%)`;
+                                                                                        return detail?.returnMedicine ? `เสร็จสิ้น (${percent.toFixed(0)}%)` :  "เสร็จสิ้น (สนับสนุน)";
                                                                                     })()}
                                                                                 </Badge>
+                                                                               { detail?.returnMedicine ? (
                                                                                 <ReturnPdfMultiButton
                                                                                     data={{
                                                                                         ...med,
@@ -601,6 +605,7 @@ export const columns = (
                                                                                     returnList={(detail as any).returnMedicine}
                                                                                     buttonText="ออกเอกสาร PDF การคืนยา"
                                                                                 />
+                                                                               ) : ""}
                                                                                 </div>
                                                                             </HoverCardTrigger>
                                                                             <HoverCardContent>

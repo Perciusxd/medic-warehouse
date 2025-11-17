@@ -142,7 +142,7 @@ function ReturnFormSchema({ selectedMed }: any) {
                 quantity: z.string().optional(),
                 unit: z.string().min(1, "กรุณาระบุรูปแบบ/หน่วยของยา"),
                 manufacturer: z.string().min(1, "กรุณาระบุผู้ผลิตของยา"),
-                pricePerUnit: z.number().min(1, "ราคาต่อหน่วยควรมากกว่า 0").max(100000, "ราคาต่อหน่วยควรน้อยกว่า 100000"),
+                pricePerUnit: z.number().min(0.01, "ราคาต่อหน่วยควรมากกว่า 0").max(100000, "ราคาต่อหน่วยควรน้อยกว่า 100000"),
                 batchNumber: z.string().min(1, "กรุณาระบุหมายเลขล็อตของยา"),
                 expiryDate: z.coerce.string({ invalid_type_error: "กรุณาระบุวันหมดอายุ" }),
                 returnDate: z.coerce.string().optional(),
@@ -474,7 +474,7 @@ function ReturnMedicineDetails({ selectedMed, onOpenChange, loading, setLoading,
                     </div>
                     <div className="flex flex-col gap-1">
                         <Label>ราคาต่อหน่วย <RequiredMark /></Label>
-                        <Input placeholder="20" type="number" {...register("returnMedicine.pricePerUnit", { valueAsNumber: true })} disabled={isSupportSelected} />
+                        <Input placeholder="20" type="text" {...register("returnMedicine.pricePerUnit", { valueAsNumber: true })} disabled={isSupportSelected} />
                         {errors.returnMedicine?.pricePerUnit?.message && <span className="text-red-500 text-xs">{String(errors.returnMedicine.pricePerUnit.message)}</span>}
                     </div>
                     <div className="flex flex-col gap-1">

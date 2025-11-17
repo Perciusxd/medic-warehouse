@@ -86,7 +86,7 @@ export default function BorrowDashboard() {
                         {updatedLast ? `อัปเดต ${formatDistanceToNow(updatedLast, { addSuffix: true, locale: th })}` : ""}
                     </Button>
                     
-                    <Button onClick={() => (setCreateRequestDialogOpen(true))}>ขอยืมยา</Button>
+                    <Button onClick={() => (setCreateRequestDialogOpen(true))}>แจ้งยาขาดแคลน</Button>
                 </div>
                 <CreateRequestDialog
                     requestData={selectedMed}
