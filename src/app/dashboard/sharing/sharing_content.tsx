@@ -60,7 +60,7 @@ export default function SharingContent() {
                         {updatedLast ? `อัปเดต ${formatDistanceToNow(updatedLast, { addSuffix: true, locale: th })}` : ""}
                     </Button>
 
-                    <Button onClick={() => (setCreateSharingDialogOpen(true))}>แบ่งปันยา</Button>
+                    <Button onClick={() => (setCreateSharingDialogOpen(true))}>แจ้งแบ่งปันยา</Button>
                 </div>
                 <CreateSharingDialog
                     openDialog={createSharingDialogOpen}
