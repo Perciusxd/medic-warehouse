@@ -593,7 +593,7 @@ export default function CreateSharingDialog({ openDialog, onOpenChange }: any) {
                                     </Label>
                                     <Label className="mt-2 ">
                                         <input type="radio" value="all"  {...register("sharingReturnTerm.returnType")} />
-                                        สามารถสนับสนุนหรือให้ยืมก็ได้
+                                        ทั้งสนับสนุนและให้ยืม
                                     </Label>
                                 </div>
 
