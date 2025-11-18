@@ -220,6 +220,8 @@ export default function PDFPreviewButton({ data, disabled = false }: { data: any
     hospitalName: string;
     director: string;
     contact: string;
+    hostHospital: string;
+    directorPosition: string;
   };
 
   const chunkArray = (arr: any[], size: number) => {
@@ -312,7 +314,7 @@ const MySimplePDF = ({ data, isCopy }: { data: MyDocumentProps[], isCopy?: boole
               <View style={styles.tableRow}>
                   <Text style={[ { flex: 1 }]}>ที่ สข. ๘๐๒๓๑</Text>
                   <Text style={[ { flex: 1 }]}></Text>
-                  <Text style={[ { flex: 1, flexWrap: 'wrap' }]}>{data[0].hospitalName} </Text>
+                  <Text style={[ { flex: 1, flexWrap: 'wrap' }]}>{data[0].hostHospital} </Text>
               </View>
 
               <View style={styles.tableRow}>
@@ -365,7 +367,7 @@ const MySimplePDF = ({ data, isCopy }: { data: MyDocumentProps[], isCopy?: boole
             <Text style={{ marginTop: 20, textIndent: 80 }}>จึงเรียนมาเพื่อโปรดดำเนินการ </Text>
             <Text style={{ marginTop: 10, textIndent: 320 }}>ขอแสดงความนับถือ</Text>
             <Text style={{ marginTop: 80, textIndent: 0, textAlign: 'right', marginRight: 85 }}>{data[0]?.director}</Text>
-            <Text style={{ marginBottom: 10, textIndent: 297 }}>ผู้อำนวยการ{data[0]?.hospitalName}</Text>
+            <Text style={{ marginBottom: 10, textIndent: 297 }}>{data[0].directorPosition}{data[0].hostHospital}</Text>
             <Text>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
             <Text>ติดต่อ {toThaiDigits_(data[0]?.contact)}</Text>
           </View>
@@ -383,7 +385,7 @@ const MySimplePDF = ({ data, isCopy }: { data: MyDocumentProps[], isCopy?: boole
               <View style={styles.tableRow}>
                   <Text style={[ { flex: 1 }]}>ที่ สข. ๘๐๒๓๑</Text>
                   <Text style={[ { flex: 1 }]}></Text>
-                  <Text style={[ { flex: 1, flexWrap: 'wrap' }]}>{data[0].hospitalName} </Text>
+                  <Text style={[ { flex: 1, flexWrap: 'wrap' }]}>{data[0].hostHospital} </Text>
               </View>
 
               <View style={styles.tableRow}>
@@ -435,7 +437,7 @@ const MySimplePDF = ({ data, isCopy }: { data: MyDocumentProps[], isCopy?: boole
             <Text style={{ marginTop: 20, textIndent: 80 }}>จึงเรียนมาเพื่อโปรดดำเนินการ </Text>
             <Text style={{ marginTop: 10, textIndent: 320 }}>ขอแสดงความนับถือ</Text>
             <Text style={{ marginTop: 80, textIndent: 0, textAlign: 'right', marginRight: 85 }}>{data[0]?.director}</Text>
-            <Text style={{ marginBottom: 10, textIndent: 297 }}>ผู้อำนวยการ{data[0]?.hospitalName}</Text>
+            <Text style={{ marginBottom: 10, textIndent: 297 }}>{data[0].directorPosition}{data[0].hostHospital}</Text>
             <Text>กลุ่มงานเภสัชกรรมและคุ้มครองผู้บริโภค</Text>
             <Text>ติดต่อ {toThaiDigits_(data[0]?.contact)}</Text>
           </View>

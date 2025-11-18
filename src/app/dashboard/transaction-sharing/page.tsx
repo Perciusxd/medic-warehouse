@@ -154,8 +154,8 @@ export default function TransferDashboard() {
             })
             setLoading(false)
         }
-    }   
-   
+    }
+
     // Helper function to configure dialog for different actions
     const openConfirmationDialog = (med: any, actionType: 'receive-delivery' | 'delivery' | 'confirm-return' | 'to-transfer') => {
         setSelectedMed(med);
@@ -209,7 +209,7 @@ export default function TransferDashboard() {
     }
 
     const handleDeliveryConfirm = async (med: any) => {
-        console.log('handleDeliveryConfirm', med);
+        //console.log('handleDeliveryConfirm', med);
         openConfirmationDialog(med, 'delivery');
     }
 
@@ -410,7 +410,23 @@ export default function TransferDashboard() {
         
         // กรองเฉพาะสถานะ to-transfer
         const filteredRequests = medicineRequests.filter((item: any) => item.status === 'to-transfer');
-        const filteredSharing = medicineSharing.filter((item: any) => item.responseDetails[0].status === 'to-transfer');
+        // const filteredSharing = medicineSharing.filter((item: any) => item.responseDetails[0].status === 'to-transfer');
+        const filteredSharing = medicineSharing.flatMap((item: any) => {
+            if (item.ticketType === 'sharing' && Array.isArray(item.responseDetails) && item.responseDetails.length > 0) {
+            if (item.ticketType !== 'sharing') return [];
+
+            if (!Array.isArray(item.responseDetails)) return [];
+
+            const { responseDetails, ...header } = item;
+
+            return responseDetails
+            .filter((resp: any) => resp.acceptedOffer && (resp.status === 'to-transfer')) // เอาเฉพาะที่มี offer
+            .map((resp: any) => ({
+                ...header,
+                responseDetails: [resp],
+            }));
+        }
+        });
         
         // รวมข้อมูลทั้งสองประเภท
         return [...filteredRequests, ...filteredSharing];

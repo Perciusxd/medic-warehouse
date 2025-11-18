@@ -50,13 +50,40 @@ export default function HistoryDashboard() {
 
   useEffect(() => {
     if (!loggedInHospital) return;
+    const result = allData.flatMap((item: any) => {
+      if (item.ticketType === 'sharing' && Array.isArray(item.responseDetails) && item.responseDetails.length > 0) {
+        if (item.ticketType !== 'sharing') return [];
+
+        if (!Array.isArray(item.responseDetails)) return [];
+
+        const { responseDetails, ...header } = item;
+
+        return responseDetails
+          .filter((resp: any) => resp.acceptedOffer && (resp.status === 'to-transfer' || resp.status === 'to-confirm' || resp.status === 'in-return')) // เอาเฉพาะที่มี offer
+          .map((resp: any) => ({
+            ...header,
+            responseDetails: [resp],
+        }));
+      }
+
+      // ถ้าไม่ได้ sharing หรือไม่มี responseDetails ให้ข้ามไปเลย
+      if ((item.status === 'to-transfer' || item.status === 'to-confirm' || item.status === 'in-return') && item.ticketType === 'request') {
+        return item;
+      }
+      return [];
+    });
+
+    // console.log(result);
+    
     
     // กรองเฉพาะ status = 'to-return' เท่านั้น
-    const toReturnData = allData.filter((item: any) => 
-      (item.responseDetails?.[0]?.status === 'to-transfer' || item.responseDetails?.[0]?.status === 'to-confirm' || item.responseDetails?.[0]?.status === 'in-return') 
-    || ((item.status === 'to-transfer' || item.status === 'to-confirm' || item.status === 'in-return') && item.ticketType === 'request')
-    );
-    setFilteredData(toReturnData);
+    // const toReturnData = allData.filter((item: any) => 
+    //   ((item.status === 'to-transfer' || item.status === 'to-confirm' || item.status === 'in-return') && item.ticketType === 'request')
+    // );
+
+    // console.log('return', result);
+    
+    setFilteredData(result);
     // const mapped = allData.map((item: any) => {
     //   if (item.ticketType === 'sharing') {
     //     const resp = item.responseDetails?.[0] ?? {};
@@ -86,24 +113,25 @@ export default function HistoryDashboard() {
     //   } else {
     //     return null
     //   }
-
-    const mapped = allData
-      .filter((item: any) => 
-        // item.ticketType === 'sharing' && 
-        (item.responseDetails?.[0]?.status === 'to-transfer' || item.responseDetails?.[0]?.status === 'to-confirm' || item.responseDetails?.[0]?.status === 'in-return') 
-    || ((item.status === 'to-transfer' || item.status === 'to-confirm' || item.status === 'in-return') && item.ticketType === 'request')
-      )
+    const mapped = result
+    //   .filter((item: any) => 
+    //     // item.ticketType === 'sharing' && 
+    //     (item.responseDetails?.[0]?.status === 'to-transfer' || item.responseDetails?.[0]?.status === 'to-confirm' || item.responseDetails?.[0]?.status === 'in-return') 
+    // || ((item.status === 'to-transfer' || item.status === 'to-confirm' || item.status === 'in-return') && item.ticketType === 'request')
+    //   )
       // copy in comment to condition if wanna close button that not have data
       // && item.responseDetails?.acceptedOffer
       .map((item: any) => {
         const resp = item.responseDetails?.[0] ?? item.requestDetails;
         const medsArr = user?.address;
-        const hospitalName = item.postingHospitalNameTH ? item.postingHospitalNameTH : item.requestDetails.postingHospitalNameTH;
+        const hospitalName = item.ticketType === 'sharing' ? item.responseDetails[0].respondingHospitalNameTH : item.requestDetails.postingHospitalNameTH;
         const director = user?.director;
         const now = Date.now();
         const contact = user?.contact;
         const expectedReturnDate = resp.acceptedOffer ? resp.acceptedOffer.expectedReturnDate : resp.requestTerm?.expectedReturnDate;
         const diff = Number(expectedReturnDate) - now;
+        const hostHospital = item.ticketType === 'sharing' ? item.postingHospitalNameTH : item.respondingHospitalNameTH;
+        const directorPosition = user?.position;
         let diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
         if (diffDays < 0) diffDays = Math.abs(diffDays);
 
@@ -118,7 +146,9 @@ export default function HistoryDashboard() {
           address: medsArr,
           hospitalName,
           director,
-          contact
+          contact,
+          hostHospital: hostHospital,
+          directorPosition: directorPosition
         };
       // });
 
@@ -193,126 +223,18 @@ export default function HistoryDashboard() {
       address: item.address,
       hospitalName: item.hospitalName,
       director: item.director,
-      contact: item.contact
+      contact: item.contact,
+      hostHospital: item.hostHospital,
+      directorPosition: item.directorPosition
     }));
 
     // เปิด PDF โดยตรง
     await generateAndOpenPDF(pdfData);
   };
 
-  const handleChartClick = (label: string) => {
-    // console.log('label', label);
-    // console.log(queryFromChart, 'queryFromChart');
-
-
-    if (label === queryFromChart) {
-      // setMockDataV1(mockMedicineTableData); // reset
-      setFilteredData(allData);
-      setQueryFromChart(null);
-      // console.log(allData, 'allData');
-      
-    } else {
-      let filterData: any;
-      // console.log(label, 'label');
-      // console.log('all', filteredData);
-      
-      
-      // switch (label) {
-      //   case 'แจ้งแบ่งปัน':
-      //     filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'offered');
-      //     break;
-      //   case 'รอยืนยันให้ยืม':
-      //     filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'pending');
-      //     break;
-      //   case 'รอส่งมอบ':
-      //     filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'to-transfer');
-      //     break;
-      //   case 'รอรับคืน':
-      //     filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'to-return');
-      //     break;
-      //   case 'เสร็จสิ้น':
-      //     filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'completed' || item.responseDetails[0].status === 'returned');
-      //     break;
-      //   case 'รอยืนยันการส่งคืน':
-      //     filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'to-confirm');
-      //     break;
-      //   case 'รอยืนยันการรับคืน':
-      //     filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 're-confirm');
-      //     break;
-      //   case 'ต้องส่งคืน':
-      //     filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'in-return');
-      //     break;
-      //   case 'ยืนยันการส่งคืน':
-      //     filterData = filteredData.filter((item:any) => item.responseDetails[0].status === 'confirm-return');
-      //     break;
-      //   default:
-      //     filterData = allData;
-      // }
-      // console.log(filterData, 'filterData');
-      
-      // setMockDataV1(filterData);
-      // setFilteredData(filterData);
-      // setQueryFromChart(label);
-    }
-  };
-
-  // console.log('allData', allData);
-  // console.log('filteredData', filteredData);
-  // let config: any;
-  // เสร็จสิ้น
-  // const statusCompleted = filteredData.filter(item => item.responseDetails[0].status === 'completed' || item.responseDetails[0].status === 'returned').length;
-  // รอยืนยันให้ยืม
-  // const statusPending = filteredData.filter(item => item.responseDetails[0].status === 'pending').length;
-  // แจ้งแบ่งปัน
-  // const statusOffered = filteredData.filter(item => item.responseDetails[0].status === 'offered').length;
-  // รอส่งมอบ
-  // const statusToTransfer = filteredData.filter(item => item.responseDetails[0].status === 'to-transfer').length;
-  // รอรับคืน
-  // const statusToReturn = filteredData.filter(item => item.responseDetails[0].status === 'to-return').length;
-  // ต้องส่งคืน
-  // const statusInReturn = filteredData.filter(item => item.responseDetails[0].status === 'in-return').length;
-  // รอยืนยันการส่งคืน
-  // const statusToConfirm = filteredData.filter(item => item.responseDetails[0].status === 'to-confirm').length;
-  // รอยืนยันการรับคืน
-  // const statusReConfirm = filteredData.filter(item => item.responseDetails[0].status === 're-confirm').length;
-  // ยืนยันการส่งคืน
-  // const statusConfirmReturn = filteredData.filter(item => item.responseDetails[0].status === 'confirm-return').length;
-  // ส่งคืนเสร็จสิ้น
-  
-  // const config = {
-  //   type: 'doughnut',
-  //   data: {
-  //     labels: ["แจ้งแบ่งปัน", "รอยืนยันให้ยืม", "รอส่งมอบ", "รอรับคืน", "เสร็จสิ้น", "รอยืนยันการส่งคืน", "รอยืนยันการรับคืน", "ต้องส่งคืน", "ยืนยันการส่งคืน"],
-  //     datasets: [{
-  //       data: [statusOffered,statusPending,statusToTransfer,statusToReturn, statusCompleted, statusToConfirm, statusReConfirm, statusInReturn, statusConfirmReturn],
-  //       backgroundColor: ['#4CAF50', '#FF9800', '#2196F3', '#9C27B0', '#F44336', '#FFEB3B', '#00BCD4', '#E91E63', '#8BC34A'],
-  //       hoverOffset: 4,
-  //     }],
-  //   },
-  //   options: {
-  //     events: ['click'],
-  //     responsive: true,
-  //     plugins: {
-  //       legend: {
-  //         position: 'top',
-  //       },
-  //       title: {
-  //         display: false,
-  //         text: 'Medicine Request Status Overview',
-  //       },
-  //     },
-  //   },
-  // }
 
   if (isLoading) {
     return (
-      // <div className="flex flex-col items-center justify-center h-screen">
-      //   <svg className="animate-spin -ml-1 mr-3 h-10 w-10 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      //     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-      //     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-      //   </svg>
-      //   <p className="mt-4 text-lg font-medium">กำลังโหลดข้อมูล...</p>
-      // </div>
       <div className="flex flex-col items-center justify-center h-screen">
           <div className="flex flex-col items-center">
               <span className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-3"></span>
@@ -326,13 +248,9 @@ export default function HistoryDashboard() {
       filteredData.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-screen">
           <h2 className="text-2xl font-bold mb-4">ไม่มีข้อมูล</h2>
-          {/* <p className="text-gray-600">กรุณาเลือกตัวกรองที่แตกต่างกัน</p> */}
         </div>
       ) :
       <div className="max-w-full overflow-auto">
-        {/* <div className="flex justify-center">
-          <DoughnutChart data={config.data} options={config.options} query={handleChartClick} />
-        </div> */}
         <div className="flex flex-col gap-4 mt-[30px] mx-auto max-w-[90%]">
           <div className="flex justify-start gap-2">
             <div className="flex">
@@ -342,35 +260,6 @@ export default function HistoryDashboard() {
                 disabled={reportData.length === 0}
               />
             </div>
-                {/* <div className="flex gap-2">
-                  <Button
-                    variant={queryFromChart === 'request' ? 'default' : 'outline'}
-                    onClick={() => {
-                      setFilteredData(allData.filter((item: any) => item.ticketType === 'request'));
-                      setQueryFromChart('request');
-                    }}
-                  >
-                    ขอยืม
-                  </Button>
-                  <Button
-                    variant={queryFromChart === 'sharing' ? 'default' : 'outline'}
-                    onClick={() => {
-                      setFilteredData(allData.filter((item: any) => item.ticketType === 'sharing'));
-                      setQueryFromChart('sharing');
-                    }}
-                  >
-                    ให้ยืม
-                  </Button>
-                  <Button
-                    variant={queryFromChart === null ? 'default' : 'outline'}
-                    onClick={() => {
-                      setFilteredData(allData);
-                      setQueryFromChart(null);
-                    }}
-                  >
-                    ทั้งหมด
-                  </Button>
-                </div> */}
               </div>
               <div className="text-center">
                   <DataTable columns={columns} data={filteredData} />

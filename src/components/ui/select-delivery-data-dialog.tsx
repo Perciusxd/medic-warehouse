@@ -122,7 +122,7 @@ export function SelectDeliveryDataDialog({ dataList, onSelect }: SelectDeliveryD
                 .map((item, index) => {
                   const globalIndex = dataList.indexOf(item)
                   return (
-                    <div key={item.id ?? globalIndex} className="mb-2 overflow-hidden">
+                    <div key={`request-${globalIndex}`} className="mb-2 overflow-hidden">
                       <Button
                         variant={selectedIndices.includes(globalIndex) ? "default" : "ghost"}
                         className="w-full justify-start truncate"
@@ -150,8 +150,10 @@ export function SelectDeliveryDataDialog({ dataList, onSelect }: SelectDeliveryD
                 .filter((item) => !selectedHospital || item.responseDetails?.[0]?.respondingHospitalNameTH === selectedHospital)
                 .map((item, index) => {
                   const globalIndex = dataList.indexOf(item)
+                  // ใช้ globalIndex เป็น key เพื่อป้องกัน duplicate keys
+                  // เพราะ sharing ticket ที่ถูก expand อาจมี id เดียวกัน
                   return (
-                    <div key={item.id ?? globalIndex} className="mb-2">
+                    <div key={`sharing-${globalIndex}`} className="mb-2">
                       <Button
                         variant={selectedIndices.includes(globalIndex) ? "default" : "ghost"}
                         className="w-full justify-start truncate"

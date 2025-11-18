@@ -224,7 +224,7 @@ function ResponseFormSchema(sharingMedicine: any) {
         }
         // ตรวจสอบว่าเป็นวันที่ในอนาคต (หรือวันนี้)
         try {
-            const returnDate = new Date(data.expectedReturnDate);
+            const returnDate = new Date(Number(data.expectedReturnDate));
             const today = new Date();
             today.setHours(0, 0, 0, 0); // ตั้งค่าเวลาเป็นเที่ยงคืน
 

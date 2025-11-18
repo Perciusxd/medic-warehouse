@@ -23,7 +23,7 @@ export const columns: ColumnDef<any>[] = [
   {
     accessorKey: "hospital",
     size : 100,
-    header: "ร.พ. ให้ยืม",
+    header: "โรงพยาบาลที่ให้ยืม/แบ่งปันยา",
     cell: ({ row }) => {
       const hospitalName = row.original.responseDetails ? row.original.responseDetails[0].respondingHospitalNameTH : row.original.requestDetails.postingHospitalNameTH;
       return (
