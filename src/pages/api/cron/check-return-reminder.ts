@@ -7,7 +7,7 @@ const resend = new Resend(process.env.NEXT_PUBLIC_API_RESEND_API_KEY);
 // const fromEmail = process.env.NEXT_PUBLIC_API_RESEND_FROM_EMAIL?.toString() || 'no-reply@bcmed.online';
 const fromEmail = 'no-reply@bcmed.online';
 
-// const testEmail = 'pupzaporjict@gmail.com'
+const testEmail = 'pupzaporjict@gmail.com'
 const hospitalList = ['Songkla Hospital','Hatyai Hospital', 'Jana Hospital', 'Na Mom Hospital', 'Bang Klam Hospital', 'Khuanniang Hospital', 'Ranot Hospital', 'Krasae Sin Hospital', 'Sadao Hospital', 'Somdejpraboromrachineenart Na Thawi Hospital']
 
 // ฟังก์ชันสำหรับค้นหา email จากฐานข้อมูลโดยใช้ชื่อโรงพยาบาล
@@ -35,8 +35,7 @@ async function findHospitalEmail(db: any, hospitalNameTH?: string, hospitalNameE
   }
 }
 
-// ฟังก์ชันสำหรับดึงข้อมูลจาก API โดยเรียกตรงๆ
-// เอาเฉพาะ sharing tickets (กรณีที่เราให้ยืมและต้องทวงถามการคืน)
+// ฟังก์ชันสำหรับดึงข้อมูล sharing tickets จาก API
 async function fetchSharingTicketsFromAPI(hospitalName: string) {
   const baseUrl = process.env.ENDPOINT_CRON || 'http://localhost:3000';
   
@@ -57,7 +56,7 @@ async function fetchSharingTicketsFromAPI(hospitalName: string) {
       status: JSON.stringify(status),
     };
 
-    console.log(`Fetching sharing tickets for ${hospitalName} from ${baseUrl}/api/querySharing`);
+    // console.log(`Fetching sharing tickets for ${hospitalName} from ${baseUrl}/api/querySharing`);
     
     const response = await fetch(`${baseUrl}/api/querySharing`, {
       method: 'POST',
@@ -81,6 +80,57 @@ async function fetchSharingTicketsFromAPI(hospitalName: string) {
     return tickets || [];
   } catch (error) {
     console.error(`Error fetching sharing tickets from API for ${hospitalName}:`, error);
+    throw error;
+  }
+}
+
+// ฟังก์ชันสำหรับดึงข้อมูล request tickets จาก API
+async function fetchRequestTicketsFromAPI(hospitalName: string) {
+  const baseUrl = process.env.ENDPOINT_CRON || 'http://localhost:3000';
+  
+  try {
+    const status = [
+      'to-transfer',
+      'to-confirm',
+      'offered',
+      're-confirm',
+      'in-return',
+      'returned',
+      'confirm-return',
+      'pending',
+      'completed',
+      'to-return'
+    ];
+    
+    const body = {
+      loggedInHospital: hospitalName,
+      status: JSON.stringify(status),
+    };
+
+    // console.log(`Fetching request tickets for ${hospitalName} from ${baseUrl}/api/queryRequestByStatus`);
+    
+    const response = await fetch(`${baseUrl}/api/queryRequestByStatus`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`API Error for ${hospitalName}:`, {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText
+      });
+      throw new Error(`Failed to fetch request tickets for ${hospitalName}: ${response.status}`);
+    }
+    
+    const tickets = await response.json();
+    return tickets || [];
+  } catch (error) {
+    console.error(`Error fetching request tickets from API for ${hospitalName}:`, error);
     throw error;
   }
 }
@@ -176,21 +226,75 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log(`Processing hospital: ${hospital}`);
       
       try {
-        // ดึงข้อมูลจาก API สำหรับแต่ละโรงพยาบาล
-        const tickets = await fetchSharingTicketsFromAPI(hospital);
-        console.log(`Found ${tickets.length} tickets for ${hospital}`);
-        const toReturnData = tickets.filter((item: any) => 
-          (item.responseDetails?.[0]?.status === 'to-transfer' || item.responseDetails?.[0]?.status === 'to-confirm' || item.responseDetails?.[0]?.status === 'in-return') 
-        && item.ticketType === 'sharing');
+        // ดึงข้อมูลจาก API สำหรับแต่ละโรงพยาบาล (ทั้ง sharing และ request)
+        const sharingTickets = await fetchSharingTicketsFromAPI(hospital);
+        const requestTickets = await fetchRequestTicketsFromAPI(hospital);
+        const allTickets = [...sharingTickets, ...requestTickets];
+        console.log(`Found ${sharingTickets.length} sharing tickets and ${requestTickets.length} request tickets for ${hospital}`);
+        
+        // ใช้ flatMap เหมือนกับหน้า history-mock เพื่อกรองและแยกข้อมูล
+        const toReturnData = allTickets.flatMap((item: any) => {
+          // กรณี sharing ticket - แยก responseDetails แต่ละตัว
+          if (item.ticketType === 'sharing' && Array.isArray(item.responseDetails) && item.responseDetails.length > 0) {
+            const { responseDetails, ...header } = item;
 
+            return responseDetails
+              .filter((resp: any) => resp.acceptedOffer && (resp.status === 'to-transfer' || resp.status === 'to-confirm' || resp.status === 'in-return'))
+              .map((resp: any) => ({
+                ...header,
+                responseDetails: resp, // เปลี่ยนเป็น object แทน array
+              }));
+          }
+          
+          // กรณี request ticket - กรองตาม status
+          if ((item.status === 'to-transfer' || item.status === 'to-confirm' || item.status === 'in-return') && item.ticketType === 'request') {
+            return [item];
+          }
+          
+          return [];
+        });
+
+        console.log(`Found ${toReturnData.length} items to check for ${hospital}`);
+        
         for (const ticket of toReturnData) {
           try {
-            const responseDetail = ticket.responseDetails?.[0];
-            if (!responseDetail?.acceptedOffer?.expectedReturnDate) continue;
+            // กำหนดตัวแปรตาม ticket type
+            let expectedReturnDate;
+            let respondingHospitalNameTH;
+            let respondingHospitalNameEN;
+            let medicineName;
+            
+            if (ticket.ticketType === 'sharing') {
+              // สำหรับ sharing ticket
+              const responseDetail = ticket.responseDetails;
+              if (!responseDetail?.acceptedOffer?.expectedReturnDate) continue;
+              
+              expectedReturnDate = Number(responseDetail.acceptedOffer.expectedReturnDate);
+              respondingHospitalNameTH = responseDetail.respondingHospitalNameTH;
+              respondingHospitalNameEN = responseDetail.respondingHospitalNameEN;
+              medicineName = ticket.sharingMedicine?.name || 
+                            ticket.sharingMedicine?.[0]?.medicine?.tradeName || 
+                            'ยา';
+            } else if (ticket.ticketType === 'request') {
+              // สำหรับ request ticket
+              
+              const requestDetail = ticket.requestDetails;
+              if (!requestDetail?.requestTerm?.expectedReturnDate) continue;
+              
+              expectedReturnDate = Number(requestDetail.requestTerm.expectedReturnDate);
+              respondingHospitalNameTH = requestDetail.postingHospitalNameTH;
+              respondingHospitalNameEN = requestDetail.postingHospitalNameEN;
+              medicineName = ticket.offeredMedicine?.name || 
+                            ticket.requestMedicine?.medicine?.tradeName || 
+                            'ยา';
+            } else {
+              continue;
+            }
 
-            const expectedReturnDate = Number(responseDetail.acceptedOffer.expectedReturnDate);
             const diffMs = now - expectedReturnDate;
             const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            console.log(`[${ticket.ticketType}] Ticket ${ticket.id}: diff day ${diffDays}`);
 
             // เช็คว่าตรงเงื่อนไขส่งอีเมล์หรือไม่:
             // 1. วันนี้ครบกำหนด (diffDays === 0)
@@ -199,20 +303,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const shouldSendReminder = diffDays === 0 || diffDays === 7 || diffDays === 14;
 
             if (shouldSendReminder) {
-              // ดึงชื่อโรงพยาบาลจาก responseDetails
-              const respondingHospitalNameTH = responseDetail.respondingHospitalNameTH;
-              const respondingHospitalNameEN = responseDetail.respondingHospitalNameEN;
-              
               // ใช้ test email สำหรับทดสอบ
-              // const email = testEmail;
               
-              // ค้นหา email จากฐานข้อมูลโดยใช้ชื่อโรงพยาบาล (ปิดการใช้งานชั่วคราว)
-              const email = await findHospitalEmail(db, respondingHospitalNameTH, respondingHospitalNameEN);
+              const email = testEmail;
+              
+              // ค้นหา email จากฐานข้อมูลโดยใช้ชื่อโรงพยาบาล
+              // const email = await findHospitalEmail(db, respondingHospitalNameTH, respondingHospitalNameEN);
               
               if (!email) {
-
                 errors.push({
                   ticketId: ticket._id,
+                  ticketType: ticket.ticketType,
                   error: `No email found for hospital: ${respondingHospitalNameTH || respondingHospitalNameEN || 'Unknown'}`
                 });
                 continue;
@@ -220,10 +321,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
               // ใช้ชื่อโรงพยาบาลสำหรับแสดงในอีเมล์
               const hospitalName = respondingHospitalNameTH || respondingHospitalNameEN || 'Unknown';
-
-              // ชื่อยา - เฉพาะ sharing tickets
-              const medicineName = ticket.sharingMedicine?.[0]?.medicine?.tradeName || 
-                                  ticket.sharingMedicine?.name || 'ยา';
 
               // ส่งอีเมล์
               await sendReminderEmail(
@@ -236,16 +333,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
               remindersSent.push({
                 ticketId: ticket.id,
+                ticketType: ticket.ticketType,
                 hospitalName: hospitalName,
                 email,
                 daysOverdue: diffDays,
                 medicineName,
-                queryHospital: hospital // เพิ่มข้อมูลว่า query จากโรงพยาบาลไหน
+                queryHospital: hospital
               });
 
               // บันทึก log ลงฐานข้อมูล (optional)
               await db.collection('email_logs').insertOne({
                 ticketId: ticket.id,
+                ticketType: ticket.ticketType,
                 type: 'return_reminder',
                 sentAt: new Date(),
                 recipient: email,
