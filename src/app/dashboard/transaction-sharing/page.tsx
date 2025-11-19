@@ -631,7 +631,7 @@ export default function TransferDashboard() {
                         }
                     }}
                     selectedMed={selectedMed}
-                    title="ยืนยันการจัดส่ง ปปปป"
+                    title="ยืนยันการจัดส่ง"
                     // description="คุณต้องการยืนยันการจัดส่งของไปยัง {hospitalName} หรือไม่?"
                     description={`คุณต้องการยืนยันการจัดส่งของไปยัง ${selectedMed?.respondingHospitalNameTH || 'หห'} หรือไม่?`}
                     confirmButtonText="ยืนยันการจัดส่ง"
