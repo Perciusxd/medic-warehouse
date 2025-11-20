@@ -7,7 +7,7 @@ const resend = new Resend(process.env.NEXT_PUBLIC_API_RESEND_API_KEY);
 // const fromEmail = process.env.NEXT_PUBLIC_API_RESEND_FROM_EMAIL?.toString() || 'no-reply@bcmed.online';
 const fromEmail = 'no-reply@bcmed.online';
 
-const testEmail = 'pupzaporjict@gmail.com'
+// const testEmail = 'pupzaporjict@gmail.com'
 const hospitalList = ['Songkla Hospital','Hatyai Hospital', 'Jana Hospital', 'Na Mom Hospital', 'Bang Klam Hospital', 'Khuanniang Hospital', 'Ranot Hospital', 'Krasae Sin Hospital', 'Sadao Hospital', 'Somdejpraboromrachineenart Na Thawi Hospital']
 
 // ฟังก์ชันสำหรับค้นหา email จากฐานข้อมูลโดยใช้ชื่อโรงพยาบาล
@@ -305,10 +305,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (shouldSendReminder) {
               // ใช้ test email สำหรับทดสอบ
               
-              const email = testEmail;
+              // const email = testEmail;
               
               // ค้นหา email จากฐานข้อมูลโดยใช้ชื่อโรงพยาบาล
-              // const email = await findHospitalEmail(db, respondingHospitalNameTH, respondingHospitalNameEN);
+              const email = await findHospitalEmail(db, respondingHospitalNameTH, respondingHospitalNameEN);
               
               if (!email) {
                 errors.push({
