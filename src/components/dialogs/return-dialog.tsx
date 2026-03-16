@@ -35,6 +35,7 @@ import { saveAs } from "file-saver";
 import { pdf } from "@react-pdf/renderer";
 import { useAuth } from "../providers";
 const ReturnPdfMultiPreview = dynamic(() => import('@/components/ui/pdf_creator/return_pdf_multi'), { ssr: false });
+import { generateReturnWordMulti } from '@/components/ui/pdf_creator/return_word_multi';
 
 interface ReturnDialogProps {
     open: boolean;
@@ -611,6 +612,22 @@ function ReturnDetails({ selectedMed, onOpenChange }: any) {
                     }
                 >
                     สร้างเอกสาร
+                </Button>
+                <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => generateReturnWordMulti(
+                        selectedMed,
+                        watchAllFields.returnMedicine ? [watchAllFields.returnMedicine] : [],
+                        user
+                    )}
+                    disabled={
+                        isSupportSelected
+                            ? !(Boolean((watchAllFields?.returnMedicine?.reason || '').trim()))
+                            : !isValid
+                    }
+                >
+                    สร้างเอกสาร Word
                 </Button>
             </div>
         </form>

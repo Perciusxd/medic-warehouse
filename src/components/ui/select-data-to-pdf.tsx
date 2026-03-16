@@ -13,6 +13,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { generatePdf, Pdfcontent } from "@/components/ui/pdf_creator/new_request_pdf"
+import { generateRequestWord } from "@/components/ui/pdf_creator/new_request_word"
 import { useAuth } from "@/components/providers";
 interface SelectDataMedDialogProps {
   dataList: any[]
@@ -263,6 +264,49 @@ export function SelectDataMedDialog({ dataList, onSelect }: SelectDataMedDialogP
         >
 
           สร้างเอกสาร PDF
+        </Button>
+
+        <Button
+          variant="outline"
+          onClick={() => {
+            if (selectedObjects.length === 0) {
+              alert("กรุณาเลือกอย่างน้อย 1 รายการ")
+              return
+            }
+            const documentData = selectedObjects.map((obj) => {
+              if (obj.type === "request") {
+                return {
+                  SharingHospital: obj.responseDetails?.[0]?.respondingHospitalNameTH ? obj.responseDetails?.[0]?.respondingHospitalNameTH : obj.medicineRequests?.responseDetails[0].respondingHospitalNameTH ?? "ไม่ทราบโรงพยาบาล",
+                  Medname: obj.responseDetails?.[0]?.offeredMedicine?.name ? obj.responseDetails?.[0]?.offeredMedicine?.name : obj.medicineRequests?.requestMedicine?.name ?? "ไม่ทราบชื่อยา",
+                  Amount: obj.responseDetails?.[0]?.offeredMedicine?.offerAmount ? obj.responseDetails?.[0]?.offeredMedicine?.offerAmount : obj.medicineRequests?.requestMedicine?.requestAmount ?? "ไม่ทราบจำนวน",
+                  ExpectedReturnDate: obj.medicineRequests?.requestTerm.expectedReturnDate ?? "ไม่ทราบวันที่คืน",
+                  Unit: obj.responseDetails?.[0]?.offeredMedicine?.unit ? obj.responseDetails?.[0]?.offeredMedicine?.unit : obj.medicineRequests?.requestMedicine?.unit ?? "ไม่ทราบรูปแบบ/หน่วย",
+                  Quantity: obj.responseDetails?.[0]?.offeredMedicine?.quantity ? obj.responseDetails?.[0]?.offeredMedicine?.quantity : obj.medicineRequests?.requestMedicine?.quantity ?? "ไม่ทราบขนาด",
+                  Description: obj.medicineRequests.requestMedicine.description ?? "ไม่ทราบเหตุผล",
+                  SupportType: obj.medicineRequests.requestTerm.supportType ?? "ไม่ทราบประเภท",
+                  type: "request",
+                  raw: obj,
+                }
+              } else if (obj.type === "return") {
+                return {
+                  SharingHospital: obj.item.sharingDetails?.postingHospitalNameTH ?? "ไม่ทราบโรงพยาบาล",
+                  Medname: obj.item.sharingDetails?.sharingMedicine?.name ?? "ไม่ทราบชื่อ",
+                  Amount: obj.item.acceptedOffer?.responseAmount ?? "ไม่ทราบจำนวน",
+                  ExpectedReturnDate: obj.item.acceptedOffer?.expectedReturnDate ?? "ไม่ทราบวันที่คืน",
+                  Unit: obj.item.sharingDetails?.sharingMedicine?.unit ?? "ไม่ทราบหน่วย",
+                  Quantity: obj.item.sharingDetails?.sharingMedicine?.quantity ?? "ไม่ทราบขนาด",
+                  Description: obj.item.acceptedOffer?.description ?? "ไม่ทราบเหตุผล",
+                  SupportType: obj.item.returnTerm?.supportType ?? "ไม่ทราบประเภท",
+                  type: "return",
+                  raw: obj,
+                }
+              }
+              return null
+            })
+            generateRequestWord(documentData.filter(Boolean), userdata.user, docType)
+          }}
+        >
+          สร้างเอกสาร Word
         </Button>
 
       </DialogContent>

@@ -34,6 +34,7 @@ import { CalendarDays, Hospital, Pill, Package, ArrowRight, DollarSign, Clock, C
 
 import dynamic from 'next/dynamic';
 const SharingPdfPreview = dynamic(() => import('@/components/ui/pdf_creator/sharing_pdf'), { ssr: false });
+import { generateSharingWord } from '@/components/ui/pdf_creator/sharing_word';
 import { useAuth } from "@/components/providers";
 
 function SharingDetailPanel({ data }: any) {
@@ -384,6 +385,15 @@ export default function ConfirmSharingDialog({ data, dialogTitle, status, openDi
                         >
                             <FileText className="h-4 w-4 mr-2" />
                             บันทึก PDF
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => generateSharingWord(data, user)}
+                            className="min-w-[120px]"
+                        >
+                            <FileText className="h-4 w-4 mr-2" />
+                            บันทึก Word
                         </Button>
                         <Button
                             type="button"

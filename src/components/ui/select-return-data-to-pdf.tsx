@@ -17,6 +17,7 @@ import dynamic from 'next/dynamic'
 import { toast } from "sonner"
 
 const ReturnPdfMultiPreview = dynamic(() => import('@/components/ui/pdf_creator/return_pdf_multi'), { ssr: false })
+import { generateReturnWordMulti } from '@/components/ui/pdf_creator/return_word_multi'
 
 interface SelectReturnDataDialogProps {
   dataList: any[]
@@ -242,12 +243,26 @@ export function SelectReturnDataDialog({ dataList, onSelect }: SelectReturnDataD
           </div>
         </ScrollArea>
 
-        <Button
-          onClick={handleGeneratePdf}
-          disabled={selectedObjects.length === 0}
-        >
-          สร้างเอกสาร PDF
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleGeneratePdf}
+            disabled={selectedObjects.length === 0}
+          >
+            สร้างเอกสาร PDF
+          </Button>
+          <Button
+            variant="outline"
+            disabled={selectedObjects.length === 0}
+            onClick={() => {
+              const repData = representativeData
+              const rl = returnList
+              if (!repData) return
+              generateReturnWordMulti(repData, rl, user ?? {})
+            }}
+          >
+            สร้างเอกสาร Word
+          </Button>
+        </div>
 
         {/* Hidden PDF Preview for generation */}
         {representativeData && returnList.length > 0 && (

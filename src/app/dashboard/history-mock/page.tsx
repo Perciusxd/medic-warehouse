@@ -15,6 +15,7 @@ import { useMedicineRequests, useMedicineRequestsStatus, useMedicineSharing, use
 import { Printer } from "lucide-react";
 import { SelectHospitalDialog } from "./select-hospital-dialog";
 import { generateAndOpenPDF } from "./historyPDF";
+import { generateHistoryWord } from "./history_word";
 const PDFPreviewButton = dynamic(() => import('./historyPDF'), { ssr: false });
 
 export default function HistoryDashboard() {
@@ -232,6 +233,24 @@ export default function HistoryDashboard() {
     await generateAndOpenPDF(pdfData);
   };
 
+  const handleConfirmSelectionWord = async (selectedHospital: string, selectedItems: any[]) => {
+    const wordData = selectedItems.map((item: any) => ({
+      ticketType: item.ticketType,
+      responseDetails: item.responseDetails ? item.responseDetails : item.requestDetails,
+      sharingMedicine: item.sharingMedicine ? item.sharingMedicine : item.offeredMedicine,
+      sharingReturnTerm: item.sharingReturnTerm ? item.sharingReturnTerm : item.requestTerm,
+      dayAmount: item.dayAmount,
+      overDue: item.overDue,
+      address: item.address,
+      hospitalName: item.hospitalName,
+      director: item.director,
+      contact: item.contact,
+      hostHospital: item.hostHospital,
+      directorPosition: item.directorPosition,
+    }));
+    await generateHistoryWord(wordData);
+  };
+
 
   if (isLoading) {
     return (
@@ -257,6 +276,7 @@ export default function HistoryDashboard() {
               <SelectHospitalDialog 
                 data={reportData} 
                 onConfirm={handleConfirmSelection}
+                onConfirmWord={handleConfirmSelectionWord}
                 disabled={reportData.length === 0}
               />
             </div>

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { generateDeliveryPdf } from "@/components/ui/pdf_creator/delivery_pdf"
+import { generateDeliveryWord } from "@/components/ui/pdf_creator/delivery_word"
 import { useAuth } from "@/components/providers";
 import { Printer } from "lucide-react";
 
@@ -177,6 +178,51 @@ export function SelectDeliveryDataDialog({ dataList, onSelect }: SelectDeliveryD
         </ScrollArea>
 
         <div className="flex gap-2 justify-end">
+          <Button
+            variant="outline"
+            onClick={() => {
+              if (selectedObjects.length === 0) {
+                alert("กรุณาเลือกอย่างน้อย 1 รายการ")
+                return
+              }
+              const wordData = selectedObjects.map((obj) => {
+                if (obj.ticketType === "request") {
+                  return {
+                    SharingHospital: obj.requestDetails?.postingHospitalNameTH ?? "ไม่ทราบโรงพยาบาล",
+                    Medname: obj.offeredMedicine?.name ?? "ไม่ทราบชื่อยา",
+                    Amount: obj.offeredMedicine?.offerAmount ?? 0,
+                    ExpectedReturnDate: obj.requestDetails?.requestTerm?.expectedReturnDate ?? "ไม่ทราบวันที่คืน",
+                    Unit: obj.offeredMedicine?.unit ?? "ไม่ทราบรูปแบบ/หน่วย",
+                    Quantity: obj.requestDetails.requestMedicine?.quantity ?? "ไม่ทราบขนาด",
+                    Description: obj.requestMedicine?.description ?? "ไม่ทราบเหตุผล",
+                    SupportType: obj.requestTerm?.supportType ?? "ไม่ทราบประเภท",
+                    PricePerUnit: obj.offeredMedicine?.pricePerUnit ?? 0,
+                    type: "request",
+                    raw: obj,
+                  }
+                } else if (obj.ticketType === "sharing") {
+                  return {
+                    SharingHospital: obj.responseDetails?.[0]?.respondingHospitalNameTH ?? "ไม่ทราบโรงพยาบาล",
+                    Medname: obj.sharingMedicine?.name ?? "ไม่ทราบชื่อ",
+                    Amount: obj.responseDetails?.[0]?.acceptedOffer?.responseAmount ?? 0,
+                    ExpectedReturnDate: obj.responseDetails?.[0]?.acceptedOffer?.expectedReturnDate ?? "ไม่ทราบวันที่คืน",
+                    Unit: obj.sharingMedicine?.unit ?? "ไม่ทราบหน่วย",
+                    Quantity: obj.sharingMedicine?.quantity ?? "ไม่ทราบขนาด",
+                    Description: obj.responseDetails?.[0]?.acceptedOffer?.description ?? "ไม่ทราบเหตุผล",
+                    SupportType: obj.returnTerm?.supportType ?? "ไม่ทราบประเภท",
+                    PricePerUnit: obj.sharingMedicine?.pricePerUnit ?? 0,
+                    type: "sharing",
+                    raw: obj,
+                  }
+                }
+                return null
+              }).filter(Boolean)
+              generateDeliveryWord(wordData, userdata.user, selectedHospital)
+            }}
+          >
+            <Printer className="mr-2 h-4 w-4" />
+            สร้างเอกสาร Word
+          </Button>
           <Button
             onClick={() => {
               if (selectedObjects.length === 0) {

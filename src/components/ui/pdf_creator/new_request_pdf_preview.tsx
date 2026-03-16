@@ -337,7 +337,7 @@ const NewRequestPdfPreview = forwardRef(({ data: sharingMed, userData }: any, re
                 URL.revokeObjectURL(pdfUrl);
             }
         };
-    }, [transformedData, userData, docType]);
+    }, [transformedData, userData, docType, pdfUrl]);
 
     useImperativeHandle(ref, () => ({
         savePdf: () => {

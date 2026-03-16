@@ -11,15 +11,16 @@ import {
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { Printer } from "lucide-react"
+import { Printer, FileText } from "lucide-react"
 
 interface SelectHospitalDialogProps {
   data: any[]
   onConfirm: (selectedHospital: string, selectedItems: any[]) => void
+  onConfirmWord?: (selectedHospital: string, selectedItems: any[]) => void
   disabled?: boolean
 }
 
-export function SelectHospitalDialog({ data, onConfirm, disabled }: SelectHospitalDialogProps) {
+export function SelectHospitalDialog({ data, onConfirm, onConfirmWord, disabled }: SelectHospitalDialogProps) {
   const [selectedHospital, setSelectedHospital] = React.useState<string>('')
   const [selectedIndices, setSelectedIndices] = React.useState<number[]>([])
   const [isOpen, setIsOpen] = React.useState(false)
@@ -72,6 +73,22 @@ export function SelectHospitalDialog({ data, onConfirm, disabled }: SelectHospit
     setIsOpen(false)
     
     // Reset selection
+    setSelectedHospital('')
+    setSelectedIndices([])
+  }
+
+  const handleConfirmWord = () => {
+    if (!selectedHospital) {
+      alert('กรุณาเลือกโรงพยาบาล')
+      return
+    }
+    if (selectedIndices.length === 0) {
+      alert('กรุณาเลือกอย่างน้อย 1 รายการ')
+      return
+    }
+    const selectedItems = selectedIndices.map(index => data[index])
+    if (onConfirmWord) onConfirmWord(selectedHospital, selectedItems)
+    setIsOpen(false)
     setSelectedHospital('')
     setSelectedIndices([])
   }
@@ -194,6 +211,16 @@ export function SelectHospitalDialog({ data, onConfirm, disabled }: SelectHospit
           >
             ยกเลิก
           </Button>
+          {onConfirmWord && (
+            <Button
+              variant="outline"
+              onClick={handleConfirmWord}
+              disabled={!selectedHospital || selectedIndices.length === 0}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              สร้างเอกสาร Word
+            </Button>
+          )}
           <Button
             onClick={handleConfirm}
             disabled={!selectedHospital || selectedIndices.length === 0}
